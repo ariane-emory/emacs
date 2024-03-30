@@ -1,0 +1,6 @@
+[submodule "lisp/copilot.el"]
+	path = lisp/copilot.el
+	url = https://github.com/copilot-emacs/copilot.el
+[submodule "lisp/trav-el"]
+	path = lisp/trav-el
+	url = https://github.com/ariane-emory/trav-el
