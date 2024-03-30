@@ -10,7 +10,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test defining a function:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq *pattern-dispatch-table* nil)
+(setq *lust-style-def--pattern-dispatch-table* nil)
 ;; Insertion order needs to be reversed for now. Fix this!
 (def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
 (def (fib 1) 1)
