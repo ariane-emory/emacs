@@ -230,8 +230,8 @@ Examples:
                                        (print "trying case %s: %s..." ,index ,descr)
                                        (let ((result (let ((*aris-indent* (1+ *aris-indent*))) ,@body)))
                                          (if result
-                                           (print "case %s matched!" ,index)
-                                           (print "case %s failed to match." ,index))
+                                           (print "case %s applies!" ,index)
+                                           (print "case %s does not apply." ,index))
                                          result)))
                                   (indent (&body body)
                                     `(let ((*aris-indent* (1+ *aris-indent*)))
@@ -241,10 +241,10 @@ Examples:
                        ((case 1 "Empty pattern"
                           (null pattern))
                          (let ((*aris-indent* (1+ *aris-indent*)))
-                           (print "PATTERN is null and %s match!"
+                           (print "pattern is null and %s match!"
                              (if target
-                               "TARGET is not, so no"
-                               "so is TARGET,"))
+                               "target is not, so no"
+                               "so is target,"))
                            (if (null target)
                              (match-successfully)
                              (fail-to-match))))
@@ -252,14 +252,14 @@ Examples:
                        ((case 2 "Empty target"
                           (null target))
                          (let ((*aris-indent* (1+ *aris-indent*)))
-                           (print "TARGET is null and PATTERN isn't, no match!")
+                           (print "target is null and pattern isn't, no match!")
                            (fail-to-match)))
                        ;; If `pattern-head' is a verbatim element, match if it's equal to (car
                        ;; `target'):
                        ((case 3 "Verbatim element"
                           (pattern-head-is-verbatim?))
                          (let ((*aris-indent* (1+ *aris-indent*)))
-                           (print "pattern-head %s is a verbatim element." pattern-head)
+                           ;;(print "pattern-head %s is a verbatim element." pattern-head)
                            (if (heads-are-equal?)
                              (continue pattern-tail target-tail)
                              (fail-to-match))))
