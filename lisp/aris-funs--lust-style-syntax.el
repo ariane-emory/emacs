@@ -139,7 +139,7 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
   (when (not group)
-    (error "Invalid call, no pattern group for %s." call-patternl))
+    (error "Invalid call, no pattern group for %s." call-pattern))
 
   (message ">> Dispatch table for %s:" call-pattern)
   (dolist (pattern-case group)
