@@ -168,7 +168,10 @@ Examples:
                                  *match-pattern--verbatim-element?*))
                              (heads-are-equal? ()
                                (print "compare %s with %s..." pattern-head target-head)
-                               (equal pattern-head target-head))
+                               (let ((result (equal pattern-head target-head)))
+                                 (print "heads are %sequal%s." (if result "" "not ")
+                                   (if result ", consuming target-head" ""))
+                                 result))
                              (pattern-head-is-capture? ()
                                (elem-is-capture? pattern-head))
                              (pattern-head-is-verbatim? ()
@@ -329,7 +332,7 @@ Examples:
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          (let ((*aris-indent* 0))
+          (let ((*aris-indent* original-indent))
             (let ((match-result (matchrec pattern target 0 nil)))
               (print "Match result is %s." match-result)
 	            (when (car match-result)
