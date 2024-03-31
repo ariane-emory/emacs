@@ -148,7 +148,7 @@ Examples:
                         (pattern-head-is-atom? () (atom pattern-head)))
                ;; flet the remaining mutually referential functions:
                (cl-flet* ( (message (&rest args)
-                             (message "%s%s" (indent-string)
+                             (message "%s %s%s" (depth indent-string)
                                (apply #'format (car args) (cdr args))))
                            (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                              (let ((result
