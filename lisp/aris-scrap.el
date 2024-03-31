@@ -35,6 +35,19 @@
   ) ;; => (169 273 39)
 
 
+;; (insert
+;;   (pp (macroexpand-all
+;;         '(with-messages-2 "doing stuff" "the stuff"
+;;            (with-message-2 "doing things" "the things"
+;;              (indented-message-2 "boom"))))))
+
+;; (insert
+;;   (pp (macroexpand-all
+;;         '(with-messages-2 "screwing around"
+;;            (with-message-2 "doing things" 
+;;              (with-messages-2 "doing stuff" "doing the stuff"
+;;                (indented-message-2 "boom")))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message-2 (fmt &rest rest)
   (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
@@ -99,41 +112,28 @@ afterwards, returning the result of the last expression in `body'."
        ;; ,(if 1st-is-just-kw "JUST" "UNJUST")
        ;; ,(if is-double-message "DOUBLE" "SINGLE")
        (message "%s%s" indent-str ,start-message-string)
-       (let ((result ,@body))
-         ,@end-message-expr
-         result))))
+       (unwind-protect
+         (progn ,@body)
+         ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; (insert
-;;   (pp (macroexpand-all
-;;         '(with-messages-2 "doing stuff" "the stuff"
-;;            (with-message-2 "doing things" "the things"
-;;              (indented-message-2 "boom"))))))
 
 (insert
   (pp (macroexpand-all
-        '(with-messages-2 "screwing around"
-           (with-messages-2 "doing stuff" "doing the stuff"
-             (with-message-2 "doing things" 
-               (indented-message-2 "boom")))))))
-(let
-  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-    (*with-messages-indent* (1+ *with-messages-indent*)))
-  (message "%s%s" indent-str "Screwing around...")
-  (let ((result (let
-                  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-                    (*with-messages-indent* (1+ *with-messages-indent*)))
-                  (message "%s%s" indent-str "Doing stuff...")
-                  (let ((result (let
-                                  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-                                    (*with-messages-indent* (1+ *with-messages-indent*)))
-                                  (message "%s%s" indent-str "Doing things.")
-                                  (let ((result (indented-message-2 "boom")))
-                                    result))))
-                    (message "%s%s" indent-str "Done doing the stuff.")
-                    result))))
-    (message "%s%s" indent-str "Done screwing around.")
-    result))
+        '(with-messages-2 "doing stuff" "doing the stuff"
+           (indented-message-2 "boom")))))(let
+  ((indent-str
+     (make-string
+       (* 2 *with-messages-indent*)
+       32))
+    (*with-messages-indent*
+      (1+ *with-messages-indent*)))
+  (message "%s%s" indent-str "Doing stuff...")
+  (unwind-protect
+    (progn
+      (indented-message-2 "boom"))
+    (message "%s%s" indent-str "Done doing the stuff.")))
+
+
+
 
 
