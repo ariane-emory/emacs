@@ -56,7 +56,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; We'r going to use this all over, so use it early:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (use-package aris-funs-with-messages)
+  (use-package aris-funs--with-messages)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (with-messages "loading my settings"
@@ -150,13 +150,13 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Set up package manager and install/require packages:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (use-package-with-messages aris-configure-packages)
+    (use-package-with-messages aris-configure--packages)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; use aris-funs-setup-lisp early because so many other
     ;;   packages will try to call into it:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (use-package-with-messages aris-funs-setup-lisp :demand)
+    (use-package-with-messages aris-funs--setup-lisp :demand)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; use-packages (built-in):
@@ -860,18 +860,18 @@
     (with-messages "using my custom packages"
       (mapc
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
-        '( aris-funs-unsorted
-           aris-funs-match-pattern
-           aris-funs-lust-style-def
-           aris-funs-prettify-symbols
-           aris-funs-setup-lisp
-           aris-configure-key-bindings
-           aris-configure-tetris-keymap
-           aris-configure-global-abbrevs-table 
-           aris-configure-rainbow-cursor
-           aris-configure-xwidget-browse-menu
-           aris-mode-local-caps-lock
-           xah-lees-configure-emoji-fix))
+        '( aris-funs--unsorted
+           aris-funs--match-pattern
+           aris-funs--lust-style-def
+           aris-funs--prettify-symbols
+           aris-funs--setup-lisp
+           aris-configure--key-bindings
+           aris-configure--tetris-keymap
+           aris-configure--global-abbrevs-table 
+           aris-configure--rainbow-cursor
+           aris-configure--xwidget-browse-menu
+           aris-mode--local-caps-lock
+           xah-lees-configure--emoji-fix))
 
       (when (file-directory-p aris-trav-dir) (use-package-with-messages trav)))
 
