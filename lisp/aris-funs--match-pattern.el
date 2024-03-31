@@ -119,7 +119,7 @@ Examples:
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ( (original-indent *aris-indent*)
-         (*aris-indent--char* ?\-)
+         (*aris-indent--char* ?\ )
          (*aris-indent--size* 3))
     (cl-letf (((symbol-function 'print) #'indented-message))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
@@ -169,7 +169,7 @@ Examples:
                              (heads-are-equal? ()
                                (print "compare %s with %s..." pattern-head target-head)
                                (let ((result (equal pattern-head target-head)))
-                                 (print "heads are %sequal%s." (if result "" "not ")
+                                 (print "%sequal%s." (if result "" "not ")
                                    (if result ", consuming target-head" ""))
                                  result))
                              (pattern-head-is-capture? ()
@@ -213,7 +213,9 @@ Examples:
                                  (if (plural? label) "" "es"))
                                (let ( (matched (car (continue pattern-tail target)))
                                       (string label))
-                                 (print (if matched "%s matched!" "%s didn't match!") string)
+                                 (print
+                                   (if matched "%s matched!" "lookahead failed, %s didn't match!")
+                                   string)
                                  matched))
                              (pattern-tail-matches-target? ()
                                (lookahead target "pattern-tail"))
@@ -242,10 +244,13 @@ Examples:
                            ;; If `pattern' is null, match successfully when `target' is null too:
                            ((case 1 "Empty pattern" (null pattern))
                              (indent
-                               (print "pattern is null and %s match!"
+                               (print "pattern is null and %s match%s!"
                                  (if target
                                    "target is not, so no"
-                                   "so is target,"))
+                                   "so is target,")
+                                 (if target
+                                   ""
+                                   " succeeded"))
                                (if (null target)
                                  (match-successfully)
                                  (fail-to-match))))
