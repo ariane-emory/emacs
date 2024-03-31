@@ -241,12 +241,11 @@ Intelligence' but with several improvements."
                  (cl-macrolet ((case (index &rest rest)
                                  (let ((message (format "Trying case %s" index)))
                                    `(with-messages ,message
-                                      ,@rest))))
+                                      (let ((depth (1+ depth))) ,@rest)))))
                    (cond
                      ;; If `pattern' is null, match successfully when `target' is null too:
                      ((case 1
-                        (let ((depth (1+ depth)))
-                          (null pattern)))
+                        (null pattern))
                        (message "PATTERN is null and %s match!"
                          (if target
                            "TARGET is not, sono"
@@ -256,15 +255,13 @@ Intelligence' but with several improvements."
                          (fail-to-match)))
                      ;; Fail to match if `target' is null and `pattern' isn't:
                      ((case 2
-                        (let ((depth (1+ depth)))
-                          (null target)))
+                        (null target))
                        (message "TARGET is null and PATTERN isn't, no match!")
                        (fail-to-match))
                      ;; If `pattern-head' is a verbatim element, match if it's equal to (car
                      ;; `target'):
                      ((case 3
-                        (let ((depth (1+ depth)))
-                          (pattern-head-is-verbatim?)))
+                        (pattern-head-is-verbatim?))
                        (message "PATTERN-HEAD %s is a verbatim element." pattern-head)
                        (if (heads-are-equal?)
                          (continue pattern-tail target-tail)
@@ -272,10 +269,9 @@ Intelligence' but with several improvements."
                      ;; If `*match-pattern--target-elements-must-be-verbatim*' is set, then signal 
                      ;; an error if `target-head' isn't a verbatim element:
                      ((case 4
-                        (let ((depth (1+ depth)))
-                          (and
-                            *match-pattern--target-elements-must-be-verbatim*
-                            (not (elem-is-verbatim? target-head)))))
+                        (and
+                          *match-pattern--target-elements-must-be-verbatim*
+                          (not (elem-is-verbatim? target-head))))
                        (let ((complaint
                                (format "TARGET-HEAD %s is not a verbatim element."
                                  target-head)))
@@ -286,22 +282,19 @@ Intelligence' but with several improvements."
                      ;; If `pattern-head' isn't either a verbatim element or a capture,
                      ;; something has gone wrong:
                      ((case 5
-                        (let ((depth (1+ depth)))
-                          (pattern-head-is-invalid?)))
+                        (pattern-head-is-invalid?))
                        (error
                          "PATTERN-HEAD '%s' is an invalid element."
                          pattern-head))
                      ;; From here on, we know that `pattern-head' must be a capture.
                      ;; Case when `pattern-head' is tagged with the "anything" tag:
                      ((case 6
-                        (let ((depth (1+ depth)))
-                          (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*)))
+                        (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
                        (message "Head of PATTERN has 'anything' tag.")
                        (continue pattern-tail target-tail target-head))
                      ;; Case when `pattern-head' is tagged with the Kleene tag:
                      ((case 7
-                        (let ((depth (1+ depth)))
-                          (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*)))
+                        (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
                        (message "Head of PATTERN has Kleene tag.")
                        (cond
                          ((pattern-tail-matches-target-tail?)
@@ -319,13 +312,12 @@ Intelligence' but with several improvements."
                            (continue pattern target-tail target-head))))
                      ;; Case when `pattern-head' starts with predicate form:
                      ((case 8
-                        (let ((depth (1+ depth)))
-                          (and
-                            *match-pattern--capture-can-be-predicate*
-                            (apply (capture-tag-of-pattern-head) (list target-head)))))
+                        (and
+                          *match-pattern--capture-can-be-predicate*
+                          (apply (capture-tag-of-pattern-head) (list target-head))))
                        (continue pattern-tail target-tail target-head))
                      ;; Some unimplemented case happened, signal an error:
-                     ((with-messace "Case t" t)
+                     ((with-message "Case t" t)
                        (error "Unhandled case! Double-check your configuration.")))))))))
         (let ((match-result (matchrec pattern target 0 nil)))
           (message "Match result is %s." match-result)
@@ -351,7 +343,7 @@ Intelligence' but with several improvements."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Just a quick test that should match successfully with the default configuration:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
+(when t
   (aris-match-pattern--match-pattern
     '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   (aris-match-pattern--match-pattern
