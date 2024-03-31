@@ -16,7 +16,7 @@
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
   ;; buffer twice:
-  (setq *lust-style-def--pattern-dispatch-table* nil)
+  (def *lust-style-def--pattern-dispatch-table* nil)
 
   (def w 8)
   (def x (1+ w))
@@ -26,7 +26,7 @@
   (def (fib 1) 1)
   (def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
 
-  (setq result
+  (def result
     (list
       (fib (car z))
       (fib (cadr z))
