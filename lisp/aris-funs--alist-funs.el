@@ -21,6 +21,8 @@ Examples:
 (`aris-add-dots-to-alist' '((a . 1) (b 2) (c . 3)))
 ⇒ ((a . 1) (b . 2) (c . 3))"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (unless (proper-list-plist)
+    (error "Not a proper list!"))
   (mapr
     alist
     (lambda (pair)
@@ -51,6 +53,8 @@ Examples:
       (`aris-add-dots-to-alist'
         '((a 1) (b 2) (c 3)))))) ⇒ ((a 1) (b 2) (c 3))"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (unless (proper-list-plist)
+    (error "Not a proper list!"))
   (mapr
     alist
     (lambda (pair)
@@ -82,7 +86,8 @@ Examples:
     (`aris-remove-dots-from-alist'
       (`aris-add-dots-to-alist'
         '((a 1) (b 2) (c 3)))))) ⇒ ((a 1) (b 2) (c 3))"
-
+  (unless (proper-list-plist)
+    (error "Not a proper list!"))
   (let (result)
     (dolist (pair alist)
       (let* ( (key (car pair))
@@ -108,6 +113,8 @@ Examples:
 (`aris-add-dots-to-alist'
   (`aris-flatten-alist-keys' '((a 1) (b 2 2) (c 3) (d 4 5 6))))
 ⇒ ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))"
+  (unless (proper-list-plist)
+    (error "Not a proper list!"))
   (let (result)
     (dolist (pair alist)
       (let* ( (key (car pair))
