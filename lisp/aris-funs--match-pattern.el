@@ -223,10 +223,13 @@ Examples:
                (print "TARGET-HEAD %s is %sa verbatim element." target-head
                  (if (elem-is-verbatim? target-head) "" "not "))
                (cl-macrolet ((case (index &body body)
-                               (let ( (message-string (format "trying case %s" index))
-                                      (exit-message-string (format "trying case %s" index)))
-                                 `(with-messages ,message-string ,exit-message-string ,@body))
-                               ))
+                               `(progn
+                                  (print "Trying case %s..." ,index)
+                                  (let ((result (let ((*aris-indent* (1+ *aris-indent*))) ,@body)))
+                                    (if result
+                                      (print "Case %s matched!" ,index)
+                                      (print "Case %s failed to match." ,index))
+                                    result))))
                  (cond
                    ;; If `pattern' is null, match successfully when `target' is null too:
                    ((case 1 (null pattern))
