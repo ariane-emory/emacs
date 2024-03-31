@@ -139,11 +139,10 @@
   "Find the pattern case in group that matches the call pattern.."
   (when (not group)
     (error "Invalid call, no pattern group for %s." call-pattern))
-
+  (message "=====================================================================")
   (message ">> Dispatch table for %s:" call-pattern)
   (dolist (pattern-case group)
     (message "  %s" pattern-case))
-
   (let (result)
     (catch 'matched
       (dolist (pattern-case group)

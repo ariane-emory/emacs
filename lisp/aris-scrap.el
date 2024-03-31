@@ -22,7 +22,7 @@
     (def z (list w x))
     (def (fib 0) 0)
     (def (fib 1) 1)
-    (def (fib 8) w)
+    ;;(def (fib 8) w)
     (def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
 
     w
@@ -34,13 +34,65 @@
         (fib 10)))
     )
   ) ;; => (169 273 39)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (insert
   (pp (macroexpand-all
         '(with-messages "doing things" "doing the things"
            (with-messages "doing stuff" "doing the stuff"
              (indented-message "boom")
-             (indented-message "bang"))))))
+             (indented-message "bang"))))))(let
+  ((indent-string
+     (make-string
+       (* *aris-indent* *aris-indent--size*)
+       *aris-indent--char*))
+    (*aris-indent*
+      (1+ *aris-indent*)))
+  (unwind-protect
+    (progn
+      (message "%s%s" indent-string "Doing things...")
+      (let
+        ((indent-string
+           (make-string
+             (* *aris-indent* *aris-indent--size*)
+             *aris-indent--char*))
+          (*aris-indent*
+            (1+ *aris-indent*)))
+        (unwind-protect
+          (progn
+            (message "%s%s" indent-string "Doing stuff...")
+            (indented-message "boom")
+            (indented-message "bang"))
+          (apply #'message "%sDone %s%s." indent-string
+            '("d" "oing the stuff")))))
+    (apply #'message "%sDone %s%s." indent-string
+      '("d" "oing the things"))))
+(let
+  ((indent-string
+     (make-string
+       (* *aris-indent* *aris-indent--size*)
+       *aris-indent--char*))
+    (*aris-indent*
+      (1+ *aris-indent*)))
+  (unwind-protect
+    (progn
+      (message "%s%s" indent-string "Doing things...")
+      (let
+        ((indent-string
+           (make-string
+             (* *aris-indent* *aris-indent--size*)
+             *aris-indent--char*))
+          (*aris-indent*
+            (1+ *aris-indent*)))
+        (unwind-protect
+          (progn
+            (message "%s%s" indent-string "Doing stuff...")
+            (indented-message "boom")
+            (indented-message "bang"))
+          (apply #'message "%sDone %s%s." indent-string
+            '("d" "oing the stuff")))))
+    (apply #'message "%sDone %s%s." indent-string
+      '("d" "oing the things"))))
+
