@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *with-messages-indent* 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,7 +18,7 @@ afterwards, returning the result of the last expression in `body'."
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
           (second-message-string (when is-double-message (cadr args)))
           (body (if 1st-is-just-kw (cddr args) (cdr args)))
-          (indent-str (make-string (* 2 *with-messages-indent*) ??))
+          (indent-str (make-string (* 2 *with-messages-indent*) ?_))
           (message-string (if (stringp message-string) message-string (eval message-string)))
           (message-string-head (substring message-string 0 1))
           (message-string-tail (substring message-string 1))
@@ -57,11 +57,6 @@ afterwards, returning the result of the last expression in `body'."
          ,@end-message-expr
          result))))
 
-(with-messages "doing stuff" "that"
-  (with-messages "doing them" "those"
-    (with-messages "doing them" "those" (message "boom"))))
-(with-messages "sleeping" (message "bang"))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-messages (&rest args)
   `(with-messages (format "using %s" ',(car args))
@@ -74,8 +69,9 @@ afterwards, returning the result of the last expression in `body'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
-  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
-    (apply 'message (concat indent-str fmt) rest)))
+  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\,)))
+    (apply 'message
+      (concat (format "[%s]" *with-messages-indent*) indent-str fmt) rest)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--with-messages)
