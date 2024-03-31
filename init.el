@@ -309,6 +309,8 @@
         (setq show-paren-mode t)
         (setq source-directory (expand-file-name "~/Code/3p/emacs/src")))
 
+      (use-package-with-message pp :demand)
+
       (use-package-with-message sh-script
         :diminish shell-script-mode)
 
