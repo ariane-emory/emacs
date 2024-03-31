@@ -39,7 +39,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun merge-duplicate-alist-keys (alist &optional (preeserve-dots t))
+(cl-defun merge-duplicate-alist-keys (alist &optional (use-dots t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A helper function used by aris-match-pattern to merge the values of duplicate
  ALIST.
@@ -51,25 +51,28 @@ Example:
     (dolist (pair alist)
       (let* ( (key (car pair))
               (is-dotted (-cons-pair? pair))
-              (value (if is-dotted (cdr pair) (message "pair not dotted! %s" pair) (cadr pair)))
+              (value (if is-dotted (cdr pair) (cadr pair)))
               (existing (assoc key result)))
         (if existing
           (setcdr existing (nconc (cdr existing) (list value)))
           (push (cons key (list value)) result))))
     (message "intermediate: %s" result)
-    (nreverse
-      (mapcar
-        (lambda (pair)
-          (if (length= (cdr pair) 1)
-            (progn
-              (message "pair: %s" pair)
-              (cons (car pair) (car (cdr pair))))
-            pair))
-        result))))
+    (let ((result
+            (if (not use-dots)
+              result
+              (mapcar
+                (lambda (pair)
+                  (if (length> (cdr pair) 1)
+                    pair
+                    (cons (car pair) (car (cdr pair)))))
+                result))))
+      (nreverse result))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(merge-duplicate-alist-keys '((v . 1) (w . 2)  (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8)))
-(merge-duplicate-alist-keys '((v 1) (w 2)  (w 3) (x 4) (y 5) (y 6) (y 7) (z 8)))
+(merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8)) nil)
+(merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8)) t)
+(merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8)) nil)
+(merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8)) t)
 
 '((v . 1) (w 2 3) (x . 4) (y 5 6 7) (z . 8))
 (message "======")
