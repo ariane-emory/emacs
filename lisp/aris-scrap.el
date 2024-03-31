@@ -15,10 +15,9 @@
 ;; buffer twice:
 (setq *lust-style-def--pattern-dispatch-table* nil)
 
-;; Insertion order needs to be reversed for now. Fix this!
-(def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
-(def (fib 1) 1)
 (def (fib 0) 0)
+(def (fib 1) 1)
+(def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
 
 (setq final (fib 10))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
