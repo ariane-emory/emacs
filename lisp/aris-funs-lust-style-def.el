@@ -39,18 +39,19 @@
      (message "DEF: Defining pattern %s." ',pattern)
      (lust-style-def--bind-symbol-to-pattern-dispatcher-fun  ',(car pattern))
      (let ((group (assoc ',(car pattern) *lust-style-def--pattern-dispatch-table*)))
-       (if (not group)
-         (progn
-           (message "DEF:   Adding pattern group %s" ',(car pattern))
-           (push (cons ',(car pattern) (list (cons ',pattern ',body)))
-             *lust-style-def--pattern-dispatch-table*))
+       (if group
          (let ((pattern-case (assoc ',pattern (cdr group))))
            (message "DEF:   Found pattern-case %s in group %s"
              (or pattern-case "<none>") group)
            (if pattern-case
              (error "DEF:   Pattern %s already defined." ',pattern))
-           (setcdr group (cons (cons ',pattern ',body) (cdr group)))
-           (message "DEF: Added pattern-case %s to group %s" ',pattern group))))
+           (setcdr group (nconc (cdr group) (list (cons ',pattern ',body))))
+           ;;           (setcdr group (cons (cons ',pattern ',body) (cdr group)))
+           (message "DEF: Added pattern-case %s to group %s" ',pattern group))
+         (progn
+           (message "DEF:   Adding pattern group %s" ',(car pattern))
+           (push (cons ',(car pattern) (list (cons ',pattern ',body)))
+             *lust-style-def--pattern-dispatch-table*))))
      *lust-style-def--pattern-dispatch-table*))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
