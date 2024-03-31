@@ -73,11 +73,11 @@ last expression in `body'."
           (end-message-string
             (cond 
               (is-double-message
-                (format "Done "
-                  (downcase second-message-string-head) second-message-string-tail "."))
+                (format "Done %s%s."
+                  (downcase second-message-string-head) second-message-string-tail))
               ((not 1st-is-just-kw)
-                (format "Done "
-                  (downcase message-string-head) message-string-tail "."))))
+                (format "Done %s%s."
+                  (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (unless 1st-is-just-kw
               (list `(message "%s%s" indent-str ,end-message-string))))
@@ -102,33 +102,5 @@ last expression in `body'."
            (with-messages "doing stuff" "doing the stuff"
              (indented-message "boom")
              (indented-message "bang"))))))
-(let
-  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-    (*with-messages-indent* (1+ *with-messages-indent*)))
-  (unwind-protect
-    (progn
-      (message "%s%s" indent-str "Doing things...")
-      (let
-        ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-          (*with-messages-indent* (1+ *with-messages-indent*)))
-        (unwind-protect
-          (progn
-            (message "%s%s" indent-str "Doing stuff...")
-            (indented-message "boom")
-            (indented-message "bang"))
-          (message "%s%s" indent-str "Done "))))
-    (message "%s%s" indent-str "Done ")))
-
-
-
-
-
-
-
-
-
-
-
-
 
 
