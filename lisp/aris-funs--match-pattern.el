@@ -234,9 +234,8 @@ Intelligence' but with several improvements."
                              (lookahead target-tail "tails")))
                  ;; Body of matchrec:
                  (message "Matching %s against %s with acc %s..." pattern target accumulator)
-                 (if (elem-is-verbatim? target-head)
-                   (message "TARGET-HEAD %s is a verbatim element." target-head)
-                   (message "TARGET-HEAD %s is not a verbatim element." target-head))
+                 (message "TARGET-HEAD %s is %sa verbatim element." target-head
+                   (if (elem-is-verbatim? target-head) "" "not "))
                  (setq depth (1+ depth))
                  (cl-macrolet ((case (index &rest rest)
                                  (let ((message (format "Trying case %s" index)))
@@ -244,8 +243,7 @@ Intelligence' but with several improvements."
                                       (let ((depth (1+ depth))) ,@rest)))))
                    (cond
                      ;; If `pattern' is null, match successfully when `target' is null too:
-                     ((case 1
-                        (null pattern))
+                     ((case 1 (null pattern))
                        (message "PATTERN is null and %s match!"
                          (if target
                            "TARGET is not, sono"
@@ -254,14 +252,12 @@ Intelligence' but with several improvements."
                          (match-successfully)
                          (fail-to-match)))
                      ;; Fail to match if `target' is null and `pattern' isn't:
-                     ((case 2
-                        (null target))
+                     ((case 2 (null target))
                        (message "TARGET is null and PATTERN isn't, no match!")
                        (fail-to-match))
                      ;; If `pattern-head' is a verbatim element, match if it's equal to (car
                      ;; `target'):
-                     ((case 3
-                        (pattern-head-is-verbatim?))
+                     ((case 3 (pattern-head-is-verbatim?))
                        (message "PATTERN-HEAD %s is a verbatim element." pattern-head)
                        (if (heads-are-equal?)
                          (continue pattern-tail target-tail)
@@ -281,20 +277,17 @@ Intelligence' but with several improvements."
                            (fail-to-match))) )
                      ;; If `pattern-head' isn't either a verbatim element or a capture,
                      ;; something has gone wrong:
-                     ((case 5
-                        (pattern-head-is-invalid?))
+                     ((case 5 (pattern-head-is-invalid?))
                        (error
                          "PATTERN-HEAD '%s' is an invalid element."
                          pattern-head))
                      ;; From here on, we know that `pattern-head' must be a capture.
                      ;; Case when `pattern-head' is tagged with the "anything" tag:
-                     ((case 6
-                        (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
+                     ((case 6 (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
                        (message "Head of PATTERN has 'anything' tag.")
                        (continue pattern-tail target-tail target-head))
                      ;; Case when `pattern-head' is tagged with the Kleene tag:
-                     ((case 7
-                        (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
+                     ((case 7 (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
                        (message "Head of PATTERN has Kleene tag.")
                        (cond
                          ((pattern-tail-matches-target-tail?)
