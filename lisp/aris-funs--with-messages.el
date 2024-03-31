@@ -8,13 +8,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *aris-indent-char* ?\_  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *aris-indent--char* ?\_  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
 
-(defcustom *aris-indent-size* 2
-  "The number of `*aris-indent-char*' characters used for each level of indentation in `with-messages'."
+(defcustom *aris-indent--size* 2
+  "The number of `*aris-indent--char*' characters used for each level of indentation in `with-messages'."
   :group 'with-messages
   :type 'integer)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,8 +63,8 @@ last expression in `body' and printing a variant message afterwards."
               (t (cdr args)))))
     `(let ((indent-string
              (make-string
-               (* *aris-indent* *aris-indent-size*)
-               *aris-indent-char*))
+               (* *aris-indent* *aris-indent--size*)
+               *aris-indent--char*))
             (*aris-indent* (1+ *aris-indent*)))
        (unwind-protect
          (progn
@@ -85,8 +85,8 @@ last expression in `body'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
   (let ((indent-string
-          (make-string (* *aris-indent* *aris-indent-size*)
-            *aris-indent-char*)))
+          (make-string (* *aris-indent* *aris-indent--size*)
+            *aris-indent--char*)))
     (apply 'message (concat indent-string fmt) rest)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
