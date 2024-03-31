@@ -4,7 +4,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
 (require 'dash)
-(require 'aris-funs--with-messages)
 (require 'aris-funs--alist-funs)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq lexical-binding nil)
@@ -243,11 +242,7 @@ Examples:
                                (let ((message-string (format "Trying case %s" index)))
                                  `(progn
                                     (message ,message-string)
-                                    (let (;; (depth (1+ depth))
-                                           )
-                                      ,@rest))
-                                 ;; `(let ((depth (1+ depth))) ,@rest)
-                                 )))
+                                    ,@rest))))
                  (cond
                    ;; If `pattern' is null, match successfully when `target' is null too:
                    ((case 1 (null pattern))
@@ -317,8 +312,7 @@ Examples:
                         (apply (capture-tag-of-pattern-head) (list target-head))))
                      (continue pattern-tail target-tail target-head))
                    ;; Some unimplemented case happened, signal an error:
-                   ((with-message "Case t" t)
-                     (error "Unhandled case! Double-check your configuration."))))))))
+                   (t (error "Unhandled case! Double-check your configuration."))))))))
         (let ((match-result (matchrec pattern target 0 nil)))
           (message "Match result is %s." match-result)
 	        (when (car match-result)
