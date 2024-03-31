@@ -205,19 +205,15 @@ Examples:
                                    (if (eq value :NOT-SUPPLIED)
                                      accumulator
                                      (let ((kvp (make-kvp value)))
-                                       (print "Accumulating %s." kvp)
+                                       (print "accumulating %s." kvp)
                                        (cons kvp accumulator))))))
                              (lookahead (target label)
-                               (print "Looking ahead to see if %s match%s..."
+                               (print "looking ahead to see if %s match%s..."
                                  label
                                  (if (plural? label) "" "es"))
-                               (let ( ;; (depth (1+ depth))
-                                      (matched (car (continue pattern-tail target)))
+                               (let ( (matched (car (continue pattern-tail target)))
                                       (string label))
-                                 ;; (setq depth (1- depth))
-                                 (print
-                                   (if matched "%s matched!" "%s didn't match!")
-                                   string)
+                                 (print (if matched "%s matched!" "%s didn't match!") string)
                                  matched))
                              (pattern-tail-matches-target? ()
                                (lookahead target "pattern-tail"))
