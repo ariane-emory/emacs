@@ -117,20 +117,23 @@
   (cond
     ((symbolp (cadr match-result))
       (let ((eval-result (eval (cadr match-result))))
-        (message "Match result is symbol, evaluating %s and returning %s"
-          (cadr match-result) eval-result)
+        (message
+          "Match result %s's pattern case is a symbol, evaluating %s and returning %s."
+          match-result (cadr match-result) eval-result)
         eval-result))
     ((atom (cadr match-result))
       (progn
-        (message "Match result is an atom, returning %s" (cadr match-result))
+        (message "Match result %s's pattern case is an atom, returning %s."
+          match-result (cadr match-result))
         (cadr match-result)))
     (t
       (let ((decorated-result (cons 'let match-result)))
-        (message "Evaluating decorated pattern case %s" decorated-result)
+        (message "Evaluating decorated pattern case %s." decorated-result)
         (let ((result (eval decorated-result)))
-          (message "Evaluated match pattern case %s" result)
+          (message "Match result %s's pattern case's body returned %s."
+            match-result result)
           result)))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -139,10 +142,15 @@
   "Find the pattern case in group that matches the call pattern.."
   (when (not group)
     (error "Invalid call, no pattern group for %s." call-pattern))
-  (message "=====================================================================")
+  (message (concat
+             "================================================"
+             "================================================"))
   (message ">> Dispatch table for %s:" call-pattern)
   (dolist (pattern-case group)
     (message "  %s" pattern-case))
+  (message (concat
+             "================================================"
+             "================================================"))
   (let (result)
     (catch 'matched
       (dolist (pattern-case group)
@@ -165,7 +173,7 @@
                (*match-pattern--capture-can-be-predicate* nil)
                (*match-pattern--target-elements-must-be-verbatim* nil)
                (*match-pattern--use-dotted-pairs-in-result* nil))
-          (message "Trying #pattern %s on target %s?" pattern call-pattern)
+          (message "Trying pattern %s on target %s?" pattern call-pattern)
           (let ((match-result (match-pattern pattern call-pattern)))
             ;; (message "Match result reveived ist: %s" match-result)
             (when match-result
@@ -173,9 +181,15 @@
                 (setq result (cons match-result (cdr pattern-case)))))))))
     (if result
       (progn
-        (message "=====================================================================")
+        (message
+          (concat
+            "================================================"
+            "================================================"))
         (message "Found match for %s = %s" call-pattern result)
-        (message "=====================================================================")
+        (message
+          (concat
+            "================================================"
+            "================================================"))
         result)
       (error "No pattern case found for %s." call-pattern))))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
