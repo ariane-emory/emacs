@@ -1,25 +1,30 @@
 ;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *with-messages-indent* 0)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun indented-message (fmt &rest rest)
-  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
-    (apply 'message (concat indent-str fmt) rest)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgroup with-messages nil "The `with-messages' macro and its relatives.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-message (&rest args)
-  "Print `message-string' before evaluating `body', returning the result of the
-last expression in `body'."
-  `(with-messages :just ,@args))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defcustom *with-messages-indent-char* ?\  ;; DO NOT NEGLECT THE SPAC!
+  "The character used for indentation in `with-messages'."
+  :group 'with-messages
+  :type 'character)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *with-messages-indent* 0 "The current indentation level in `with-messages'.
+This variable is not meant to be customized." )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-messages (&rest args)
+  "Print `message-string' before evaluating `body', returning the result of the
+last expression in `body' and printing a variant message afterwards."
   (let* ( (1st-is-just-kw (eql :just (car args)))
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
@@ -37,23 +42,22 @@ last expression in `body'."
               (upcase message-string-head)
               message-string-tail
               (if 1st-is-just-kw "." "...")))
-          (end-message-string
+          (end-message-fmt-args
             (cond 
               (is-double-message
-                (format "Done %s%s."
-                  (downcase second-message-string-head) second-message-string-tail))
+                (list (downcase second-message-string-head) second-message-string-tail))
               ((not 1st-is-just-kw)
-                (format "Done %s%s."
-                  (downcase message-string-head) message-string-tail))))
+                (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (unless 1st-is-just-kw
-              (list `(message "%s%s" indent-str ,end-message-string))))
+              (list `(apply #'message "%sDone %s%s." indent-str ',end-message-fmt-args))))
           (body
             (cond
               (is-double-message (cddr args))
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
-    `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
+    `(let ( (indent-str
+              (make-string (* 2 *with-messages-indent*) *with-messages-indent-char*))
             (*with-messages-indent* (1+ *with-messages-indent*)))
        (unwind-protect
          (progn
@@ -64,15 +68,32 @@ last expression in `body'."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro with-message (&rest args)
+  "Print `message-string' before evaluating `body', returning the result of the
+last expression in `body'."
+  `(with-messages :just ,@args))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun indented-message (fmt &rest rest)
+  (let ((indent-str (make-string (* 2 *with-messages-indent*) *with-messages-indent-char*)))
+    (apply 'message (concat indent-str fmt) rest)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-messages (&rest args)
   `(with-messages (format "using %s" ',(car args))
      (use-package ,@args)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-message (&rest args)
   `(with-message (format "using %s" ',(car args))
      (use-package ,@args)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
