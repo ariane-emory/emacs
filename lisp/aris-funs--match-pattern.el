@@ -118,7 +118,8 @@ Examples:
 
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (let ( (*aris-indent--char* ?\-)
+  (let ( (original-indent *aris-indent*)
+         (*aris-indent--char* ?\-)
          (*aris-indent--size* 3))
     (cl-letf (((symbol-function 'print) #'indented-message))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
@@ -226,22 +227,18 @@ Examples:
                    (let ((*aris-indent* (1+ *aris-indent*)))
                      (print "target-head %s is %sa verbatim element." target-head
                        (if (elem-is-verbatim? target-head) "" "not "))
-                     (cl-macrolet ( (indent (&body body)
-                                      `(let ((*aris-indent* (1+ *aris-indent*)))
-                                         ,@body))
-                                    (undent (&body body)
-                                      `(let ((*aris-indent* (1- *aris-indent*)))
-                                         ,@body)))
-                       (cl-macrolet ( (case (index descr &body body)
-                                        `(progn
-                                           (print "trying case %s: %s..." ,index ,descr)
-                                           (let ((result
-                                                   (indent ,@body)))
-                                             (if result
-                                               (print "case %s applies!" ,index)
-                                               (print "case does not apply."))
-                                             ;; (print "case %s does not apply." ,index)
-                                             result))))
+                     (cl-macrolet ((indent (&body body)
+                                     `(let ((*aris-indent* (1+ *aris-indent*))) ,@body)))
+                       (cl-macrolet ((case (index descr &body body)
+                                       `(progn
+                                          (print "trying case %s: %s..." ,index ,descr)
+                                          (let ((result
+                                                  (indent ,@body)))
+                                            (if result
+                                              (print "case %s applies!" ,index)
+                                              (print "case does not apply."))
+                                            ;; (print "case %s does not apply." ,index)
+                                            result))))
                          (cond
                            ;; If `pattern' is null, match successfully when `target' is null too:
                            ((case 1 "Empty pattern" (null pattern))
@@ -332,23 +329,24 @@ Examples:
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          (let ((match-result (matchrec pattern target 0 nil)))
-            (print "Match result is %s." match-result)
-	          (when (car match-result)
-	            (let ((match-result (cdr match-result)))
-	              ;;(print "Cdr of match result is %s." match-result)
-	              (if (not match-result)
-		              ;; If the match succeeded but there were no captures, just return t:
-		              t
-		              (print "Extracted match result %s." match-result)
-		              (let ((match-result
-			                    (if *match-pattern--merge-duplicate-alist-keys*
-			                      (nreverse (aris-merge-duplicate-alist-keys match-result))
-			                      match-result)))
-		                (print "Post-merge match result %s." match-result)
-		                (if *match-pattern--use-dotted-pairs-in-result*
-		                  (aris-add-dots-to-alist match-result)
-		                  match-result)))))))))))
+          (let ((*aris-indent* 0))
+            (let ((match-result (matchrec pattern target 0 nil)))
+              (print "Match result is %s." match-result)
+	            (when (car match-result)
+	              (let ((match-result (cdr match-result)))
+	                ;;(print "Cdr of match result is %s." match-result)
+	                (if (not match-result)
+		                ;; If the match succeeded but there were no captures, just return t:
+		                t
+		                (print "Extracted match result %s." match-result)
+		                (let ((match-result
+			                      (if *match-pattern--merge-duplicate-alist-keys*
+			                        (nreverse (aris-merge-duplicate-alist-keys match-result))
+			                        match-result)))
+		                  (print "Post-merge match result %s." match-result)
+		                  (if *match-pattern--use-dotted-pairs-in-result*
+		                    (aris-add-dots-to-alist match-result)
+		                    match-result))))))))))))
                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -359,15 +357,25 @@ Examples:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Just a quick test that should match successfully with the default configuration:
-;; ⇒
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when t
   (setq *match-pattern--use-dotted-pairs-in-result* t)
+  
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
+
   (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ;; ⇒ t
+
   (setq *match-pattern--use-dotted-pairs-in-result* nil)
+
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22)))
+  ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
+
+  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ;; ⇒ t
+  )
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
