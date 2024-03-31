@@ -35,76 +35,77 @@ Examples:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *match-pattern--init-fun* nil
-  "The function to call to initialize a new match."
+  "The function `match-pattern' calls to initialize a new match."
   :group 'match-pattern
   :type 'function)
 
 (defcustom *match-pattern--merge-duplicate-alist-keys* t
-  "Whether to merge the values of duplicate keys in the result alist."
+  "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
   :group 'match-pattern
   :type 'boolean)
 
 (defcustom *match-pattern--kleene-tag* '*
-  "The symbol used by match-pattern to represent a Kleene star, matching 0 or more times."
+  "The symbol used by `match-pattern' to represent a Kleene star, matching 0 or more times."
   :group 'match-pattern
   :type 'symbol)
 
 ;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
 (defcustom *match-pattern--anything-tag* '? 
-  "The symbol used by match-pattern to represent a wildcard, matching any single item in
+  "The symbol used by `match-pattern' to represent a wildcard, matching any single item in
 TARGET."
   :group 'match-pattern
   :type 'symbol)
 
 (defcustom *match-pattern--get-capture-symbol-fun* #'cdr
-  "The function used by match-pattern to extract the symbol from a capture."
+  "The function used by `match-pattern' to extract the symbol from a capture."
   :group 'match-pattern
   :type 'function)
 
 (defcustom *match-pattern--get-capture-tag-fun* #'car
-  "The function used by match-pattern to extract the 'tag' from a capture element."
+  "The function used by `match-pattern' to extract the 'tag' from a capture element."
   :group 'match-pattern
   :type 'function)
 
 (defcustom *match-pattern--capture-can-be-predicate* t
-  "Whether a capture's 'tag' is allowed to be a predicate function."
+  "Whether a capture's 'tag' in th PATTERN argument to `match-pattern' is
+allowed to be a predicate function."
   :group 'match-pattern
   :type 'boolean)
 
 (defcustom *match-pattern--capture-element?* #'-cons-pair?
-  "The function used by match-pattern to determine if a PATTERN element
+  "The function used by `match-pattern' to determine if a PATTERN element
 represents a capture. By default, true pairs are considered captures."
   :group 'match-pattern
   :type 'function)
 
 (defcustom *match-pattern--verbatim-element?* nil 
-  "The function used by match-pattern to determine if a PATTERN element is a verbatim
+  "The function used by `match-pattern' to determine if a PATTERN element is a verbatim
 (non-capturing).  element. By default any element that isn't a capture element is a
 verbatim element."
   :group 'match-pattern
   :type 'function)
 
 (defcustom *match-pattern--invalid-element?* nil
-  "The function used by match-pattern to determine if a PATTERN element is an illegal
+  "The function used by `match-pattern' to determine if a PATTERN element is an illegal
 element. By default, any element that is neither a capture element or a verbatim
 element is an invalid element."
   :group 'match-pattern
   :type 'function)
 
 (defcustom *match-pattern--target-elements-must-be-verbatim* t
-  "Whether the elements of  TARGET list must be verbatim elements."
+  "Whether the elements of  the TARGET argument to `match-pattern' must be verbatim elements."
   :group 'match-pattern
   :type 'boolean)
 
 (defcustom *match-pattern--signal-error-if-target-elements-is-not-verbatim* t
-  "Whether to signal an error (or merely fail to match) if a non-verbatim TARGET
-element is encountered. This setting only applies when
+  "Whether `match-pattern' shoud signal an error (or merely fail to match) if a
+non-verbatim TARGET element is encountered. This setting only applies when
 *MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
   :group 'match-pattern
   :type 'boolean)
 
 (defcustom *match-pattern--use-dotted-pairs-in-result* nil
-  "Whether to use dotted pairs in the result alist."
+  "Whether `match-pattern' should use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -309,12 +310,12 @@ Intelligence' but with several improvements."
                 (message "Extracted match result %s." match-result)
                 (let ((match-result
                         (if *match-pattern--merge-duplicate-alist-keys*
-                          (nreverse (merge-duplicate-alist-keys match-result))
+                          (nreverse (aris-merge-duplicate-alist-keys match-result))
                           match-result)))
                   (message "Post-merge match result %s." match-result)
                   (if *match-pattern--use-dotted-pairs-in-result*
                     (add-dots-to-alist match-result)
-                    match-result)
+                    aris-match-result)
                   )))))))))
                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

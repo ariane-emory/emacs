@@ -64,3 +64,43 @@
 
 
 
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun remove-dots-from-alist (alist)
+  "Turn  dotted pairs in ALIST into length 2 lists.
+
+Examples:
+(remove-dots-from-alist '((a . 1) (b . 2) (c . 3) (d . 4)))
+⇒ ((a 1) (b 2) (c 3) (d 4))
+
+(remove-dots-from-alist '((a . 1) (b 2 2) (c . 3) (d 4)))
+⇒ ((a 1) (b 2 2) (c 3) (d 4))
+
+(remove-dots-from-alist '((a 1) (b 2 2) (c 3) (d 4)))
+⇒ ((a 1) (b 2 2) (c 3) (d 4))"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (mapr
+    alist
+    (lambda (pair)
+      (message "pair %s"pair)
+      (cond
+        ((-cons-pair? pair)
+          (cons (car pair) (list (cdr pair))))
+        ((atom pair) (error "Improper alist."))
+        (t pair)))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(remove-dots-from-alist '((a . 1) (b . 2) (c . 3) (d . 4)))
+⇒ ((a 1) (b 2) (c 3) (d 4))
+
+(remove-dots-from-alist '((a . 1) (b 2 2) (c . 3) (d 4)))
+⇒ ((a 1) (b 2 2) (c 3) (d 4))
+
+(remove-dots-from-alist '((a 1) (b 2 2) (c 3) (d 4)))
+⇒ ((a 1) (b 2 2) (c 3) (d 4))
+
+
+setq 
