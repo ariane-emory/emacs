@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *with-messages-indent-char* ?\-  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *with-messages-indent-char* ?\_  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
