@@ -224,9 +224,8 @@ Examples:
                  (if (elem-is-verbatim? target-head) "" "not "))
                (cl-macrolet ((case (index &rest rest)
                                `(let ((message-string (format "Trying case %s" ,index)))
-                                  (progn
-                                    (print message-string)
-                                    ,@rest))))
+                                  (print message-string)
+                                  ,@rest)))
                  (cond
                    ;; If `pattern' is null, match successfully when `target' is null too:
                    ((case 1 (null pattern))
