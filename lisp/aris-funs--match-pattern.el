@@ -310,7 +310,9 @@ Examples:
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (continue pattern-tail target-tail target-head)))
                        ;; Some unimplemented case happened, signal an error:
-                       (t (error "Unhandled case! Double-check your configuration.")))))))))
+                       ((case 9 t)
+                         (let ((*aris-indent* (1+ *aris-indent*)))
+                           (error "Unhandled case! Double-check your configuration."))))))))))
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
