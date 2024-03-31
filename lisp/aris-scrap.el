@@ -14,6 +14,8 @@
 ;; 'Pattern blah already defined' errors if we evaluate this
 ;; buffer twice:
 (progn
+  (require 'aris-funs--lust-style-def)
+  
   (setq *lust-style-def--pattern-dispatch-table* nil)
 
   (def w 8)
