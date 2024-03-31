@@ -32,48 +32,77 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define functions with a Lust-style syntax:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-def--bind-to-pattern-dispatcher-fun (pattern-head-symbol)
+(defmacro lust-style-def--def (pattern &rest body) 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Define a function call pattern case using a Lust-style syntax."
+  `(progn
+     (message "DEF: Defining pattern %s." ',pattern)
+     (lust-style-def--bind-symbol-to-pattern-dispatcher-fun  ',(car pattern))
+     (let ((group (assoc ',(car pattern) *lust-style-def--pattern-dispatch-table*)))
+       (if (not group)
+         (progn
+           (message "DEF:   Adding pattern roup %s" ',(car pattern))
+           (push (cons ',(car pattern) (list (cons ',pattern ',body)))
+             *lust-style-def--pattern-dispatch-table*))
+         (let ((pattern-case (assoc ',pattern (cdr group))))
+           (message "DEF:   Found pattern-case %s in group %s"
+             (or pattern-case "<none>") group)
+           (if pattern-case
+             (error "DEF:   Pattern %s already defined." ',pattern))
+           (setcdr group (cons (cons ',pattern ',body) (cdr group)))
+           (message "DEF: Added pattern-case %s to group %s" ',pattern group))))
+     *lust-style-def--pattern-dispatch-table*))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'def 'lust-style-def--def)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun lust-style-def--bind-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
-  (message "BINDING DISPATCH FUN FOR '%s!" pattern-head-symbol)
-  (unless (symbolp pattern-head-symbol)
-    (error "%s is not a symbol." pattern-head-symbol))
-  (let* ((already-bound (fboundp pattern-head-symbol)))
+  (message "BINDING DISPATCH FUN FOR '%s!" symbol)
+  (unless (symbolp symbol)
+    (error "%s is not a symbol." symbol))
+  (let* ((already-bound (fboundp symbol)))
     (when (and
             already-bound
-            (not (get (function pattern-head-symbol) :PATTERN-DISPATCHER-FUN)))
+            (not (get (function symbol) :PATTERN-DISPATCHER-FUN)))
       (error (concat
                "Logic error: function %s already bound "
                "elsewherm, fmakunbound it first!")
-        pattern-head-symbol))
+        symbol))
     (message "%sBINDING DISPATCH FUN FOR '%s!"
-      (if already-bound "RE" "") pattern-head-symbol)
-    (fset pattern-head-symbol
-      (lust-style-def--make-pattern-dispatcher-fun pattern-head-symbol))
+      (if already-bound "RE" "") symbol)
+    (fset symbol
+      (lust-style-def--make-pattern-dispatcher-fun symbol))
     (put
-      (function pattern-head-symbol)
+      (function symbol)
       :PATTERN-DISPATCHER-FUN
-      pattern-head-symbol)))
+      symbol)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-def--get-patterns-for (pattern-head-symbol)
+(defun lust-style-def--get-patterns-for-symbol (symbol)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cdr (assoc pattern-head-symbol *lust-style-def--pattern-dispatch-table*)))
+  (cdr (assoc symbol *lust-style-def--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-def--make-pattern-dispatcher-fun (pattern-head-symbol)
+(defun lust-style-def--make-pattern-dispatcher-fun (symbol)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (lambda (&rest args)
     "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
-    (let* ((function (function pattern-head-symbol))
-            (pattern-head-symbol (get function :PATTERN-DISPATCHER-FUN))
-            (group (lust-style-def--get-patterns-for pattern-head-symbol))
-            (call-pattern (cons pattern-head-symbol args)))
+    (let* ((function (function symbol))
+            (symbol (get function :PATTERN-DISPATCHER-FUN))
+            (group (lust-style-def--get-patterns-for-symbol symbol))
+            (call-pattern (cons symbol args)))
       (lust-style-def--eval-match-result
         (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -144,34 +173,6 @@ because we're gong to be stshing stuff in their symbol properties."
       (error "No pattern case found for %s." call-pattern))))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro lust-style-def--def (pattern &rest body) 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Define a function call pattern case using a Lust-style syntax."
-  `(progn
-     (message "DEF: Defining pattern %s." ',pattern)
-     (lust-style-def--bind-to-pattern-dispatcher-fun  ',(car pattern))
-     (let ((group (assoc ',(car pattern) *lust-style-def--pattern-dispatch-table*)))
-       (if (not group)
-         (progn
-           (message "DEF:   Adding pattern roup %s" ',(car pattern))
-           (push (cons ',(car pattern) (list (cons ',pattern ',body)))
-             *lust-style-def--pattern-dispatch-table*))
-         (let ((pattern-case (assoc ',pattern (cdr group))))
-           (message "DEF:   Found pattern-case %s in group %s"
-             (or pattern-case "<none>") group)
-           (if pattern-case
-             (error "DEF:   Pattern %s already defined." ',pattern))
-           (setcdr group (cons (cons ',pattern ',body) (cdr group)))
-           (message "DEF: Added pattern-case %s to group %s" ',pattern group))))
-     *lust-style-def--pattern-dispatch-table*))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'def 'lust-style-def--def)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs-lust-style-def)
