@@ -32,22 +32,21 @@ afterwards, returning the result of the last expression in `body'."
               (if 1st-is-just-kw "." "...")))
           (start-message-expr (list `(message ,start-message-string)))
           (end-message-string
-            (progn
-              (message (if is-double-message "double" "single"))
-              (cond 
-                ((not 1st-is-just-kw)
-                  (concat
-                    indent-str
-                    "Done "
-                    (downcase message-string-head)
-                    message-string-tail
-                    "."))
-                (is-double-message
-                  (concat
-                    indent-str
-                    (upcase second-message-string-head)
-                    second-message-string-tail
-                    ".")))))
+            (cond 
+              (is-double-message
+                (concat
+                  indent-str
+                  "Done "
+                  (downcase second-message-string-head)
+                  second-message-string-tail
+                  "."))
+              ((not 1st-is-just-kw)
+                (concat
+                  indent-str
+                  "Done "
+                  (downcase message-string-head)
+                  message-string-tail
+                  "."))))
           (end-message-expr  (unless 1st-is-just-kw (list `(message "%s" ,end-message-string)))))
     `(let ((*with-messages-indent* (1+ *with-messages-indent*)))
        ,@start-message-expr
