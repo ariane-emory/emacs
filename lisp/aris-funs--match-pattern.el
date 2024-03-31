@@ -5,6 +5,7 @@
 (require 'cl-lib)
 (require 'dash)
 (require 'aris-funs--with-messages)
+(require 'aris-funs--merge-duplicate-alist-keys)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq lexical-binding nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,33 +93,6 @@ element is encountered. This setting only applies when
   :group 'match-pattern
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun aris-match-pattern--merge-duplicate-alist-keys (alist)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A helper function used by aris-match-pattern to merge the values of duplicate keys in
- ALIST.
-
-Example:
-(aris-match-pattern--merge-duplicate-alist-keys '((y . 22) (x . 66) (w . 3) (w . 2) (w . 1) (v . 77))) ⇒
-  '((y . 22) (x . 66) (w 3 2 )) (v . 77))"
-  (let (result)
-    (dolist (pair alist)
-      (let* ( (key (car pair))
-              (value (cdr pair))
-              (existing (assoc key result)))
-        (if existing
-          (setcdr existing (append (cdr existing) (list value)))
-          (push (cons key (list value)) result))))
-    (nreverse
-      (mapcar
-        (lambda (pair)
-          (if (= (length (cdr pair)) 1)
-            (cons (car pair) (car (cdr pair)))
-            pair))
-        result))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -322,7 +296,7 @@ Intelligence' but with several improvements."
                 t
                 (message "Post-processing match result %s." match-result)
                 (if *match-pattern--merge-duplicate-alist-keys*
-                  (nreverse (aris-match-pattern--merge-duplicate-alist-keys match-result))
+                  (nreverse (merge-duplicate-alist-keys match-result))
                   match-result))
               )))))))
               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
