@@ -86,7 +86,9 @@
   (let* ((already-bound (fboundp symbol)))
     (when (and
             already-bound
-            (not (get (function symbol) :PATTERN-DISPATCHER-FUN)))
+            (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-FUN)))
+                 (message "Retrieved %s for %s." got-symbol symbol)
+                 got-symbol)))
       (error (concat
                "Logic error: function %s already bound "
                "elsewherm, fmakunbound it first!")
