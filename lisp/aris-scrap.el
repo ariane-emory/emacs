@@ -44,5 +44,3 @@
            (with-messages "doing stuff" "doing the stuff"
              (indented-message "boom")
              (indented-message "bang"))))))
-
-

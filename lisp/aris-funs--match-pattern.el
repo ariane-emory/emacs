@@ -128,11 +128,16 @@ Examples:
 
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (message "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
-  (when *match-pattern--init-fun* (funcall *match-pattern--init-fun*))
   ;; flet the pure/semi-pure functions:
-  (cl-flet ((plural? (string) ;; pure.
-              (equal "s" (substring string -1))))
+  (cl-flet ( (message (&rest args)
+               (if (featurep 'aris-funs--with-messages)
+                 (apply #'indented-message args)
+                 (apply #'message args)))
+             (plural? (string) ;; pure.
+               (equal "s" (substring string -1))))
+    (message "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
+    (when *match-pattern--init-fun*
+      (funcall *match-pattern--init-fun*))
     ;; flet the mutually referential pure/semi-pure functions:
     (cl-flet* ( (string-head (string) ;; pure.
                   (substring string 0 1))
@@ -152,10 +157,15 @@ Examples:
                    (target-tail  (cdr target)))
              ;; flet the functions that rely only upon matchrec's arguments and the enclosing
              ;; let's bindings:
-             (cl-flet ( (indent-string         () (format "%d %s" depth
-                                                    (make-string
-                                                      (* *match-pattern--indent-size* depth)
-                                                      *match-pattern--indent-char*)))
+             (cl-flet ( (indent-string ()
+                          (make-string
+                            (* *match-pattern--indent-size* depth)
+                            *match-pattern--indent-char*)
+                          ;; (format "%d %s" depth
+                          ;;   (make-string
+                          ;;     (* *match-pattern--indent-size* depth)
+                          ;;     *match-pattern--indent-char*))
+                          )
                         (fail-to-match         () (cons nil accumulator))
                         (match-successfully    () (cons t accumulator))
                         (pattern-head-is-atom? () (atom pattern-head)))
@@ -240,9 +250,12 @@ Examples:
                    (if (elem-is-verbatim? target-head) "" "not "))
                  (setq depth (1+ depth))
                  (cl-macrolet ((case (index &rest rest)
-                                 (let ((message (format "Trying case %s" index)))
-                                   `(with-messages ,message
-                                      (let ((depth (1+ depth))) ,@rest)))))
+                                 (let ((message-string (format "Trying case %s" index)))
+                                   `(progn
+                                      (message ,message-string)
+                                      (let ((depth (1+ depth))) ,@rest))
+                                   ;; `(let ((depth (1+ depth))) ,@rest)
+                                   )))
                    (cond
                      ;; If `pattern' is null, match successfully when `target' is null too:
                      ((case 1 (null pattern))

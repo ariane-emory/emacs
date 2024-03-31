@@ -941,7 +941,6 @@
                   (eval `(with-messages (format "opening '%s'" ,file) (find-file ,file))))))
             
             (with-messages "starting some shells"
-              "Shell in .emacs.d:"
               (let ((default-directory aris-config-dir))
                 (shell "emacs"))
               "Shells in home:"
