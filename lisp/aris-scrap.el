@@ -13,9 +13,9 @@
     ;; buffer twice:
     (setq *lust-style-syntax--pattern-dispatch-table* nil)
 
-    (def p 13)
-    (def w p)
-    (def p 20)
+    (def p 6)
+    (def w 8)
+    (def p 9)
     (def x (1+ w))
     (def y '(w x))
     (def z (list w x))
@@ -37,11 +37,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message-2 (fmt &rest rest)
-  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\,)))
+  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
     (apply 'message
-      (concat (format "[%s]" *with-messages-indent*) indent-str fmt) rest)))
+      (concat indent-str fmt) rest)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro with-message-2 (&rest args)
+  "Print `message-string' before evaluating `body', returning the result of the
+last expression in `body'."
+  (declare (indent 1) (debug t))
+  `(with-messages-2 :just ,@args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-messages-2 (&rest args)
@@ -53,15 +60,16 @@ afterwards, returning the result of the last expression in `body'."
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
           (second-message-string (when is-double-message (cadr args)))
           (body (if (or 1st-is-just-kw is-double-message) (cddr args) (cdr args)))          
-          (message-string (if (stringp message-string) message-string (eval message-string)))
+          (message-string
+            (if (stringp message-string) message-string (eval message-string)))
           (message-string-head (substring message-string 0 1))
           (message-string-tail (substring message-string 1))
-          (second-message-string-head (when is-double-message(substring second-message-string 0 1)))
-          (second-message-string-tail (when is-double-message(substring second-message-string 1)))
+          (second-message-string-head
+            (when is-double-message(substring second-message-string 0 1)))
+          (second-message-string-tail
+            (when is-double-message(substring second-message-string 1)))
           (start-message-string
             (concat
-              ;; (format "[%s]" *with-messages-indent*)
-              ;; indent-str
               (upcase message-string-head)
               message-string-tail
               (if 1st-is-just-kw "." "...")))
@@ -78,23 +86,23 @@ afterwards, returning the result of the last expression in `body'."
                   "Done "
                   (downcase message-string-head)
                   message-string-tail
-                  ".")))))
-    `(let* ( (indent-str (make-string (* 2 *with-messages-indent*) ?_))
+                  "."))))
+          (end-message-expr
+            (unless 1st-is-just-kw
+              (list `(message "%s%s" indent-str ,end-message-string)))))
+    `(let* ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
              (*with-messages-indent* (1+ *with-messages-indent*)))
        (message "%s%s" indent-str ,start-message-string)
        (let ((result (progn ,@body)))
-         (unless ,1st-is-just-kw
-           (message "%s%s" indent-str ,end-message-string))
+         ,@end-message-expr         
          result))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (insert
   (pp (macroexpand-all
-        '(with-messages-2 "doing stuff" "that"
-           (with-messages-2 "doing things" "those"
+        '(with-messages-2 "doing stuff" "the stuff"
+           (with-message-2 "doing things" "the things"
              (indented-message-2 "boom"))))))
-
-
 
 
