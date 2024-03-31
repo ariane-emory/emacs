@@ -153,16 +153,16 @@ Examples:
                    (pattern-tail (cdr pattern))
                    (target-head  (car target))
                    (target-tail  (cdr target)))
-             (cl-flet* ( (indent-string ()
-                           (make-string
-                             (* *match-pattern--indent-size* depth)
-                             *match-pattern--indent-char*))
+             (cl-flet* ( ;; (indent-string ()
+                         ;;   (make-string
+                         ;;     (* *match-pattern--indent-size* depth)
+                         ;;     *match-pattern--indent-char*))
                          (fail-to-match         () (cons nil accumulator))
                          (match-successfully    () (cons t accumulator))
                          (pattern-head-is-atom? () (atom pattern-head))
-                         (message (&rest args)
-                           (message "%s%s" (indent-string)
-                             (apply #'format (car args) (cdr args))))
+                         ;; (message (&rest args)
+                         ;;   (message "%s%s" (indent-string)
+                         ;;     (apply #'format (car args) (cdr args))))
                          (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                            (let ((result
                                    ;; If `preferred-p' isn't set, but `inverse-p' is, we assume
@@ -222,10 +222,10 @@ Examples:
                            (message "Looking ahead to see if %s match%s..."
                              label
                              (if (plural? label) "" "es"))
-                           (let ( (depth (1+ depth))
+                           (let ( ;; (depth (1+ depth))
                                   (matched (car (continue pattern-tail target)))
                                   (string (capitalize label)))
-                             (setq depth (1- depth))
+                             ;; (setq depth (1- depth))
                              (message
                                (if matched "%s matched!" "%s didn't match!")
                                string)
@@ -238,12 +238,14 @@ Examples:
                (message "Matching %s against %s with acc %s..." pattern target accumulator)
                (message "TARGET-HEAD %s is %sa verbatim element." target-head
                  (if (elem-is-verbatim? target-head) "" "not "))
-               (setq depth (1+ depth))
+               ;;(setq depth (1+ depth))
                (cl-macrolet ((case (index &rest rest)
                                (let ((message-string (format "Trying case %s" index)))
                                  `(progn
                                     (message ,message-string)
-                                    (let ((depth (1+ depth))) ,@rest))
+                                    (let (;; (depth (1+ depth))
+                                           )
+                                      ,@rest))
                                  ;; `(let ((depth (1+ depth))) ,@rest)
                                  )))
                  (cond
