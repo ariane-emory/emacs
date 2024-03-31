@@ -166,7 +166,7 @@ Examples:
                                *match-pattern--verbatim-element?*
                                *match-pattern--capture-element?*))
                            (elem-is-capture? (elem) ;; semi-pure.
-                             (elem-is-of-elem-type? elem "cature"
+                             (elem-is-of-elem-type? elem "capture"
                                *match-pattern--capture-element?*
                                *match-pattern--verbatim-element?*))
                            (heads-are-equal? ()
