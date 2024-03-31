@@ -5,7 +5,7 @@
 (require 'cl-lib)
 (require 'dash)
 (require 'aris-funs--with-messages)
-(require 'aris-funs--merge-duplicate-alist-keys)
+(require 'aris-funs--alist-funs)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq lexical-binding nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,7 +14,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup match-pattern nil
   "Pattern matching inspired by the MATCH6 function from StevenTanimoto's book `The Elements of
-Artificial Intelligence' but several improvements..")
+Artificial Intelligence' but several improvements.
+
+Examples:
+  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
+
+  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ⇒ t
+
+  (setq *match-pattern--use-dotted-pairs-in-result* nil)
+
+  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
+
+  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ⇒ t")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -88,7 +103,7 @@ element is encountered. This setting only applies when
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--use-dotted-pairs-in-result* t
+(defcustom *match-pattern--use-dotted-pairs-in-result* nil
   "Whether to use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
@@ -179,10 +194,7 @@ Intelligence' but with several improvements."
                                (assert-pattern-head-is-capture!)
                                (eq tag (capture-tag-of-pattern-head))))
                            (make-kvp (value)
-                             (cons (capture-symbol-of-pattern-head)
-                               (if *match-pattern--use-dotted-pairs-in-result*
-                                 value
-                                 (list value))))
+                             (cons (capture-symbol-of-pattern-head) (list value)))
                            (continue (pattern target &optional (value :NOT-SUPPLIED))
                              (matchrec pattern target depth
                                (if (eq value :NOT-SUPPLIED)
@@ -290,16 +302,21 @@ Intelligence' but with several improvements."
           (message "Match result is %s." match-result)
           (when (car match-result)
             (let ((match-result (cdr match-result)))
-              (message "Cdr of match result is %s." match-result)
+              ;;(message "Cdr of match result is %s." match-result)
               (if (not match-result)
                 ;; If the match succeeded but there were no captures, just return t:
                 t
-                (message "Post-processing match result %s." match-result)
-                (if *match-pattern--merge-duplicate-alist-keys*
-                  (nreverse (merge-duplicate-alist-keys match-result))
-                  match-result))
-              )))))))
-              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                (message "Extracted match result %s." match-result)
+                (let ((match-result
+                        (if *match-pattern--merge-duplicate-alist-keys*
+                          (nreverse (merge-duplicate-alist-keys match-result))
+                          match-result)))
+                  (message "Post-merge match result %s." match-result)
+                  (if *match-pattern--use-dotted-pairs-in-result*
+                    (add-dots-to-alist match-result)
+                    match-result)
+                  )))))))))
+                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -309,16 +326,27 @@ Intelligence' but with several improvements."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Just a quick test that should match successfully with the default configuration:
+;; ⇒
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when t
-  (aris-match-pattern--match-pattern
-    '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  (aris-match-pattern--match-pattern
-    '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  (match-pattern
-    '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  (match-pattern
-    '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (setq *match-pattern--use-dotted-pairs-in-result* t)
+  ⇒ t
+  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
+
+  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ⇒ t
+
+  (setq *match-pattern--use-dotted-pairs-in-result* nil)
+
+  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
+
+  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ⇒ t
+
+  
+  
   )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -862,7 +862,7 @@
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
         '( aris-funs--unsorted
            aris-funs--match-pattern
-           aris-funs--merge-duplicate-alist-keys
+           aris-funs--alist-funs
            aris-funs--lust-style-syntax
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
