@@ -141,16 +141,9 @@ Examples:
                            (transform-string-head string #'upcase))
                          (uncapitalize (string) ;; pure.
                            (transform-string-head string #'downcase))
-                         ;; (indent-string ()
-                         ;;   (make-string
-                         ;;     (* *match-pattern--indent-size* depth)
-                         ;;     *match-pattern--indent-char*))
                          (fail-to-match         () (cons nil accumulator))
                          (match-successfully    () (cons t accumulator))
                          (pattern-head-is-atom? () (atom pattern-head))
-                         ;; (print (&rest args)
-                         ;;   (print "%s%s" (indent-string)
-                         ;;     (apply #'format (car args) (cdr args))))
                          (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                            (let ((result
                                    ;; If `preferred-p' isn't set, but `inverse-p' is, we assume
@@ -223,17 +216,16 @@ Examples:
                            (lookahead target "PATTERN-TAIL"))
                          (pattern-tail-matches-target-tail? ()
                            (lookahead target-tail "tails")))
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                ;; Body of matchrec:
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                (print "Matching %s against %s with acc %s..." pattern target accumulator)
                (print "TARGET-HEAD %s is %sa verbatim element." target-head
                  (if (elem-is-verbatim? target-head) "" "not "))
-               ;;(setq depth (1+ depth))
                (cl-macrolet ((case (index &rest rest)
-                               (let ((message-string (format "Trying case %s" index)))
-                                 `(progn
-                                    (print ,message-string)
+                               `(let ((message-string (format "Trying case %s" ,index)))
+                                  (progn
+                                    (print message-string)
                                     ,@rest))))
                  (cond
                    ;; If `pattern' is null, match successfully when `target' is null too:
