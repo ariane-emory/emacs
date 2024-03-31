@@ -114,15 +114,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the MATCH-RESULT for a call pattern."
   (message "Evaluating match result %s" match-result)
-  (if (atom (cadr match-result))
-    (progn
-      (message "Match result is an atom, returning %s" (cadr match-result))
-      (cadr match-result))
-    (let ((decorated-result (cons 'let match-result)))
-      (message "Evaluating decorated match result %s" decorated-result)
-      (let ((result (eval decorated-result)))
-        (message "Evaluated match result %s" result)
-        result))))
+  (cond
+    ((symbolp (cadr match-result))
+      (progn
+        (message "Match result is symbol, evaluating %s  and returning %s" (cadr match-result))
+        (cadr match-result)))
+    ((atom (cadr match-result))
+      (progn
+        (message "Match result is an atom, returning %s" (cadr match-result))
+        (cadr match-result)))
+    (t
+      (let ((decorated-result (cons 'let match-result)))
+        (message "Evaluating decorated pattern case %s" decorated-result)
+        (let ((result (eval decorated-result)))
+          (message "Evaluated match pattern case %s" result)
+          result)))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
