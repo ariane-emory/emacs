@@ -133,6 +133,7 @@ Intelligence' but with several improvements."
   ;; flet the pure/semi-pure functions:
   (cl-flet ((plural? (string) ;; pure.
               (equal "s" (substring string -1))))
+    ;; flet the mutually referential pure/semi-pure functions:
     (cl-flet* ( (string-head (string) ;; pure.
                   (substring string 0 1))
                 (string-tail (string) ;; pure.
