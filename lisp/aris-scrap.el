@@ -15,10 +15,11 @@
 ;; buffer twice:
 (setq *lust-style-def--pattern-dispatch-table* nil)
 
+(def (fib -1) (error "You screwed up the order of your pattern cases!"))
 (def (fib 0) 0)
 (def (fib 1) 1)
 (def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
-
+(def x 8)
 (setq final (fib 10))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
