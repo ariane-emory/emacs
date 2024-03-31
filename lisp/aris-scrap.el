@@ -57,11 +57,11 @@ Example:
     (dolist (pair alist)
       (let* ( (key (car pair))
               (is-dotted (-cons-pair? pair))
-              (value (if is-dotted (cdr pair) (cadr pair)))
+              (tail (if is-dotted (list (cdr pair)) (cdr pair)))
               (existing (assoc key result)))
         (if existing
-          (setcdr existing (nconc (cdr existing) (list value)))
-          (push (cons key (list value)) result))))
+          (setcdr existing (nconc (cdr existing) tail))
+          (push (cons key tail) result))))
     (nreverse
       (if (not use-dots)
         result
