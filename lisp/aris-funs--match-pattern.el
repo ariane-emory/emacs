@@ -89,7 +89,7 @@ non-verbatim TARGET element is encountered. This setting only applies when
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--use-dotted-pairs-in-result* nil
+(defcustom *match-pattern--use-dotted-pairs-in-result* t
   "Whether `match-pattern' should use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
@@ -225,7 +225,10 @@ Examples:
                (cl-macrolet ((case (index &rest rest)
                                `(let ((*aris-indent* (1+ *aris-indent*)))
                                   (print (format "Trying case %s" ,index))
-                                  ,@rest)))
+                                  (prog1
+                                    (progn ,@rest)
+                                    (print "Case %s failed." ,index)
+                                    ))))
                  (cond
                    ;; If `pattern' is null, match successfully when `target' is null too:
                    ((case 1 (null pattern))
