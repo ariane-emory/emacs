@@ -142,13 +142,13 @@ Examples:
                    (target-tail  (cdr target)))
              ;; flet the functions that rely only upon matchrec's arguments and the enclosing
              ;; let's bindings:
-             (cl-flet ( (indent-string         () (make-string depth ?\ ))
+             (cl-flet ( (indent-string         ()  (make-string (2* depth) ?\ ))
                         (fail-to-match         () (cons nil accumulator))
                         (match-successfully    () (cons t accumulator))
                         (pattern-head-is-atom? () (atom pattern-head)))
                ;; flet the remaining mutually referential functions:
                (cl-flet* ( (message (&rest args)
-                             (message "%s %s%s" (depth indent-string)
+                             (message "%d %s%s" depth (indent-string)
                                (apply #'format (car args) (cdr args))))
                            (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                              (let ((result
