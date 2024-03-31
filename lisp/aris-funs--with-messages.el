@@ -3,28 +3,16 @@
 (defvar *with-messages-indent* 0)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun indented-message (fmt &rest rest)
-  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
-    (apply 'message
-      (concat indent-str fmt) rest)))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-message (&rest args)
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body'."
-  (declare (indent 1) (debug t))
   `(with-messages :just ,@args))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-messages (&rest args)
-  "Print `message-string' at the before evaluating `body' and a variant
-afterwards, returning the result of the last expression in `body'."
-  (declare (indent 1) (debug t))
   (let* ( (1st-is-just-kw (eql :just (car args)))
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
@@ -66,26 +54,37 @@ afterwards, returning the result of the last expression in `body'."
               (t (cdr args)))))
     `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
             (*with-messages-indent* (1+ *with-messages-indent*)))
+       ;; (cl-flet ((indented-message (fmt &rest rest)
+       ;;             (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
+       ;;               (apply 'message (concat indent-str fmt) rest))))
        (unwind-protect
          (progn
            (message "%s%s" indent-str ,start-message-string)
            ,@body)
-         ,@end-message-expr))))
+         ,@end-message-expr))));;)
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun indented-message (fmt &rest rest)
+  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
+    (apply 'message
+      (concat indent-str fmt) rest)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-messages (&rest args)
   `(with-messages (format "using %s" ',(car args))
      (use-package ,@args)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-message (&rest args)
   `(with-message (format "using %s" ',(car args))
      (use-package ,@args)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--with-messages)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
