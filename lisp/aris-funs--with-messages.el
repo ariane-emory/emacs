@@ -22,9 +22,8 @@ afterwards, returning the result of the last expression in `body'."
           (message-string (if (stringp message-string) message-string (eval message-string)))
           (message-string-head (substring message-string 0 1))
           (message-string-tail (substring message-string 1))
-          (second-message-string second-message-string)
-          (second-message-string-head (substring second-message-string 0 1))
-          (second-message-string-tail (substring second-message-string 1))
+          (second-message-string-head (when is-double-message(substring second-message-string 0 1)))
+          (second-message-string-tail (when is-double-message(substring second-message-string 1)))
           (start-message-string
             (concat
               indent-str
@@ -33,27 +32,32 @@ afterwards, returning the result of the last expression in `body'."
               (if 1st-is-just-kw "." "...")))
           (start-message-expr (list `(message ,start-message-string)))
           (end-message-string
-            (cond 
-              ((not 1st-is-just-kw)
-                (concat
-                  indent-str
-                  "Done "
-                  (downcase message-string-head)
-                  message-string-tail
-                  "."))
-              (is-double-message
-                (concat
-                  indent-str
-                  (upcase second-message-string-head)
-                  second-message-string-tail
-                  "."))))
+            (progn
+              (message (if is-double-message "double" "single"))
+              (cond 
+                ((not 1st-is-just-kw)
+                  (concat
+                    indent-str
+                    "Done "
+                    (downcase message-string-head)
+                    message-string-tail
+                    "."))
+                (is-double-message
+                  (concat
+                    indent-str
+                    (upcase second-message-string-head)
+                    second-message-string-tail
+                    ".")))))
           (end-message-expr  (unless 1st-is-just-kw (list `(message "%s" ,end-message-string)))))
     `(let ((*with-messages-indent* (1+ *with-messages-indent*)))
        ,@start-message-expr
        (let ((result (progn ,@body)))
          ,@end-message-expr
          result))))
+
 (with-messages "doing stuff" "that" (message "bang"))
+(with-messages "sleeping" (message "bang"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-messages (&rest args)
   `(with-messages (format "using %s" ',(car args))
