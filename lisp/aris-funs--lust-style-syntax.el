@@ -44,7 +44,7 @@
        ,(car body))
     `(progn
        (message "DEF: Defining pattern %s." ',pattern)
-       (lust-style-syntax--bind-symbol-to-pattern-dispatcher-fun  ',(car pattern))
+       (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun  ',(car pattern))
        (let ((group (assoc ',(car pattern) *lust-style-syntax--pattern-dispatch-table*)))
          (if group
            (progn
@@ -70,7 +70,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--bind-symbol-to-pattern-dispatcher-fun (symbol)
+(defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (message "BINDING DISPATCH FUN FOR '%s!" symbol)
