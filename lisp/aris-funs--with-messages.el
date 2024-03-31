@@ -49,7 +49,7 @@ last expression in `body' and printing a variant message afterwards."
               ((not 1st-is-just-kw)
                 (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
-            (unless 1st-is-just-kw
+            (when end-message-fmt-args
               (list `(apply #'message "%sDone %s%s." indent-str ',end-message-fmt-args))))
           (body
             (cond

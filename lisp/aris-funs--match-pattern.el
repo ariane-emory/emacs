@@ -24,6 +24,11 @@ Artificial Intelligence' but several improvements.")
   :group 'match-pattern
   :type 'function)
 
+(defcustom *match-pattern--indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
+  "The character used by `match-pattern' to indent messages."
+  :group 'match-pattern
+  :type 'character)
+
 (defcustom *match-pattern--merge-duplicate-alist-keys* t
   "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
   :group 'match-pattern
@@ -142,7 +147,8 @@ Examples:
                    (target-tail  (cdr target)))
              ;; flet the functions that rely only upon matchrec's arguments and the enclosing
              ;; let's bindings:
-             (cl-flet ( (indent-string         ()  (make-string (2* depth) ?\.))
+             (cl-flet ( (indent-string         () (make-string (2* depth)
+                                                    *match-pattern--indent-char*))
                         (fail-to-match         () (cons nil accumulator))
                         (match-successfully    () (cons t accumulator))
                         (pattern-head-is-atom? () (atom pattern-head)))
