@@ -226,9 +226,12 @@ Examples:
                    (let ((*aris-indent* (1+ *aris-indent*)))
                      (print "target-head %s is %sa verbatim element." target-head
                        (if (elem-is-verbatim? target-head) "" "not "))
-                     (cl-macrolet ((indent (&body body)
-                                     `(let ((*aris-indent* (1+ *aris-indent*)))
-                                        ,@body)))
+                     (cl-macrolet ( (indent (&body body)
+                                      `(let ((*aris-indent* (1+ *aris-indent*)))
+                                         ,@body))
+                                    (undent (&body body)
+                                      `(let ((*aris-indent* (1- *aris-indent*)))
+                                         ,@body)))
                        (cl-macrolet ( (case (index descr &body body)
                                         `(progn
                                            (print "trying case %s: %s..." ,index ,descr)
