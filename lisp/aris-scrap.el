@@ -62,6 +62,8 @@
 last expression in `body'."
   (declare (indent 1) (debug t))
   `(with-messages-2 :just ,@args))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-messages-2 (&rest args)
@@ -110,10 +112,12 @@ afterwards, returning the result of the last expression in `body'."
     `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
             (*with-messages-indent* (1+ *with-messages-indent*)))
        (unwind-protect
-         (progn (message "%s%s" indent-str ,start-message-string)
+         (progn
+           (message "%s%s" indent-str ,start-message-string)
            ,@body)
          ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (insert
   (pp (macroexpand-all
