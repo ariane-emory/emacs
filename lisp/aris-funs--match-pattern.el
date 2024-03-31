@@ -129,10 +129,8 @@ Examples:
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   ;; flet the pure/semi-pure functions:
-  (cl-flet ( (message (&rest args)
-               (if (featurep 'aris-funs--with-messages)
-                 (apply #'indented-message args)
-                 message))
+  (cl-flet ( ;; (message (&rest args)
+             ;;   (indented-message args))
              (plural? (string) ;; pure.
                (equal "s" (substring string -1))))
     (message "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
@@ -251,9 +249,9 @@ Examples:
                  (cond
                    ;; If `pattern' is null, match successfully when `target' is null too:
                    ((case 1 (null pattern))
-                     (indented-message "PATTERN is null and %s match!"
+                     (message "PATTERN is null and %s match!"
                        (if target
-                         "TARGET is not, sono"
+                         "TARGET is not, so no"
                          "so is TARGET,"))
                      (if (null target)
                        (match-successfully)
