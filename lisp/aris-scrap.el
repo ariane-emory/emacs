@@ -49,7 +49,7 @@
 ;;                (indented-message-2 "boom")))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun indented-message-2 (fmt &rest rest)
+(defun indented-message (fmt &rest rest)
   (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
     (apply 'message
       (concat indent-str fmt) rest)))
@@ -57,16 +57,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-message-2 (&rest args)
+(defmacro with-message (&rest args)
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body'."
   (declare (indent 1) (debug t))
-  `(with-messages-2 :just ,@args))
+  `(with-messages :just ,@args))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-messages-2 (&rest args)
+(defmacro with-messages (&rest args)
   "Print `message-string' at the before evaluating `body' and a variant
 afterwards, returning the result of the last expression in `body'."
   (declare (indent 1) (debug t))
@@ -125,22 +125,6 @@ afterwards, returning the result of the last expression in `body'."
            (with-messages-2 "doing stuff" "doing the stuff"
              (indented-message-2 "boom")
              (indented-message-2 "bang"))))))
-(let
-  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-    (*with-messages-indent* (1+ *with-messages-indent*)))
-  (unwind-protect
-    (progn
-      (message "%s%s" indent-str "Doing things...")
-      (let
-        ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-          (*with-messages-indent* (1+ *with-messages-indent*)))
-        (unwind-protect
-          (progn
-            (message "%s%s" indent-str "Doing stuff...")
-            (indented-message-2 "boom")
-            (indented-message-2 "bang"))
-          (message "%s%s" indent-str "Done doing the stuff."))))
-    (message "%s%s" indent-str "Done doing the things.")))
 
 
 
