@@ -2,10 +2,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pattern matching functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'dash)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun merge-duplicate-alist-keys (alist)
+(cl-defun merge-duplicate-alist-keys (alist &optional (use-dots t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A helper function used by aris-match-pattern to merge the values of duplicate
  ALIST.
@@ -16,19 +18,22 @@ Example:
   (let (result)
     (dolist (pair alist)
       (let* ( (key (car pair))
-              (value (cdr pair))
+              (is-dotted (-cons-pair? pair))
+              (value (if is-dotted (cdr pair) (cadr pair)))
               (existing (assoc key result)))
         (if existing
-          (setcdr existing (append (cdr existing) (list value)))
+          (setcdr existing (nconc (cdr existing) (list value)))
           (push (cons key (list value)) result))))
     (nreverse
-      (mapcar
-        (lambda (pair)
-          (if (= (length (cdr pair)) 1)
-            (cons (car pair) (car (cdr pair)))
-            pair))
-        result))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (if (not use-dots)
+        result
+        (mapcar
+          (lambda (pair)
+            (if (length> (cdr pair) 1)
+              pair
+              (cons (car pair) (car (cdr pair)))))
+          result)))))
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

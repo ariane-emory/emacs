@@ -33,40 +33,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'dash)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun merge-duplicate-alist-keys (alist &optional (use-dots t))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A helper function used by aris-match-pattern to merge the values of duplicate
- ALIST.
-
-Example:
-(aris-match-pattern--merge-duplicate-alist-keys '((y . 22) (x . 66) (w . 3) (w .) ⇒
-  '((y . 22) (x . 66) (w 3 2 )) (v . 77))"
-  (let (result)
-    (dolist (pair alist)
-      (let* ( (key (car pair))
-              (is-dotted (-cons-pair? pair))
-              (value (if is-dotted (cdr pair) (cadr pair)))
-              (existing (assoc key result)))
-        (if existing
-          (setcdr existing (nconc (cdr existing) (list value)))
-          (push (cons key (list value)) result))))
-    (message "intermediate: %s" result)
-    (nreverse
-      (if (not use-dots)
-        result
-        (mapcar
-          (lambda (pair)
-            (if (length> (cdr pair) 1)
-              pair
-              (cons (car pair) (car (cdr pair)))))
-          result)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8)) nil)
 (merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8)) t)
