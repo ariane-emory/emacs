@@ -127,21 +127,4 @@ afterwards, returning the result of the last expression in `body'."
              (indented-message-2 "boom")
              (indented-message-2 "bang"))))))
 
-(let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-       (*with-messages-indent* (1+ *with-messages-indent*)))
-  (unwind-protect
-    (let* ((--cl-foo-- #'(lambda nil 88)))
-      (progn
-        (message "%s%s" indent-str "Doing things...")
-        (let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-               (*with-messages-indent* (1+ *with-messages-indent*)))
-          (unwind-protect
-            (let* ((--cl-foo-- #'(lambda nil 88)))
-              (progn
-                (message "%s%s" indent-str "Doing stuff...")
-                (indented-message-2 "boom")
-                (indented-message-2 "bang")))
-            (message "%s%s" indent-str "Done doing the stuff.")))))
-    (message "%s%s" indent-str "Done doing the things.")))
-
 
