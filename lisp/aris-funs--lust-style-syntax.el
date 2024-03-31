@@ -91,7 +91,9 @@
     (put
       (function symbol)
       :PATTERN-DISPATCHER-FUN
-      symbol)))
+      symbol)
+    (message "Marked fun with %s / %d." symbol (function symbol))
+    ))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
