@@ -18,7 +18,7 @@ afterwards, returning the result of the last expression in `body'."
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
           (second-message-string (when is-double-message (cadr args)))
           (body (if 1st-is-just-kw (cddr args) (cdr args)))
-          (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
+          (indent-str (make-string (* 2 *with-messages-indent*) ??))
           (message-string (if (stringp message-string) message-string (eval message-string)))
           (message-string-head (substring message-string 0 1))
           (message-string-tail (substring message-string 1))
@@ -26,6 +26,7 @@ afterwards, returning the result of the last expression in `body'."
           (second-message-string-tail (when is-double-message(substring second-message-string 1)))
           (start-message-string
             (concat
+              (format "[%s]" *with-messages-indent*)
               indent-str
               (upcase message-string-head)
               message-string-tail
@@ -35,6 +36,7 @@ afterwards, returning the result of the last expression in `body'."
             (cond 
               (is-double-message
                 (concat
+                  (format "[%s]" *with-messages-indent*)
                   indent-str
                   "Done "
                   (downcase second-message-string-head)
@@ -42,6 +44,7 @@ afterwards, returning the result of the last expression in `body'."
                   "."))
               ((not 1st-is-just-kw)
                 (concat
+                  (format "[%s]" *with-messages-indent*)
                   indent-str
                   "Done "
                   (downcase message-string-head)
@@ -54,7 +57,9 @@ afterwards, returning the result of the last expression in `body'."
          ,@end-message-expr
          result))))
 
-(with-messages "doing stuff" "that" (message "bang"))
+(with-messages "doing stuff" "that"
+  (with-messages "doing them" "those"
+    (with-messages "doing them" "those" (message "boom"))))
 (with-messages "sleeping" (message "bang"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
