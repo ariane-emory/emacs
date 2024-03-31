@@ -9,7 +9,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--lust-style-syntax)
-
 (begin
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
