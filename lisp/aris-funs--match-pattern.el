@@ -14,22 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup match-pattern nil
   "Pattern matching inspired by the MATCH6 function from StevenTanimoto's book `The Elements of
-Artificial Intelligence' but several improvements.
-
-Examples:
-  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
-
-  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  ⇒ t
-
-  (setq *match-pattern--use-dotted-pairs-in-result* nil)
-
-  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
-
-  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  ⇒ t")
+Artificial Intelligence' but several improvements.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -117,7 +102,22 @@ non-verbatim TARGET element is encountered. This setting only applies when
   "Match a PATTERN list against a TARGET list.
 
 This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of Artificial
-Intelligence' but with several improvements."
+Intelligence' but with several improvements.
+
+Examples:
+  (`aris-match-pattern--match-pattern' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
+
+  (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ⇒ t
+
+  (setq *match-pattern--use-dotted-pairs-in-result* nil)
+
+  (`aris-match-pattern--match-pattern' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
+
+  (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  ⇒ t"
   (message "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
   (when *match-pattern--init-fun* (funcall *match-pattern--init-fun*))
   ;; flet the pure/semi-pure functions:
@@ -315,7 +315,7 @@ Intelligence' but with several improvements."
                   (message "Post-merge match result %s." match-result)
                   (if *match-pattern--use-dotted-pairs-in-result*
                     (add-dots-to-alist match-result)
-                    aris-match-result)
+                    match-result)
                   )))))))))
                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

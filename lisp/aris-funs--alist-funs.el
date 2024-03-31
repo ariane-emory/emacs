@@ -12,13 +12,13 @@
   "Turn length 2 lists in ALIST into dotted pairs.
 
 Examples:
-(aris-add-dots-to-alist '((a 1) (b 2) (c 3)))
+(`aris-add-dots-to-alist' '((a 1) (b 2) (c 3)))
 ⇒ ((a . 1) (b . 2) (c . 3))
 
-(aris-add-dots-to-alist '((a . 1) (b . 2) (c . 3)))
+(`aris-add-dots-to-alist' '((a . 1) (b . 2) (c . 3)))
 ⇒ ((a . 1) (b . 2) (c . 3))
 
-(aris-add-dots-to-alist '((a . 1) (b 2) (c . 3)))
+(`aris-add-dots-to-alist' '((a . 1) (b 2) (c . 3)))
 ⇒ ((a . 1) (b . 2) (c . 3))"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (mapr
@@ -36,19 +36,19 @@ Examples:
   "Turn  dotted pairs in ALIST into length 2 lists.
 
 Examples:
-(aris-remove-dots-from-alist '((a . 1) (b . 2) (c . 3) (d . 4)))
+(`aris-remove-dots-from-alist' '((a . 1) (b . 2) (c . 3) (d . 4)))
 ⇒ ((a 1) (b 2) (c 3) (d 4))
 
-(aris-remove-dots-from-alist '((a . 1) (b 2 2) (c . 3) (d 4)))
+(`aris-remove-dots-from-alist' '((a . 1) (b 2 2) (c . 3) (d 4)))
 ⇒ ((a 1) (b 2 2) (c 3) (d 4))
 
-(aris-remove-dots-from-alist '((a 1) (b 2 2) (c 3) (d 4)))
+(`aris-remove-dots-from-alist' '((a 1) (b 2 2) (c 3) (d 4)))
 ⇒ ((a 1) (b 2 2) (c 3) (d 4))
 
-(aris-remove-dots-from-alist
-  (aris-add-dots-to-alist
-    (aris-remove-dots-from-alist
-      (aris-add-dots-to-alist
+(`aris-remove-dots-from-alist'
+  (`aris-add-dots-to-alist'
+    (`aris-remove-dots-from-alist'
+      (`aris-add-dots-to-alist'
         '((a 1) (b 2) (c 3)))))) ⇒ ((a 1) (b 2) (c 3))"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (mapr
@@ -71,16 +71,16 @@ Examples:
 the dotted pairs, apply `aris-add-dots-to-alist' to the result to restore them.
 
 Examples:
-(aris-merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8) (x . 9)))
+(`aris-merge-duplicate-alist-keys' '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8) (x . 9)))
 ⇒ ((v 1) (w 2 3) (x 4 9) (y 5 6 7) (z 8))
 
-(aris-merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8) (x 9)))
+(`aris-merge-duplicate-alist-keys' '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8) (x 9)))
 ⇒ ((v 1) (w 2 3) (x 4 9) (y 5 6 7) (z 8))
 
-(aris-remove-dots-from-alist
-  (aris-add-dots-to-alist
-    (aris-remove-dots-from-alist
-      (aris-add-dots-to-alist
+(`aris-remove-dots-from-alist'
+  (`aris-add-dots-to-alist'
+    (`aris-remove-dots-from-alist'
+      (`aris-add-dots-to-alist'
         '((a 1) (b 2) (c 3)))))) ⇒ ((a 1) (b 2) (c 3))"
 
   (let (result)
