@@ -108,7 +108,7 @@
   (lambda (&rest args)
     "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
-    (let* ((function (function symbol))
+    (let* ( (function (function symbol))
             (symbol (get function :PATTERN-DISPATCHER-FUN))
             (group (lust-style-syntax--get-patterns-for-group symbol))
             (call-pattern (cons symbol args)))
