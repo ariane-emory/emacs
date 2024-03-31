@@ -12,28 +12,37 @@
   "A helper function used by aris-match-pattern to merge the values of duplicate
  ALIST.
 
-Example:
-(aris-match-pattern--merge-duplicate-alist-keys '((y . 22) (x . 66) (w . 3) (w .) ⇒
-  '((y . 22) (x . 66) (w 3 2 )) (v . 77))"
+Examples:
+(merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8) (x . 9)) nil)
+⇒ ((v 1) (w 2 3) (x 4 9) (y 5 6 7) (z 8))
+
+(merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8) (x . 9)) t)
+⇒ ((v . 1) (w 2 3) (x 4 9) (y 5 6 7) (z . 8))
+
+(merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8) (x 9)) nil)
+⇒ ((v 1) (w 2 3) (x 4 9) (y 5 6 7) (z 8))
+
+(merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8) (x 9)) t)
+⇒ ((v . 1) (w 2 3) (x 4 9) (y 5 6 7) (z . 8))"
   (let (result)
     (dolist (pair alist)
       (let* ( (key (car pair))
               (is-dotted (-cons-pair? pair))
-              (value (if is-dotted (cdr pair) (cadr pair)))
+              (tail (if is-dotted (list (cdr pair)) (cdr pair)))
               (existing (assoc key result)))
         (if existing
-          (setcdr existing (nconc (cdr existing) (list value)))
-          (push (cons key (list value)) result))))
+          (setcdr existing (nconc (cdr existing) tail))
+          (push (cons key tail) result))))
     (nreverse
       (if (not use-dots)
         result
-        (mapcar
+        (mapr
+          result
           (lambda (pair)
             (if (length> (cdr pair) 1)
               pair
-              (cons (car pair) (car (cdr pair)))))
-          result)))))
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+              (cons (car pair) (cadr pair)))))))))
+              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
