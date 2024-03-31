@@ -116,9 +116,9 @@
   (message "Evaluating match result %s" match-result)
   (cond
     ((symbolp (cadr match-result))
-      (progn
-        (message "Match result is symbol, evaluating %s  and returning %s" (cadr match-result))
-        (cadr match-result)))
+      (let ((eval-result (eval (cadr match-result))))
+        (message "Match result is symbol, evaluating %s and returning %s" (cadr match-result) eval-result)
+        eval-result))
     ((atom (cadr match-result))
       (progn
         (message "Match result is an atom, returning %s" (cadr match-result))
