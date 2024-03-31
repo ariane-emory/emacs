@@ -278,7 +278,7 @@
         :hook
         (emacs-lisp-mode .
           (lambda ()
-            (setq-local lexical-binding t)
+            ;;(setq-local lexical-binding t)
 	          (eldoc-mode 1)
             (aris-setup-lisp))))
 
