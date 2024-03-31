@@ -39,68 +39,24 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun mapr (lst fn)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Map FN over LST."
-  (mapcar fn lst))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8) (x . 9)) nil)
-((v 1) (w 2 3) (x 4 9) (y 5 6 7) (z 8))
-
-(merge-duplicate-alist-keys '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (y . 7) (z . 8) (x . 9)) t)
-((v . 1) (w 2 3) (x 4 9) (y 5 6 7) (z . 8))
-
-(merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8) (x 9)) nil)
-(v 1) (w 2 3) (x 4 9) (y 5 6 7) (z 8))
-
-(merge-duplicate-alist-keys '((v 1) (w 2) (w 3) (x 4) (y 5) (y 6) (y 7) (z 8) (x 9)) t)
-((v . 1) (w 2 3) (x 4 9) (y 5 6 7) (z . 8))
-
-(message "======")
-
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun remove-dots-from-alist (alist)
-  "Turn  dotted pairs in ALIST into length 2 lists.
+(defun aris-flatten-alist-keys (alist)
+  "Flatten the keys of ALIST if they are lists.
 
 Examples:
-(remove-dots-from-alist '((a . 1) (b . 2) (c . 3) (d . 4)))
-⇒ ((a 1) (b 2) (c 3) (d 4))
+(`aris-flatten-alist-keys') '((a 1) (b 2 2) (c 3) (d 4 5 6)))
+⇒ ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))
 
-(remove-dots-from-alist '((a . 1) (b 2 2) (c . 3) (d 4)))
-⇒ ((a 1) (b 2 2) (c 3) (d 4))
-
-(remove-dots-from-alist '((a 1) (b 2 2) (c 3) (d 4)))
-⇒ ((a 1) (b 2 2) (c 3) (d 4))"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (mapr
-    alist
-    (lambda (pair)
-      (message "pair %s"pair)
-      (cond
-        ((-cons-pair? pair)
-          (cons (car pair) (list (cdr pair))))
-        ((atom pair) (error "Improper alist."))
-        (t pair)))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(remove-dots-from-alist '((a . 1) (b . 2) (c . 3) (d . 4)))
-⇒ ((a 1) (b 2) (c 3) (d 4))
-
-(remove-dots-from-alist '((a . 1) (b 2 2) (c . 3) (d 4)))
-⇒ ((a 1) (b 2 2) (c 3) (d 4))
-
-(remove-dots-from-alist '((a 1) (b 2 2) (c 3) (d 4)))
-⇒ ((a 1) (b 2 2) (c 3) (d 4))
+(`aris-add-dots-to-alist'
+  (`aris-flatten-alist-keys' '((a 1) (b 2 2) (c 3) (d 4 5 6))))
+⇒ ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))"
+  (let (result)
+    (dolist (pair alist)
+      (let* ( (key (car pair))
+              (values (cdr pair))
+              (values (if (proper-list-p values) values (list values))))
+        (dolist (value values)
+          (push (cons key value) result))))
+    (nreverse result)))
 
 
-setq 
+((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))

@@ -96,6 +96,29 @@ Examples:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun aris-flatten-alist-keys (alist)
+  "Flatten the keys of ALIST if they are lists.
+
+Examples:
+(`aris-flatten-alist-keys') '((a 1) (b 2 2) (c 3) (d 4 5 6)))
+⇒ ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))
+
+(`aris-add-dots-to-alist'
+  (`aris-flatten-alist-keys' '((a 1) (b 2 2) (c 3) (d 4 5 6))))
+⇒ ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))"
+  (let (result)
+    (dolist (pair alist)
+      (let* ( (key (car pair))
+              (values (cdr pair))
+              (values (if (proper-list-p values) values (list values))))
+        (dolist (value values)
+          (push (cons key value) result))))
+    (nreverse result)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--alist-funs)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
