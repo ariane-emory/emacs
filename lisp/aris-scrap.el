@@ -10,12 +10,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test defining a function:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Reset the pattern dispatch table first so that we won't get
-;; 'Pattern blah already defined' errors if we evaluate this
-;; buffer twice:
 (progn
   (require 'aris-funs--lust-style-def)
-  
+
+  ;; Reset the pattern dispatch table first so that we won't get
+  ;; 'Pattern blah already defined' errors if we evaluate this
+  ;; buffer twice:
   (setq *lust-style-def--pattern-dispatch-table* nil)
 
   (def w 8)
@@ -35,5 +35,5 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; scratch ends here:
+  ;; scratch ends here:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
