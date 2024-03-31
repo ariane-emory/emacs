@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *aris-indent--char* ?\_  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *aris-indent--char* ?\   ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
