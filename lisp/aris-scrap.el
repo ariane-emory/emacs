@@ -85,9 +85,42 @@ afterwards, returning the result of the last expression in `body'."
          ,@end-message-expr
          result))))
 
-(macroexpand-all
-  '(with-messages "doing stuff" "that"
-     (with-messages "doing things" "those"
-       (with-messages "doing whatever" "these" (indented-message "boom")))))
+(insert (pp (macroexpand-all
+              '(with-messages "doing stuff" "that"
+                 (with-messages "doing things" "those"
+                   (with-messages "doing whatever" "these" (indented-message "boom")))))))
+(let
+  ((*with-messages-indent*
+     (1+ *with-messages-indent*)))
+  (message "[0]Doing stuff...")
+  (let
+    ((result
+       (progn "that"
+         (let
+           ((*with-messages-indent*
+              (1+ *with-messages-indent*)))
+           (message "[0]Doing things...")
+           (let
+             ((result
+                (progn "those"
+                  (let
+                    ((*with-messages-indent*
+                       (1+ *with-messages-indent*)))
+                    (message "[0]Doing whatever...")
+                    (message "Indent is %s" *with-messages-indent*)
+                    (let
+                      ((result
+                         (progn "these"
+                           (indented-message "boom"))))
+                      (message "%s" "[0]Done these.")
+                      result)))))
+             (message "%s" "[0]Done those.")
+             result)))))
+    (message "%s" "[0]Done that.")
+    result))
 
-(setq lexical-binding t)
+
+
+(require 'pp)
+
+
