@@ -59,7 +59,6 @@ afterwards, returning the result of the last expression in `body'."
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
           (second-message-string (when is-double-message (cadr args)))
-          (body (if (or 1st-is-just-kw is-double-message) (cddr args) (cdr args)))          
           (message-string
             (if (stringp message-string) message-string (eval message-string)))
           (message-string-head (substring message-string 0 1))
@@ -89,20 +88,56 @@ afterwards, returning the result of the last expression in `body'."
                   "."))))
           (end-message-expr
             (unless 1st-is-just-kw
-              (list `(message "%s%s" indent-str ,end-message-string)))))
+              (list `(message "%s%s" indent-str ,end-message-string))))
+          (body
+            (cond
+              (is-double-message (cddr args))
+              (1st-is-just-kw (cddr args))
+              (t (cdr args)))))
     `(let* ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
              (*with-messages-indent* (1+ *with-messages-indent*)))
+       ;; ,(if 1st-is-just-kw "JUST" "UNJUST")
+       ;; ,(if is-double-message "DOUBLE" "SINGLE")
        (message "%s%s" indent-str ,start-message-string)
        (let ((result (progn ,@body)))
-         ,@end-message-expr         
+         ,@end-message-expr
          result))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; (insert
+;;   (pp (macroexpand-all
+;;         '(with-messages-2 "doing stuff" "the stuff"
+;;            (with-message-2 "doing things" "the things"
+;;              (indented-message-2 "boom"))))))
+
 (insert
   (pp (macroexpand-all
-        '(with-messages-2 "doing stuff" "the stuff"
-           (with-message-2 "doing things" "the things"
-             (indented-message-2 "boom"))))))
+        '(with-messages-2 "screwing around"
+           (with-messages-2 "doing stuff" "doing the stuff"
+             (with-message-2 "doing things" 
+               (indented-message-2 "boom")))))))
+f
+(let* ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+        (*with-messages-indent* (1+ *with-messages-indent*)))
+  (message "%s%s" indent-str "Screwing around...")
+  (let ( (result
+           (progn
+             (let* ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+                     (*with-messages-indent* (1+ *with-messages-indent*)))
+               (message "%s%s" indent-str "Doing stuff...")
+               (let ( (result
+                        (progn
+                          (let* ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+                                  (*with-messages-indent* (1+ *with-messages-indent*)))
+                            (message "%s%s" indent-str "Doing things.")
+                            (let
+                              ((result (progn (indented-message-2 "boom"))))
+                              result)))))
+                 (message "%s%s" indent-str "Done doing the stuff.")
+                 result)))))
+    (message "%s%s" indent-str "Done screwing around.")
+    result))
+
 
 
