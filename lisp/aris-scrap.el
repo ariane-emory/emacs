@@ -1,6 +1,7 @@
 ;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
+(require 'cl-lib)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,9 +14,9 @@
     ;; buffer twice:
     (setq *lust-style-syntax--pattern-dispatch-table* nil)
 
+    (def p 4)
+    (def w 5)
     (def p 6)
-    (def w 8)
-    (def p 9)
     (def x (1+ w))
     (def y '(w x))
     (def z (list w x))
@@ -49,7 +50,7 @@
 ;;                (indented-message-2 "boom")))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun indented-message (fmt &rest rest)
+(defun indented-message-2 (fmt &rest rest)
   (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
     (apply 'message
       (concat indent-str fmt) rest)))
@@ -57,7 +58,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-message (&rest args)
+(defmacro with-message-2 (&rest args)
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body'."
   (declare (indent 1) (debug t))
@@ -66,7 +67,7 @@ last expression in `body'."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-messages (&rest args)
+(defmacro with-messages-2 (&rest args)
   "Print `message-string' at the before evaluating `body' and a variant
 afterwards, returning the result of the last expression in `body'."
   (declare (indent 1) (debug t))
@@ -112,7 +113,7 @@ afterwards, returning the result of the last expression in `body'."
     `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
             (*with-messages-indent* (1+ *with-messages-indent*)))
        (unwind-protect
-         (progn
+         (cl-flet ((foo () 88))
            (message "%s%s" indent-str ,start-message-string)
            ,@body)
          ,@end-message-expr))))
@@ -126,6 +127,21 @@ afterwards, returning the result of the last expression in `body'."
              (indented-message-2 "boom")
              (indented-message-2 "bang"))))))
 
-
+(let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+       (*with-messages-indent* (1+ *with-messages-indent*)))
+  (unwind-protect
+    (let* ((--cl-foo-- #'(lambda nil 88)))
+      (progn
+        (message "%s%s" indent-str "Doing things...")
+        (let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+               (*with-messages-indent* (1+ *with-messages-indent*)))
+          (unwind-protect
+            (let* ((--cl-foo-- #'(lambda nil 88)))
+              (progn
+                (message "%s%s" indent-str "Doing stuff...")
+                (indented-message-2 "boom")
+                (indented-message-2 "bang")))
+            (message "%s%s" indent-str "Done doing the stuff.")))))
+    (message "%s%s" indent-str "Done doing the things.")))
 
 
