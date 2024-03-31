@@ -41,7 +41,7 @@
      (let ((group (assoc ',(car pattern) *lust-style-def--pattern-dispatch-table*)))
        (if (not group)
          (progn
-           (message "DEF:   Adding pattern roup %s" ',(car pattern))
+           (message "DEF:   Adding pattern group %s" ',(car pattern))
            (push (cons ',(car pattern) (list (cons ',pattern ',body)))
              *lust-style-def--pattern-dispatch-table*))
          (let ((pattern-case (assoc ',pattern (cdr group))))
