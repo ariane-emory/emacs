@@ -61,16 +61,14 @@
 (defmacro with-message-2 (&rest args)
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body'."
-  (declare (indent 1) (debug t))
-  `(with-messages :just ,@args))
+  `(with-messages-2-inner ,@args))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-messages-2 (&rest args)
+(defmacro with-messages-2-inner (&rest args)
   "Print `message-string' at the before evaluating `body' and a variant
 afterwards, returning the result of the last expression in `body'."
-  (declare (indent 1) (debug t))
   (let* ( (1st-is-just-kw (eql :just (car args)))
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
@@ -120,11 +118,36 @@ afterwards, returning the result of the last expression in `body'."
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro with-messages-2 (&rest args)
+  "Print `message-string' at the before evaluating `body' and a variant
+afterwards, returning the result of the last expression in `body'."
+  `(with-messages-2-inner ,@args))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (insert
   (pp (macroexpand-all
         '(with-messages-2 "doing things" "doing the things"
            (with-messages-2 "doing stuff" "doing the stuff"
              (indented-message-2 "boom")
              (indented-message-2 "bang"))))))
+(let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+       (*with-messages-indent* (1+ *with-messages-indent*)))
+  (unwind-protect
+    (let* ((--cl-foo-- #'(lambda nil 88)))
+      (progn
+        (message "%s%s" indent-str "Doing things...")
+
+        (let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+               (*with-messages-indent* (1+ *with-messages-indent*)))
+          (unwind-protect
+            (let* ((--cl-foo-- #'(lambda nil 88)))
+              (progn
+                (message "%s%s" indent-str "Doing stuff...")
+                (indented-message-2 "boom")
+                (indented-message-2 "bang")))
+            (message "%s%s" indent-str "Done doing the stuff.")))))
+    (message "%s%s" indent-str "Done doing the things.")))
+
 
 
