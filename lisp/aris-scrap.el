@@ -94,12 +94,12 @@ afterwards, returning the result of the last expression in `body'."
               (is-double-message (cddr args))
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
-    `(let* ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
-             (*with-messages-indent* (1+ *with-messages-indent*)))
+    `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
+            (*with-messages-indent* (1+ *with-messages-indent*)))
        ;; ,(if 1st-is-just-kw "JUST" "UNJUST")
        ;; ,(if is-double-message "DOUBLE" "SINGLE")
        (message "%s%s" indent-str ,start-message-string)
-       (let ((result (progn ,@body)))
+       (let ((result ,@body))
          ,@end-message-expr
          result))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -117,27 +117,23 @@ afterwards, returning the result of the last expression in `body'."
            (with-messages-2 "doing stuff" "doing the stuff"
              (with-message-2 "doing things" 
                (indented-message-2 "boom")))))))
-f
-(let* ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-        (*with-messages-indent* (1+ *with-messages-indent*)))
+(let
+  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+    (*with-messages-indent* (1+ *with-messages-indent*)))
   (message "%s%s" indent-str "Screwing around...")
-  (let ( (result
-           (progn
-             (let* ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-                     (*with-messages-indent* (1+ *with-messages-indent*)))
-               (message "%s%s" indent-str "Doing stuff...")
-               (let ( (result
-                        (progn
-                          (let* ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-                                  (*with-messages-indent* (1+ *with-messages-indent*)))
-                            (message "%s%s" indent-str "Doing things.")
-                            (let
-                              ((result (progn (indented-message-2 "boom"))))
-                              result)))))
-                 (message "%s%s" indent-str "Done doing the stuff.")
-                 result)))))
+  (let ((result (let
+                  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+                    (*with-messages-indent* (1+ *with-messages-indent*)))
+                  (message "%s%s" indent-str "Doing stuff...")
+                  (let ((result (let
+                                  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+                                    (*with-messages-indent* (1+ *with-messages-indent*)))
+                                  (message "%s%s" indent-str "Doing things.")
+                                  (let ((result (indented-message-2 "boom")))
+                                    result))))
+                    (message "%s%s" indent-str "Done doing the stuff.")
+                    result))))
     (message "%s%s" indent-str "Done screwing around.")
     result))
-
 
 
