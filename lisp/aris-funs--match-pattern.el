@@ -208,7 +208,7 @@ Examples:
                                (if (plural? label) "" "es"))
                              (let ( ;; (depth (1+ depth))
                                     (matched (car (continue pattern-tail target)))
-                                    (string (capitalize label)))
+                                    (string label))
                                ;; (setq depth (1- depth))
                                (print
                                  (if matched "%s matched!" "%s didn't match!")
@@ -265,7 +265,7 @@ Examples:
                             (not (elem-is-verbatim? target-head))))
                          (let ((*aris-indent* (1+ *aris-indent*))
                                 (complaint
-                                  (format "TARGET-HEAD %s is not a verbatim element."
+                                  (format "target-head %s is not a verbatim element."
                                     target-head)))
                            (if *match-pattern--signal-error-if-target-elements-is-not-verbatim*
                              (error complaint)
@@ -276,31 +276,31 @@ Examples:
                        ((case 5 (pattern-head-is-invalid?))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (error
-                             "PATTERN-HEAD '%s' is an invalid element."
+                             "pattern-head '%s' is an invalid element."
                              pattern-head)))
                        ;; From here on, we know that `pattern-head' must be a capture.
                        ;; Case when `pattern-head' is tagged with the "anything" tag:
                        ((case 6 (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
                          (let ((*aris-indent* (1+ *aris-indent*)))
-                           (print "Head of PATTERN has 'anything' tag.")
+                           (print "head of pattern has 'anything' tag.")
                            (continue pattern-tail target-tail target-head)))
                        ;; Case when `pattern-head' is tagged with the Kleene tag:
                        ((case 7 (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
                          (let ((*aris-indent* (1+ *aris-indent*)))
-                           (print "Head of PATTERN has Kleene tag.")
+                           (print "head of pattern has Kleene tag.")
                            (cond
                              ((pattern-tail-matches-target-tail?)
                                (print (concat
-                                        "Kleene case 1: The rest of PATTERN matches the "
-                                        "rest of TARGET, so we'll take LIST_HEAD as a Kleene item."))
+                                        "Kleene case 1: the rest of pattern matches the rest of "
+                                        "target, so we'll take pattern-head as a Kleene item."))
                                (continue pattern-tail target-tail target-head))
                              ((pattern-tail-matches-target?)
                                (print (concat
-                                        "Kleene case 2: The rest of PATTERN matches the "
-                                        "entire TARGET, so the Kleene item is nil."))
+                                        "Kleene case 2: pattern-tail matches the "
+                                        "entire target, so the Kleene item is nil."))
                                (continue pattern-tail target-tail nil))
                              (t
-                               (print "Kleene case 3: Take LIST head as a Kleene item.")
+                               (print "Kleene case 3: Take target-head as a Kleene item.")
                                (continue pattern target-tail target-head)))))
                        ;; Case when `pattern-head' starts with predicate form:
                        ((case 8
