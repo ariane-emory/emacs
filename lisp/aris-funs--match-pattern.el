@@ -24,10 +24,15 @@ Artificial Intelligence' but several improvements.")
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *match-pattern--indent-char* ?\. ;; DO NOT NEGLECT THE SPACE!
   "The character used by `match-pattern' to indent messages."
   :group 'match-pattern
   :type 'character)
+
+(defcustom *match-pattern--indent-size* 2
+  "The number of characters used by `match-pattern' to indent messages."
+  :group 'match-pattern
+  :type 'integer)
 
 (defcustom *match-pattern--merge-duplicate-alist-keys* t
   "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
@@ -147,14 +152,16 @@ Examples:
                    (target-tail  (cdr target)))
              ;; flet the functions that rely only upon matchrec's arguments and the enclosing
              ;; let's bindings:
-             (cl-flet ( (indent-string         () (make-string (2* depth)
-                                                    *match-pattern--indent-char*))
+             (cl-flet ( (indent-string         () (format "%d %s" depth
+                                                    (make-string
+                                                      (* *match-pattern--indent-size* depth)
+                                                      *match-pattern--indent-char*)))
                         (fail-to-match         () (cons nil accumulator))
                         (match-successfully    () (cons t accumulator))
                         (pattern-head-is-atom? () (atom pattern-head)))
                ;; flet the remaining mutually referential functions:
                (cl-flet* ( (message (&rest args)
-                             (message "%d %s%s" depth (indent-string)
+                             (message "%s%s" (indent-string)
                                (apply #'format (car args) (cdr args))))
                            (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                              (let ((result
