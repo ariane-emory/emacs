@@ -49,13 +49,6 @@
 ;;              (with-messages-2 "doing stuff" "doing the stuff"
 ;;                (indented-message-2 "boom")))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun indented-message-2 (fmt &rest rest)
-  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
-    (apply 'message
-      (concat indent-str fmt) rest)))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-message-2 (&rest args)
@@ -64,16 +57,9 @@ last expression in `body'."
   `(with-messages-2 :just ,@args))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-message-2 (&rest args)
-  "Print `message-string' at the before evaluating `body' and a variant
-afterwards, returning the result of the last expression in `body'."
-  `(with-messages-2-inner ,@args))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-messages-2-inner (&rest args)
+(defmacro with-messages-2 (&rest args)
   (let* ( (1st-is-just-kw (eql :just (car args)))
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
@@ -115,20 +101,24 @@ afterwards, returning the result of the last expression in `body'."
               (t (cdr args)))))
     `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
             (*with-messages-indent* (1+ *with-messages-indent*)))
-       (unwind-protect
-         (cl-flet ((foo () 88))
-           (message "%s%s" indent-str ,start-message-string)
-           ,@body)
-         ,@end-message-expr))))
+       (cl-flet ((indented-message-2 (fmt &rest rest)
+                   (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
+                     (apply 'message (concat indent-str fmt) rest))))
+         (unwind-protect
+           (progn
+             (message "%s%s" indent-str ,start-message-string)
+             ,@body)
+           ,@end-message-expr)))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-messages-2 (&rest args)
-  "Print `message-string' at the before evaluating `body' and a variant
-afterwards, returning the result of the last expression in `body'."
-  `(with-messages-2-inner ,@args))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun indented-message-2 (fmt &rest rest)
+;;   (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
+;;     (apply 'message
+;;       (concat indent-str fmt) rest)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (insert
   (pp (macroexpand-all
@@ -137,24 +127,32 @@ afterwards, returning the result of the last expression in `body'."
              (indented-message-2 "boom")
              (indented-message-2 "bang"))))))
 
-
 (let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
        (*with-messages-indent* (1+ *with-messages-indent*)))
-  (unwind-protect
-    (let* ((--cl-foo-- #'(lambda nil 88)))
-      (progn
-        (message "%s%s" indent-str "Doing things...")
-        (let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
-               (*with-messages-indent* (1+ *with-messages-indent*)))
-          (unwind-protect
-            (let* ((--cl-foo-- #'(lambda nil 88)))
+  (let* ((--cl-indented-message-2--
+           #'(lambda (fmt &rest rest)
+               "\n\n(fn FMT &rest REST)"
+               (let ((indent-str (make-string (* 2 *with-messages-indent*) 32)))
+                 (apply 'message (concat indent-str fmt) rest)))))
+    (progn
+      (unwind-protect
+        (progn
+          (message "%s%s" indent-str "Doing things...")
+          (let ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+                 (*with-messages-indent* (1+ *with-messages-indent*)))
+            (let* ((--cl-indented-message-2--
+                     #'(lambda (fmt &rest rest)
+                         "\n\n(fn FMT &rest REST)"
+                         (let ((indent-str (make-string (* 2 *with-messages-indent*) 32)))
+                           (apply 'message (concat indent-str fmt) rest)))))
               (progn
-                (message "%s%s" indent-str "Doing stuff...")
-                (indented-message-2 "boom")
-                (indented-message-2 "bang")))
-            (message "%s%s" indent-str "Done doing the stuff.")))))
-    (message "%s%s" indent-str "Done doing the things.")))
-
+                (unwind-protect
+                  (progn
+                    (message "%s%s" indent-str "Doing stuff...")
+                    (funcall --cl-indented-message-2-- "boom")
+                    (funcall --cl-indented-message-2-- "bang"))
+                  (message "%s%s" indent-str "Done doing the stuff."))))))
+        (message "%s%s" indent-str "Done doing the things.")))))
 
 
 
