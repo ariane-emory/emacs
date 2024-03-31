@@ -88,6 +88,9 @@
   ("C-x C-SPC" .
     (lambda () (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
 
+  ("C-x C-<backspace>" .
+    (lambda () (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
+
   ("C-M-t" . 
     (lambda ()
       "Transpose sexp ahead of point backwards."
