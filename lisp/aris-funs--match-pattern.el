@@ -24,15 +24,15 @@ Artificial Intelligence' but several improvements.")
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--indent-char* ?\. ;; DO NOT NEGLECT THE SPACE!
-  "The character used by `match-pattern' to indent messages."
-  :group 'match-pattern
-  :type 'character)
+;; (defcustom *match-pattern--indent-char* ?\. ;; DO NOT NEGLECT THE SPACE!
+;;   "The character used by `match-pattern' to indent messages."
+;;   :group 'match-pattern
+;;   :type 'character)
 
-(defcustom *match-pattern--indent-size* 2
-  "The number of characters used by `match-pattern' to indent messages."
-  :group 'match-pattern
-  :type 'integer)
+;; (defcustom *match-pattern--indent-size* 2
+;;   "The number of characters used by `match-pattern' to indent messages."
+;;   :group 'match-pattern
+;;   :type 'integer)
 
 (defcustom *match-pattern--merge-duplicate-alist-keys* t
   "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
