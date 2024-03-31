@@ -89,8 +89,8 @@ non-verbatim TARGET element is encountered. This setting only applies when
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--use-dotted-pairs-in-result* t
-  "Whether `match-pattern' should use dotted pairs in the result alist."
+(defcustom *match-pattern--verbose* nil
+  "Whether `match-pattern' should print verbose messages."
   :group 'match-pattern
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -121,7 +121,7 @@ Examples:
   (let ( (original-indent *aris-indent*)
          (*aris-indent--char* ?\ )
          (*aris-indent--size* 3))
-    (cl-letf (((symbol-function 'print) #'indented-message))
+    (cl-letf (((symbol-function 'print) (if *match-pattern--verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
       (let ((*aris-indent* (1+ *aris-indent*)))
         (when *match-pattern--init-fun*
@@ -364,7 +364,7 @@ Examples:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when t
   (setq *match-pattern--use-dotted-pairs-in-result* t)
-  
+
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
