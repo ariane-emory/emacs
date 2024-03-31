@@ -301,22 +301,22 @@ Examples:
                        (error "Unhandled case! Double-check your configuration.")))))))))
         (let ((match-result (matchrec pattern target 0 nil)))
           (message "Match result is %s." match-result)
-          (when (car match-result)
-            (let ((match-result (cdr match-result)))
-              ;;(message "Cdr of match result is %s." match-result)
-              (if (not match-result)
-                ;; If the match succeeded but there were no captures, just return t:
-                t
-                (message "Extracted match result %s." match-result)
-                (let ((match-result
-                        (if *match-pattern--merge-duplicate-alist-keys*
-                          (nreverse (aris-merge-duplicate-alist-keys match-result))
-                          match-result)))
-                  (message "Post-merge match result %s." match-result)
-                  (if *match-pattern--use-dotted-pairs-in-result*
-                    (add-dots-to-alist match-result)
-                    match-result)
-                  )))))))))
+	  (when (car match-result)
+	    (let ((match-result (cdr match-result)))
+	      ;;(message "Cdr of match result is %s." match-result)
+	      (if (not match-result)
+		;; If the match succeeded but there were no captures, just return t:
+		t
+		(message "Extracted match result %s." match-result)
+		(let ((match-result
+			(if *match-pattern--merge-duplicate-alist-keys*
+			  (nreverse (aris-merge-duplicate-alist-keys match-result))
+			  match-result)))
+		  (message "Post-merge match result %s." match-result)
+		  (if *match-pattern--use-dotted-pairs-in-result*
+		    (aris-add-dots-to-alist match-result)
+		    match-result)
+		  )))))))))
                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
