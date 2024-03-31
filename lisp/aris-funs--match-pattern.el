@@ -225,17 +225,21 @@ Examples:
                  (let ((*aris-indent* (1+ *aris-indent*)))
                    (print "target-head %s is %sa verbatim element." target-head
                      (if (elem-is-verbatim? target-head) "" "not "))
-                   (cl-macrolet ((case (index &body body)
-                                   `(progn
-                                      (print "trying case %s..." ,index)
-                                      (let ((result (let ((*aris-indent* (1+ *aris-indent*))) ,@body)))
-                                        (if result
-                                          (print "case %s matched!" ,index)
-                                          (print "case %s failed to match." ,index))
-                                        result))))
+                   (cl-macrolet ( (case (index descr &body body)
+                                    `(progn
+                                       (print "trying case %s: %s..." ,index ,descr)
+                                       (let ((result (let ((*aris-indent* (1+ *aris-indent*))) ,@body)))
+                                         (if result
+                                           (print "case %s matched!" ,index)
+                                           (print "case %s failed to match." ,index))
+                                         result)))
+                                  (indent (&body body)
+                                    `(let ((*aris-indent* (1+ *aris-indent*)))
+                                       ,@body)))
                      (cond
                        ;; If `pattern' is null, match successfully when `target' is null too:
-                       ((case 1 (null pattern))
+                       ((case 1 "Empty pattern"
+                          (null pattern))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (print "PATTERN is null and %s match!"
                              (if target
@@ -245,13 +249,15 @@ Examples:
                              (match-successfully)
                              (fail-to-match))))
                        ;; Fail to match if `target' is null and `pattern' isn't:
-                       ((case 2 (null target))
+                       ((case 2 "Empty target"
+                          (null target))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (print "TARGET is null and PATTERN isn't, no match!")
                            (fail-to-match)))
                        ;; If `pattern-head' is a verbatim element, match if it's equal to (car
                        ;; `target'):
-                       ((case 3 (pattern-head-is-verbatim?))
+                       ((case 3 "Verbatim element"
+                          (pattern-head-is-verbatim?))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (print "pattern-head %s is a verbatim element." pattern-head)
                            (if (heads-are-equal?)
@@ -259,7 +265,7 @@ Examples:
                              (fail-to-match))))
                        ;; If `*match-pattern--target-elements-must-be-verbatim*' is set, then signal 
                        ;; an error if `target-head' isn't a verbatim element:
-                       ((case 4
+                       ((case 4 "Error case: non-verbatim target element"
                           (and
                             *match-pattern--target-elements-must-be-verbatim*
                             (not (elem-is-verbatim? target-head))))
@@ -273,19 +279,22 @@ Examples:
                              (fail-to-match))))
                        ;; If `pattern-head' isn't either a verbatim element or a capture,
                        ;; something has gone wrong:
-                       ((case 5 (pattern-head-is-invalid?))
+                       ((case 5 "Error case: invalid pattern element"
+                          (pattern-head-is-invalid?))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (error
                              "pattern-head '%s' is an invalid element."
                              pattern-head)))
                        ;; From here on, we know that `pattern-head' must be a capture.
                        ;; Case when `pattern-head' is tagged with the "anything" tag:
-                       ((case 6 (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
+                       ((case 6 "`anything' pattern element"
+                          (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (print "head of pattern has 'anything' tag.")
                            (continue pattern-tail target-tail target-head)))
                        ;; Case when `pattern-head' is tagged with the Kleene tag:
-                       ((case 7 (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
+                       ((case 7 "Kleene pattern element"
+                          (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (print "head of pattern has Kleene tag.")
                            (cond
@@ -303,14 +312,14 @@ Examples:
                                (print "Kleene case 3: Take target-head as a Kleene item.")
                                (continue pattern target-tail target-head)))))
                        ;; Case when `pattern-head' starts with predicate form:
-                       ((case 8
+                       ((case 8 "Predicate pattern element"
                           (and
                             *match-pattern--capture-can-be-predicate*
                             (apply (capture-tag-of-pattern-head) (list target-head))))
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (continue pattern-tail target-tail target-head)))
                        ;; Some unimplemented case happened, signal an error:
-                       ((case 9 t)
+                       ((case 9 "Error case: this case should be unrachable" t)
                          (let ((*aris-indent* (1+ *aris-indent*)))
                            (error "Unhandled case! Double-check your configuration."))))))))))
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
