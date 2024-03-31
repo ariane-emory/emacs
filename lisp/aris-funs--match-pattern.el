@@ -154,14 +154,14 @@ Intelligence' but with several improvements."
              (cl-flet ( (indent-string         () (make-string depth ?\ ))
                         (fail-to-match         () (cons nil accumulator))
                         (match-successfully    () (cons t accumulator))
-                        (pattern-head-is-atom? () (atom pattern-head))
-                        (heads-are-equal?      ()
-                          (message "Compare %s with %s..." pattern-head target-head)
-                          (equal pattern-head target-head)))
+                        (pattern-head-is-atom? () (atom pattern-head)))
                ;; flet the functions with mutual references:
                (cl-flet* ((message (&rest args)
                             (message "%s%s" (indent-string)
                               (apply #'format (car args) (cdr args))))
+                           (heads-are-equal?      ()
+                             (message "Compare %s with %s..." pattern-head target-head)
+                             (equal pattern-head target-head))
                            (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                              (let ((result
                                      ;; If `preferred-p' isn't set, but `inverse-p' is, we assume that
