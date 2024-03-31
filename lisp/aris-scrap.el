@@ -8,15 +8,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Test defining a function:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(progn
-  (require 'aris-funs--lust-style-def)
+(require 'aris-funs--lust-style-syntax)
 
+(begin
+  ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
   ;; buffer twice:
-  (def *lust-style-def--pattern-dispatch-table* nil)
+  (setq *lust-style-syntax--pattern-dispatch-table* nil)
 
   (def w 8)
   (def x (1+ w))
