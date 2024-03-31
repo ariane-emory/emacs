@@ -330,24 +330,11 @@ Intelligence' but with several improvements."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when t
   (setq *match-pattern--use-dotted-pairs-in-result* t)
-  ⇒ t
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
-
   (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  ⇒ t
-
   (setq *match-pattern--use-dotted-pairs-in-result* nil)
-
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
-
-  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  ⇒ t
-
-  
-  
-  )
+  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
