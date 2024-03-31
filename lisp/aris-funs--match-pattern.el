@@ -150,23 +150,24 @@ Intelligence' but with several improvements."
                    (pattern-tail (cdr pattern))
                    (target-head  (car target))
                    (target-tail  (cdr target)))
-             ;; flet the functions that rely only upon matchrec's argument and the enclosing
+             ;; flet the functions that rely only upon matchrec's arguments and the enclosing
              ;; let's bindings:
              (cl-flet ( (indent-string         () (make-string depth ?\ ))
                         (fail-to-match         () (cons nil accumulator))
                         (match-successfully    () (cons t accumulator))
                         (pattern-head-is-atom? () (atom pattern-head)))
-               ;; flet the functions with mutual references:
+               ;; flet the remaining mutually referential functions:
                (cl-flet* ((message (&rest args)
                             (message "%s%s" (indent-string)
                               (apply #'format (car args) (cdr args))))
-                           (heads-are-equal?      ()
+                           (heads-are-equal? ()
                              (message "Compare %s with %s..." pattern-head target-head)
                              (equal pattern-head target-head))
                            (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                              (let ((result
-                                     ;; If `preferred-p' isn't set, but `inverse-p' is, we assume that
-                                     ;; anything that's not inverse-p must be have the other elem type.
+                                     ;; If `preferred-p' isn't set, but `inverse-p' is, we assume
+                                     ;; that anything that's not inverse-p must be have the other
+                                     ;; elem type.
                                      (cond
                                        (preferred-p (funcall preferred-p elem))
                                        (inverse-p (not (funcall inverse-p elem)))
