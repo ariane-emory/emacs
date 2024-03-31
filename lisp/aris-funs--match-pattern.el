@@ -174,7 +174,7 @@ Examples:
                          (assert-pattern-head-is-capture! ()
                            (unless (pattern-head-is-capture?)
                              (error
-                               "Logic error: PATTERN-HEAD '%s' is not a capture."
+                               "Logic error: pattern-head '%s' is not a capture."
                                pattern-head)))
                          (capture-field-of-pattern-head (fun)
                            (assert-pattern-head-is-capture!)
@@ -214,14 +214,14 @@ Examples:
                                string)
                              matched))
                          (pattern-tail-matches-target? ()
-                           (lookahead target "PATTERN-TAIL"))
+                           (lookahead target "pattern-tail"))
                          (pattern-tail-matches-target-tail? ()
                            (lookahead target-tail "tails")))
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                ;; Body of matchrec:
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                (print "Matching %s against %s with acc %s..." pattern target accumulator)
-               (print "TARGET-HEAD %s is %sa verbatim element." target-head
+               (print "target-head %s is %sa verbatim element." target-head
                  (if (elem-is-verbatim? target-head) "" "not "))
                (cl-macrolet ((case (index &body body)
                                `(progn
@@ -248,7 +248,7 @@ Examples:
                    ;; If `pattern-head' is a verbatim element, match if it's equal to (car
                    ;; `target'):
                    ((case 3 (pattern-head-is-verbatim?))
-                     (print "PATTERN-HEAD %s is a verbatim element." pattern-head)
+                     (print "pattern-head %s is a verbatim element." pattern-head)
                      (if (heads-are-equal?)
                        (continue pattern-tail target-tail)
                        (fail-to-match)))
