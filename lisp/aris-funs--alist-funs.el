@@ -32,7 +32,7 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun merge-duplicate-alist-keys (alist &optional (use-dots t))
+(defun merge-duplicate-alist-keys (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A helper function used by aris-match-pattern to merge the values of duplicate
  ALIST.
@@ -58,16 +58,8 @@ Examples:
         (if existing
           (setcdr existing (nconc (cdr existing) tail))
           (push (cons key tail) result))))
-    (nreverse
-      (if (not use-dots)
-        result
-        (mapr
-          result
-          (lambda (pair)
-            (if (length> (cdr pair) 1)
-              pair
-              (cons (car pair) (cadr pair)))))))))
-              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (nreverse result)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
