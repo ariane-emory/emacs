@@ -37,9 +37,11 @@
   "Define a function call pattern case or a variable using a Lust-style syntax."
   (if (symbolp pattern)
     `(progn
+       (when ,(cdr body)
+         (error "DEF: Variable definition's body must be a single value."))
        (message "DEF: Defining variable %s." ',pattern)
        (set ',pattern ,(car body))
-       pattern)
+       ,(car body))
     `(progn
        (message "DEF: Defining pattern %s." ',pattern)
        (lust-style-def--bind-symbol-to-pattern-dispatcher-fun  ',(car pattern))
