@@ -30,9 +30,32 @@
         (fib (car z))
         (fib (cadr z))
         (fib 10))))) ;; => (21 34 55)
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; scratch ends here:
+(defun merge-duplicate-alist-keys (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "A helper function used by aris-match-pattern to merge the values of duplicate
+ ALIST.
+
+Example:
+(aris-match-pattern--merge-duplicate-alist-keys '((y . 22) (x . 66) (w . 3) (w .) ⇒
+  '((y . 22) (x . 66) (w 3 2 )) (v . 77))"
+  (let (result)
+    (dolist (pair alist)
+      (let* ( (key (car pair))
+              (value (cdr pair))
+              (existing (assoc key result)))
+        (if existing
+          (setcdr existing (append (cdr existing) (list value)))
+          (push (cons key (list value)) result))))
+    (nreverse
+      (mapcar
+        (lambda (pair)
+          (if (= (length (cdr pair)) 1)
+            (cons (car pair) (car (cdr pair)))
+            pair))
+        result))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
