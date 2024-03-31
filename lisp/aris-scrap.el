@@ -34,8 +34,9 @@
     )
   ) ;; => (169 273 39)
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun indented-message (fmt &rest rest)
+(defun indented-message-2 (fmt &rest rest)
   (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\,)))
     (apply 'message
       (concat (format "[%s]" *with-messages-indent*) indent-str fmt) rest)))
@@ -51,7 +52,7 @@ afterwards, returning the result of the last expression in `body'."
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
           (second-message-string (when is-double-message (cadr args)))
-          (body (if 1st-is-just-kw (cddr args) (cdr args)))
+          (body (if (or 1st-is-just-kw is-double-message) (cddr args) (cdr args)))          
           (message-string (if (stringp message-string) message-string (eval message-string)))
           (message-string-head (substring message-string 0 1))
           (message-string-tail (substring message-string 1))
@@ -68,22 +69,18 @@ afterwards, returning the result of the last expression in `body'."
             (cond 
               (is-double-message
                 (concat
-                  ;; (format "[%s]" *with-messages-indent*)
-                  ;; indent-str
                   "Done "
                   (downcase second-message-string-head)
                   second-message-string-tail
                   "."))
               ((not 1st-is-just-kw)
                 (concat
-                  ;; (format "[%s]" *with-messages-indent*)
-                  ;; indent-str
                   "Done "
                   (downcase message-string-head)
                   message-string-tail
                   ".")))))
-    `(let* ( (*with-messages-indent* (1+ *with-messages-indent*))
-             (indent-str (make-string (* 2 *with-messages-indent*) ?_)))
+    `(let* ( (indent-str (make-string (* 2 *with-messages-indent*) ?_))
+             (*with-messages-indent* (1+ *with-messages-indent*)))
        (message "%s%s" indent-str ,start-message-string)
        (let ((result (progn ,@body)))
          (unless ,1st-is-just-kw
@@ -96,13 +93,7 @@ afterwards, returning the result of the last expression in `body'."
   (pp (macroexpand-all
         '(with-messages-2 "doing stuff" "that"
            (with-messages-2 "doing things" "those"
-             (indented-message "boom"))))))
-
-
-
-
-
-
+             (indented-message-2 "boom"))))))
 
 
 
