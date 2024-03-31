@@ -35,10 +35,14 @@
     )
   ) ;; => (169 273 39)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *with-messages-indent-char* ?\  "The character used for indentation in `with-messages'.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
-  (let ((indent-str (make-string (* 2 *with-messages-indent*) ?\ )))
+  (let ((indent-str (make-string (* 2 *with-messages-indent*) *with-messages-indent-char*)))
     (apply 'message (concat indent-str fmt) rest)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -70,23 +74,22 @@ last expression in `body'."
               (upcase message-string-head)
               message-string-tail
               (if 1st-is-just-kw "." "...")))
-          (end-message-string
+          (end-message-fmt-args
             (cond 
               (is-double-message
-                (format "Done %s%s."
-                  (downcase second-message-string-head) second-message-string-tail))
+                (list (downcase second-message-string-head) second-message-string-tail))
               ((not 1st-is-just-kw)
-                (format "Done %s%s."
-                  (downcase message-string-head) message-string-tail))))
+                (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (unless 1st-is-just-kw
-              (list `(message "%s%s" indent-str ,end-message-string))))
+              (list `(apply #'message "%sDone %s%s." indent-str ',end-message-fmt-args))))
           (body
             (cond
               (is-double-message (cddr args))
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
-    `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
+    `(let ( (indent-str
+              (make-string (* 2 *with-messages-indent*) *with-messages-indent-char*))
             (*with-messages-indent* (1+ *with-messages-indent*)))
        (unwind-protect
          (progn
@@ -102,5 +105,39 @@ last expression in `body'."
            (with-messages "doing stuff" "doing the stuff"
              (indented-message "boom")
              (indented-message "bang"))))))
+(let
+  ((indent-str
+     (make-string
+       (* 2 *with-messages-indent*)
+       *with-messages-indent-char*))
+    (*with-messages-indent*
+      (1+ *with-messages-indent*)))
+  (unwind-protect
+    (progn
+      (message "%s%s" indent-str "Doing things...")
+      (let
+        ((indent-str
+           (make-string
+             (* 2 *with-messages-indent*)
+             *with-messages-indent-char*))
+          (*with-messages-indent*
+            (1+ *with-messages-indent*)))
+        (unwind-protect
+          (progn
+            (message "%s%s" indent-str "Doing stuff...")
+            (indented-message "boom")
+            (indented-message "bang"))
+          (apply #'message "%sDone %s%s." indent-str
+            '("d" "oing the stuff")))))
+    (apply #'message "%sDone %s%s." indent-str
+      '("d" "oing the things"))))
+
+
+
+
+
+
+
+
 
 
