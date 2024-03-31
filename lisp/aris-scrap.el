@@ -109,30 +109,34 @@ afterwards, returning the result of the last expression in `body'."
               (t (cdr args)))))
     `(let ( (indent-str (make-string (* 2 *with-messages-indent*) ?\ ))
             (*with-messages-indent* (1+ *with-messages-indent*)))
-       ;; ,(if 1st-is-just-kw "JUST" "UNJUST")
-       ;; ,(if is-double-message "DOUBLE" "SINGLE")
-       (message "%s%s" indent-str ,start-message-string)
        (unwind-protect
-         (progn ,@body)
+         (progn (message "%s%s" indent-str ,start-message-string)
+           ,@body)
          ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (insert
   (pp (macroexpand-all
-        '(with-messages-2 "doing stuff" "doing the stuff"
-           (indented-message-2 "boom")))))(let
-  ((indent-str
-     (make-string
-       (* 2 *with-messages-indent*)
-       32))
-    (*with-messages-indent*
-      (1+ *with-messages-indent*)))
-  (message "%s%s" indent-str "Doing stuff...")
+        '(with-messages-2 "doing things" "doing the things"
+           (with-messages-2 "doing stuff" "doing the stuff"
+             (indented-message-2 "boom")
+             (indented-message-2 "bang"))))))
+(let
+  ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+    (*with-messages-indent* (1+ *with-messages-indent*)))
   (unwind-protect
     (progn
-      (indented-message-2 "boom"))
-    (message "%s%s" indent-str "Done doing the stuff.")))
-
+      (message "%s%s" indent-str "Doing things...")
+      (let
+        ( (indent-str (make-string (* 2 *with-messages-indent*) 32))
+          (*with-messages-indent* (1+ *with-messages-indent*)))
+        (unwind-protect
+          (progn
+            (message "%s%s" indent-str "Doing stuff...")
+            (indented-message-2 "boom")
+            (indented-message-2 "bang"))
+          (message "%s%s" indent-str "Done doing the stuff."))))
+    (message "%s%s" indent-str "Done doing the things.")))
 
 
 
