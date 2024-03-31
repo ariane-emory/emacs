@@ -118,17 +118,17 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--eval-match-result (result)
+(defun lust-style-syntax--eval-match-result (match-result)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate the result of a match."
-  (message "Evaluating match result %s" result)
-  (if (atom (cadr result))
+  "Evaluate the MATCH-RESULT for a call pattern."
+  (message "Evaluating match result %s" match-result)
+  (if (atom (cadr match-result))
     (progn
-      (message "Match result is an atom, returning %s" (cadr result))
-      (cadr result))
-    (let ((result (cons 'let result)))
-      (message "Evaluating augmented match result %s" result)
-      (let ((result (eval result)))
+      (message "Match result is an atom, returning %s" (cadr match-result))
+      (cadr match-result))
+    (let ((decorated-result (cons 'let match-result)))
+      (message "Evaluating decorated match result %s" decorated-result)
+      (let ((result (eval decorated-result)))
         (message "Evaluated match result %s" result)
         result))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
