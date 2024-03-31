@@ -147,12 +147,9 @@ Examples:
                         (match-successfully    () (cons t accumulator))
                         (pattern-head-is-atom? () (atom pattern-head)))
                ;; flet the remaining mutually referential functions:
-               (cl-flet* ((message (&rest args)
-                            (message "%s%s" (indent-string)
-                              (apply #'format (car args) (cdr args))))
-                           (heads-are-equal? ()
-                             (message "Compare %s with %s..." pattern-head target-head)
-                             (equal pattern-head target-head))
+               (cl-flet* ( (message (&rest args)
+                             (message "%s%s" (indent-string)
+                               (apply #'format (car args) (cdr args))))
                            (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                              (let ((result
                                      ;; If `preferred-p' isn't set, but `inverse-p' is, we assume
@@ -166,10 +163,15 @@ Examples:
                                result))
                            (elem-is-verbatim? (elem) ;; semi-pure.
                              (elem-is-of-elem-type? elem "verbatim"
-                               *match-pattern--verbatim-element?* *match-pattern--capture-element?*))
+                               *match-pattern--verbatim-element?*
+                               *match-pattern--capture-element?*))
                            (elem-is-capture? (elem) ;; semi-pure.
                              (elem-is-of-elem-type? elem "cature"
-                               *match-pattern--capture-element?* *match-pattern--verbatim-element?*))
+                               *match-pattern--capture-element?*
+                               *match-pattern--verbatim-element?*))
+                           (heads-are-equal? ()
+                             (message "Compare %s with %s..." pattern-head target-head)
+                             (equal pattern-head target-head))
                            (pattern-head-is-capture? ()
                              (elem-is-capture? pattern-head))
                            (pattern-head-is-verbatim? ()
