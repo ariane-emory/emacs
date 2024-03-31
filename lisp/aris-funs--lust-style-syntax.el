@@ -70,10 +70,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun lust-style-syntax--get-patterns-for-group (group-symbol)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
-  (message "BINDING DISPATCH FUN FOR '%s!" symbol)
+  (message "BINDING DISPATCH FUN FOR %s!" symbol)
   (unless (symbolp symbol)
     (error "%s is not a symbol." symbol))
   (let* ((already-bound (fboundp symbol)))
@@ -84,7 +91,7 @@
                "Logic error: function %s already bound "
                "elsewherm, fmakunbound it first!")
         symbol))
-    (message "%sBINDING DISPATCH FUN FOR '%s!"
+    (message "%sBINDING DISPATCH FUN FOR %s!"
       (if already-bound "RE" "") symbol)
     (fset symbol
       (lust-style-syntax--make-pattern-dispatcher-fun symbol))
@@ -92,31 +99,12 @@
       (function symbol)
       :PATTERN-DISPATCHER-FUN
       symbol)
-    (message "Marked fun with %s / %d." symbol (function symbol))
+    (message "Marked fun with %s / %s / %s." symbol (function symbol)
+      (get
+        (function symbol)
+        :PATTERN-DISPATCHER-FUN))
     ))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--get-patterns-for-group (group-symbol)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (lambda (&rest args)
-    "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
-because we're gong to be stshing stuff in their symbol properties."
-    (let* ( (function (function symbol))
-            (symbol (get function :PATTERN-DISPATCHER-FUN))
-            (group (lust-style-syntax--get-patterns-for-group symbol))
-            (call-pattern (cons symbol args)))
-      (lust-style-syntax--eval-match-result
-        (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -183,6 +171,21 @@ because we're gong to be stshing stuff in their symbol properties."
         result)
       (error "No pattern case found for %s." call-pattern))))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
+because we're gong to be stshing stuff in their symbol properties."
+  (lambda (&rest args)
+    (let* ( (function (function symbol))
+            (symbol (get function :PATTERN-DISPATCHER-FUN))
+            (group (lust-style-syntax--get-patterns-for-group symbol))
+            (call-pattern (cons symbol args)))
+      (lust-style-syntax--eval-match-result
+        (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
