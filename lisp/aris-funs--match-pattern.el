@@ -128,8 +128,8 @@ Examples:
 
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (cl-letf ((symbol-function 'message) (symbol-function 'indented-message))
-    (message "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
+  (cl-letf (((symbol-function 'print) #'indented-message))
+    (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
     (when *match-pattern--init-fun*
       (funcall *match-pattern--init-fun*))
     (cl-labels
@@ -157,8 +157,8 @@ Examples:
                        (fail-to-match         () (cons nil accumulator))
                        (match-successfully    () (cons t accumulator))
                        (pattern-head-is-atom? () (atom pattern-head))
-                       ;; (message (&rest args)
-                       ;;   (message "%s%s" (indent-string)
+                       ;; (print (&rest args)
+                       ;;   (print "%s%s" (indent-string)
                        ;;     (apply #'format (car args) (cdr args))))
                        (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
                          (let ((result
@@ -169,7 +169,7 @@ Examples:
                                    (preferred-p (funcall preferred-p elem))
                                    (inverse-p (not (funcall inverse-p elem)))
                                    (t nil))))
-                           (message "Elem %s is a %s element? %s." elem label result)
+                           (print "Elem %s is a %s element? %s." elem label result)
                            result))
                        (elem-is-verbatim? (elem) ;; semi-pure.
                          (elem-is-of-elem-type? elem "verbatim"
@@ -180,7 +180,7 @@ Examples:
                            *match-pattern--capture-element?*
                            *match-pattern--verbatim-element?*))
                        (heads-are-equal? ()
-                         (message "Compare %s with %s..." pattern-head target-head)
+                         (print "Compare %s with %s..." pattern-head target-head)
                          (equal pattern-head target-head))
                        (pattern-head-is-capture? ()
                          (elem-is-capture? pattern-head))
@@ -209,21 +209,22 @@ Examples:
                        (make-kvp (value)
                          (cons (capture-symbol-of-pattern-head) (list value)))
                        (continue (pattern target &optional (value :NOT-SUPPLIED))
-                         (matchrec pattern target depth
-                           (if (eq value :NOT-SUPPLIED)
-                             accumulator
-                             (let ((kvp (make-kvp value)))
-                               (message "Accumulating %s." kvp)
-                               (cons kvp accumulator)))))
+                         (let ((*aris-indent* (1+ *aris-indent*)))
+                           (matchrec pattern target depth
+                             (if (eq value :NOT-SUPPLIED)
+                               accumulator
+                               (let ((kvp (make-kvp value)))
+                                 (print "Accumulating %s." kvp)
+                                 (cons kvp accumulator))))))
                        (lookahead (target label)
-                         (message "Looking ahead to see if %s match%s..."
+                         (print "Looking ahead to see if %s match%s..."
                            label
                            (if (plural? label) "" "es"))
                          (let ( ;; (depth (1+ depth))
                                 (matched (car (continue pattern-tail target)))
                                 (string (capitalize label)))
                            ;; (setq depth (1- depth))
-                           (message
+                           (print
                              (if matched "%s matched!" "%s didn't match!")
                              string)
                            matched))
@@ -234,19 +235,19 @@ Examples:
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Body of matchrec:
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             (message "Matching %s against %s with acc %s..." pattern target accumulator)
-             (message "TARGET-HEAD %s is %sa verbatim element." target-head
+             (print "Matching %s against %s with acc %s..." pattern target accumulator)
+             (print "TARGET-HEAD %s is %sa verbatim element." target-head
                (if (elem-is-verbatim? target-head) "" "not "))
              ;;(setq depth (1+ depth))
              (cl-macrolet ((case (index &rest rest)
                              (let ((message-string (format "Trying case %s" index)))
                                `(progn
-                                  (message ,message-string)
+                                  (print ,message-string)
                                   ,@rest))))
                (cond
                  ;; If `pattern' is null, match successfully when `target' is null too:
                  ((case 1 (null pattern))
-                   (message "PATTERN is null and %s match!"
+                   (print "PATTERN is null and %s match!"
                      (if target
                        "TARGET is not, so no"
                        "so is TARGET,"))
@@ -255,12 +256,12 @@ Examples:
                      (fail-to-match)))
                  ;; Fail to match if `target' is null and `pattern' isn't:
                  ((case 2 (null target))
-                   (message "TARGET is null and PATTERN isn't, no match!")
+                   (print "TARGET is null and PATTERN isn't, no match!")
                    (fail-to-match))
                  ;; If `pattern-head' is a verbatim element, match if it's equal to (car
                  ;; `target'):
                  ((case 3 (pattern-head-is-verbatim?))
-                   (message "PATTERN-HEAD %s is a verbatim element." pattern-head)
+                   (print "PATTERN-HEAD %s is a verbatim element." pattern-head)
                    (if (heads-are-equal?)
                      (continue pattern-tail target-tail)
                      (fail-to-match)))
@@ -275,7 +276,7 @@ Examples:
                              target-head)))
                      (if *match-pattern--signal-error-if-target-elements-is-not-verbatim*
                        (error complaint)
-                       (message complaint)
+                       (print complaint)
                        (fail-to-match))) )
                  ;; If `pattern-head' isn't either a verbatim element or a capture,
                  ;; something has gone wrong:
@@ -286,24 +287,24 @@ Examples:
                  ;; From here on, we know that `pattern-head' must be a capture.
                  ;; Case when `pattern-head' is tagged with the "anything" tag:
                  ((case 6 (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
-                   (message "Head of PATTERN has 'anything' tag.")
+                   (print "Head of PATTERN has 'anything' tag.")
                    (continue pattern-tail target-tail target-head))
                  ;; Case when `pattern-head' is tagged with the Kleene tag:
                  ((case 7 (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
-                   (message "Head of PATTERN has Kleene tag.")
+                   (print "Head of PATTERN has Kleene tag.")
                    (cond
                      ((pattern-tail-matches-target-tail?)
-                       (message (concat
-                                  "Kleene case 1: The rest of PATTERN matches the "
-                                  "rest of TARGET, so we'll take LIST_HEAD as a Kleene item."))
+                       (print (concat
+                                "Kleene case 1: The rest of PATTERN matches the "
+                                "rest of TARGET, so we'll take LIST_HEAD as a Kleene item."))
                        (continue pattern-tail target-tail target-head))
                      ((pattern-tail-matches-target?)
-                       (message (concat
-                                  "Kleene case 2: The rest of PATTERN matches the "
-                                  "entire TARGET, so the Kleene item is nil."))
+                       (print (concat
+                                "Kleene case 2: The rest of PATTERN matches the "
+                                "entire TARGET, so the Kleene item is nil."))
                        (continue pattern-tail target-tail nil))
                      (t
-                       (message "Kleene case 3: Take LIST head as a Kleene item.")
+                       (print "Kleene case 3: Take LIST head as a Kleene item.")
                        (continue pattern target-tail target-head))))
                  ;; Case when `pattern-head' starts with predicate form:
                  ((case 8
@@ -317,19 +318,19 @@ Examples:
       ;; Leave body of matchrec.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (let ((match-result (matchrec pattern target 0 nil)))
-        (message "Match result is %s." match-result)
+        (print "Match result is %s." match-result)
 	      (when (car match-result)
 	        (let ((match-result (cdr match-result)))
-	          ;;(message "Cdr of match result is %s." match-result)
+	          ;;(print "Cdr of match result is %s." match-result)
 	          (if (not match-result)
 		          ;; If the match succeeded but there were no captures, just return t:
 		          t
-		          (message "Extracted match result %s." match-result)
+		          (print "Extracted match result %s." match-result)
 		          (let ((match-result
 			                (if *match-pattern--merge-duplicate-alist-keys*
 			                  (nreverse (aris-merge-duplicate-alist-keys match-result))
 			                  match-result)))
-		            (message "Post-merge match result %s." match-result)
+		            (print "Post-merge match result %s." match-result)
 		            (if *match-pattern--use-dotted-pairs-in-result*
 		              (aris-add-dots-to-alist match-result)
 		              match-result)))))))))
