@@ -19,87 +19,77 @@ Artificial Intelligence' but several improvements.")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *match-pattern--init-fun* nil
+(defcustom *match-pattern-init-fun* nil
   "The function `match-pattern' calls to initialize a new match."
   :group 'match-pattern
   :type 'function)
 
-;; (defcustom *match-pattern--indent-char* ?\. ;; DO NOT NEGLECT THE SPACE!
-;;   "The character used by `match-pattern' to indent messages."
-;;   :group 'match-pattern
-;;   :type 'character)
-
-;; (defcustom *match-pattern--indent-size* 2
-;;   "The number of characters used by `match-pattern' to indent messages."
-;;   :group 'match-pattern
-;;   :type 'integer)
-
-(defcustom *match-pattern--merge-duplicate-alist-keys* t
+(defcustom *match-pattern-merge-duplicate-alist-keys* t
   "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--kleene-tag* '*
+(defcustom *match-pattern-kleene-tag* '*
   "The symbol used by `match-pattern' to represent a Kleene star, matching 0 or more times."
   :group 'match-pattern
   :type 'symbol)
 
 ;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
-(defcustom *match-pattern--anything-tag* '? 
+(defcustom *match-pattern-anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
   "The symbol used by `match-pattern' to represent a wildcard, matching any single item in
 TARGET."
   :group 'match-pattern
   :type 'symbol)
 
-(defcustom *match-pattern--get-capture-symbol-fun* #'cdr
+(defcustom *match-pattern-get-capture-symbol-fun* #'cdr
   "The function used by `match-pattern' to extract the symbol from a capture."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--get-capture-tag-fun* #'car
+(defcustom *match-pattern-get-capture-tag-fun* #'car
   "The function used by `match-pattern' to extract the 'tag' from a capture element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--capture-can-be-predicate* t
+(defcustom *match-pattern-capture-can-be-predicate* t
   "Whether a capture's 'tag' in th PATTERN argument to `match-pattern' is
 allowed to be a predicate function."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--capture-element?* #'-cons-pair?
+(defcustom *match-pattern-capture-element?* #'-cons-pair?
   "The function used by `match-pattern' to determine if a PATTERN element
 represents a capture. By default, true pairs are considered captures."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--verbatim-element?* nil 
+(defcustom *match-pattern-verbatim-element?* nil 
   "The function used by `match-pattern' to determine if a PATTERN element is a verbatim
 (non-capturing).  element. By default any element that isn't a capture element is a
 verbatim element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--invalid-element?* nil
+(defcustom *match-pattern-invalid-element?* nil
   "The function used by `match-pattern' to determine if a PATTERN element is an illegal
 element. By default, any element that is neither a capture element or a verbatim
 element is an invalid element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--target-elements-must-be-verbatim* t
+(defcustom *match-pattern-target-elements-must-be-verbatim* t
   "Whether the elements of  the TARGET argument to `match-pattern' must be verbatim elements."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--signal-error-if-target-elements-is-not-verbatim* t
+(defcustom *match-pattern-signal-error-if-target-elements-is-not-verbatim* t
   "Whether `match-pattern' shoud signal an error (or merely fail to match) if a
 non-verbatim TARGET element is encountered. This setting only applies when
-*MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
+*MATCH-PATTERN-TARGET-ELEMENTS-MUST-BE-VERBATIM*."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--use-dotted-pairs-in-result* nil
+(defcustom *match-pattern-use-dotted-pairs-in-result* nil
   "Whether `match-pattern' should use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
@@ -121,7 +111,7 @@ Examples:
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
-  (setq *match-pattern--use-dotted-pairs-in-result* nil)
+  (setq *match-pattern-use-dotted-pairs-in-result* nil)
 
   (`aris-match-pattern--match-pattern' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
@@ -130,8 +120,8 @@ Examples:
   ⇒ t"
   (cl-letf (((symbol-function 'print) #'indented-message))
     (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
-    (when *match-pattern--init-fun*
-      (funcall *match-pattern--init-fun*))
+    (when *match-pattern-init-fun*
+      (funcall *match-pattern-init-fun*))
     (cl-labels
       ((matchrec (pattern target depth accumulator)
          (let  ( (pattern-head (car pattern))
@@ -152,8 +142,8 @@ Examples:
                          (transform-string-head string #'downcase))
                        ;; (indent-string ()
                        ;;   (make-string
-                       ;;     (* *match-pattern--indent-size* depth)
-                       ;;     *match-pattern--indent-char*))
+                       ;;     (* *match-pattern-indent-size* depth)
+                       ;;     *match-pattern-indent-char*))
                        (fail-to-match         () (cons nil accumulator))
                        (match-successfully    () (cons t accumulator))
                        (pattern-head-is-atom? () (atom pattern-head))
@@ -173,12 +163,12 @@ Examples:
                            result))
                        (elem-is-verbatim? (elem) ;; semi-pure.
                          (elem-is-of-elem-type? elem "verbatim"
-                           *match-pattern--verbatim-element?*
-                           *match-pattern--capture-element?*))
+                           *match-pattern-verbatim-element?*
+                           *match-pattern-capture-element?*))
                        (elem-is-capture? (elem) ;; semi-pure.
                          (elem-is-of-elem-type? elem "capture"
-                           *match-pattern--capture-element?*
-                           *match-pattern--verbatim-element?*))
+                           *match-pattern-capture-element?*
+                           *match-pattern-verbatim-element?*))
                        (heads-are-equal? ()
                          (print "Compare %s with %s..." pattern-head target-head)
                          (equal pattern-head target-head))
@@ -195,12 +185,12 @@ Examples:
                          (assert-pattern-head-is-capture!)
                          (funcall fun pattern-head))
                        (capture-symbol-of-pattern-head ()
-                         (capture-field-of-pattern-head *match-pattern--get-capture-symbol-fun*))
+                         (capture-field-of-pattern-head *match-pattern-get-capture-symbol-fun*))
                        (capture-tag-of-pattern-head ()
-                         (capture-field-of-pattern-head *match-pattern--get-capture-tag-fun*))
+                         (capture-field-of-pattern-head *match-pattern-get-capture-tag-fun*))
                        (pattern-head-is-invalid? ()
-                         (if *match-pattern--invalid-element?*
-                           (funcall *match-pattern--invalid-element?* pattern-head)
+                         (if *match-pattern-invalid-element?*
+                           (funcall *match-pattern-invalid-element?* pattern-head)
                            (not (or (pattern-head-is-verbatim?) (pattern-head-is-capture?)))))
                        (capture-at-pattern-head-has-tag? (tag)
                          (when tag
@@ -265,16 +255,16 @@ Examples:
                    (if (heads-are-equal?)
                      (continue pattern-tail target-tail)
                      (fail-to-match)))
-                 ;; If `*match-pattern--target-elements-must-be-verbatim*' is set, then signal 
+                 ;; If `*match-pattern-target-elements-must-be-verbatim*' is set, then signal 
                  ;; an error if `target-head' isn't a verbatim element:
                  ((case 4
                     (and
-                      *match-pattern--target-elements-must-be-verbatim*
+                      *match-pattern-target-elements-must-be-verbatim*
                       (not (elem-is-verbatim? target-head))))
                    (let ((complaint
                            (format "TARGET-HEAD %s is not a verbatim element."
                              target-head)))
-                     (if *match-pattern--signal-error-if-target-elements-is-not-verbatim*
+                     (if *match-pattern-signal-error-if-target-elements-is-not-verbatim*
                        (error complaint)
                        (print complaint)
                        (fail-to-match))) )
@@ -286,11 +276,11 @@ Examples:
                      pattern-head))
                  ;; From here on, we know that `pattern-head' must be a capture.
                  ;; Case when `pattern-head' is tagged with the "anything" tag:
-                 ((case 6 (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
+                 ((case 6 (capture-at-pattern-head-has-tag? *match-pattern-anything-tag*))
                    (print "Head of PATTERN has 'anything' tag.")
                    (continue pattern-tail target-tail target-head))
                  ;; Case when `pattern-head' is tagged with the Kleene tag:
-                 ((case 7 (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
+                 ((case 7 (capture-at-pattern-head-has-tag? *match-pattern-kleene-tag*))
                    (print "Head of PATTERN has Kleene tag.")
                    (cond
                      ((pattern-tail-matches-target-tail?)
@@ -309,7 +299,7 @@ Examples:
                  ;; Case when `pattern-head' starts with predicate form:
                  ((case 8
                     (and
-                      *match-pattern--capture-can-be-predicate*
+                      *match-pattern-capture-can-be-predicate*
                       (apply (capture-tag-of-pattern-head) (list target-head))))
                    (continue pattern-tail target-tail target-head))
                  ;; Some unimplemented case happened, signal an error:
@@ -327,11 +317,11 @@ Examples:
 		          t
 		          (print "Extracted match result %s." match-result)
 		          (let ((match-result
-			                (if *match-pattern--merge-duplicate-alist-keys*
+			                (if *match-pattern-merge-duplicate-alist-keys*
 			                  (nreverse (aris-merge-duplicate-alist-keys match-result))
 			                  match-result)))
 		            (print "Post-merge match result %s." match-result)
-		            (if *match-pattern--use-dotted-pairs-in-result*
+		            (if *match-pattern-use-dotted-pairs-in-result*
 		              (aris-add-dots-to-alist match-result)
 		              match-result)))))))))
                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -347,10 +337,10 @@ Examples:
 ;; ⇒
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when t
-  (setq *match-pattern--use-dotted-pairs-in-result* t)
+  (setq *match-pattern-use-dotted-pairs-in-result* t)
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  (setq *match-pattern--use-dotted-pairs-in-result* nil)
+  (setq *match-pattern-use-dotted-pairs-in-result* nil)
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

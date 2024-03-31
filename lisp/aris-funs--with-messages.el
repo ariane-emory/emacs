@@ -8,13 +8,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *with-messages-indent-char* ?\_  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *aris-indent-char* ?\_  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
 
-(defcustom *with-messages-indent-size* 2
-  "The number of `*with-messages-indent-char*' characters used for each level of indentation in `with-messages'."
+(defcustom *aris-indent-size* 2
+  "The number of `*aris-indent-char*' characters used for each level of indentation in `with-messages'."
   :group 'with-messages
   :type 'integer)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -61,18 +61,11 @@ last expression in `body' and printing a variant message afterwards."
               (is-double-message (cddr args))
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
-    `(let ( (indent-string
-              (make-string
-                (* *aris-indent* *with-messages-indent-size*)
-                *with-messages-indent-char*)
-              ;; (format "%d %s"
-              ;;   *aris-indent*
-              ;;   (make-string
-              ;;     (* *aris-indent* *with-messages-indent-size*)
-              ;;     *with-messages-indent-char*))
-              )
-            (*aris-indent*
-              (1+ *aris-indent*)))
+    `(let ((indent-string
+             (make-string
+               (* *aris-indent* *aris-indent-size*)
+               *aris-indent-char*))
+            (*aris-indent* (1+ *aris-indent*)))
        (unwind-protect
          (progn
            (message "%s%s" indent-string ,start-message-string)
@@ -92,8 +85,8 @@ last expression in `body'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
   (let ((indent-string
-          (make-string (* *aris-indent* *with-messages-indent-size*)
-            *with-messages-indent-char*)))
+          (make-string (* *aris-indent* *aris-indent-size*)
+            *aris-indent-char*)))
     (apply 'message (concat indent-string fmt) rest)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
