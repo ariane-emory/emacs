@@ -96,9 +96,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--get-patterns-for-symbol (symbol)
+(defun lust-style-syntax--get-patterns-for-group (group-symbol)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cdr (assoc symbol *lust-style-syntax--pattern-dispatch-table*)))
+  (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -110,7 +110,7 @@
 because we're gong to be stshing stuff in their symbol properties."
     (let* ((function (function symbol))
             (symbol (get function :PATTERN-DISPATCHER-FUN))
-            (group (lust-style-syntax--get-patterns-for-symbol symbol))
+            (group (lust-style-syntax--get-patterns-for-group symbol))
             (call-pattern (cons symbol args)))
       (lust-style-syntax--eval-match-result
         (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
