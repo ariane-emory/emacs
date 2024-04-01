@@ -39,6 +39,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro aris-lust-syle-defs--use-print (&rest body)
+  "Helper macro to use `indented-message' more easily."
   `(cl-letf (((symbol-function 'print) 
                (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
      (progn ,@body)))
