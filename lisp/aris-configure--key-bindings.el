@@ -68,7 +68,11 @@
   ;; Recent/temporary additions:
   ("C-x C-d" . aris-dump-key-macro)
   ("C-x C-q" . aris-make-setq)
-  ("C-c C-SPC" . eval-last-sexp)
+
+  ("C-c C-SPC" .
+    (lambda ()
+      (interactive)
+      (insert (pp-to-string (macroexpand (pp-last-sexp))))))
 
   ("C-c C-S-d" .
     (lambda ()
