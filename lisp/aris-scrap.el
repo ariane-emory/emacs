@@ -1,12 +1,13 @@
 ;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
 (require 'aris-funs--lust-style-syntax)
 (require 'aris-funs--when-and-unless)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (begin
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
@@ -24,6 +25,9 @@
   (def (fib 0) 0)
   (def (fib 1) 1)
   (def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
+  (def qqq 444)
+  (def qqq '(333 444))
+  (def (double n) (+ n n))
   
   (def result
     (list
@@ -34,23 +38,35 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(error-unless "This should not raise an error" t)
+(error-unless "This should raise an error." nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def qqq 444)
-(def qqq '(333 444))
-
-(def (double n) (+ n n))
+(defun string-is-format-string-p (str)
+  "Check if STR contains format specifiers."
+  (string-match-p "%[a-zA-Z]" str))
 
 
-(error-when nil "This should not raise an error: %s" it)
-(error-when t "This should raise an error: %s" it)
-(error-unless t "This should not raise an error")
-(error-unless nil "This should raise an error.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro error-unless (error-message form)
+  "Assert that FORM is not nil. If it is, signal an error with ERROR-MESSAGE and
+ERROR-FMT-ARGS ."
+  `(unless ,form (error ,error-message)))
 
 
-;; (font-lock-add-keywords nil
-;; 	'( ("(\\(error-when\\_>\\)" . 1))
-;; 	'prepend)
-;; (font-lock-add-keywords nil
-;;   '(("error-when" . font-lock-warning-face)) 'prepend)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro error-when (error-message &rest format-args-and-body)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Assert that FORM is nil. If it is not, signal an error with ERROR-MESSAGE and
+ERROR-FMT-ARGS in a scope where `it' is bound to the result of FORM."
+  (if (string-is-format-string-p error-message)
+    `(let ((it (progn ,@(car format-args-and-body))))
+       (when it
+         (error ,error-message ,@(cdr format-args-and-body))))
+    `(let ((it (progn ,@format-args-and-body)))
+       (when it
+         (error ,error-message)))))
+
+
+(error-when "This should not raise an error: %s" '(it) nil)
+(error-when "This should raise an error: %s" '(it) t)
