@@ -183,6 +183,7 @@
 
   ;; Describe these:
   ("s-m" . macrostep-mode)
+  ("M-m" . macrostep-mode)
   ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
   ("C-c C-e" . ignore)
   ("M-\\" . ignore)
