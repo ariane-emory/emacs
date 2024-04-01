@@ -63,8 +63,10 @@ signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(font-lock-add-keywords 'emacs-lisp-mode '(("error-when" . font-lock-warning-face)))
-(font-lock-add-keywords 'emacs-lisp-mode '(("error-unless" . font-lock-warning-face)))
+(font-lock-add-keywords 'emacs-lisp-mode
+  '(("(\\(error-when\\_>\\)" . font-lock-warning-face)))
+(font-lock-add-keywords 'emacs-lisp-mode
+  '(("(\\(error-unless\\_>\\)" . font-lock-warning-face)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
