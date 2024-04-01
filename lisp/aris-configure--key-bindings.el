@@ -53,6 +53,9 @@
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
+  ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
+  ("C-x C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
+  
   ;; Thumb keys:
   ("C-<backspace>" . aris-delete-previous-word)
   ("s-<backspace>" . macrostep-mode)
