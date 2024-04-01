@@ -45,8 +45,8 @@
 
 (error-when nil "This should not raise an error: %s" it)
 (error-when t "This should raise an error: %s" it)
-(error-unless t "This should not raise an error: %s")
-(error-unless nil "This should raise an error: %s")
+(error-unless t "This should not raise an error")
+(error-unless nil "This should raise an error.")
 
 
 ;; (font-lock-add-keywords nil
