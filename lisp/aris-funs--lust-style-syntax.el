@@ -17,7 +17,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *lust-style-syntax--verbose* t
+(defcustom *lust-style-syntax--verbose* nil
   "Whether the pseudo-function dispatcher should print verbose messages."
   :group 'lust-style-syntax
   :type 'boolean)
@@ -87,10 +87,9 @@
                      (error "DEF:   Pattern %s already defined." ',pattern)))
                  (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                  (print "DEF: Added pattern-case %s to group %s" ',pattern group))
-               (progn
-                 (print "DEF:   Adding pattern group %s" ',(car pattern))
-                 (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
-                   *lust-style-syntax--pattern-dispatch-table*))))
+               (print "DEF:   Adding pattern group %s" ',(car pattern))
+               (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
+                 *lust-style-syntax--pattern-dispatch-table*)))
            *lust-style-syntax--pattern-dispatch-table*)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

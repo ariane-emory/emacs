@@ -2,16 +2,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
+(require 'aris-funs--lust-style-syntax)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'aris-funs--lust-style-syntax)
 (begin
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
   ;; buffer twice:
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
+  (setq *lust-style-syntax--verbose* t)
 
   (def p 6)
   (def w 12)
