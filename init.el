@@ -867,7 +867,7 @@
            aris-funs--lust-style-syntax
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
-           aris-funs--when-and-unless
+           aris-funs--error-when-and-error-unless
            aris-configure--key-bindings
            aris-configure--tetris-keymap
            aris-configure--global-abbrevs-table 

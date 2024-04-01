@@ -69,5 +69,5 @@ signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--when-and-unless)
+(provide 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
