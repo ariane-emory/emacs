@@ -48,6 +48,8 @@
   (string-match-p "%[a-zA-Z]" str))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(error-when "This should raise an error because condition is non-nil." "this string is true")
+
 (defmacro error-when (error-message &rest format-args-and-body)
   "Assert that the last expression in FORMAT-ARGS-AND-BODY is nil. If it is not,
 signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
@@ -56,28 +58,25 @@ signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
       `(when ,body (error ,error-message)))
     (let ( (body `(progn ,@(cdr format-args-and-body)))
            (format-args (cdar format-args-and-body)))
-      `(let ((it ,body))
-         (when it
-           (apply #'error ,error-message (list ,@format-args)))))))
+      format-args
+      ;; `(let* ((it ,body))
+      ;;    (when it
+      ;;      (apply #'error ,error-message ,format-args)))
+      )))
 
-(defmacro error-when (error-message &rest format-args-and-body)
-  "Assert that the last expression in FORMAT-ARGS-AND-BODY is nil. If it is not,
-signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
-  (if (not (string-is-format-string-p error-message))
-    (let ((body `(progn ,@format-args-and-body)))
-      `(when ,body (error ,error-message)))
-    (let ( (body `(progn ,@(cdr format-args-and-body)))
-           (format-args (car format-args-and-body)))
-      `(let ((it ,body))
-         (when it
-           (apply #'error ,error-message ,format-args))))))
+(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+(list
+  (it 8
+    (+ 2 3)))
 
-(error-when "This should raise an error because condition is non-nil." "this string is true")
-(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "this string is true")
-(let
-  ((it
-     (progn 1 nil "this string is true")))
+(let* ((it (progn 1 nil "THIS STRING IS TRUE")))
   (when it
-    (apply #'error "This should raise an error because condition is non-nil: %s %s %s" "this string is true")))
+    (apply #'error "This should raise an error because condition is non-nil: %s %s %s"
+      (list (it 8 (+ 2 3))))))
+
+
+
+
+
 
 

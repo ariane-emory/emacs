@@ -18,6 +18,7 @@
   '(c-offsets-alist '((arglist-close . c-lineup-arglist)))
   '(c-syntactic-indentation-in-macros t)
   '(c-syntactic-indentationt t)
+  '(debug-on-error t)
   '(delete-selection-mode t)
   '(fill-column 80)
   '(global-eldoc-mode nil)
