@@ -57,18 +57,16 @@
           (is-illegal-definition  (not (or is-variable-definition is-function-definition))))
     (when is-illegal-definition
       (error "DEF: PATTERN-OR-SYMBOL must be either a symbol or a list."))
-
     (if is-variable-definition
       (let ( (symbol pattern-or-symbol)
              (value-expr (car def-body))
              (is-illegal-definition (cdr def-body)))
-        (if is-illegal-definition
-          (error "DEF: Variable definition's body must be a single value.")
-          (let ((value-definition (car def-body)))
-            `(aris-lust-syle-defs--use-print
-               (print "DEF: Defining variable %s." ',symbol)
-               (setq ,symbol ,value-definition)
-               ,(car def-body)))))
+        (when is-illegal-definition
+          (error "DEF: Variable definition's body must be a single value."))
+        `(aris-lust-syle-defs--use-print
+           (print "DEF: Defining variable %s." ',symbol)
+           (setq ,symbol ,value-expr)
+           ,(car def-body)))
       (let ((pattern pattern-or-symbol))
         `(aris-lust-syle-defs--use-print 
            (print "DEF: Defining pattern %s." ',pattern)
