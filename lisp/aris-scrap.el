@@ -3,6 +3,7 @@
 (require 'pp)
 (require 'cl-lib)
 (require 'aris-funs--lust-style-syntax)
+(require 'aris-funs--when-and-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,14 +42,12 @@
 
 (def (double n) (+ n n))
 
-(defmacro error-when (form error-message &rest error-fmt-args)
-  "Assert that FORM is nil. If it is not, signal an error with ERROR-MESSAGE and ERROR-FMT-ARGS."
-  `(let ((it ,form))
-     (unless (not it)
-       (error ,error-message ,@error-fmt-args))))
 
 (error-when nil "This should not raise an error: %s" it)
 (error-when t "This should raise an error: %s" it)
+(error-unless t "This should not raise an error: %s")
+(error-unless nil "This should raise an error: %s")
+
 
 ;; (font-lock-add-keywords nil
 ;; 	'( ("(\\(error-when\\_>\\)" . 1))

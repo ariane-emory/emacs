@@ -867,6 +867,7 @@
            aris-funs--lust-style-syntax
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
+           aris-funs--when-and-unless
            aris-configure--key-bindings
            aris-configure--tetris-keymap
            aris-configure--global-abbrevs-table 
@@ -931,6 +932,10 @@
                          (dired (expand-file-name dir))))))
 
             (with-messages "opening some files"
+              (dolist (file '("~/.profile" ))
+                (let ((file (expand-file-name file)))
+                  (when (file-regular-p file)
+                    (eval `(with-message (format "opening '%s'" ,file) (find-file ,file))))))
               (dolist (file '("init.el" "custom.el" "toxikat-theme.el"))
                 (let ((file (expand-file-name file aris-config-dir)))
                   (when (file-regular-p file)
