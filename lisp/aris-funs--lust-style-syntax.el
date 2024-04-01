@@ -17,7 +17,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *lust-style-syntax--verbose* nil
+(defcustom *lust-style-syntax--verbose* t
   "Whether the pseudo-function dispatcher should print verbose messages."
   :group 'lust-style-syntax
   :type 'boolean)
@@ -66,20 +66,24 @@
         `(aris-lust-syle-defs--use-print
            (print "DEF: Defining variable %s." ',symbol)
            (setq ,symbol ,value-expr)))
-      (let ( (pattern pattern-or-symbol)
-             (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
+      (let* ( (pattern pattern-or-symbol)
+              (group (car pattern))
+              (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
+        (when is-illegal-definition
+          (error
+            "DEF: Function definition's body must be either an atom or a proper list."))
         `(aris-lust-syle-defs--use-print 
            (print "DEF: Defining pattern %s." ',pattern)
            (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun
              ',(car pattern))
-           (let ((group (assoc ',(car pattern)
+           (let ((group (assoc ',group
                           *lust-style-syntax--pattern-dispatch-table*)))
              (if group
                (progn
                  (let ((pattern-case (assoc ',pattern (cdr group))))
                    (print "DEF:   Found pattern-case %s in group %s"
                      (or pattern-case "<none>") group)
-                   (if pattern-case
+                   (when pattern-case
                      (error "DEF:   Pattern %s already defined." ',pattern)))
                  (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                  (print "DEF: Added pattern-case %s to group %s" ',pattern group))
