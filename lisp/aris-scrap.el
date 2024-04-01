@@ -75,18 +75,11 @@ signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
           (body (if string-is-format-string
                   (cdr format-args-and-body)
                   format-args-and-body))
-          (format-args (if string-is-format-string
-                         (cadar format-args-and-body)
-                         nil)))
+          (format-args (when string-is-format-string (car format-args-and-body))))
     `(error-when ,error-message ,format-args (not (progn ,@body)))))
-
-
 
 (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
 (error-unless "This should raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
-
-
-
 (error-unless "This should NOT raise an error because condition is non-nil." 1 nil "THIS STRING IS TRUE")
 (error-unless "This should raise an error because condition is nil." 1 nil nil)
 
