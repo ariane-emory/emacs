@@ -76,20 +76,19 @@
            (print "DEF: Defining pattern %s." ',pattern)
            (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun
              ',(car pattern))
-           (let ((group (assoc ',group
-                          *lust-style-syntax--pattern-dispatch-table*)))
-             (if group
+           (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
+             (if (not group)
                (progn
-                 (let ((pattern-case (assoc ',pattern (cdr group))))
-                   (print "DEF:   Found pattern-case %s in group %s"
-                     (or pattern-case "<none>") group)
-                   (when pattern-case
-                     (error "DEF:   Pattern %s already defined." ',pattern)))
-                 (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
-                 (print "DEF: Added pattern-case %s to group %s" ',pattern group))
-               (print "DEF:   Adding pattern group %s" ',(car pattern))
-               (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
-                 *lust-style-syntax--pattern-dispatch-table*)))
+                 (print "DEF:   Adding pattern group %s." ',(car pattern))
+                 (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
+                   *lust-style-syntax--pattern-dispatch-table*))
+               (let ((pattern-case (assoc ',pattern (cdr group))))
+                 (print "DEF:   Found pattern-case %s in group %s."
+                   (or pattern-case "<none>") group)
+                 (when pattern-case
+                   (error "DEF:   Pattern %s already defined." ',pattern)))
+               (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
+               (print "DEF: Added pattern-case %s to group %s." ',pattern group)))
            *lust-style-syntax--pattern-dispatch-table*)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
