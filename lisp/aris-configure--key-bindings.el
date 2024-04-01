@@ -53,6 +53,9 @@
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
+  ("s-<backspace>" . macrostep-mode)
+  ("s-m" . macrostep-mode)
+  ("C-c m m" . macrostep-mode)
   ("s-:" . eval-expression)
   ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
   ("C-c C-e" . ignore)

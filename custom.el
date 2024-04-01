@@ -5,6 +5,7 @@
   ;; If there is more than one, they won't work right.
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
+  '(beacon-mode t)
   '(c-backslash-column 90)
   '(c-backslash-max-column 90)
   '(c-basic-offset 2)
