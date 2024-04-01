@@ -65,8 +65,7 @@
           (error "DEF: Variable definition's body must be a single value."))
         `(aris-lust-syle-defs--use-print
            (print "DEF: Defining variable %s." ',symbol)
-           (setq ,symbol ,value-expr)
-           ,(car def-body)))
+           (setq ,symbol ,value-expr)))
       (let ((pattern pattern-or-symbol))
         `(aris-lust-syle-defs--use-print 
            (print "DEF: Defining pattern %s." ',pattern)
