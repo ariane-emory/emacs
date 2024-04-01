@@ -14,9 +14,9 @@
     ;; buffer twice:
     (setq *lust-style-syntax--pattern-dispatch-table* nil)
 
-    (def p 12)
-    (def w 18)
-    (def p 24)
+    (def p 6)
+    (def w 12)
+    (def p 18)
     (def x (1+ w))
     (def y '(w x))
     (def z (list w x))
@@ -30,7 +30,8 @@
         (fib (cadr z))
         (fib 10)))
     )
-  ) ;; (2584 4181 55)
+  ) ;; (144 233 55)
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -38,8 +39,4 @@
 
 (def qqq 444)
 (def qqq '(333 444))
-
-
-
-
 

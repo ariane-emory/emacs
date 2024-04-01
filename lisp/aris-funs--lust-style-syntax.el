@@ -49,41 +49,45 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define functions with a Lust-style syntax:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro lust-style-syntax--def (pattern &rest body) 
+(defmacro lust-style-syntax--def (pattern-or-symbol &rest def-body) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a function call pattern case or a variable using a Lust-style syntax."
-  (let* ( (is-variable-definition (symbolp pattern))
-          (is-function-definition (consp pattern))
+  (let* ( (is-variable-definition (symbolp pattern-or-symbol))
+          (is-function-definition (consp pattern-or-symbol))
           (is-illegal-definition  (not (or is-variable-definition is-function-definition))))
     (when is-illegal-definition
-      (error "DEF: Pattern must be either a symbol or a list."))
+      (error "DEF: PATTERN-OR-SYMBOL must be either a symbol or a list."))
+
     (if is-variable-definition
-      (progn
-        (when (cdr body)
-          (error "DEF: Variable definition's body must be a single value."))
-        (let ((value-definition (car body)))
-          `(aris-lust-syle-defs--use-print
-             (print "DEF: Defining variable %s." ',pattern)
-             (setq ,pattern ,value-definition)
-             ,(car body))))
-      `(aris-lust-syle-defs--use-print 
-         (print "DEF: Defining pattern %s." ',pattern)
-         (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun  ',(car pattern))
-         (let ((group (assoc ',(car pattern) *lust-style-syntax--pattern-dispatch-table*)))
-           (if group
-             (progn
-               (let ((pattern-case (assoc ',pattern (cdr group))))
-                 (print "DEF:   Found pattern-case %s in group %s"
-                   (or pattern-case "<none>") group)
-                 (if pattern-case
-                   (error "DEF:   Pattern %s already defined." ',pattern)))
-               (setcdr group (nconc (cdr group) (list (cons ',pattern ',body))))
-               (print "DEF: Added pattern-case %s to group %s" ',pattern group))
-             (progn
-               (print "DEF:   Adding pattern group %s" ',(car pattern))
-               (push (cons ',(car pattern) (list (cons ',pattern ',body)))
-                 *lust-style-syntax--pattern-dispatch-table*))))
-         *lust-style-syntax--pattern-dispatch-table*))))
+      (let ( (symbol pattern-or-symbol)
+             (value-expr (car def-body))
+             (is-illegal-definition (cdr def-body)))
+        (if is-illegal-definition
+          (error "DEF: Variable definition's body must be a single value.")
+          (let ((value-definition (car def-body)))
+            `(aris-lust-syle-defs--use-print
+               (print "DEF: Defining variable %s." ',symbol)
+               (setq ,symbol ,value-definition)
+               ,(car def-body)))))
+      (let ((pattern pattern-or-symbol))
+        `(aris-lust-syle-defs--use-print 
+           (print "DEF: Defining pattern %s." ',pattern)
+           (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun  ',(car pattern))
+           (let ((group (assoc ',(car pattern) *lust-style-syntax--pattern-dispatch-table*)))
+             (if group
+               (progn
+                 (let ((pattern-case (assoc ',pattern (cdr group))))
+                   (print "DEF:   Found pattern-case %s in group %s"
+                     (or pattern-case "<none>") group)
+                   (if pattern-case
+                     (error "DEF:   Pattern %s already defined." ',pattern)))
+                 (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
+                 (print "DEF: Added pattern-case %s to group %s" ',pattern group))
+               (progn
+                 (print "DEF:   Adding pattern group %s" ',(car pattern))
+                 (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
+                   *lust-style-syntax--pattern-dispatch-table*))))
+           *lust-style-syntax--pattern-dispatch-table*)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
