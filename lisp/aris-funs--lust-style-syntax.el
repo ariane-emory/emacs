@@ -39,7 +39,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro aris-lust-syle-defs--use-print (&rest body)
-  `(cl-letf (((symbol-function 'print)
+  `(cl-letf (((symbol-function 'print) 
                (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
      (progn ,@body)))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,8 +129,7 @@
 (defun lust-style-syntax--eval-match-result (match-result)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the MATCH-RESULT for a call pattern."
-  (cl-letf (((symbol-function 'print)
-              (if *match-pattern--verbose* #'indented-message #'ignore)))
+  (aris-lust-syle-defs--use-print
     (print "Evaluating match result %s" match-result)
     (cond
       ((symbolp (cadr match-result))
@@ -158,8 +157,7 @@
 (defun aris-lust-syle-defs--match-call-pattern-in-group (call-pattern group)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
-  (cl-letf (((symbol-function 'print)
-              (if *match-pattern--verbose* #'indented-message #'ignore)))
+  (aris-lust-syle-defs--use-print
     (when (not group)
       (error "Invalid call, no pattern group for %s." call-pattern))
     (print
