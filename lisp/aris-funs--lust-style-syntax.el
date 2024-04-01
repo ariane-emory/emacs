@@ -59,12 +59,13 @@
       (error "DEF: Pattern must be either a symbol or a list."))
     (if is-variable-definition
       (progn
-        (when  (cdr body)
+        (when (cdr body)
           (error "DEF: Variable definition's body must be a single value."))
-        `(aris-lust-syle-defs--use-print
-           (print "DEF: Defining variable %s." ',pattern)
-           (setq ,pattern ,(car body))
-           ,(car body)))
+        (let ((value-definition (car body)))
+          `(aris-lust-syle-defs--use-print
+             (print "DEF: Defining variable %s." ',pattern)
+             (setq ,pattern ,value-definition)
+             ,(car body))))
       `(aris-lust-syle-defs--use-print 
          (print "DEF: Defining pattern %s." ',pattern)
          (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun  ',(car pattern))
