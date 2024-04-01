@@ -52,7 +52,7 @@
 (defmacro lust-style-syntax--def (pattern &rest body) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a function call pattern case or a variable using a Lust-style syntax."
-  (cl-letf (((symbol-function 'print) (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
+  (aris-lust-syle-defs--use-print
     (if (symbolp pattern)
       `(progn
          (when ,(cdr body)
