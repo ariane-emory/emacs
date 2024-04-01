@@ -13,7 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup lust-style-syntax nil
   "Dispatch calls to pseudo-functions using pattern matchings.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,7 +27,7 @@
 
 (defvar *lust-style-syntax--pattern-dispatch-table* nil
   "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,13 +39,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-lust-syle-defs--print (fmt &rest fmt-args)
+  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
   (indented-message "%s" (apply #'format fmt fmt-args)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro aris-lust-syle-defs--use-print (&rest body)
-  "Helper macro to use `indented-message' more easily."
+  "Helper macro to conditionally bind #'pring to either `aris-lust-syle-defs--print' or `ignore'."
   `(cl-letf (((symbol-function 'print) 
                (if *lust-style-syntax--verbose* #'aris-lust-syle-defs--print #'ignore)))
      ,@body))
@@ -70,7 +71,7 @@
         (when is-illegal-definition
           (error "DEF: Variable definition's body must be a single value."))
         `(aris-lust-syle-defs--use-print
-           (print "DEF: Defining variable '%S." ',symbol)
+           (print "DEF: Defining variable '%s." ',symbol)
            (setq ,symbol ,value-expr)))
       (let* ( (pattern pattern-or-symbol)
               (group (car pattern))
@@ -79,24 +80,24 @@
           (error
             "DEF: Function definition's body must be either an atom or a proper list."))
         `(aris-lust-syle-defs--use-print 
-           (print "DEF: Defining pattern '%S." ',pattern)
+           (print "DEF: Defining pattern '%s." ',pattern)
            (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun
              ',(car pattern))
            (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
              (if (not group)
                (progn
-                 (print "DEF:   Adding pattern group '%S." ',(car pattern))
+                 (print "DEF:   Adding pattern group '%s." ',(car pattern))
                  (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
                    *lust-style-syntax--pattern-dispatch-table*))
                (let ((pattern-case (assoc ',pattern (cdr group))))
-                 (print "DEF:   Found pattern-case '%S in group '%S."
+                 (print "DEF:   Found pattern-case '%s in group '%s."
                    (or pattern-case "<none>") group)
                  (when pattern-case
                    (error "DEF:   Pattern %s already defined." ',pattern)))
                (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
-               (print "DEF: Added pattern-case '%S to group '%S." ',pattern group)))
+               (print "DEF: Added pattern-case '%s to group '%s." ',pattern group)))
            *lust-style-syntax--pattern-dispatch-table*)))))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -107,7 +108,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--get-patterns-for-group (group-symbol)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -147,27 +148,27 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--eval-match-result (match-result)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the MATCH-RESULT for a call pattern."
   (aris-lust-syle-defs--use-print
-    (print "Evaluating match result %s" match-result)
+    (print "Evaluating match result '%s" match-result)
     (cond
       ((symbolp (cadr match-result))
         (let ((eval-result (eval (cadr match-result))))
           (print
-            "Match result %s's pattern case is a symbol, evaluating %s and returning %s."
+            "Match result '%s's pattern case is a symbol, evaluating '%s and returning %s."
             match-result (cadr match-result) eval-result)
           eval-result))
       ((atom (cadr match-result))
         (progn
-          (print "Match result %s's pattern case is an atom, returning %s."
+          (print "Match result '%s's pattern case is an atom, returning %s."
             match-result (cadr match-result))
           (cadr match-result)))
       (t
         (let ((decorated-result (cons 'let match-result)))
-          (print "Evaluating decorated pattern case %s." decorated-result)
+          (print "Evaluating decorated pattern case '%s." decorated-result)
           (let ((result (eval decorated-result)))
-            (print "Match result %s's pattern case's body returned %s."
+            (print "Match result '%s's pattern case's body returned %s."
               match-result result)
             result))))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -175,18 +176,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-lust-syle-defs--match-call-pattern-in-group (call-pattern group)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
   (aris-lust-syle-defs--use-print
     (when (not group)
-      (error "Invalid call, no pattern group for %s." call-pattern))
+      (error "Invalid call, no pattern group for '%s." call-pattern))
     (print
       (concat
         "================================================"
         "================================================"))
-    (print ">> Dispatch table for %s:" call-pattern)
+    (print ">> Dispatch table for '%s:" call-pattern)
     (dolist (pattern-case group)
-      (print "  %s" pattern-case))
+      (print "  '%s" pattern-case))
     (print
       (concat
         "================================================"
@@ -213,7 +214,7 @@
                  (*match-pattern--capture-can-be-predicate* nil)
                  (*match-pattern--target-elements-must-be-verbatim* nil)
                  (*match-pattern--use-dotted-pairs-in-result* nil))
-            (print "Trying pattern %s on target %s?" pattern call-pattern)
+            (print "Trying pattern '%s on target '%s..." pattern call-pattern)
             (let ((match-result (match-pattern pattern call-pattern)))
               ;; (print "Match result reveived ist: %s" match-result)
               (when match-result
@@ -225,19 +226,19 @@
             (concat
               "================================================"
               "================================================"))
-          (print "Found match for %s = %s" call-pattern result)
+          (print "Found match for '%s = '%s" call-pattern result)
           (print
             (concat
               "================================================"
               "================================================"))
           result)
-        (error "No pattern case found for %s." call-pattern)))))
+        (error "No pattern case found for '%s." call-pattern)))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
   (lambda (&rest args)
@@ -247,7 +248,7 @@ because we're gong to be stshing stuff in their symbol properties."
             (call-pattern (cons symbol args)))
       (lust-style-syntax--eval-match-result
         (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
