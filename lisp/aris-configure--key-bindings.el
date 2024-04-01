@@ -93,7 +93,6 @@
           (tab-bar-new-tab)
           (find-function symb)))))
 
-
   ;; Greedily kill forward sexp and devour whitespace:
   ;; ("s-K" .
   ;;   (lambda ()

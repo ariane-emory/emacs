@@ -52,12 +52,12 @@
 (defmacro lust-style-syntax--def (pattern &rest body) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a function call pattern case or a variable using a Lust-style syntax."
+  (when (cdr body)
+    (error "DEF: Variable definition's body must be a single value."))
   (if (symbolp pattern)
     `(aris-lust-syle-defs--use-print
-       (when ,(cdr body)
-         (error "DEF: Variable definition's body must be a single value."))
        (print "DEF: Defining variable %s." ',pattern)
-       (set ',pattern ,(car body))
+       (setq ,pattern ,(car body))
        ,(car body))
     `(aris-lust-syle-defs--use-print 
        (print "DEF: Defining pattern %s." ',pattern)
