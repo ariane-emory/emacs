@@ -50,8 +50,8 @@
 (error-when nil "This should not raise an error: %s" it)
 (error-when t "This should raise an error: %s" it)
 
-(font-lock-add-keywords nil
-	'( ("(\\(error-when\\_>\\)" . 1))
-	'prepend)
-(font-lock-add-keywords nil
-  '(("error-when" . font-lock-warning-face)) 'prepend)
+;; (font-lock-add-keywords nil
+;; 	'( ("(\\(error-when\\_>\\)" . 1))
+;; 	'prepend)
+;; (font-lock-add-keywords nil
+;;   '(("error-when" . font-lock-warning-face)) 'prepend)
