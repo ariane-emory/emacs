@@ -66,11 +66,14 @@
         `(aris-lust-syle-defs--use-print
            (print "DEF: Defining variable %s." ',symbol)
            (setq ,symbol ,value-expr)))
-      (let ((pattern pattern-or-symbol))
+      (let ( (pattern pattern-or-symbol)
+             (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
         `(aris-lust-syle-defs--use-print 
            (print "DEF: Defining pattern %s." ',pattern)
-           (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun  ',(car pattern))
-           (let ((group (assoc ',(car pattern) *lust-style-syntax--pattern-dispatch-table*)))
+           (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun
+             ',(car pattern))
+           (let ((group (assoc ',(car pattern)
+                          *lust-style-syntax--pattern-dispatch-table*)))
              (if group
                (progn
                  (let ((pattern-case (assoc ',pattern (cdr group))))
