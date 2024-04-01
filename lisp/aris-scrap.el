@@ -41,3 +41,17 @@
 
 (def (double n) (+ n n))
 
+(defmacro error-when (form error-message &rest error-fmt-args)
+  "Assert that FORM is nil. If it is not, signal an error with ERROR-MESSAGE and ERROR-FMT-ARGS."
+  `(let ((it ,form))
+     (unless (not it)
+       (error ,error-message ,@error-fmt-args))))
+
+(error-when nil "This should not raise an error: %s" it)
+(error-when t "This should raise an error: %s" it)
+
+(font-lock-add-keywords nil
+	'( ("(\\(error-when\\_>\\)" . 1))
+	'prepend)
+(font-lock-add-keywords nil
+  '(("error-when" . font-lock-warning-face)) 'prepend)
