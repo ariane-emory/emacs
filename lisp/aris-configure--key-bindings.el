@@ -55,19 +55,9 @@
 (bind-keys*
   ("s-<backspace>" . macrostep-mode)
   ("s-m" . macrostep-mode)
-  ("C-c m m" . macrostep-mode)
-  ("s-:" . eval-expression)
   ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
   ("C-c C-e" . ignore)
   ("M-\\" . ignore)
-  ("M-s M-s" . isearch-forward-thing-at-point)
-  
-  ;; Make kill-emacs harder to hit accidentally:
-  ("C-x C-c C-c C-c" . kill-emacs)
-  
-  ;; Recent/temporary additions:
-  ("C-x C-d" . aris-dump-key-macro)
-  ("C-x C-q" . aris-make-setq)
 
   ("C-c C-SPC" .
     (lambda ()
@@ -145,6 +135,18 @@
       "Devour whitespace between enclosing s-exps."
       (execute-kbd-macro
         (kbd "C-M-b C-M-f C-SPC C-M-f C-M-b <backspace> SPC"))))
+  
+  ;; Dump last key macro:
+  ("C-x C-d" . aris-dump-key-macro)
+
+  ;; isearch-forward-thing-at-point:
+  ("M-s M-s" . isearch-forward-thing-at-point)
+  
+  ;; eval-expression with either hand:
+  ("s-:" . eval-expression)
+
+  ;; Make kill-emacs harder to hit accidentally:
+  ("C-x C-c C-c C-c" . kill-emacs)
   
   ;; Raise sexp;
   ("C-c C-r" . raise-sexp)
@@ -287,24 +289,6 @@
   ;; Forward/back paragraphs:
   ("C-M-<right>" . forward-paragraph)
   ("C-M-<left>" . backward-paragraph))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Dired:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (bind-keys :map dired-mode-map
-;;   ;; Edit filenames:
-;;   ("s-q" . dired-toggle-read-only)
-;;   ;; Unbind i:
-;;   ("i" . ignore))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; comint:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (bind-keys :map comint-mode-map
-;;   ("M-<down>" . comint-next-input)
-;;   ("M-<up>" . comint-next-input)
-;;   ("s-<up>" . comint-previous-input)
-;;   ("s-<down>" . comint-next-input))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-configure--key-bindings)
