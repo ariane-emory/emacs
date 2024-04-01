@@ -44,10 +44,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(insert (pp-to-string (macroexpand '(def qqq 444))))
-
-(pp-to-string (macroexpand '(def qqq 444)))
 
 (def qqq 444)
 
-444
+
