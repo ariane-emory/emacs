@@ -223,7 +223,6 @@
             (face-remap-add-relative 'default '(:foreground "#c90"))))
         :bind
         (:map dired-mode-map
-          ("s-q" . dired-toggle-read-only)
           ("i" . ignore)
           ("o" .
             (lambda ()

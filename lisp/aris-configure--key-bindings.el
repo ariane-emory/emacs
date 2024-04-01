@@ -53,17 +53,27 @@
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
+  ;; Thumb keys:
+  ("C-<backspace>" . aris-delete-previous-word)
   ("s-<backspace>" . macrostep-mode)
-  ("s-m" . macrostep-mode)
-  ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
-  ("C-c C-e" . ignore)
-  ("M-\\" . ignore)
 
   ("C-c C-SPC" .
     (lambda ()
       (interactive)
-      (insert (pp-to-string (macroexpand (pp-last-sexp))))))
+      (insert (pp-to-string (macroexpand (pp-last-sexp)))) (message "Inserted expansion.")))
+  ("C-c C-<backspace>" .
+    (lambda ()
+      (interactive)
+      (insert (pp-to-string (macroexpand (pp-last-sexp)))) (message "Inserted expansion.")))
 
+  ("C-x C-SPC" .
+    (lambda ()
+      (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
+  ("C-x C-<backspace>" .
+    (lambda ()
+      (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
+
+  ;; Find function at point in new tab:
   ("C-c C-S-d" .
     (lambda ()
       "Find directly the function at point in a new tab."
@@ -73,6 +83,7 @@
           (tab-bar-new-tab)
           (find-function symb)))))
 
+  ;; Find function at point in current window:
   ("C-c C-d" .
     (lambda ()
       "Find directly the function at point in the current window."
@@ -82,19 +93,44 @@
           (tab-bar-new-tab)
           (find-function symb)))))
 
-  ("C-x C-SPC" .
-    (lambda () (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
 
-  ("C-x C-<backspace>" .
-    (lambda () (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
+  ;; Greedily kill forward sexp and devour whitespace:
+  ;; ("s-K" .
+  ;;   (lambda ()
+  ;;     (interactive)
+  ;;     "Greedily kill forward sexp and devour whitespace."
+  ;;     (execute-kbd-macro
+  ;;       (kbd (concat
+  ;;              "C-M-f C-M-b C-M-k C-M-b C-M-f "
+  ;;              "C-SPC C-M-f C-M-b <backspace> SPC")))))
 
-  ("C-M-t" . 
+  ;; Greedily kill forward sexp and devour whitespace:
+  ;; ("M-s-<backspace>" .
+  ;;   (lambda ()
+  ;;     (interactive)
+  ;;     "Greedily kill forward sexp and devour whitespace."
+  ;;     (execute-kbd-macro
+  ;;       (kbd (concat
+  ;;              "C-M-f C-M-b C-M-k C-M-b C-M-f "
+  ;;              "C-SPC C-M-f C-M-b <backspace> SPC")))))
+
+  ;; Devour whitespace between enclosing s-exps:
+  ;; ("M-s-SPC" .
+  ;;   (lambda ()
+  ;;     (interactive)
+  ;;     "Devour whitespace between enclosing s-exps."
+  ;;     (execute-kbd-macro
+  ;;       (kbd "C-M-b C-M-f C-SPC C-M-f C-M-b <backspace> SPC"))))
+
+  ;; Forward transform sexp into a dotted list:
+  (" C-x C-a" .
     (lambda ()
-      "Transpose sexp ahead of point backwards."
       (interactive)
-      (transpose-sexps 1)
-      (backward-sexp 2)))
-
+      "Forward transform sexp into a dotted list."
+      (execute-kbd-macro
+        (kbd "C-s ( <right> <left> C-M-f <right> . SPC C-e"))))
+  
+  ;; Transpose sexp forwards:
   ("C-M-S-t" .
     (lambda ()
       "Transpose sexp ahead of point forwards."
@@ -104,37 +140,13 @@
       (transpose-sexps 1)
       (backward-sexp 1)))
   
-  (" C-x C-a" .
+  ;; Transpose sexp backwards:
+  ("C-M-t" . 
     (lambda ()
+      "Transpose sexp ahead of point backwards."
       (interactive)
-      "Forward transform sexp into a dotted list."
-      (execute-kbd-macro
-        (kbd "C-s ( <right> <left> C-M-f <right> . SPC C-e"))))
-  
-  ("s-K" .
-    (lambda ()
-      (interactive)
-      "Greedily kill forward sexp and devour whitespace."
-      (execute-kbd-macro
-        (kbd (concat
-               "C-M-f C-M-b C-M-k C-M-b C-M-f "
-               "C-SPC C-M-f C-M-b <backspace> SPC")))))
-  
-  ("M-s-<backspace>" .
-    (lambda ()
-      (interactive)
-      "Greedily kill forward sexp and devour whitespace."
-      (execute-kbd-macro
-        (kbd (concat
-               "C-M-f C-M-b C-M-k C-M-b C-M-f "
-               "C-SPC C-M-f C-M-b <backspace> SPC")))))
-
-  ("M-s-SPC" .
-    (lambda ()
-      (interactive)
-      "Devour whitespace between enclosing s-exps."
-      (execute-kbd-macro
-        (kbd "C-M-b C-M-f C-SPC C-M-f C-M-b <backspace> SPC"))))
+      (transpose-sexps 1)
+      (backward-sexp 2)))
   
   ;; Dump last key macro:
   ("C-x C-d" . aris-dump-key-macro)
@@ -151,15 +163,26 @@
   ;; Raise sexp;
   ("C-c C-r" . raise-sexp)
 
-  ;; Kill and revert buffers without confirmations:
+  ;; Revert and kill buffers without confirmations:
   ("C-x C-k" . aris-force-kill-buffer)
 
-  ;; Describe these:
+  ;; Revert buffer without confirmation:
   ("C-x C-r" . aris-revert-buffer-no-confirm)
+
+  ;; Shell:
   ("C-x C-t" . shell)
+
+  ;; Switch to last buffer:
   ("C-x C-p" . aris-switch-to-last-buffer)
+
+  ;; Comment/uncomment region:
   ("C-/" . comment-or-uncomment-region)
-  ("C-<backspace>" . aris-delete-previous-word)
+
+  ;; Describe these:
+  ("s-m" . macrostep-mode)
+  ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
+  ("C-c C-e" . ignore)
+  ("M-\\" . ignore)
   ("S-<delete>" . ignore)
   ("M-<down-mouse-1>" . ignore)
 
@@ -187,12 +210,11 @@
 
   ;; eval buffer:
   ("C-x C-z" . aris-eval-buffer)
-  ("C-c C-e" . aris-eval-buffer)
 
   ;; Copy without unselecting:
   ("s-c" . aris-ns-copy-including-secondary-keep-selection)
 
-  ;; Close window/frame on s- so that they're hard to hit accidentally::
+  ;; Close window/frame on s- so that they're hard to hit accidentally:
   ("s-w" . delete-window)
 
   ;; Toggle truncate lines:
@@ -205,7 +227,8 @@
   ("M-SPC" . cycle-spacing)
 
   ;; Tab switching/opening/closing:
-  ;; These are usually already bound but we are bind-key*ing them to make sure.
+  ;; These are usually already bound but we are bind-key*ing them to make sure
+  ;; that they are bound in all modes.
   ("C-<tab>" . tab-next)
   ("C-S-<tab>" . tab-previous) 
   ("s-T" . tab-bar-new-tab)
@@ -234,14 +257,14 @@
   ("M-k" . aris-delete-line)
   
   ;; C-h → backspace to match Cocoa text system defaults
-  ;; (clobbering somedefault describe- bindings as a result):
+  ;; (clobbering some default describe- bindings as a result):
   ("C-h" . aris-delete-backwards-char)
 
   ;; Some NS-style bindings:
   ("s-a" . mark-whole-buffer)
   ("s-k" . ignore)
   ("s-p" . ignore)
-  ;;("s-q" . ignore)
+  ("s-q" . ignore)
   ("s-t" . ignore)
   ("s-n" . ignore)
   ("s-o" . find-file)
