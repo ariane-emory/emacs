@@ -96,33 +96,33 @@
 (defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
-  (message "BINDING DISPATCH FUN FOR %s!" symbol)
-  (unless (symbolp symbol)
-    (error "%s is not a symbol." symbol))
-  (let* ((already-bound (fboundp symbol)))
-    (when (and
-            already-bound
-            (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-FUN)))
-                 (message "Retrieved %s for %s." got-symbol symbol)
-                 got-symbol)))
-      (error (concat
-               "Logic error: function %s already bound "
-               "elsewherm, fmakunbound it first!")
-        symbol))
-    (message "%sBINDING DISPATCH FUN FOR %s!"
-      (if already-bound "RE" "") symbol)
-    (fset symbol
-      (lust-style-syntax--make-pattern-dispatcher-fun symbol))
-    (put
-      (function symbol)
-      :PATTERN-DISPATCHER-FUN
-      symbol)
-    (message "Marked fun with %s / %s / %s." symbol (function symbol)
-      (get
+  (aris-lust-syle-defs--use-print
+    (print "BINDING DISPATCH FUN FOR %s!" symbol)
+    (unless (symbolp symbol)
+      (error "%s is not a symbol." symbol))
+    (let* ((already-bound (fboundp symbol)))
+      (when (and
+              already-bound
+              (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-FUN)))
+                   (print "Retrieved %s for %s." got-symbol symbol)
+                   got-symbol)))
+        (error (concat
+                 "Logic error: function %s already bound "
+                 "elsewherm, fmakunbound it first!")
+          symbol))
+      (print "%sBINDING DISPATCH FUN FOR %s!"
+        (if already-bound "RE" "") symbol)
+      (fset symbol
+        (lust-style-syntax--make-pattern-dispatcher-fun symbol))
+      (put
         (function symbol)
-        :PATTERN-DISPATCHER-FUN))
-    ))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        :PATTERN-DISPATCHER-FUN
+        symbol)
+      (print "Marked fun with %s / %s / %s." symbol (function symbol)
+        (get
+          (function symbol)
+          :PATTERN-DISPATCHER-FUN)))))
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
