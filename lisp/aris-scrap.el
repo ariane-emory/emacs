@@ -1,4 +1,4 @@
-;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
@@ -38,35 +38,46 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(error-unless "This should not raise an error" t)
-(error-unless "This should raise an error." nil)
+;; (error-unless "This should not raise an error" t)
+;; (error-unless "This should raise an error." nil)
+;; (error-when "This should raise an error: %s" '(it) t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun string-is-format-string-p (str)
   "Check if STR contains format specifiers."
   (string-match-p "%[a-zA-Z]" str))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro error-unless (error-message form)
-  "Assert that FORM is not nil. If it is, signal an error with ERROR-MESSAGE and
-ERROR-FMT-ARGS ."
-  `(unless ,form (error ,error-message)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro error-when (error-message &rest format-args-and-body)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Assert that FORM is nil. If it is not, signal an error with ERROR-MESSAGE and
-ERROR-FMT-ARGS in a scope where `it' is bound to the result of FORM."
-  (if (string-is-format-string-p error-message)
-    `(let ((it (progn ,@(car format-args-and-body))))
-       (when it
-         (error ,error-message ,@(cdr format-args-and-body))))
-    `(let ((it (progn ,@format-args-and-body)))
-       (when it
-         (error ,error-message)))))
+  "Assert that the last expression in FORMAT-ARGS-AND-BODY is nil. If it is not,
+signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
+  (if (not (string-is-format-string-p error-message))
+    (let ((body `(progn ,@format-args-and-body)))
+      `(when ,body (error ,error-message)))
+    (let ( (body `(progn ,@(cdr format-args-and-body)))
+           (format-args (cdar format-args-and-body)))
+      `(let ((it ,body))
+         (when it
+           (apply #'error ,error-message (list ,@format-args)))))))
+
+(defmacro error-when (error-message &rest format-args-and-body)
+  "Assert that the last expression in FORMAT-ARGS-AND-BODY is nil. If it is not,
+signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
+  (if (not (string-is-format-string-p error-message))
+    (let ((body `(progn ,@format-args-and-body)))
+      `(when ,body (error ,error-message)))
+    (let ( (body `(progn ,@(cdr format-args-and-body)))
+           (format-args (car format-args-and-body)))
+      `(let ((it ,body))
+         (when it
+           (apply #'error ,error-message ,format-args))))))
+
+(error-when "This should raise an error because condition is non-nil." "this string is true")
+(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "this string is true")
+(let
+  ((it
+     (progn 1 nil "this string is true")))
+  (when it
+    (apply #'error "This should raise an error because condition is non-nil: %s %s %s" "this string is true")))
 
 
-(error-when "This should not raise an error: %s" '(it) nil)
-(error-when "This should raise an error: %s" '(it) t)
