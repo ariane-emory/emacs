@@ -57,17 +57,25 @@ signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
     (let ((body `(progn ,@format-args-and-body)))
       `(when ,body (error ,error-message)))
     (let ( (body `(progn ,@(cdr format-args-and-body)))
-           (format-args (cons 'list (cadar format-args-and-body))))
-      `(let* ((it ,body))
+           (format-args `(list ,@(cadar format-args-and-body))))
+      `(let ((it ,body))
          (when it
            (apply #'error ,error-message ,format-args))))))
 
-(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+(defmacro error-unless (error-message &rest format-args-and-body)
+  "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
+signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY."
+  (if (not (string-is-format-string-p error-message))
+    (let ((body `(progn ,@format-args-and-body)))
+      `(unless ,body (error ,error-message)))
+    (let ( (body `(progn ,@(cdr format-args-and-body)))
+           (format-args `(list ,@(cadar format-args-and-body))))
+      `(unless ,body
+         (apply #'error ,error-message ,format-args)))))
 
-(let* ((it (progn 1 nil "THIS STRING IS TRUE")))
-  (when it
-    (apply #'error "This should raise an error because condition is non-nil: %s %s %s"
-      (list it 8 (+ 2 3)))))
+(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+(error-unless "This should raise an error because condition is non-nil: %s %s" '(8 (+ 2 3)) 1 nil nil)
+
 
 
 
