@@ -14,18 +14,15 @@
     ;; buffer twice:
     (setq *lust-style-syntax--pattern-dispatch-table* nil)
 
-    (def p 4)
-    (def w 5)
-    (def p 6)
+    (def p 12)
+    (def w 18)
+    (def p 24)
     (def x (1+ w))
     (def y '(w x))
     (def z (list w x))
     (def (fib 0) 0)
     (def (fib 1) 1)
-    ;;(def (fib 8) w)
     (def (fib n) (+ (fib (- n 1)) (fib (- n 2)))) 
-
-    w
     
     (def result
       (list
@@ -33,7 +30,7 @@
         (fib (cadr z))
         (fib 10)))
     )
-  ) ;; => (169 273 39)
+  ) ;; (2584 4181 55)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -44,4 +41,8 @@
 ;;            (with-messages "doing stuff" "doing the stuff"
 ;;              (indented-message "boom")
 ;;              (indented-message "bang"))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(insert (pp-to-string (macroexpand '(def qqq 444))))
 
