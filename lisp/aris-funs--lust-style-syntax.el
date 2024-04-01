@@ -64,7 +64,7 @@
         (when is-illegal-definition
           (error "DEF: Variable definition's body must be a single value."))
         `(aris-lust-syle-defs--use-print
-           (print "DEF: Defining variable %s." ',symbol)
+           (print "DEF: Defining variable '%S." ',symbol)
            (setq ,symbol ,value-expr)))
       (let* ( (pattern pattern-or-symbol)
               (group (car pattern))
@@ -73,22 +73,22 @@
           (error
             "DEF: Function definition's body must be either an atom or a proper list."))
         `(aris-lust-syle-defs--use-print 
-           (print "DEF: Defining pattern %s." ',pattern)
+           (print "DEF: Defining pattern '%S." ',pattern)
            (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun
              ',(car pattern))
            (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
              (if (not group)
                (progn
-                 (print "DEF:   Adding pattern group %s." ',(car pattern))
+                 (print "DEF:   Adding pattern group '%S." ',(car pattern))
                  (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
                    *lust-style-syntax--pattern-dispatch-table*))
                (let ((pattern-case (assoc ',pattern (cdr group))))
-                 (print "DEF:   Found pattern-case %s in group %s."
+                 (print "DEF:   Found pattern-case '%S in group '%S."
                    (or pattern-case "<none>") group)
                  (when pattern-case
                    (error "DEF:   Pattern %s already defined." ',pattern)))
                (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
-               (print "DEF: Added pattern-case %s to group %s." ',pattern group)))
+               (print "DEF: Added pattern-case '%S to group '%S." ',pattern group)))
            *lust-style-syntax--pattern-dispatch-table*)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
