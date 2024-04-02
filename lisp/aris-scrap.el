@@ -26,6 +26,35 @@
 
 *lust-style-syntax--pattern-dispatch-table*
 
-(symbol-function 'square)
-(symbol-plist 'square
+;; ((square
+;;    ((square y)
+;;      (* y y)))
+;;   (double
+;;     ((double n)
+;;       (+ n n)))
+;;   (fib
+;;     ((fib 0)
+;;       0)
+;;     ((fib 1)
+;;       1)
+;;     ((fib n)
+;;       (+
+;;         (fib
+;;           (- n 1))
+;;         (fib
+;;           (- n 2))))))
 
+;; (fib 0) ⇒
+;;   (0)
+;; (fib 1) ⇒
+;;   (1)
+;; (fib n) ⇒
+;;   ((+
+;;      (fib
+;;        (- n 1))
+;;      (fib
+;;        (- n 2))))
+
+(fib 8)
+(symbol-function 'square)
+(symbol-plist 'square)
