@@ -25,7 +25,7 @@
 (funcall #'square 8)
 *pd--pattern-dispatch-table*
 
-
+(message "Printing the table:")
 (pd--print-table)
 
 ;; (indent-string-lines (format-group-as-string (pattern-dispatch--get-group 'fib)))

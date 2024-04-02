@@ -268,47 +268,44 @@ because we're gong to be stshing stuff in their symbol properties."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (PD--PRINT-DIVIDER ?\#)
-  (let ((unique  (random 1000)))
-    (pd--print "[%d] Preparing to bind dispatch fun for '%s..." unique symbol)
-    ;; SYMBOL must be a symbol:
-    (error-unless "%s is not a symbol." '(symbol) (symbolp symbol))
-    ;; If SYMBOL is already bound and it doesn't look like we did it,
-    ;; raise an error.
-    (let ((already-bound (fboundp symbol)))
-      (error-when
-        (concat
-          "Logic error: symbol '%s already bound to a function and "
-          "it doesn't look like it was bound by this function."
-          "fmakunbound it first if you really want to re-bind it!" symbol)
-        (and
-          already-bound
-          (not (let ((existing-group-label (get symbol :PD-GROUP)))
-               (pd--print "[%d] '%s already has group label '%s."
-                 unique symbol existing-group-label)
-               (or (not existing-group-label) (eq existing-group-label symbol))))))      
-      (pd--print "[%d] '%s isn't bound or was bound by us, we can %sbind it."
-        unique symbol (if already-bound "re" "")))
-    ;; Attach our handler function to SYMBOL's function cell:
-    (fset symbol (eval `(pd--make-dispatcher-fun ,symbol)))
-    ;; Stash the group label and a serial numbe in properties on SYMBOL:
-    (put symbol :PD-GROUP symbol)
-    (setq *pd--handler-count* (1+ *pd--handler-count*))
-    (put symbol :PD-COUNT *pd--handler-count*)
-    ;; Make sure the label was set properly and then return SYMBOL's plist:
-    (let ( (group-label (get symbol :PD-GROUP))
-           (plist (symbol-plist symbol)))
-      ;; Sanity check:
-      (error-unless
-        "After setting field to '%s, its value is '%s. Something has gone wrong."
-        '(symbol group-label)
-        (eq symbol group-label))
-      (pd--print "[%d] Marked '%s with group label '%s, its plist is now: '%s."
-        unique symbol group-label plist)
-      ;; Finally, return SYMBOL's modified plist:
-      ;;plist
-      ;; Finally, return :
-      nil
-      )))
+  (pd--print "Preparing to bind dispatch fun for '%s..." symbol)
+  ;; SYMBOL must be a symbol:
+  (error-unless "%s is not a symbol." '(symbol) (symbolp symbol))
+  ;; If SYMBOL is already bound and it doesn't look like we did it,
+  ;; raise an error.
+  (let ((already-bound (fboundp symbol)))
+    (error-when
+      (concat
+        "Logic error: symbol '%s already bound to a function and "
+        "it doesn't look like it was bound by this function."
+        "fmakunbound it first if you really want to re-bind it!" symbol)
+      (and
+        already-bound
+        (not (let ((existing-group-label (get symbol :PD-GROUP)))
+             (pd--print "'%s already has group label '%s." symbol existing-group-label)
+             (or (not existing-group-label) (eq existing-group-label symbol))))))      
+    (pd--print "'%s isn't bound or was bound by us, we can %sbind it." symbol (if already-bound "re" "")))
+  ;; Attach our handler function to SYMBOL's function cell:
+  (fset symbol (eval `(pd--make-dispatcher-fun ,symbol)))
+  ;; Stash the group label and a serial numbe in properties on SYMBOL:
+  (put symbol :PD-GROUP symbol)
+  (setq *pd--handler-count* (1+ *pd--handler-count*))
+  (put symbol :PD-COUNT *pd--handler-count*)
+  ;; Make sure the label was set properly and then return SYMBOL's plist:
+  (let ( (group-label (get symbol :PD-GROUP))
+         (plist (symbol-plist symbol)))
+    ;; Sanity check:
+    (error-unless
+      "After setting field to '%s, its value is '%s. Something has gone wrong."
+      '(symbol group-label)
+      (eq symbol group-label))
+    (pd--print "Marked '%s with group label '%s, its plist is now: '%s."
+      symbol group-label plist)
+    ;; Finally, return SYMBOL's modified plist:
+    ;;plist
+    ;; Finally, return :
+    nil
+    ))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
