@@ -98,7 +98,7 @@
                    pattern-case))
                (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                (print "DEF: Added pattern-case '%s to group '%s." ',pattern group)))
-           (print (pp-to-string *lust-style-syntax--pattern-dispatch-table*))
+           (print (trim-string (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
            *lust-style-syntax--pattern-dispatch-table*)))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
