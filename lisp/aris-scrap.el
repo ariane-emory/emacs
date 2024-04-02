@@ -49,7 +49,7 @@
   (pd--print "Group rows: %s" group-rows)
   (pd--print "[%s]" group-name)
   (dolist (row group-rows)
-    (let ((pattern (cdar row)))
+    (let ((pattern (car row)))
       (pd--print "  %s ⇒" pattern)
       (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
         (dolist (line lines)
@@ -61,4 +61,21 @@
       )))
 
 
+(let* ( result
+        (group (pd--get-group 'fib))
+        (group-name (car group))
+        (group-rows (cdr group)))
+  (push (format "[%s]" group-name) result)
+  (dolist (row group-rows)
+    (let ((pattern (car row)))
+      (push (format "  %s ⇒" pattern) result)
+      (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+        (dolist (line lines)
+          (push (format "    %s" line) result)))
+      
+      ;; (let ( (pattern (car row))
+      ;;        (body (cdr row)))
+      ;;   (pd--print "   ⇒ %s" pattern))
+      ))
+  (nreverse result))
 
