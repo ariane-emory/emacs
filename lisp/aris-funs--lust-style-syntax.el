@@ -7,6 +7,7 @@
 ;; (def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--match-pattern)
+(require 'aris-funs--with-messages)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -48,7 +49,8 @@
 (defmacro aris-lust-syle-defs--use-print (&rest body)
   "Helper macro to conditionally bind #'pring to either `aris-lust-syle-defs--print' or `ignore'."
   `(cl-letf (((symbol-function 'print) 
-               (if *lust-style-syntax--verbose* #'aris-lust-syle-defs--print #'ignore)))
+               ;;(if *lust-style-syntax--verbose* #'aris-lust-syle-defs--print #'ignore)
+               (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
      ,@body))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

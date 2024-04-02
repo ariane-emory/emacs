@@ -64,31 +64,39 @@
 
 *lust-style-syntax--pattern-dispatch-table*
 
+(defun aris-lust-syle-defs--print (fmt &rest fmt-args)
+  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
+  (indented-message "%s" (apply #'format fmt fmt-args)))
+
+(defmacro aris-lust-syle-defs--use-print (&rest body)
+  "Helper macro to conditionally bind #'pring to either `aris-lust-syle-defs--print' or `ignore'."
+  `(cl-letf (((symbol-function 'print) 
+               ;;(if *lust-style-syntax--verbose* #'aris-lust-syle-defs--print #'ignore)
+               (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
+     ,@body))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
   (aris-lust-syle-defs--use-print
-    (print "Making dispatcher for %s..." symbol)
+    (print "Making dispatch handler for %s..." symbol)
     (let ((symbol symbol))
       (lambda (&rest args)
-        (print "Doing dispatch for %s..." symbol)
-        (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
-                (group (lust-style-syntax--get-patterns-for-group group-symbol))
-                (call-pattern (cons symbol args)))
-          ;;       (aris-lust-syle-defs--use-print
-          ;;         (print "Looking for group %s..." symbol)
-          ;;         (lust-style-syntax--eval-match-result
-          ;;           (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
-          )))))
+        (aris-lust-syle-defs--use-print
+          (print "Doing dispatch for %s..." symbol)
+          (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
+                  (group (lust-style-syntax--get-patterns-for-group group-symbol))
+                  (call-pattern (cons symbol args)))
+            (print "Looked up group %s and found:\n%s." symbol (print (pp-to-stringgroup)
+            ;; (lust-style-syntax--eval-match-result
+            ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
+            ))))))
 
-(progn
-(defun lust-style-syntax--make-pattern-dispatcher-fun-2 (symbol)
-  (aris-lust-syle-defs--use-print
-    (lambda (&rest args)
-      (let ((symbol symbol))
-        (message "Doing dispatch for %s..." (symbol-name symbol))))))
+(def (boop x y) (* x y))
 
-  (funcall (lust-style-syntax--make-pattern-dispatcher-fun-2 'boop) 8))
+(funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8)
+
 
