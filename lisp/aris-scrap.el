@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
+(when t
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this

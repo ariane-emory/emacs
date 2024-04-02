@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; fill-column: 95;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;; -*- lexical-binding: nil; fill-column: 95;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lust-style function definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,7 +44,8 @@
 (cl-defun PRINT-DIVIDER (&optional (char ?\=))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a divider line."
-  (print (make-string 80 char)))
+  (print (make-string 80 char))
+  nil)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -127,35 +128,65 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
+(defmacro lust-style-syntax--make-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
   (print "Making dispatch handler for '%s..." symbol)
   (unless (symbolp symbol)
     (error "Symbol must be a symbol, but got '%s." symbol))
-  (let ((symbol symbol))
-    (lambda (&rest args)
-      "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
-      (PRINT-DIVIDER)
-      (print "Doing dispatch for '%s..." symbol)
-      (with-message-indent
-        (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
-                (group (lust-style-syntax--get-patterns-for-group group-symbol))
-                (call-pattern (cons symbol args)))
-          (print "Looked up group for '%s and found:" symbol)
-          (with-message-indent
-            (dolist (row group)
-              (print "%s ⇒" (string-trim (pp-to-string (car row))))
-              (let ( (lines
-                       (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-                (print "  %s" (car lines))
-                (dolist (line (cdr lines))
-                  (print "  %s" line)))))
-          (lust-style-syntax--eval-match-result
-            (aris-lust-syle-defs--match-call-pattern-in-group
-              call-pattern group)))))))
-              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(lambda (&rest args)
+     (let ((symbol ',symbol))
+       "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
+       (PRINT-DIVIDER)
+       (print "Doing dispatch for '%s..." ',symbol)
+       (with-message-indent
+         (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
+                 (group (lust-style-syntax--get-patterns-for-group group-symbol))
+                 (call-pattern (cons symbol args)))
+           (print "Looked up group for '%s and found:" symbol)
+           (with-message-indent
+             (dolist (row group)
+               (print "%s ⇒" (string-trim (pp-to-string (car row))))
+               (let ( (lines
+                        (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+                 (print "  %s" (car lines))
+                 (dolist (line (cdr lines))
+                   (print "  %s" line)))))
+           (lust-style-syntax--eval-match-result
+             (aris-lust-syle-defs--match-call-pattern-in-group
+               call-pattern group)))))))
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
+;; because we're gong to be stshing stuff in their symbol properties."
+;;   (print "Making dispatch handler for '%s..." symbol)
+;;   (unless (symbolp symbol)
+;;     (error "Symbol must be a symbol, but got '%s." symbol))
+;;   (let ((symbol symbol))
+;;     (lambda (&rest args)
+;;       "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
+;;       (PRINT-DIVIDER)
+;;       (print "Doing dispatch for '%s..." symbol)
+;;       (with-message-indent
+;;         (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
+;;                 (group (lust-style-syntax--get-patterns-for-group group-symbol))
+;;                 (call-pattern (cons symbol args)))
+;;           (print "Looked up group for '%s and found:" symbol)
+;;           (with-message-indent
+;;             (dolist (row group)
+;;               (print "%s ⇒" (string-trim (pp-to-string (car row))))
+;;               (let ( (lines
+;;                        (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+;;                 (print "  %s" (car lines))
+;;                 (dolist (line (cdr lines))
+;;                   (print "  %s" line)))))
+;;           (lust-style-syntax--eval-match-result
+;;             (aris-lust-syle-defs--match-call-pattern-in-group
+;;               call-pattern group)))))))
+;;               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
