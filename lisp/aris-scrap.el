@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
+(when t
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
@@ -44,13 +44,10 @@
 
   (def result
     (list
-      (fib (car z))
-      (fib (cadr z))
-      (fib 10)))
+      (fib 4) ;; (car z))
+      (fib 6);; (cadr z))
+      (fib 8)))) ;; 10)))
 
-  )
-
-;; (144 233 55)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (when nil

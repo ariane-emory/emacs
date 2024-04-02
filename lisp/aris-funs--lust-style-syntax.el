@@ -185,6 +185,7 @@ because we're gong to be stshing stuff in their symbol properties."
   (let ((symbol symbol))
     (lambda (&rest args)
       "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
+      (PRINT-DIVIDER)
       (print "Doing dispatch for '%s..." symbol)
       (with-message-indent
         (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
@@ -357,36 +358,35 @@ because we're gong to be stshing stuff in their symbol properties."
         (and
           already-bound
           (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
-               (print "'%s already has group label '%s."
-                 symbol existing-group-label)
+               (print "[%d] '%s already has group label '%s."
+                 unique symbol existing-group-label)
                (or (not existing-group-label) (eq existing-group-label symbol))))))
       
-      (message "[%d] %sinding dispatch fun for '%s!" unique
-        (if already-bound "Reb" "B") symbol))
+      (print "[%d] '%s isn't bound or was bound by us, we can %sbind it."
+        unique symbol (if already-bound "re" "")))
 
-    ))
+    ;; Attach our handler function to SYMBOL's function cell:
+    (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
+
+    ;; Stash the group label in a property on SYMBOL:
+    (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+
+    ;; Make sure the label was set properly and then return SYMBOL's plist:
+    (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
+           (plist (symbol-plist symbol)))
+      ;; Sanity check:
+      (error-unless
+        "After setting field to '%s, its value is '%s. Something has gone wrong."
+        '(symbol group-label)
+        (eq symbol group-label))
+      (print "[%d] Marked symbol '%s with group label '%s, its plist is now: '%s."
+        unique symbol group-label plist)
+      ;; Finally, return SYMBOL's modified plist:
+      plist)))
 
 
 
 
-;; ;; Attach our handler function to SYMBOL's function cell:
-;; (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
-
-;; ;; Stash the group label in a property on SYMBOL:
-;; (put symbol :PATTERN-DISPATCHER-GROUP symbol)
-
-;; ;; Make sure the label was set properly and then return SYMBOL's plist:
-;; (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
-;;        (plist (symbol-plist symbol)))
-;;   ;; Sanity check:
-;;   (error-unless
-;;     "After setting field to '%s, its value is '%s. Something has gone wrong."
-;;     '(symbol group-label)
-;;     (eq symbol group-label))
-;;   (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
-;;     symbol group-label plist)
-;;   ;; Finally, return SYMBOL's modified plist:
-;;   plist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
