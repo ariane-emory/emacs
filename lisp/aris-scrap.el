@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(pd-reset)
+(pd--reset)
 
 (def (fib 0) 0)
 (def (fib 1) 1)
@@ -23,11 +23,10 @@
 
 (square 7)
 (funcall #'square 8)
+*pd--pattern-dispatch-table*
 
-*pattern-dispatch--pattern-dispatch-table*
 
-
-(print-table)
+(pd--print-table)
 
 ;; (indent-string-lines (format-group-as-string (pattern-dispatch--get-group 'fib)))
 
