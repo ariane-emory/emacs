@@ -15,7 +15,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun indent-lines (str &optional (n 2) (char ?\ ))
+(cl-defun indent-string-lines (str &optional (n 2) (char ?\ ))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Indent each line in a multiline string by N CHARs."
   (let ( (lines (split-string str "\n"))
