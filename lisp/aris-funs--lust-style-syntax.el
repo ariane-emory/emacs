@@ -81,26 +81,28 @@
               (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
         (error-when "DEF: Function definition's body must be either an atom or a proper list."
           is-illegal-definition)
-        `(aris-lust-syle-defs--use-print 
-           (print "DEF: Defining pattern '%s." ',pattern)
-           (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun
-             ',(car pattern))
-           (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
-             (if (not group)
-               (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
-                 (print "DEF:   Added new group '%s" group)
-                 (push group *lust-style-syntax--pattern-dispatch-table*))
-               (let ((pattern-case (assoc ',pattern (cdr group))))
-                 (when pattern-case
-                   (print "DEF:   Found pattern-case '%s in group '%s.")
-                   ;; (or pattern-case "<none>") group)
-                   (error-when "DEF:   Pattern %s already defined." '(',pattern)
-                     pattern-case))
-                 (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
-                 (print
-                   "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
-             (print (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
-             *lust-style-syntax--pattern-dispatch-table*))))))
+        `(aris-lust-syle-defs--use-print
+           (let ( (group-symbol ',group)
+                  (pat ',pattern))
+             ;;(debug)
+             (print "DEF: Defining pattern '%s in group '%s." pat group-symbol)
+             (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun group-symbol) ;; ',(car pattern)
+             (let ((group (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
+               (if (not group)
+                 (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
+                   (print "DEF:   Added new group '%s" group)
+                   (push group *lust-style-syntax--pattern-dispatch-table*))
+                 (let ((pattern-case (assoc ',pattern (cdr group))))
+                   (when pattern-case
+                     (print "DEF:   Found pattern-case '%s in group '%s.")
+                     ;; (or pattern-case "<none>") group)
+                     (error-when "DEF:   Pattern %s already defined." '(',pattern)
+                       pattern-case))
+                   (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
+                   (print
+                     "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
+               (print (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
+               *lust-style-syntax--pattern-dispatch-table*)))))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
