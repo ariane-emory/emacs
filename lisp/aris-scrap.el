@@ -73,17 +73,18 @@
     ;; If SYMBOL is already bound and it doesn't look like we did it,
     ;; raise an error.
     (let ((already-bound (fboundp symbol)))
-      (when (and
-              already-bound
-              (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
-                   (print "'%s already has group label '%s."
-                     symbol existing-group-label)
-                   (eq existing-group-label symbol))))
-        (error
-          (concat
-            "Logic error: symbol '%s already bound to a function and "
-            "it doesn't look like it was bound by this function."
-            "fmakunbound it first if you really want to re-bind it!" symbol)))
+      (error-when
+        (concat
+          "Logic error: symbol '%s already bound to a function and "
+          "it doesn't look like it was bound by this function."
+          "fmakunbound it first if you really want to re-bind it!" symbol)
+        (and
+          already-bound
+          (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
+               (print "'%s already has group label '%s."
+                 symbol existing-group-label)
+               (eq existing-group-label symbol)))))
+
       (print "%sinding dispatch fun for '%s!"
         (if already-bound "Reb" "B") symbol))
 
