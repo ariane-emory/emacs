@@ -335,10 +335,10 @@ because we're gong to be stshing stuff in their symbol properties."
 (defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
+  (PRINT-DIVIDER ?\#)
   (let ((unique (random (lsh 1 16))))
     (print "A SINGLE MESSAGE %d!" (random 1000))
     (print "Binding dispatch fun for '%s!" symbol))
-  (PRINT-DIVIDER)
   )
 ;; (when nil
 
