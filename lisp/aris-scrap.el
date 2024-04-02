@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
+(when t
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
@@ -42,26 +42,13 @@
   (message "%s" (fib 9))
   (message "%s" (fib 10))
 
-  ;; (def result
-  ;;   (list
-  ;;     (fib (car z))
-  ;;     (fib (cadr z))
-  ;;     (fib 10)))
+  (def result
+    (list
+      (fib (car z))
+      (fib (cadr z))
+      (fib 10)))
   ) ;; (144 233 55)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-*lust-style-syntax--pattern-dispatch-table*
-;;(fib 10)
-(symbol-plist 'fib)
-(symbol-plist 'double)
-
-(lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun 'foo)
-
-(symbol-plist 'foo)
-
-*lust-style-syntax--pattern-dispatch-table*
 
 (progn
   (pd-reset)

@@ -93,8 +93,7 @@ last expression in `body'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
   (let ((indent-string
-          (make-string (* *aris-indent* *aris-indent--size*)
-            *aris-indent--char*)))
+          (make-string (* *aris-indent* *aris-indent--size*) *aris-indent--char*)))
     (apply 'message (concat indent-string fmt) rest)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
