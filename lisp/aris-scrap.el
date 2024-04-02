@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
+;; -*- lexical-binding: nil; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when t
+(when nil
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
@@ -30,23 +30,24 @@
   (def (double n) (+ n n))
 
 
-  (message "%s" (fib 0))
-  (message "%s" (fib 1))
-  (message "%s" (fib 2))
-  (message "%s" (fib 3))
-  (message "%s" (fib 4))
-  (message "%s" (fib 5))
-  (message "%s" (fib 6))
-  (message "%s" (fib 7))
-  (message "%s" (fib 8))
-  (message "%s" (fib 9))
-  (message "%s" (fib 10))
+  ;; (message "%s" (fib 0))
+  ;; (message "%s" (fib 1))
+  ;; (message "%s" (fib 2))
+  ;; (message "%s" (fib 3))
+  ;; (message "%s" (fib 4))
+  ;; (message "%s" (fib 5))
+  ;; (message "%s" (fib 6))
+  ;; (message "%s" (fib 7))
+  ;; (message "%s" (fib 8))
+  ;; (message "%s" (fib 9))
+  ;; (message "%s" (fib 10))
 
-  (def result
-    (list
-      (fib 4) ;; (car z))
-      (fib 6);; (cadr z))
-      (fib 8)))) ;; 10)))
+  (let ((*lust-style-syntax--verbose* nil))
+    (def result
+      (list
+        (fib 4) ;; (car z))
+        (fib 6);; (cadr z))
+        (fib 8))))) ;; 10)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,5 +59,14 @@
   (message "Table: %s" (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*))))
 
 *lust-style-syntax--pattern-dispatch-table*
+
+
+lexical-binding
+
+
+
+
+
+
 
 
