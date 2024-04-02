@@ -53,257 +53,264 @@
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
- ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
- ("C-x C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
+  ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
+  ("C-x C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
 
- ;; Thumb keys:
- ("C-<backspace>" . aris-delete-previous-word)
- ("s-<backspace>" . macrostep-mode)
- 
- ("C-s-z" . (lambda () (interactive) (pp-macroexpand-last-sexp t) (insert "\n") (message "Inserted macro.")))
- ;; ("C-x C-e" . eval-last-sexp) ;; Default, don't actually bind.
- ("C-x C-<backspace>" . (lambda () (interactive) (pp-eval-last-sexp t) (insert "\n") (message "Inserted sexp.")))
- 
- ;; Find function at point in new tab:
- ("C-c C-S-d" .
-  (lambda ()
-   "Find directly the function at point in a new tab."
-   (interactive)
-   (let ((symb (function-called-at-point)))
-    (when symb
-     (tab-bar-new-tab)
-     (find-function symb)))))
+  ;; Thumb keys:
+  ("C-<backspace>" . aris-delete-previous-word)
+  ("s-<backspace>" . macrostep-mode)
+  
+  ("C-s-z" . (lambda () (interactive) (pp-macroexpand-last-sexp t) (insert "\n") (message "Inserted macro.")))
+  ;; ("C-x C-e" . eval-last-sexp) ;; Default, don't actually bind.
+  ("C-c C-<backspace>" .
+    (lambda ()
+      (interactive)
+      (let ((old-lisp-indnt-offset lisp-indent-offset))
+        (setq lisp-indent-offset 1)
+        (unwind-protect
+          (pp-eval-last-sexp t) (insert "\n") (message "Inserted sexp.")
+          (setq lisp-indent-offset old-lisp-indnt-offset)))))
 
- ;; Find function at point in current window:
- ("C-c C-d" .
-  (lambda ()
-   "Find directly the function at point in the current window."
-   (interactive)
-   (let ((symb (function-called-at-point)))
-    (when symb
-     (tab-bar-new-tab)
-     (find-function symb)))))
+  ;; Join lines:
+  ("C-j".  (lambda () (interactive) (join-line) (beginning-of-line-text)))
+  ;; ("C-j" . join-line)
+  ("M-j" . aris-join-next-line)
+  
+  ;; Find function at point in new tab:
+  ("C-c C-S-d" .
+    (lambda ()
+      "Find directly the function at point in a new tab."
+      (interactive)
+      (let ((symb (function-called-at-point)))
+        (when symb
+          (tab-bar-new-tab)
+          (find-function symb)))))
 
- ;; Greedily kill forward sexp and devour whitespace:
- ;; ("s-K" .
- ;;   (lambda ()
- ;;     (interactive)
- ;;     "Greedily kill forward sexp and devour whitespace."
- ;;     (execute-kbd-macro
- ;;       (kbd (concat
- ;;              "C-M-f C-M-b C-M-k C-M-b C-M-f "
- ;;              "C-SPC C-M-f C-M-b <backspace> SPC")))))
+  ;; Find function at point in current window:
+  ("C-c C-d" .
+    (lambda ()
+      "Find directly the function at point in the current window."
+      (interactive)
+      (let ((symb (function-called-at-point)))
+        (when symb
+          (tab-bar-new-tab)
+          (find-function symb)))))
 
- ;; Greedily kill forward sexp and devour whitespace:
- ;; ("M-s-<backspace>" .
- ;;   (lambda ()
- ;;     (interactive)
- ;;     "Greedily kill forward sexp and devour whitespace."
- ;;     (execute-kbd-macro
- ;;       (kbd (concat
- ;;              "C-M-f C-M-b C-M-k C-M-b C-M-f "
- ;;              "C-SPC C-M-f C-M-b <backspace> SPC")))))
+  ;; Greedily kill forward sexp and devour whitespace:
+  ;; ("s-K" .
+  ;;   (lambda ()
+  ;;     (interactive)
+  ;;     "Greedily kill forward sexp and devour whitespace."
+  ;;     (execute-kbd-macro
+  ;;       (kbd (concat
+  ;;              "C-M-f C-M-b C-M-k C-M-b C-M-f "
+  ;;              "C-SPC C-M-f C-M-b <backspace> SPC")))))
 
- ;; Devour whitespace between enclosing s-exps:
- ;; ("M-s-SPC" .
- ;;   (lambda ()
- ;;     (interactive)
- ;;     "Devour whitespace between enclosing s-exps."
- ;;     (execute-kbd-macro
- ;;       (kbd "C-M-b C-M-f C-SPC C-M-f C-M-b <backspace> SPC"))))
+  ;; Greedily kill forward sexp and devour whitespace:
+  ;; ("M-s-<backspace>" .
+  ;;   (lambda ()
+  ;;     (interactive)
+  ;;     "Greedily kill forward sexp and devour whitespace."
+  ;;     (execute-kbd-macro
+  ;;       (kbd (concat
+  ;;              "C-M-f C-M-b C-M-k C-M-b C-M-f "
+  ;;              "C-SPC C-M-f C-M-b <backspace> SPC")))))
 
- ;; Forward transform sexp into a dotted list:
- (" C-x C-a" .
-  (lambda ()
-   (interactive)
-   "Forward transform sexp into a dotted list."
-   (execute-kbd-macro
-    (kbd "C-s ( <right> <left> C-M-f <right> . SPC C-e"))))
- 
- ;; Transpose sexp forwards:
- ("C-M-S-t" .
-  (lambda ()
-   "Transpose sexp ahead of point forwards."
-   (interactive)
-   (forward-sexp 2)
-   (backward-sexp 1)
-   (transpose-sexps 1)
-   (backward-sexp 1)))
- 
- ;; Transpose sexp backwards:
- ("C-M-t" . 
-  (lambda ()
-   "Transpose sexp ahead of point backwards."
-   (interactive)
-   (transpose-sexps 1)
-   (backward-sexp 2)))
- 
- ;; Dump last key macro:
- ("C-x C-d" . aris-dump-key-macro)
+  ;; Devour whitespace between enclosing s-exps:
+  ;; ("M-s-SPC" .
+  ;;   (lambda ()
+  ;;     (interactive)
+  ;;     "Devour whitespace between enclosing s-exps."
+  ;;     (execute-kbd-macro
+  ;;       (kbd "C-M-b C-M-f C-SPC C-M-f C-M-b <backspace> SPC"))))
 
- ;; isearch-forward-thing-at-point:
- ("M-s M-s" . isearch-forward-thing-at-point)
- 
- ;; eval-expression with either hand:
- ("s-:" . eval-expression)
+  ;; Forward transform sexp into a dotted list:
+  (" C-x C-a" .
+    (lambda ()
+      (interactive)
+      "Forward transform sexp into a dotted list."
+      (execute-kbd-macro
+        (kbd "C-s ( <right> <left> C-M-f <right> . SPC C-e"))))
+  
+  ;; Transpose sexp forwards:
+  ("C-M-S-t" .
+    (lambda ()
+      "Transpose sexp ahead of point forwards."
+      (interactive)
+      (forward-sexp 2)
+      (backward-sexp 1)
+      (transpose-sexps 1)
+      (backward-sexp 1)))
+  
+  ;; Transpose sexp backwards:
+  ("C-M-t" . 
+    (lambda ()
+      "Transpose sexp ahead of point backwards."
+      (interactive)
+      (transpose-sexps 1)
+      (backward-sexp 2)))
+  
+  ;; Dump last key macro:
+  ("C-x C-d" . aris-dump-key-macro)
 
- ;; Make kill-emacs harder to hit accidentally:
- ("C-x C-c C-c C-c" . kill-emacs)
- 
- ;; Raise sexp;
- ("C-c C-r" . raise-sexp)
+  ;; isearch-forward-thing-at-point:
+  ("M-s M-s" . isearch-forward-thing-at-point)
+  
+  ;; eval-expression with either hand:
+  ("s-:" . eval-expression)
 
- ;; Revert and kill buffers without confirmations:
- ("C-x C-k" . aris-force-kill-buffer)
+  ;; Make kill-emacs harder to hit accidentally:
+  ("C-x C-c C-c C-c" . kill-emacs)
+  
+  ;; Raise sexp;
+  ("C-c C-r" . raise-sexp)
 
- ;; Revert buffer without confirmation:
- ("C-x C-r" . aris-revert-buffer-no-confirm)
+  ;; Revert and kill buffers without confirmations:
+  ("C-x C-k" . aris-force-kill-buffer)
 
- ;; Shell:
- ("C-x C-t" . shell)
+  ;; Revert buffer without confirmation:
+  ("C-x C-r" . aris-revert-buffer-no-confirm)
 
- ;; Switch to last buffer:
- ("C-x C-p" . aris-switch-to-last-buffer)
+  ;; Shell:
+  ("C-x C-t" . shell)
 
- ;; Comment/uncomment region:
- ("C-/" . comment-or-uncomment-region)
+  ;; Switch to last buffer:
+  ("C-x C-p" . aris-switch-to-last-buffer)
 
- ;; Describe these:
- ("s-m" . macrostep-mode)
- ("M-m" . macrostep-mode)
- ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
- ("C-c C-e" . ignore)
- ("M-\\" . ignore)
- ("S-<delete>" . ignore)
- ("M-<down-mouse-1>" . ignore)
+  ;; Comment/uncomment region:
+  ("C-/" . comment-or-uncomment-region)
 
- ;; Describe:
- ("C-c C-f" . describe-function)
- ("M-s-f" . describe-function)
- ("C-c C-k" . describe-key)
- ("M-s-k" . describe-key)
- ("C-c RET" . describe-mode)
- ("M-s-m" . describe-mode)
- ;;("C-c C-c" . describe-char)
- ("M-s-c" . describe-char)
+  ;; Describe these:
+  ("s-m" . macrostep-mode)
+  ("M-m" . macrostep-mode)
+  ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
+  ("C-c C-e" . ignore)
+  ("M-\\" . ignore)
+  ("S-<delete>" . ignore)
+  ("M-<down-mouse-1>" . ignore)
 
- ;; Cycle position:
- ("C-a" . aris-cycle-position-back)
- ("C-e" . aris-cycle-position-forward)
+  ;; Describe:
+  ("C-c C-f" . describe-function)
+  ("M-s-f" . describe-function)
+  ("C-c C-k" . describe-key)
+  ("M-s-k" . describe-key)
+  ("C-c RET" . describe-mode)
+  ("M-s-m" . describe-mode)
+  ;;("C-c C-c" . describe-char)
+  ("M-s-c" . describe-char)
 
- ;; Beginning/end of line
- ("C-M-a" . beginning-of-line)
- ("C-M-e" . end-of-line)
+  ;; Cycle position:
+  ("C-a" . aris-cycle-position-back)
+  ("C-e" . aris-cycle-position-forward)
 
- ;; Move lines up and down:
- ("<M-s-up>" . aris-move-line-up) 
- ("<M-s-down>" . aris-move-line-down) 
+  ;; Beginning/end of line
+  ("C-M-a" . beginning-of-line)
+  ("C-M-e" . end-of-line)
 
- ;; eval buffer:
- ("C-x C-z" . aris-eval-buffer)
+  ;; Move lines up and down:
+  ("<M-s-up>" . aris-move-line-up) 
+  ("<M-s-down>" . aris-move-line-down) 
 
- ;; Copy without unselecting:
- ("s-c" . aris-ns-copy-including-secondary-keep-selection)
+  ;; eval buffer:
+  ("C-x C-z" . aris-eval-buffer)
 
- ;; Close window/frame on s- so that they're hard to hit accidentally:
- ("s-w" . delete-window)
+  ;; Copy without unselecting:
+  ("s-c" . aris-ns-copy-including-secondary-keep-selection)
 
- ;; Toggle truncate lines:
- ("C-x C-l" . toggle-truncate-lines)
+  ;; Close window/frame on s- so that they're hard to hit accidentally:
+  ("s-w" . delete-window)
 
- ;; Move point out of  current sexp:
- ("C-x C-u" . backward-up-list)
+  ;; Toggle truncate lines:
+  ("C-x C-l" . toggle-truncate-lines)
 
- ;; Cycle spacing:
- ("M-SPC" . cycle-spacing)
+  ;; Move point out of  current sexp:
+  ("C-x C-u" . backward-up-list)
 
- ;; Tab switching/opening/closing:
- ;; These are usually already bound but we are bind-key*ing them to make sure
- ;; that they are bound in all modes.
- ("C-<tab>" . tab-next)
- ("C-S-<tab>" . tab-previous) 
- ("s-T" . tab-bar-new-tab)
- ("s-W" . tab-bar-close-tab)
+  ;; Cycle spacing:
+  ("M-SPC" . cycle-spacing)
 
- ;; Local caps lock:
- ("M-s-c" . aris-local-caps-lock-mode)
+  ;; Tab switching/opening/closing:
+  ;; These are usually already bound but we are bind-key*ing them to make sure
+  ;; that they are bound in all modes.
+  ("C-<tab>" . tab-next)
+  ("C-S-<tab>" . tab-previous) 
+  ("s-T" . tab-bar-new-tab)
+  ("s-W" . tab-bar-close-tab)
 
- ;; Swap windows... undecrided whether to keep this or the next one:
- ("C-c w s s" . window-swap-states)
+  ;; Local caps lock:
+  ("M-s-c" . aris-local-caps-lock-mode)
 
- ;; Swap split windows:
- ("C-x C-<tab>" . aris-swap-buffers-in-windows)
+  ;; Swap windows... undecrided whether to keep this or the next one:
+  ("C-c w s s" . window-swap-states)
 
- ;; Repeat last command:
- ("C-z" . repeat)
+  ;; Swap split windows:
+  ("C-x C-<tab>" . aris-swap-buffers-in-windows)
 
- ;; Zap up to char:
- ("M-z" . zap-up-to-char)
+  ;; Repeat last command:
+  ("C-z" . repeat)
 
- ;; Join lines:
- ("C-j".  (lambda () (interactive) (join-line) (beginning-of-line)))
-;; ("C-j" . join-line)
- ("M-j" . aris-join-next-line)
+  ;; Zap up to char:
+  ("M-z" . zap-up-to-char)
 
- ;; My delete-line:
- ("M-k" . aris-delete-line)
- 
- ;; C-h → backspace to match Cocoa text system defaults
- ;; (clobbering some default describe- bindings as a result):
- ("C-h" . aris-delete-backwards-char)
+  ;; My delete-line:
+  ("M-k" . aris-delete-line)
+  
+  ;; C-h → backspace to match Cocoa text system defaults
+  ;; (clobbering some default describe- bindings as a result):
+  ("C-h" . aris-delete-backwards-char)
 
- ;; Some NS-style bindings:
- ("s-a" . mark-whole-buffer)
- ("s-k" . ignore)
- ("s-p" . ignore)
- ("s-q" . ignore)
- ("s-t" . ignore)
- ("s-n" . ignore)
- ("s-o" . find-file)
- ("s-r" . query-replace)
+  ;; Some NS-style bindings:
+  ("s-a" . mark-whole-buffer)
+  ("s-k" . ignore)
+  ("s-p" . ignore)
+  ("s-q" . ignore)
+  ("s-t" . ignore)
+  ("s-n" . ignore)
+  ("s-o" . find-file)
+  ("s-r" . query-replace)
 
- ;; Start dired here:
- ("C-x C-j" . aris-start-dired-here)
+  ;; Start dired here:
+  ("C-x C-j" . aris-start-dired-here)
 
- ;; Rectangles:
- ("M-s-o" . open-rectangle)
- ("M-s-p" . kill-rectangle)
- ("M-s-y" . aris-yank-rectangle)
+  ;; Rectangles:
+  ("M-s-o" . open-rectangle)
+  ("M-s-p" . kill-rectangle)
+  ("M-s-y" . aris-yank-rectangle)
 
- ;; Describe these:
- ("M-s-u" . rename-uniquely)
- ("M-s-i" . ielm)
- ("M-s-n" . narrow-to-region)
- ("M-s-m" . widen)
+  ;; Describe these:
+  ("M-s-u" . rename-uniquely)
+  ("M-s-i" . ielm)
+  ("M-s-n" . narrow-to-region)
+  ("M-s-m" . widen)
 
- ;; Mess with sexps:
- ("C-c i c" . aris-eval-sexp-and-insert-as-comment)
- ("C-c c s" . aris-forwards-comment-sexp)
- ("C-c b c s" . aris-backwards-comment-sexp)
- ("C-c C-s" . aris-forwards-comment-sexp)
+  ;; Mess with sexps:
+  ("C-c i c" . aris-eval-sexp-and-insert-as-comment)
+  ("C-c c s" . aris-forwards-comment-sexp)
+  ("C-c b c s" . aris-backwards-comment-sexp)
+  ("C-c C-s" . aris-forwards-comment-sexp)
 
- ;; Find function at point:
- ("C-c f f" . aris-find-function-at-point)
+  ;; Find function at point:
+  ("C-c f f" . aris-find-function-at-point)
 
- ;; Find other file:
- ("C-c f o f" . ff-find-other-file)
+  ;; Find other file:
+  ("C-c f o f" . ff-find-other-file)
 
- ;; Close parens:
- ("C-c a p" . aris-close-all-parentheses)
+  ;; Close parens:
+  ("C-c a p" . aris-close-all-parentheses)
 
- ;; Sort lines:
- ("C-c o l" . sort-lines)
+  ;; Sort lines:
+  ("C-c o l" . sort-lines)
 
- ;; Browse URL:
- ("C-c x b" . xwidget-webkit-browse-url)
+  ;; Browse URL:
+  ("C-c x b" . xwidget-webkit-browse-url)
 
- ;; Redox thumb kill keys:
- ("C-k" . aris-kill-region-or-line)
- ("C-M-s-k" . aris-kill-whole-line)
+  ;; Redox thumb kill keys:
+  ("C-k" . aris-kill-region-or-line)
+  ("C-M-s-k" . aris-kill-whole-line)
 
- ;; Forward/back paragraphs:
- ("C-M-<right>" . forward-paragraph)
- ("C-M-<left>" . backward-paragraph))
+  ;; Forward/back paragraphs:
+  ("C-M-<right>" . forward-paragraph)
+  ("C-M-<left>" . backward-paragraph))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-configure--key-bindings)
