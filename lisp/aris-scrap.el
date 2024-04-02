@@ -28,6 +28,18 @@
   (def qqq 444)
   (def qqq '(333 444))
   (def (double n) (+ n n))
+
+  (fib 0)
+  (fib 1)
+  (fib 2)
+  (fib 3)
+  (fib 4)
+  (fib 5) 
+  (fib 6)
+  (fib 7)
+  (fib 8)
+  (fib 9)
+  (fib 10)
   
   (def result
     (list
@@ -38,7 +50,12 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (24 26 20)
-
+2
 *lust-style-syntax--pattern-dispatch-table*
 
-((double ((double n) (+ n n))) (fib ((fib 0) 0) ((fib 1) 1) ((fib n) (+ (fib (- n 1)) (fib (- n 2))))))
+( (double
+    ((double n) (+ n n)))
+  (fib
+    ((fib 0) 0)
+    ((fib 1) 1)
+    ((fib n) (+ (fib (- n 1)) (fib (- n 2))))))

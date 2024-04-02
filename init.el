@@ -274,6 +274,8 @@
         (setq blink-cursor-interval 0.1))
       
       (use-package-with-message elisp-mode
+        :bind
+        ("C-c ." . (lambda () (interactive) (pp-macroexpand-last-sexp t)))
         :hook
         (emacs-lisp-mode .
           (lambda ()
