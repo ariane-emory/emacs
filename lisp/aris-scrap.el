@@ -82,16 +82,26 @@ because we're gong to be stshing stuff in their symbol properties."
             (print "Looked up group %s and found:" symbol)
             ;;(let ((*aris-indent* (1+ *aris-indent*)))
             (dolist (row group)
-              ;;(print (car row))
-              (print (string-trim (pp-to-string row))
-                ;; (lust-style-syntax--eval-match-result
-                ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
-                ))))))));)
+              (print "%s " (car row))
+              (let ((lines
+                      (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+                (print " ⇒ %s" (car lines))
+                (dolist (line (cdr lines))
+                  (print "    %s" line)))
+              ;; (print (string-trim (pp-to-string row))
+              ;; (lust-style-syntax--eval-match-result
+              ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
+              )))))))
 
 (progn
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
   (def (boop x y) (* x y))
-  (def (boop x 10) (* x 100))
+  (def (boop x 10)
+    (* x 100)
+    (if t (this)
+      (that))
+    (* x 100)
+    (* x 100))
   (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9)
   )
 
