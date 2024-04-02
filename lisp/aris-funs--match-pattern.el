@@ -118,12 +118,12 @@ Examples:
 
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (let ( (original-indent *aris-indent*)
-         (*aris-indent--char* ?\ )
-         (*aris-indent--size* 3))
+  (let ( (original-indent *with-messages--indent*)
+         (*with-messages--indent-char* ?\ )
+         (*with-messages--indent-size* 3))
     (cl-letf (((symbol-function 'print) (if *match-pattern--verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
-      (let ((*aris-indent* (1+ *aris-indent*)))
+      (let ((*with-messages--indent* (1+ *with-messages--indent*)))
         (when *match-pattern--init-fun*
           (funcall *match-pattern--init-fun*))
         (cl-labels
@@ -200,7 +200,7 @@ Examples:
                              (make-kvp (value)
                                (cons (capture-symbol-of-pattern-head) (list value)))
                              (continue (pattern target &optional (value :NOT-SUPPLIED))
-                               (let ((*aris-indent* (1+ *aris-indent*)))
+                               (let ((*with-messages--indent* (1+ *with-messages--indent*)))
                                  (matchrec pattern target depth
                                    (if (eq value :NOT-SUPPLIED)
                                      accumulator
@@ -225,7 +225,7 @@ Examples:
                    ;; Body of matchrec:
                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                    (print "matching %s against %s with acc %s..." pattern target accumulator)
-                   (let ((*aris-indent* (1+ *aris-indent*)))
+                   (let ((*with-messages--indent* (1+ *with-messages--indent*)))
                      (print "target-head %s is %sa verbatim element." target-head
                        (if (elem-is-verbatim? target-head) "" "not "))
                      (cl-macrolet ((case (index descr &body body)
@@ -329,7 +329,7 @@ Examples:
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          (let ( (*aris-indent* original-indent)
+          (let ( (*with-messages--indent* original-indent)
                  (match-result (matchrec pattern target 0 nil)))
             (print "Match result is %s." match-result)
 	          (when (car match-result)
