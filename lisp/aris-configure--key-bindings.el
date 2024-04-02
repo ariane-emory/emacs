@@ -61,13 +61,13 @@
   ("s-<backspace>" . macrostep-mode)
 
   ("C-c C-SPC" .
-    (lambda () (interactive) (pp-macroexpand-last-sexp t))
+    (lambda () (interactive) (insert " ")(pp-macroexpand-last-sexp t))
     ;; (lambda ()
     ;;   (interactive)
     ;;   (insert (pp-to-string (macroexpand (pp-last-sexp)))) (message "Inserted expansion."))
     )
   ("C-c C-<backspace>" .
-    (lambda () (interactive) (pp-macroexpand-last-sexp t))
+    (lambda () (interactive) (insert " ")(pp-macroexpand-last-sexp t))
     ;; (lambda ()
     ;;   (interactive)
     ;;   (insert (pp-to-string (macroexpand (pp-last-sexp)))) (message "Inserted expansion."))
@@ -75,10 +75,10 @@
 
   ("C-x C-SPC" .
     (lambda ()
-      (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
+      (interactive) (insert "\n") (pp-eval-last-sexp t) (message "Inserted sexp.")))
   ("C-x C-<backspace>" .
     (lambda ()
-      (interactive) (eval-print-last-sexp) (message "Inserted sexp.")))
+      (interactive) (insert "\n") (pp-eval-last-sexp t) (message "Inserted sexp.")))
 
   ;; Find function at point in new tab:
   ("C-c C-S-d" .
