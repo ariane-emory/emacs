@@ -79,15 +79,19 @@ because we're gong to be stshing stuff in their symbol properties."
           (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
                   (group (lust-style-syntax--get-patterns-for-group group-symbol))
                   (call-pattern (cons symbol args)))
-            (print "Looked up group %s and found:\n%s." symbol
-              (print (indent-lines (pp-to-string group)
-                       ;; (lust-style-syntax--eval-match-result
-                       ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
-                       )))))))))
+            (print "Looked up group %s and found:" symbol)
+            ;;(let ((*aris-indent* (1+ *aris-indent*)))
+            (dolist (row group)
+              ;;(print (car row))
+              (print (string-trim (pp-to-string row))
+                ;; (lust-style-syntax--eval-match-result
+                ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
+                ))))))));)
 
 (progn
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
   (def (boop x y) (* x y))
-  (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8)
+  (def (boop x 10) (* x 100))
+  (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9)
   )
 
