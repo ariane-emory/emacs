@@ -30,24 +30,23 @@
   (def (double n) (+ n n))
 
 
-  (fib 0)
-  (fib 1)
-  (fib 2)
-  (fib 3)
-  (fib 4)
-  (fib 5) 
-  (fib 6)
-  (fib 7)
-  (fib 8)
-  (fib 9)
-  (fib 10)
-  (fib 10)
+  (message "%s" (fib 0))
+  (message "%s" (fib 1))
+  (message "%s" (fib 2))
+  (message "%s" (fib 3))
+  (message "%s" (fib 4))
+  (message "%s" (fib 5))
+  (message "%s" (fib 6))
+  (message "%s" (fib 7))
+  (message "%s" (fib 8))
+  (message "%s" (fib 9))
+  (message "%s" (fib 10))
 
-  (def result
-    (list
-      (fib (car z))
-      (fib (cadr z))
-      (fib 10)))
+  ;; (def result
+  ;;   (list
+  ;;     (fib (car z))
+  ;;     (fib (cadr z))
+  ;;     (fib 10)))
   ) ;; (144 233 55)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -64,33 +63,6 @@
 
 *lust-style-syntax--pattern-dispatch-table*
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
-because we're gong to be stshing stuff in their symbol properties."
-  (aris-lust-syle-defs--use-print
-    (print "Making dispatch handler for %s..." symbol)
-    (let ((symbol symbol))
-      (lambda (&rest args)
-        (aris-lust-syle-defs--use-print
-          (print "Doing dispatch for %s..." symbol)
-          (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
-                  (group (lust-style-syntax--get-patterns-for-group group-symbol))
-                  (call-pattern (cons symbol args)))
-            (print "Looked up group %s and found:" symbol)
-            (let ((*aris-indent* (1+ *aris-indent*)))
-              (dolist (row group)
-                (print "%s ⇒" (string-trim (pp-to-string (car row))))
-                (let ( (lines
-                         (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-                  (print "  %s" (car lines))
-                  (dolist (line (cdr lines))
-                    (print "  %s" line)))
-                ;; (lust-style-syntax--eval-match-result
-                ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
-                ))))))))
-
 (progn
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
   (def (boop x y) (* x y))
@@ -101,4 +73,4 @@ because we're gong to be stshing stuff in their symbol properties."
       200)
     (* x 300)
     (* x 400))
-  (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9))
+  (message "%s" (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9)))
