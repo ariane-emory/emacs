@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when t
+(when nil
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
@@ -53,9 +53,7 @@
 
 
 (pd-reset)
-
 (def (boop y) (* y y))
-
 (boop 7)
 
 *lust-style-syntax--pattern-dispatch-table*
@@ -63,14 +61,10 @@
 
 (symbol-plist 'boop)
 
-(fset 'blammo (lust-style-syntax--make-pattern-dispatcher-fun blammo))
-(funcall #'blammo 8)
+(fset 'boop (lust-style-syntax--make-pattern-dispatcher-fun boop))
+(funcall #'boop 8)
 
 
-(def (boop y) (* y y))
-(lust-style-syntax--def
-  (boop y)
-  (* y y))
 
 
 

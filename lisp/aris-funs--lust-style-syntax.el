@@ -138,7 +138,7 @@ because we're gong to be stshing stuff in their symbol properties."
   `(lambda (&rest args)
      "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
      (PRINT-DIVIDER)
-     (print "Doing dispatch for '%s..." ',symbol)
+     (print "Doing dispatch for '%s..." ,symbol)
      (with-message-indent
        (let* ( (group-symbol (get ',symbol :PATTERN-DISPATCHER-GROUP))
                (group (lust-style-syntax--get-patterns-for-group group-symbol))
@@ -338,7 +338,7 @@ because we're gong to be stshing stuff in their symbol properties."
     (let ((already-bound (fboundp symbol)))
       (error-when
         (concat
-          "Logic error: symbol '%s already bound to a function and "
+          "Logic error: symbol '%s alreadye bound to a function and "
           "it doesn't look like it was bound by this function."
           "fmakunbound it first if you really want to re-bind it!" symbol)
         (and
