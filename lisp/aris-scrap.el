@@ -61,22 +61,6 @@
       )))
 
 
-(cl-defun pd--format-group-as-list (group &optional (indent-char ?\ ) (indent 0))
-  (let* ( result
-          (group-name (car group))
-          (group-rows (cdr group)))
-    (push (format "[%s]" group-name) result)
-    (dolist (row group-rows)
-      (let ((pattern (car row)))
-        (push (format "%s%s ⇒" (make-string (+ indent 2) indent-char) pattern) result)
-        (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-          (dolist (line lines)
-            (push (format "%s%s" (make-string (+ indent 4) indent-char) line) result)))))
-    (nreverse result)))
-
-(cl-defun pd--format-group-as-string
-  (group &optional (indent-char ?\ ) (indent 0))
-  (string-join (pd--format-group-as-list group ?\. 2) "\n"))
 
 (pd--print (pd--format-group-as-string (pd--get-group 'fib) ?\. 2))
 
