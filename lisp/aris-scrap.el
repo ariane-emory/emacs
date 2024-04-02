@@ -9,10 +9,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--reset)
-
 (def (fib 0) 0)
 (def (fib 1) 1)
-(def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+(def (fib n) (message "hello") (+ (fib (- n 1)) (fib (- n 2))))
 (def (double n) (+ n n))
 (def (square y) (* y y))
 ;; (def result
@@ -20,18 +19,46 @@
 ;;     (fib 4)
 ;;     (fib 6)
 ;;     (fib 8)))
-
 (square 7)
 (funcall #'square 8)
 *pd--pattern-dispatch-table*
-
 (message "Printing the table:")
 (pd--print-table)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (indent-string-lines (format-group-as-string (pattern-dispatch--get-group 'fib)))
+(pd--get-group 'fib)
+'(fib
+   ((fib 0)
+     0)
+   ((fib 1)
+     1)
+   ((fib n)
+     (message "hello")
+     (+
+       (fib
+         (- n 1))
+       (fib
+         (- n 2)))))
 
-;; (indent-string-lines (print-group (format-group-as-string (pattern-dispatch--get-group 'fib))))
-;; (fib 8)
-;; (symbol-function 'square)
-;; (symbol-plist 'square)
-;; (print-group )
+
+(let* ( (group (pd--get-group 'fib))
+        (group-name (car group))
+        (group-rows (cdr group)))
+  (pd--print "Group: %s" group-rows)
+  (pd--print "Group name: %s" group-name)
+  (pd--print "Group rows: %s" group-rows)
+  (pd--print "[%s]" group-name)
+  (dolist (row group-rows)
+    (let ((pattern (cdar row)))
+      (pd--print "  %s ⇒" pattern)
+      (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+        (dolist (line lines)
+          (pd--print "    %s" line)))
+      
+      ;; (let ( (pattern (car row))
+      ;;        (body (cdr row)))
+      ;;   (pd--print "   ⇒ %s" pattern))
+      )))
+
+
+

@@ -315,13 +315,13 @@ because we're gong to be stshing stuff in their symbol properties."
   (let ( result
          (group-name (car group))
          (group-rows (cdr group)))
-    (push (format "[%s]" group-name) result)
+    (push (format "a[%s]" group-name) result)
     (dolist (row group-rows)
-      (push (format "  %s ⇒" (string-trim (pp-to-string (car row)))) result)
+      (push (format "b  %s ⇒" (string-trim (pp-to-string (car row)))) result)
       (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-        (push (format "    %s" (car lines)) result)
+        (push (format "c    %s" (car lines)) result)
         (dolist (line (cdr lines))
-          (push (format "    %s" line) result))))
+          (push (format "d    %s" line) result))))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
