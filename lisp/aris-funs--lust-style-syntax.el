@@ -147,7 +147,7 @@ because we're gong to be stshing stuff in their symbol properties."
        (PRINT-DIVIDER)
        (print "Doing dispatch for '%s..." ',symbol)
        (with-message-indent
-         (let* ( (group-symbol (get ',symbol :PATTERN-DISPATCHER-GROUP))
+         (let* ( (group-symbol (get ',symbol :PD-GROUP))
                  (group (lust-style-syntax--get-patterns-for-group group-symbol))
                  (call-pattern (cons ',symbol args)))
            (print "Looked up group for '%s and found:" ',symbol)
@@ -175,8 +175,8 @@ because we're gong to be stshing stuff in their symbol properties."
       (print "Unbinding %s..." group-symbol)
       (fmakunbound group-symbol)
       (print "Props before: %s" (symbol-plist group-symbol))
-      (put group-symbol :PATTERN-DISPATCHER-GROUP nil)
-      (put group-symbol :PATTERN-DISPATCHER-COUNT nil)
+      (put group-symbol :PD-GROUP nil)
+      (put group-symbol :PD-COUNT nil)
       (print "Props after: %s" (symbol-plist group-symbol))))
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
   (PRINT-DIVIDER))
@@ -269,7 +269,7 @@ because we're gong to be stshing stuff in their symbol properties."
           "fmakunbound it first if you really want to re-bind it!" symbol)
         (and
           already-bound
-          (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
+          (not (let ((existing-group-label (get symbol :PD-GROUP)))
                (print "[%d] '%s already has group label '%s."
                  unique symbol existing-group-label)
                (or (not existing-group-label) (eq existing-group-label symbol))))))
@@ -285,12 +285,12 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
     ;; Stash the group label and a serial numbe in properties on SYMBOL:
-    (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+    (put symbol :PD-GROUP symbol)
     (setq *lust-style-syntax--handler-count* (1+ *lust-style-syntax--handler-count*))
-    (put symbol PATTERN-DISPATCHER-COUNT *lust-style-syntax--handler-count*)
+    (put symbol :PD-COUNT *lust-style-syntax--handler-count*)
 
     ;; Make sure the label was set properly and then return SYMBOL's plist:
-    (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
+    (let ( (group-label (get symbol :PD-GROUP))
            (plist (symbol-plist symbol)))
       ;; Sanity check:
       (error-unless
