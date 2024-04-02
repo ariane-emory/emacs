@@ -95,7 +95,8 @@
                    pattern-case))
                (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                (print "DEF: Added pattern-case '%s to group '%s." ',pattern group)))
-           *lust-style-syntax--pattern-dispatch-table*)))))
+           (print (pp-to-string *lust-style-syntax--pattern-dispatch-table*))
+           nil)))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -117,30 +118,50 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (aris-lust-syle-defs--use-print
-    (print "BINDING DISPATCH FUN FOR %s!" symbol)
+    (print (make-string 80 ?\=))
+    (print "Binding dispatch fun for '%s!" symbol)
+
+    ;; SYMBOL must be a symbol:
     (error-unless "%s is not a symbol." '(symbol)
       (symbolp symbol))
-    (let* ((already-bound (fboundp symbol)))
-      (when (and
-              already-bound
-              (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-GROUP)))
-                   (print "Retrieved %s for %s." got-symbol symbol)
-                   got-symbol)))
-        (error "Logic error: function %s already bound elsewherm, fmakunbound it first!" symbol))
-      (print "%sBINDING DISPATCH FUN FOR %s!"
-        (if already-bound "RE" "") symbol)
-      (fset symbol
-        (lust-style-syntax--make-pattern-dispatcher-fun symbol))
-      (put
-        (function symbol)
-        :PATTERN-DISPATCHER-GROUP
-        symbol)
-      (print "MARKED FUN WITH %s / %s / %s." symbol (function symbol)
-        (get
-          (function symbol)
-          :PATTERN-DISPATCHER-GROUP)))))
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    
+    ;; If SYMBOL is already bound and it doesn't look like we did it,
+    ;; raise an error.
+    (let ((already-bound (fboundp symbol)))
+      (error-when
+        (concat
+          "Logic error: symbol '%s already bound to a function and "
+          "it doesn't look like it was bound by this function."
+          "fmakunbound it first if you really want to re-bind it!" symbol)
+        (and
+          already-bound
+          (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
+               (print "'%s already has group label '%s."
+                 symbol existing-group-label)
+               (eq existing-group-label symbol)))))
 
+      (print "%sinding dispatch fun for '%s!"
+        (if already-bound "Reb" "B") symbol))
+
+    ;; Attach our handler function to SYMBOL's function cell:
+    (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
+
+    ;; Stash the group label in a property on SYMBOL:
+    (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+
+    ;; Make sure the label was set properly and then return SYMBOL's plist:
+    (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
+           (plist (symbol-plist symbol)))
+      ;; Sanity check:
+      (error-unless
+        "After setting field to %s, its value is %s. Something has gone wrong."
+        '(symbol group-label)
+        (eq symbol group-label))
+      (print "Marked symbol %s with group label %s, its plist is now: %s."
+        symbol group-label plist)
+      ;; Finally, return SYMBOL's modified plist:
+      plist)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--eval-match-result (match-result)
@@ -236,16 +257,17 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
-  (message "MAKING DISPATCHER FOR %s..." symbol)
-  (lambda (&rest args)
-    (let* ( (function (function symbol))
-            (symbol (get function :PATTERN-DISPATCHER-GROUP))
-            (group (lust-style-syntax--get-patterns-for-group symbol))
-            (call-pattern (cons symbol args)))
-      (message "LOOKING FOR GROUP %s..." group)
-      (lust-style-syntax--eval-match-result
-        (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (aris-lust-syle-defs--use-print
+    (print "Making dispatcher for %s..." symbol)
+    (lambda (&rest args)
+      (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
+              (group (lust-style-syntax--get-patterns-for-group group-symbol))
+              (call-pattern (cons symbol args)))
+        (aris-lust-syle-defs--use-print
+          (print "Looking for group %s..." symbol)
+          (lust-style-syntax--eval-match-result
+            (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))))
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
