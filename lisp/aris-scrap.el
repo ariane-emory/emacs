@@ -83,9 +83,12 @@ because we're gong to be stshing stuff in their symbol properties."
           ;;           (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
           )))))
 
+(progn
 (defun lust-style-syntax--make-pattern-dispatcher-fun-2 (symbol)
-  (lambda (&rest args)
-    (let ((symbol symbol))
-      (message "Doing dispatch for %s..." symbol))))
+  (aris-lust-syle-defs--use-print
+    (lambda (&rest args)
+      (let ((symbol symbol))
+        (message "Doing dispatch for %s..." (symbol-name symbol))))))
 
-(funcall (lust-style-syntax--make-pattern-dispatcher-fun-2 'boop) 8)
+  (funcall (lust-style-syntax--make-pattern-dispatcher-fun-2 'boop) 8))
+
