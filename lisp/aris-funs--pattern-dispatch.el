@@ -313,8 +313,9 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Formatting functions that aren't documented yet:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun pd--format-group-as-lines (group &optional (indent-char ?\ ) (indent 0))
+(cl-defun pd--format-group-as-lines (group &optional (indent 0) (indent-char ?\ ))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (pd--print "Formatting group as lines '%s..." group)
   (let* ( result
           (group-name (car group))
           (group-rows (cdr group)))
@@ -330,9 +331,8 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun pd--format-group-as-string
-  (group &optional (indent-char ?\ ) (indent 0))
-  (string-join (pd--format-group-as-lines group ?\. 2) "\n"))
+(cl-defun pd--format-group-as-string (group &optional (indent 0) (indent-char ?\ ))
+  (string-join (pd--format-group-as-lines group indent indent-char) "\n"))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

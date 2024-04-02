@@ -6,6 +6,24 @@
 (require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; (let* ( (group (pd--get-group 'fib))
+;;         (group-name (car group))
+;;         (group-rows (cdr group)))
+;;   (pd--print "Group: %s" group-rows)
+;;   (pd--print "Group name: %s" group-name)
+;;   (pd--print "Group rows: %s" group-rows)
+;;   (pd--print "[%s]" group-name)
+;;   (dolist (row group-rows)
+;;     (let ((pattern (car row)))
+;;       (pd--print "  %s ⇒" pattern)
+;;       (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+;;         (dolist (line lines)
+;;           (pd--print "    %s" line)))
+
+;;       ;; (let ( (pattern (car row))
+;;       ;;        (body (cdr row)))
+;;       ;;   (pd--print "   ⇒ %s" pattern))
+;;       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--reset)
@@ -41,33 +59,10 @@
          (- n 2)))))
 
 
-(let* ( (group (pd--get-group 'fib))
-        (group-name (car group))
-        (group-rows (cdr group)))
-  (pd--print "Group: %s" group-rows)
-  (pd--print "Group name: %s" group-name)
-  (pd--print "Group rows: %s" group-rows)
-  (pd--print "[%s]" group-name)
-  (dolist (row group-rows)
-    (let ((pattern (car row)))
-      (pd--print "  %s ⇒" pattern)
-      (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-        (dolist (line lines)
-          (pd--print "    %s" line)))
-      
-      ;; (let ( (pattern (car row))
-      ;;        (body (cdr row)))
-      ;;   (pd--print "   ⇒ %s" pattern))
-      )))
 
 
 
-(pd--print (pd--format-group-as-string (pd--get-group 'fib) ?\. 2))
-
-
-
-
-
-
-
+(pd--print-group (pd--get-group 'fib))
+(pd--format-group-as-lines (pd--get-group 'fib))
+(pd--format-group-as-string (pd--get-group 'fib))
 
