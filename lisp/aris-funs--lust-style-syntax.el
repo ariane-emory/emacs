@@ -63,9 +63,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a function call pattern case or a variable using a Lust-style syntax."
   (let* ( (is-variable-definition (symbolp pattern-or-symbol))
-          (is-function-definition (consp pattern-or-symbol))
+          (is-function-definition (proper-list-p pattern-or-symbol))
           (is-illegal-definition  (not (or is-variable-definition is-function-definition))))
-    (error-when "DEF: PATTERN-OR-SYMBOL must be either a symbol or a list."
+    (error-when "DEF: PATTERN-OR-SYMBOL must be either a symbol or a proper list."
       is-illegal-definition)
     (if is-variable-definition
       (let ( (symbol pattern-or-symbol)
