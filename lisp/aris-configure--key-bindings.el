@@ -49,8 +49,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-unset-key (kbd "C-x C-c"))
 
-(bind-key* "C-j" (lambda () (interactive) (join-line) (beginning-of-line)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,9 +60,9 @@
  ("C-<backspace>" . aris-delete-previous-word)
  ("s-<backspace>" . macrostep-mode)
  
- ("C-x C-SPC" . eval-last-sexp)
- ("C-s-z" . (lambda () (interactive) (insert "\n") (pp-macroexpand-last-sexp t) (message "Inserted macro.")))
- ("C-c C-<backspace>" . (lambda () (interactive) (insert "\n")(pp-macroexpand-last-sexp t) (message "Inserted macro.")))
+ ("C-s-z" . (lambda () (interactive) (pp-macroexpand-last-sexp t) (insert "\n") (message "Inserted macro.")))
+ ;; ("C-x C-e" . eval-last-sexp) ;; Default, don't actually bind.
+ ("C-x C-<backspace>" . (lambda () (interactive) (pp-eval-last-sexp t) (insert "\n") (message "Inserted sexp.")))
  
  ;; Find function at point in new tab:
  ("C-c C-S-d" .
@@ -243,7 +241,8 @@
  ("M-z" . zap-up-to-char)
 
  ;; Join lines:
- ("C-j" . join-line)
+ ("C-j".  (lambda () (interactive) (join-line) (beginning-of-line)))
+;; ("C-j" . join-line)
  ("M-j" . aris-join-next-line)
 
  ;; My delete-line:

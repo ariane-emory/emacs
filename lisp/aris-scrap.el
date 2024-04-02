@@ -54,4 +54,15 @@
 (24 26 20)
 
 *lust-style-syntax--pattern-dispatch-table*
+(fib 10)
+(fib 10)
+(fib 10)
 
+20
+2020
+2020
+2020
+2020
+2020
+2020
+2020
