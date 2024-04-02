@@ -58,7 +58,7 @@
 
 *lust-style-syntax--pattern-dispatch-table*
 
-
+(symbol-function 'boop)
 (symbol-plist 'boop)
 
 (fset 'boop (lust-style-syntax--make-pattern-dispatcher-fun boop))

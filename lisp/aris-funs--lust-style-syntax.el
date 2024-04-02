@@ -25,8 +25,11 @@
   :group 'lust-style-syntax
   :type 'boolean)
 
-(defvar *lust-style-syntax--counter* 0
+(defvar *lust-style-syntax--match-counter* 0
   "This is part of an ugly hack and is not meant to be customized.")
+
+(defvar *lust-style-syntax--pattern-dispatch-table* nil
+  "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
 
 (defvar *lust-style-syntax--pattern-dispatch-table* nil
   "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
@@ -95,17 +98,17 @@
       (dolist (pattern-case group)
         (let ( (pattern (car pattern-case))
                (*match-pattern--init-fun*
-                 (lambda () (setq *lust-style-syntax--counter* 0)))
+                 (lambda () (setq *lust-style-syntax--match-counter* 0)))
                (*match-pattern--merge-duplicate-alist-keys* nil)
                (*match-pattern--kleene-tag* nil)
                (*match-pattern--anything-tag* 'anything)
                (*match-pattern--verbatim-element?* nil)
                (*match-pattern--capture-element?*
                  (lambda (elem)
-                   (if (> *lust-style-syntax--counter* 1)
+                   (if (> *lust-style-syntax--match-counter* 1)
                      (symbolp elem)
-                     (setq *lust-style-syntax--counter*
-                       (1+ *lust-style-syntax--counter*))
+                     (setq *lust-style-syntax--match-counter*
+                       (1+ *lust-style-syntax--match-counter*))
                      nil)))
                (*match-pattern--get-capture-symbol-fun* (lambda (e) e))
                (*match-pattern--get-capture-tag-fun* (lambda (e) 'anything))
@@ -271,6 +274,9 @@ because we're gong to be stshing stuff in their symbol properties."
         unique symbol (if already-bound "re" "")))
 
     ;; Attach our handler function to SYMBOL's function cell:
+    (print "CALL ONE!")
+    (fset symbol (lust-style-syntax--make-dispatcher-fun symbol))
+    (print "CALL TWO!")
     (fset symbol (eval `(lust-style-syntax--make-dispatcher-fun ,symbol)))
 
     ;; Stash the group label in a property on SYMBOL:
