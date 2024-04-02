@@ -107,7 +107,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun aris-lust-syle-defs--match-call-pattern-in-group (call-pattern group)
+(defun pd--match-call-pattern-in-group (call-pattern group)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
   (error-unless "Invalid call, no pattern group for '%s." '(call-pattern) group)    
@@ -167,16 +167,17 @@ because we're gong to be stshing stuff in their symbol properties."
                  (group (pd--get-group group-symbol))
                  (call-pattern (cons ',symbol args)))
            (pd--print "Looked up group for '%s and found:" ',symbol)
-           (with-indentation
-             (dolist (row group)
-               (pd--print "%s ⇒" (string-trim (pp-to-string (car row))))
-               (let ( (lines
-                        (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-                 (pd--print "  %s" (car lines))
-                 (dolist (line (cdr lines))
-                   (pd--print "  %s" line)))))
+           (pd--print-group group)
+           ;; (with-indentation
+           ;;   (dolist (row group)
+           ;;     (pd--print "%s ⇒" (string-trim (pp-to-string (car row))))
+           ;;     (let ( (lines
+           ;;              (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+           ;;       (pd--print "  %s" (car lines))
+           ;;       (dolist (line (cdr lines))
+           ;;         (pd--print "  %s" line)))))
            (pd--eval-match-result
-             (aris-lust-syle-defs--match-call-pattern-in-group
+             (pd--match-call-pattern-in-group
                call-pattern group)))))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -227,6 +228,7 @@ because we're gong to be stshing stuff in their symbol properties."
           is-illegal-definition)
         `(progn
            ;;(debug)
+           (PD--PRINT-DIVIDER ?\#)
            (pd--print "DEF: Defining pattern '%s in group '%s." ',pattern ',group)
            (pd--bind ',group) ;; ',(car pattern)
            (let ((group (assoc ',group *pd--pattern-dispatch-table*)))
@@ -247,8 +249,8 @@ because we're gong to be stshing stuff in their symbol properties."
                  (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                  (pd--print
                    "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
-             (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
-             ;;*pd--pattern-dispatch-table*
+             ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
+             ;; *pd--pattern-dispatch-table*
              nil))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -302,7 +304,10 @@ because we're gong to be stshing stuff in their symbol properties."
       (pd--print "[%d] Marked '%s with group label '%s, its plist is now: '%s."
         unique symbol group-label plist)
       ;; Finally, return SYMBOL's modified plist:
-      plist)))
+      ;;plist
+      ;; Finally, return :
+      nil
+      )))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
