@@ -173,10 +173,11 @@ because we're gong to be stshing stuff in their symbol properties."
     (let ((group-symbol (car group)))
       (print "Unbinding %s..." group-symbol)
       (fmakunbound group-symbol)
-      (print "Props before: %s" (symbol-plist group-symbol))
-      (put group-symbol :PD-GROUP nil)
-      (put group-symbol :PD-COUNT nil)
-      (print "Props after: %s" (symbol-plist group-symbol))))
+      (with-message-indent
+        (print "Props before: %s" (symbol-plist group-symbol))
+        (put group-symbol :PD-GROUP nil)
+        (put group-symbol :PD-COUNT nil)
+        (print "Props after: %s" (symbol-plist group-symbol)))))
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
   (PRINT-DIVIDER))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -252,12 +253,9 @@ because we're gong to be stshing stuff in their symbol properties."
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (PRINT-DIVIDER ?\#)
   (let ((unique  (random 1000)))
-    (print "[%d] A SINGLE MESSAGE!" unique)
     (print "[%d] Preparing to bind dispatch fun for '%s..." unique symbol)
-
     ;; SYMBOL must be a symbol:
     (error-unless "%s is not a symbol." '(symbol) (symbolp symbol))
-
     ;; If SYMBOL is already bound and it doesn't look like we did it,
     ;; raise an error.
     (let ((already-bound (fboundp symbol)))
@@ -271,20 +269,15 @@ because we're gong to be stshing stuff in their symbol properties."
           (not (let ((existing-group-label (get symbol :PD-GROUP)))
                (print "[%d] '%s already has group label '%s."
                  unique symbol existing-group-label)
-               (or (not existing-group-label) (eq existing-group-label symbol))))))
-      
+               (or (not existing-group-label) (eq existing-group-label symbol))))))      
       (print "[%d] '%s isn't bound or was bound by us, we can %sbind it."
         unique symbol (if already-bound "re" "")))
-
     ;; Attach our handler function to SYMBOL's function cell:
-    (print "CALL TWO!")
     (fset symbol (eval `(lust-style-syntax--make-dispatcher-fun ,symbol)))
-
     ;; Stash the group label and a serial numbe in properties on SYMBOL:
     (put symbol :PD-GROUP symbol)
     (setq *lust-style-syntax--handler-count* (1+ *lust-style-syntax--handler-count*))
     (put symbol :PD-COUNT *lust-style-syntax--handler-count*)
-
     ;; Make sure the label was set properly and then return SYMBOL's plist:
     (let ( (group-label (get symbol :PD-GROUP))
            (plist (symbol-plist symbol)))
