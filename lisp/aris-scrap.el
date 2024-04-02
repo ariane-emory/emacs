@@ -65,3 +65,22 @@
 
 (fset 'blammo (lust-style-syntax--make-pattern-dispatcher-fun blammo))
 (funcall #'blammo 8)
+
+
+(def (boop y) (* y y))
+(lust-style-syntax--def
+  (boop y)
+  (* y y))
+
+
+
+
+
+
+
+
+
+
+
+
+
