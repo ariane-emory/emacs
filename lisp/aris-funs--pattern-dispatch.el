@@ -155,29 +155,21 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
-  (pd--print "Making dispatch handler for '%s..." symbol)
+  (pd--print "MAKE: Making dispatch handler for '%s..." symbol)
   (unless (symbolp symbol)
-    (error "Symbol must be a symbol, but got '%s." symbol))
+    (error "MAKE: Symbol must be a symbol, but got '%s." symbol))
   `(lambda (&rest args)
      "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
      (let ((the-symbol ',symbol))
        (PD--PRINT-DIVIDER)
-       (pd--print "Doing dispatch for '%s..." ',symbol)
+       (pd--print "MAKE: Doing dispatch for '%s..." ',symbol)
        (with-indentation
          (let* ( (group-symbol (get ',symbol :PD-GROUP))
                  (group (pd--get-group group-symbol))
                  (group-rows (cdr group))
                  (call-pattern (cons ',symbol args)))
-           (pd--print "Looked up group for '%s and found:" ',symbol)
+           (pd--print "MAKE: Looked up group for '%s and found:" ',symbol)
            (pd--print-group group)
-           ;; (with-indentation
-           ;;   (dolist (row group)
-           ;;     (pd--print "%s ⇒" (string-trim (pp-to-string (car row))))
-           ;;     (let ( (lines
-           ;;              (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-           ;;       (pd--print "  %s" (car lines))
-           ;;       (dolist (line (cdr lines))
-           ;;         (pd--print "  %s" line)))))
            (pd--eval-match-result
              (pd--match-call-pattern-in-group
                call-pattern group-rows)))))))
@@ -212,13 +204,13 @@ because we're gong to be stshing stuff in their symbol properties."
   (let* ( (is-variable-definition (symbolp pattern-or-symbol))
           (is-function-definition (proper-list-p pattern-or-symbol))
           (is-illegal-definition  (not (or is-variable-definition is-function-definition))))
-    (error-when "DEF: PATTERN-OR-SYMBOL must be either a symbol or a proper list."
+    (error-when "DEF:  PATTERN-OR-SYMBOL must be either a symbol or a proper list."
       is-illegal-definition)
     (if is-variable-definition
       (let ( (symbol pattern-or-symbol)
              (value-expr (car def-body))
              (is-illegal-definition (cdr def-body)))
-        (error-when "DEF: Variable definition's body must be a single value."
+        (error-when "DEF:  Variable definition's body must be a single value."
           is-illegal-definition)
         `(progn
            (pd--print "DEF: Defining variable '%s." ',symbol)
@@ -226,31 +218,31 @@ because we're gong to be stshing stuff in their symbol properties."
       (let* ( (pattern pattern-or-symbol)
               (group (car pattern))
               (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
-        (error-when "DEF: Function definition's body must be either an atom or a proper list."
+        (error-when "DEF:  Function definition's body must be either an atom or a proper list."
           is-illegal-definition)
         `(progn
            ;;(debug)
            (PD--PRINT-DIVIDER ?\#)
-           (pd--print "DEF: Defining pattern '%s in group '%s." ',pattern ',group)
+           (pd--print "DEF:  Defining pattern '%s in group '%s." ',pattern ',group)
            (pd--bind ',group) ;; ',(car pattern)
            (let ((group (assoc ',group *pd--pattern-dispatch-table*)))
              (if (not group)
                (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
-                 (pd--print "DEF:   Adding new group:")
+                 (pd--print "DEF:  Added new group:")
                  (pd--print-group group)
-                 (push group *pd--pattern-dispatch-table*)
-                 (pd--print "DEF:   Added group."))
+                 (push group *pd--pattern-dispatch-table*))
                (let ((pattern-case (assoc ',pattern (cdr group))))
                  (when pattern-case
-                   (pd--print "DEF:   Found pattern-case '%s in group '%s."
+                   (pd--print "DEF:  Found pattern-case '%s in group '%s."
                      pattern-case group)
                    ;; (or pattern-case "<none>") group)
-                   (error-when "DEF:   Pattern %s already defined in group '%s."
+                   (error-when "DEF:  Pattern %s already defined in group '%s."
                      '(',pattern ',group)
                      pattern-case))
                  (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                  (pd--print
-                   "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
+                   "DEF:  Added pattern case for pattern '%s to group '%s:" ',pattern group)
+                 (pd--print-group group)))
              ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
              ;; *pd--pattern-dispatch-table*
              nil))))))
@@ -269,23 +261,25 @@ because we're gong to be stshing stuff in their symbol properties."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (PD--PRINT-DIVIDER ?\#)
-  (pd--print "Preparing to bind dispatch fun for '%s..." symbol)
+  (pd--print "BIND: Preparing to bind dispatch fun for '%s..." symbol)
   ;; SYMBOL must be a symbol:
-  (error-unless "%s is not a symbol." '(symbol) (symbolp symbol))
+  (error-unless "BIND: %s is not a symbol." '(symbol) (symbolp symbol))
   ;; If SYMBOL is already bound and it doesn't look like we did it,
   ;; raise an error.
   (let ((already-bound (fboundp symbol)))
     (error-when
       (concat
-        "Logic error: symbol '%s already bound to a function and "
+        "BIND: Logic error: symbol '%s already bound to a function and "
         "it doesn't look like it was bound by this function."
         "fmakunbound it first if you really want to re-bind it!" symbol)
       (and
         already-bound
         (not (let ((existing-group-label (get symbol :PD-GROUP)))
-             (pd--print "'%s already has group label '%s." symbol existing-group-label)
+             (pd--print "BIND: '%s already has group label '%s."
+               symbol existing-group-label)
              (or (not existing-group-label) (eq existing-group-label symbol))))))      
-    (pd--print "'%s isn't bound or was bound by us, we can %sbind it." symbol (if already-bound "re" "")))
+    (pd--print "BIND: '%s isn't bound or was bound by us, we can %sbind it."
+      symbol (if already-bound "re" "")))
   ;; Attach our handler function to SYMBOL's function cell:
   (fset symbol (eval `(pd--make-dispatcher-fun ,symbol)))
   ;; Stash the group label and a serial numbe in properties on SYMBOL:
@@ -297,11 +291,13 @@ because we're gong to be stshing stuff in their symbol properties."
          (plist (symbol-plist symbol)))
     ;; Sanity check:
     (error-unless
-      "After setting field to '%s, its value is '%s. Something has gone wrong."
+      "BIND: After setting field to '%s, its value is '%s. Something has gone wrong."
       '(symbol group-label)
       (eq symbol group-label))
-    (pd--print "Marked '%s with group label '%s, its plist is now: '%s."
-      symbol group-label plist)
+    (pd--print "BIND: Marked '%s with group label '%s, its plist is now:"
+      symbol group-label)
+    (dolist (line (butlast (split-string (pp-to-string plist ) "\n")))
+      (pd--print "      %s" line))
     ;; Finally, return SYMBOL's modified plist:
     ;;plist
     ;; Finally, return :
@@ -315,7 +311,7 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun pd--format-group-as-lines (group &optional (indent 0) (indent-char ?\ ))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (pd--print "Formatting group as lines '%s..." group)
+  ;;(pd--print "Formatting group as lines '%s..." group)
   (let* ( result
           (group-name (car group))
           (group-rows (cdr group)))
