@@ -64,3 +64,5 @@
 (fset 'boop (lust-style-syntax--make-pattern-dispatcher-fun boop))
 (funcall #'boop 8)
 
+
+(list 1 2 3)

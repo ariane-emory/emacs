@@ -201,7 +201,7 @@ because we're gong to be stshing stuff in their symbol properties."
               (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
         (error-when "DEF: Function definition's body must be either an atom or a proper list."
           is-illegal-definition)
-        `(let ()
+        `(progn
            ;;(debug)
            (print "DEF: Defining pattern '%s in group '%s." ',pattern ',group)
            (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun ',group) ;; ',(car pattern)
@@ -271,7 +271,7 @@ because we're gong to be stshing stuff in their symbol properties."
         unique symbol (if already-bound "re" "")))
 
     ;; Attach our handler function to SYMBOL's function cell:
-    (fset symbol (lust-style-syntax--make-dispatcher-fun symbol))
+    (fset symbol (eval `(lust-style-syntax--make-dispatcher-fun ,symbol)))
 
     ;; Stash the group label in a property on SYMBOL:
     (put symbol :PATTERN-DISPATCHER-GROUP symbol)
