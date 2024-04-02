@@ -48,7 +48,9 @@
 ;; Unbind this so it can be a prefix:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-unset-key (kbd "C-x C-c"))
+
 (bind-key* "C-j" (lambda () (interactive) (join-line) (beginning-of-line)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,34 +58,14 @@
  ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
  ("C-x C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
 
- ("C-s-z" . eval-last-sexp)
- 
  ;; Thumb keys:
  ("C-<backspace>" . aris-delete-previous-word)
  ("s-<backspace>" . macrostep-mode)
  
- ;; ("C-j" . (lambda () (interactive) (join-lines) (beginning-of-line)))
+ ("C-x C-SPC" . eval-last-sexp)
+ ("C-s-z" . (lambda () (interactive) (insert "\n") (pp-macroexpand-last-sexp t) (message "Inserted macro.")))
+ ("C-c C-<backspace>" . (lambda () (interactive) (insert "\n")(pp-macroexpand-last-sexp t) (message "Inserted macro.")))
  
- ("C-c C-SPC" .
-  (lambda () (interactive) (insert "\n") (pp-macroexpand-last-sexp t))
-  ;; (lambda ()
-  ;;   (interactive)
-  ;;   (insert (pp-to-string (macroexpand (pp-last-sexp)))) (message "Inserted expansion."))
-  )
- ("C-c C-<backspace>" .
-  (lambda () (interactive) (insert "\n")(pp-macroexpand-last-sexp t))
-  ;; (lambda ()
-  ;;   (interactive)
-  ;;   (insert (pp-to-string (macroexpand (pp-last-sexp)))) (message "Inserted expansion."))
-  )
-
- ("C-x C-SPC" .
-  (lambda ()
-   (interactive) (insert "\n") (pp-eval-last-sexp t) (message "Inserted sexp.")))
- ("C-x C-<backspace>" .
-  (lambda ()
-   (interactive) (insert "\n") (pp-eval-last-sexp t) (message "Inserted sexp.")))
-
  ;; Find function at point in new tab:
  ("C-c C-S-d" .
   (lambda ()
