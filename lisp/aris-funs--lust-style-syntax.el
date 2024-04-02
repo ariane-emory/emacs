@@ -91,15 +91,16 @@
                  (print "DEF:   Added new group '%s" group)
                  (push group *lust-style-syntax--pattern-dispatch-table*))
                (let ((pattern-case (assoc ',pattern (cdr group))))
-                 (print "DEF:   Found pattern-case '%s in group '%s."
-                   (or pattern-case "<none>") group)
-                 (error-when "DEF:   Pattern %s already defined." '(',pattern)
-                   pattern-case))
-               (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
-               (print
-                 "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
-           (print (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
-           *lust-style-syntax--pattern-dispatch-table*)))))
+                 (when pattern-case
+                   (print "DEF:   Found pattern-case '%s in group '%s.")
+                   ;; (or pattern-case "<none>") group)
+                   (error-when "DEF:   Pattern %s already defined." '(',pattern)
+                     pattern-case))
+                 (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
+                 (print
+                   "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
+             (print (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
+             *lust-style-syntax--pattern-dispatch-table*))))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -139,9 +140,9 @@
         (and
           already-bound
           (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
-               (print "'%s already has group label '%s."
-                 symbol existing-group-label)
-               (eq existing-group-label symbol)))))
+                 (print "'%s already has group label '%s."
+                   symbol existing-group-label)
+                 (eq existing-group-label symbol)))))
 
       (print "%sinding dispatch fun for '%s!"
         (if already-bound "Reb" "B") symbol))
@@ -157,10 +158,10 @@
            (plist (symbol-plist symbol)))
       ;; Sanity check:
       (error-unless
-        "After setting field to %s, its value is %s. Something has gone wrong."
+        "After setting field to '%s, its value is '%s. Something has gone wrong."
         '(symbol group-label)
         (eq symbol group-label))
-      (print "Marked symbol %s with group label %s, its plist is now: %s."
+      (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
         symbol group-label plist)
       ;; Finally, return SYMBOL's modified plist:
       plist)))
