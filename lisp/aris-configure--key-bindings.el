@@ -53,6 +53,8 @@
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
+  ("C-x C-<left>" . ignore)
+  ("C-x C-<right>" . ignore)
   ("C-x C-n" . aris-eval-buffer)
 
   ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
