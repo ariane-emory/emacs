@@ -40,7 +40,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-lust-syle-defs--print (fmt &rest fmt-args)
-  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
+  "Do this dumb hack to prevent apostrophes from being turned into single quotes.
+
+TEMPORARILY NOT IN USE!"
   (indented-message "%s" (apply #'format fmt fmt-args)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
