@@ -1,4 +1,4 @@
-;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;; -*- lexical-binding: t; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lust-style function definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -252,6 +252,8 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(setq lexical-binding t)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -260,13 +262,15 @@ because we're gong to be stshing stuff in their symbol properties."
   (aris-lust-syle-defs--use-print
     (print "Making dispatcher for %s..." symbol)
     (lambda (&rest args)
-      (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
-              (group (lust-style-syntax--get-patterns-for-group group-symbol))
-              (call-pattern (cons symbol args)))
-        (aris-lust-syle-defs--use-print
-          (print "Looking for group %s..." symbol)
-          (lust-style-syntax--eval-match-result
-            (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))))
+      (print "Doing dispatcher for %s..." symbol)
+      ;;     (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
+      ;;             (group (lust-style-syntax--get-patterns-for-group group-symbol))
+      ;;             (call-pattern (cons symbol args)))
+      ;;       (aris-lust-syle-defs--use-print
+      ;;         (print "Looking for group %s..." symbol)
+      ;;         (lust-style-syntax--eval-match-result
+      ;;           (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
+      )))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
