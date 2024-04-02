@@ -87,18 +87,18 @@
              ',(car pattern))
            (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
              (if (not group)
-               (progn
-                 (print "DEF:   Adding pattern group '%s." ',(car pattern))
-                 (push (cons ',(car pattern) (list (cons ',pattern ',def-body)))
-                   *lust-style-syntax--pattern-dispatch-table*))
+               (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
+                 (print "DEF:   Added new group '%s" group)
+                 (push group *lust-style-syntax--pattern-dispatch-table*))
                (let ((pattern-case (assoc ',pattern (cdr group))))
                  (print "DEF:   Found pattern-case '%s in group '%s."
                    (or pattern-case "<none>") group)
                  (error-when "DEF:   Pattern %s already defined." '(',pattern)
                    pattern-case))
                (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
-               (print "DEF: Added pattern-case '%s to group '%s." ',pattern group)))
-           (print (trim-string (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
+               (print
+                 "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
+           (print (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
            *lust-style-syntax--pattern-dispatch-table*)))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -201,13 +201,13 @@
   (aris-lust-syle-defs--use-print
     (error-unless "Invalid call, no pattern group for '%s." '(call-pattern)
       group)    
-    (print
-      (concat
-        "================================================"
-        "================================================"))
-    (print ">> Dispatch table for '%s:" call-pattern)
-    (dolist (pattern-case group)
-      (print "  '%s" pattern-case))
+    ;; (print
+    ;;   (concat
+    ;;     "================================================"
+    ;;     "================================================"))
+    ;; (print ">> Dispatch table for '%s:" call-pattern)
+    ;; (dolist (pattern-case group)
+    ;;   (print "  '%s" pattern-case))
     (print
       (concat
         "================================================"
