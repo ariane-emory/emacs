@@ -247,7 +247,8 @@ because we're gong to be stshing stuff in their symbol properties."
                  (pd--print
                    "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
              (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
-             *pd--pattern-dispatch-table*))))))
+             ;;*pd--pattern-dispatch-table*
+             nil))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
