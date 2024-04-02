@@ -313,8 +313,60 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
+  (aris-lust-syle-defs--use-print
+    (print (make-string 80 ?\=))
+    (print "Binding dispatch fun for '%s!" symbol)
+
+    ;; SYMBOL must be a symbol:
+    (error-unless "%s is not a symbol." '(symbol)
+      (symbolp symbol))
+    
+    ;; If SYMBOL is already bound and it doesn't look like we did it,
+    ;; raise an error.
+    (let ((already-bound (fboundp symbol)))
+      (error-when
+        (concat
+          "Logic error: symbol '%s already bound to a function and "
+          "it doesn't look like it was bound by this function."
+          "fmakunbound it first if you really want to re-bind it!" symbol)
+        (and
+          already-bound
+          (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
+               (print "'%s already has group label '%s."
+                 symbol existing-group-label)
+               (or (not existing-group-label) (eq existing-group-label symbol))))))
+
+      (print "%sinding dispatch fun for '%s!"
+        (if already-bound "Reb" "B") symbol))
+
+    ;; Attach our handler function to SYMBOL's function cell:
+    (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
+
+    ;; Stash the group label in a property on SYMBOL:
+    (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+
+    ;; Make sure the label was set properly and then return SYMBOL's plist:
+    (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
+           (plist (symbol-plist symbol)))
+      ;; Sanity check:
+      (error-unless
+        "After setting field to '%s, its value is '%s. Something has gone wrong."
+        '(symbol group-label)
+        (eq symbol group-label))
+      (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
+        symbol group-label plist)
+      ;; Finally, return SYMBOL's modified plist:
+      plist)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'def 'lust-style-syntax--def)
 (defalias 'begin 'progn)
+(defalias 'bind ' lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun)
 (defalias 'pd-reset 'aris-lust-syle-syntax--reset)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
