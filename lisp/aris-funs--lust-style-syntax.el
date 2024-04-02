@@ -8,6 +8,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--match-pattern)
 (require 'aris-funs--with-messages)
+(require 'aris-funs--with-messages)
+(require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -47,70 +49,58 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro aris-lust-syle-defs--print (first &rest rest)
-  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
-  `(when *lust-style-syntax--verbose*
-     (indented-message ,first ,@rest)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'print 'aris-lust-syle-defs--print)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--get-patterns-for-group (group-symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
-  (print (make-string 80 ?\=))
-  (print "Binding dispatch fun for '%s!" symbol)
+;; (defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
+;;   (print (make-string 80 ?\=))
+;;   (print "Binding dispatch fun for '%s!" symbol)
 
-  ;; SYMBOL must be a symbol:
-  (error-unless "%s is not a symbol." '(symbol)
-    (symbolp symbol))
-  
-  ;; If SYMBOL is already bound and it doesn't look like we did it,
-  ;; raise an error.
-  (let ((already-bound (fboundp symbol)))
-    (error-when
-      (concat
-        "Logic error: symbol '%s already bound to a function and "
-        "it doesn't look like it was bound by this function."
-        "fmakunbound it first if you really want to re-bind it!" symbol)
-      (and
-        already-bound
-        (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
-             (print "'%s already has group label '%s."
-               symbol existing-group-label)
-             (or (not existing-group-label) (eq existing-group-label symbol))))))
+;;   ;; SYMBOL must be a symbol:
+;;   (error-unless "%s is not a symbol." '(symbol)
+;;     (symbolp symbol))
 
-    (print "%sinding dispatch fun for '%s!"
-      (if already-bound "Reb" "B") symbol))
+;;   ;; If SYMBOL is already bound and it doesn't look like we did it,
+;;   ;; raise an error.
+;;   (let ((already-bound (fboundp symbol)))
+;;     (error-when
+;;       (concat
+;;         "Logic error: symbol '%s already bound to a function and "
+;;         "it doesn't look like it was bound by this function."
+;;         "fmakunbound it first if you really want to re-bind it!" symbol)
+;;       (and
+;;         already-bound
+;;         (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
+;;              (print "'%s already has group label '%s."
+;;                symbol existing-group-label)
+;;              (or (not existing-group-label) (eq existing-group-label symbol))))))
 
-  ;; Attach our handler function to SYMBOL's function cell:
-  (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
+;;     (print "%sinding dispatch fun for '%s!"
+;;       (if already-bound "Reb" "B") symbol))
 
-  ;; Stash the group label in a property on SYMBOL:
-  (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+;;   ;; Attach our handler function to SYMBOL's function cell:
+;;   (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
 
-  ;; Make sure the label was set properly and then return SYMBOL's plist:
-  (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
-         (plist (symbol-plist symbol)))
-    ;; Sanity check:
-    (error-unless
-      "After setting field to '%s, its value is '%s. Something has gone wrong."
-      '(symbol group-label)
-      (eq symbol group-label))
-    (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
-      symbol group-label plist)
-    ;; Finally, return SYMBOL's modified plist:
-    plist))
+;;   ;; Stash the group label in a property on SYMBOL:
+;;   (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+
+;;   ;; Make sure the label was set properly and then return SYMBOL's plist:
+;;   (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
+;;          (plist (symbol-plist symbol)))
+;;     ;; Sanity check:
+;;     (error-unless
+;;       "After setting field to '%s, its value is '%s. Something has gone wrong."
+;;       '(symbol group-label)
+;;       (eq symbol group-label))
+;;     (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
+;;       symbol group-label plist)
+;;     ;; Finally, return SYMBOL's modified plist:
+;;     plist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -332,56 +322,71 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro aris-lust-syle-defs--print (first &rest rest)
+  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
+  `(when *lust-style-syntax--verbose*
+     (indented-message ,first ,@rest)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'print 'aris-lust-syle-defs--print)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (PRINT-DIVIDER ?\#)
-  (let ((unique (random (lsh 1 16))))
-    (print "A SINGLE MESSAGE %d!" (random 1000))
-    (print "Binding dispatch fun for '%s!" symbol))
-  )
-;; (when nil
+  (let ((unique  (random 1000)))
+    (print "[%d] A SINGLE MESSAGE!" unique)
+    (print "[%d] Preparing to bind dispatch fun for '%s..." unique symbol)
 
-;;   ;; SYMBOL must be a symbol:
-;;   (error-unless "%s is not a symbol." '(symbol)
-;;     (symbolp symbol))
+    ;; SYMBOL must be a symbol:
+    (error-unless "%s is not a symbol." '(symbol) (symbolp symbol))
 
-;;   ;; If SYMBOL is already bound and it doesn't look like we did it,
-;;   ;; raise an error.
-;;   (let ((already-bound (fboundp symbol)))
-;;     (error-when
-;;       (concat
-;;         "Logic error: symbol '%s already bound to a function and "
-;;         "it doesn't look like it was bound by this function."
-;;         "fmakunbound it first if you really want to re-bind it!" symbol)
-;;       (and
-;;         already-bound
-;;         (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
-;;              (print "'%s already has group label '%s."
-;;                symbol existing-group-label)
-;;              (or (not existing-group-label) (eq existing-group-label symbol))))))
+    ;; If SYMBOL is already bound and it doesn't look like we did it,
+    ;; raise an error.
+    (let ((already-bound (fboundp symbol)))
+      (error-when
+        (concat
+          "Logic error: symbol '%s already bound to a function and "
+          "it doesn't look like it was bound by this function."
+          "fmakunbound it first if you really want to re-bind it!" symbol)
+        (and
+          already-bound
+          (not (let ((existing-group-label (get symbol :PATTERN-DISPATCHER-GROUP)))
+               (print "'%s already has group label '%s."
+                 symbol existing-group-label)
+               (or (not existing-group-label) (eq existing-group-label symbol))))))
+      
+      (message "[%d] %sinding dispatch fun for '%s!" unique
+        (if already-bound "Reb" "B") symbol))
 
-;;     (print "%sinding dispatch fun for '%s!"
-;;       (if already-bound "Reb" "B") symbol))
+    ))
 
-;;   ;; Attach our handler function to SYMBOL's function cell:
-;;   (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
 
-;;   ;; Stash the group label in a property on SYMBOL:
-;;   (put symbol :PATTERN-DISPATCHER-GROUP symbol)
 
-;;   ;; Make sure the label was set properly and then return SYMBOL's plist:
-;;   (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
-;;          (plist (symbol-plist symbol)))
-;;     ;; Sanity check:
-;;     (error-unless
-;;       "After setting field to '%s, its value is '%s. Something has gone wrong."
-;;       '(symbol group-label)
-;;       (eq symbol group-label))
-;;     (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
-;;       symbol group-label plist)
-;;     ;; Finally, return SYMBOL's modified plist:
-;;     plist)))
+
+;; ;; Attach our handler function to SYMBOL's function cell:
+;; (fset symbol (lust-style-syntax--make-pattern-dispatcher-fun symbol))
+
+;; ;; Stash the group label in a property on SYMBOL:
+;; (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+
+;; ;; Make sure the label was set properly and then return SYMBOL's plist:
+;; (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
+;;        (plist (symbol-plist symbol)))
+;;   ;; Sanity check:
+;;   (error-unless
+;;     "After setting field to '%s, its value is '%s. Something has gone wrong."
+;;     '(symbol group-label)
+;;     (eq symbol group-label))
+;;   (print "Marked symbol '%s with group label '%s, its plist is now: '%s."
+;;     symbol group-label plist)
+;;   ;; Finally, return SYMBOL's modified plist:
+;;   plist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
