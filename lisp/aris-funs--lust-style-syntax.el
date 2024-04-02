@@ -147,19 +147,8 @@ TEMPORARILY NOT IN USE!"
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
   (aris-lust-syle-defs--use-print
-    (error-unless "Invalid call, no pattern group for '%s." '(call-pattern)
-      group)    
-    ;; (print
-    ;;   (concat
-    ;;     "================================================"
-    ;;     "================================================"))
-    ;; (print ">> Dispatch table for '%s:" call-pattern)
-    ;; (dolist (pattern-case group)
-    ;;   (print "  '%s" pattern-case))
-    (print
-      (concat
-        "================================================"
-        "================================================"))
+    (error-unless "Invalid call, no pattern group for '%s." '(call-pattern) group)    
+    (PRINT-DIVIDER)
     (let (result)
       (catch 'matched
         (dolist (pattern-case group)
@@ -190,15 +179,9 @@ TEMPORARILY NOT IN USE!"
                   (setq result (cons match-result (cdr pattern-case)))))))))
       (error-unless "No pattern case found for '%s." '(call-pattern)
         result)
-      (print
-        (concat
-          "================================================"
-          "================================================"))
+      (PRINT-DIVIDER)
       (print "Found match for '%s = '%s" call-pattern result)
-      (print
-        (concat
-          "================================================"
-          "================================================"))
+      (PRINT-DIVIDER)
       result)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -240,15 +223,9 @@ because we're gong to be stshing stuff in their symbol properties."
 (defun aris-lust-syle-syntax--reset ()
   "Reset the dispatch table and unbind bound functions."
   (aris-lust-syle-defs--use-print
-    (print
-      (concat
-        "================================================"
-        "================================================"))
+    (PRINT-DIVIDER)
     (print "RESET!")
-    (print
-      (concat
-        "================================================"
-        "================================================"))
+    (PRINT-DIVIDER)
     (dolist (group *lust-style-syntax--pattern-dispatch-table*)
       (let ((group-symbol (car group)))
         (print "Unbinding %s..." group-symbol)
@@ -257,10 +234,7 @@ because we're gong to be stshing stuff in their symbol properties."
         (put group-symbol :PATTERN-DISPATCHER-GROUP nil)
         (print "Props after: %s" (symbol-plist group-symbol))))
     (setq *lust-style-syntax--pattern-dispatch-table* nil)
-    (print
-      (concat
-        "================================================"
-        "================================================"))))
+    (PRINT-DIVIDER)))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -362,6 +336,13 @@ because we're gong to be stshing stuff in their symbol properties."
       plist)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun PRINT-DIVIDER (&optional (char ?\=))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Print a divider line."
+  (aris-lust-syle-defs--use-print
+    (print (make-string 80 char))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'def 'lust-style-syntax--def)
