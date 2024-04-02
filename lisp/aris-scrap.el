@@ -64,17 +64,6 @@
 
 *lust-style-syntax--pattern-dispatch-table*
 
-(defun aris-lust-syle-defs--print (fmt &rest fmt-args)
-  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
-  (indented-message "%s" (apply #'format fmt fmt-args)))
-
-(defmacro aris-lust-syle-defs--use-print (&rest body)
-  "Helper macro to conditionally bind #'pring to either `aris-lust-syle-defs--print' or `ignore'."
-  `(cl-letf (((symbol-function 'print) 
-               ;;(if *lust-style-syntax--verbose* #'aris-lust-syle-defs--print #'ignore)
-               (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
-     ,@body))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
@@ -90,13 +79,15 @@ because we're gong to be stshing stuff in their symbol properties."
           (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
                   (group (lust-style-syntax--get-patterns-for-group group-symbol))
                   (call-pattern (cons symbol args)))
-            (print "Looked up group %s and found:\n%s." symbol (print (pp-to-stringgroup)
-            ;; (lust-style-syntax--eval-match-result
-            ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
-            ))))))
+            (print "Looked up group %s and found:\n%s." symbol
+              (print (indent-lines (pp-to-string group)
+                       ;; (lust-style-syntax--eval-match-result
+                       ;;   (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group))
+                       )))))))))
 
-(def (boop x y) (* x y))
-
-(funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8)
-
+(progn
+  (setq *lust-style-syntax--pattern-dispatch-table* nil)
+  (def (boop x y) (* x y))
+  (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8)
+  )
 

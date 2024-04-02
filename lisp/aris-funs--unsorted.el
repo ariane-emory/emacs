@@ -15,6 +15,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun indent-lines (str &optional (n 2) (char ?\ ))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Indent each line in a multiline string by N CHARs."
+  (let ( (lines (split-string str "\n"))
+         (indent (make-string n char)))
+    (mapconcat (lambda (line) (concat indent line)) lines "\n")))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-log (message &optional newline-first)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Log a MESSAGE to a custom buffer, optionally with a NEWLINE_FIRST."
@@ -23,7 +33,7 @@
       (with-current-buffer (get-buffer-create log-buffer-name)
         (let ((aris-log-keymap (make-sparse-keymap)))
           (define-key aris-log-keymap (kbd "SPC") 'end-of-buffer)
-	  (define-key aris-log-keymap (kbd "DEL") 'ccm-scroll-down)
+	        (define-key aris-log-keymap (kbd "DEL") 'ccm-scroll-down)
           (use-local-map aris-log-keymap))
         (face-remap-add-relative 'default '(:foreground "#da0"))
         (centered-cursor-mode 1)

@@ -38,6 +38,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-lust-syle-defs--print (fmt &rest fmt-args)
   "Do this dumb hack to prevent apostrophes from being turned into single quotes."
@@ -98,7 +99,7 @@
                (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                (print "DEF: Added pattern-case '%s to group '%s." ',pattern group)))
            (print (pp-to-string *lust-style-syntax--pattern-dispatch-table*))
-           nil)))))
+           *lust-style-syntax--pattern-dispatch-table*)))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
