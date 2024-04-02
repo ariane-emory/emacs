@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when t
+(when nil
   ;; Test defining a function:
   ;; Reset the pattern dispatch table first so that we won't get
   ;; 'Pattern blah already defined' errors if we evaluate this
@@ -47,16 +47,17 @@
       (fib (car z))
       (fib (cadr z))
       (fib 10)))
-  ) ;; (144 233 55)
+
+  )
+
+;; (144 233 55)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(progn
+(when nil
   (pd-reset)
-  (def (boop 5) 10)
+  ;; (def (boop 5) 10)
   (def (boop y) (* y y))
-
   (boop 7)
-  
   (message "Table: %s" (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*))))
 
 *lust-style-syntax--pattern-dispatch-table*

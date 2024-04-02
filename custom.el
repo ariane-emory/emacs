@@ -28,6 +28,7 @@
   '(lisp-indent-offset 2)
   '(lsp-enable-indentation nil)
   '(lsp-enable-links nil)
+  '(message-log-max 25000)
   '(package-selected-packages
      '(spaceline slime-company rainbow-mode rainbow-delimiters powerline persistent-scratch nov modern-cpp-font-lock multiple-cursors lsp-ui lsp-mode idle-highlight-mode highlight-parentheses dpaste default-text-scale company-sourcekit company-posframe centered-cursor-mode beacon which-key swift-mode rust-mode platformio-mode paredit markdown-mode macrostep flycheck-rust flycheck-inline f editorconfig diminish devdocs-browser devdocs company-box coffee-mode clhs adjust-parens ac-inf-ruby aggressive-indent))
   '(pp-use-max-width nil)
