@@ -314,7 +314,7 @@ because we're gong to be stshing stuff in their symbol properties."
         "After setting field to '%s, its value is '%s. Something has gone wrong."
         '(symbol group-label)
         (eq symbol group-label))
-      (print "[%d] Marked symbol '%s with group label '%s, its plist is now: '%s."
+      (print "[%d] Marked '%s with group label '%s, its plist is now: '%s."
         unique symbol group-label plist)
       ;; Finally, return SYMBOL's modified plist:
       plist)))
