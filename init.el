@@ -8,7 +8,7 @@
     (message "Bisecting...")
     (go config-end))
 
-  (setq debug-on-error nil)
+  (setq debug-on-error t)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Setup config dir paths:

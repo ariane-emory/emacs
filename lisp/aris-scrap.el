@@ -1,4 +1,4 @@
-;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
+;; -*- lexical-binding: t; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
@@ -52,29 +52,40 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
 *lust-style-syntax--pattern-dispatch-table*
 (fib 10)
 (symbol-plist 'fib)
 (symbol-plist 'double)
 
-
 (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun 'foo)
 
 (symbol-plist 'foo)
-nil
 
 *lust-style-syntax--pattern-dispatch-table*
-((fib
-   ((fib 0)
-     0)
-   ((fib 1)
-     1)
-   ((fib n)
-     (+
-       (fib
-         (- n 1))
-       (fib
-         (- n 2))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
+because we're gong to be stshing stuff in their symbol properties."
+  (aris-lust-syle-defs--use-print
+    (print "Making dispatcher for %s..." symbol)
+    (let ((symbol symbol))
+      (lambda (&rest args)
+        (print "Doing dispatch for %s..." symbol)
+        (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
+                (group (lust-style-syntax--get-patterns-for-group group-symbol))
+                (call-pattern (cons symbol args)))
+          ;;       (aris-lust-syle-defs--use-print
+          ;;         (print "Looking for group %s..." symbol)
+          ;;         (lust-style-syntax--eval-match-result
+          ;;           (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
+          )))))
 
+(defun lust-style-syntax--make-pattern-dispatcher-fun-2 (symbol)
+  (lambda (&rest args)
+    (let ((symbol symbol))
+      (message "Doing dispatch for %s..." symbol))))
 
+(funcall (lust-style-syntax--make-pattern-dispatcher-fun-2 'boop) 8)
