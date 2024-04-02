@@ -53,9 +53,5 @@
 
 (24 26 20)
 
-
-*lust-style-syntax--pattern-dispatch-table*
-
-*lust-style-syntax--pattern-dispatch-table*
 *lust-style-syntax--pattern-dispatch-table*
 
