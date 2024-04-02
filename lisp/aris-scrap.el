@@ -56,17 +56,14 @@
   ;; (def (boop 5) 10)
   (def (boop y) (* y y))
   (boop 7)
-  (message "Table: %s" (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*))))
+  (message "Table: %s"
+    (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*))))
 
 *lust-style-syntax--pattern-dispatch-table*
 
+(symbol-plist 'boop)
 
-lexical-binding
+(fset 'blammo (lust-style-syntax--make-pattern-dispatcher-fun blammo))
 
-
-
-
-
-
-
+(funcall #'blammo 8)
 

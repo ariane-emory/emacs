@@ -136,26 +136,25 @@ because we're gong to be stshing stuff in their symbol properties."
   (unless (symbolp symbol)
     (error "Symbol must be a symbol, but got '%s." symbol))
   `(lambda (&rest args)
-     (let ((symbol ',symbol))
-       "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
-       (PRINT-DIVIDER)
-       (print "Doing dispatch for '%s..." ',symbol)
-       (with-message-indent
-         (let* ( (group-symbol (get symbol :PATTERN-DISPATCHER-GROUP))
-                 (group (lust-style-syntax--get-patterns-for-group group-symbol))
-                 (call-pattern (cons symbol args)))
-           (print "Looked up group for '%s and found:" symbol)
-           (with-message-indent
-             (dolist (row group)
-               (print "%s ⇒" (string-trim (pp-to-string (car row))))
-               (let ( (lines
-                        (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-                 (print "  %s" (car lines))
-                 (dolist (line (cdr lines))
-                   (print "  %s" line)))))
-           (lust-style-syntax--eval-match-result
-             (aris-lust-syle-defs--match-call-pattern-in-group
-               call-pattern group)))))))
+     "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
+     (PRINT-DIVIDER)
+     (print "Doing dispatch for '%s..." ',symbol)
+     (with-message-indent
+       (let* ( (group-symbol (get ',symbol :PATTERN-DISPATCHER-GROUP))
+               (group (lust-style-syntax--get-patterns-for-group group-symbol))
+               (call-pattern (cons ',symbol args)))
+         (print "Looked up group for '%s and found:" ',symbol)
+         (with-message-indent
+           (dolist (row group)
+             (print "%s ⇒" (string-trim (pp-to-string (car row))))
+             (let ( (lines
+                      (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+               (print "  %s" (car lines))
+               (dolist (line (cdr lines))
+                 (print "  %s" line)))))
+         (lust-style-syntax--eval-match-result
+           (aris-lust-syle-defs--match-call-pattern-in-group
+             call-pattern group))))))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
