@@ -64,6 +64,4 @@
 (symbol-plist 'boop)
 
 (fset 'blammo (lust-style-syntax--make-pattern-dispatcher-fun blammo))
-
 (funcall #'blammo 8)
-
