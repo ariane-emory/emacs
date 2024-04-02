@@ -123,22 +123,22 @@
     (let* ((already-bound (fboundp symbol)))
       (when (and
               already-bound
-              (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-FUN)))
+              (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-GROUP)))
                    (print "Retrieved %s for %s." got-symbol symbol)
                    got-symbol)))
-        (error (concat "Logic error: function %s already bound " "elsewherm, fmakunbound it first!") symbol))
+        (error "Logic error: function %s already bound elsewherm, fmakunbound it first!" symbol))
       (print "%sBINDING DISPATCH FUN FOR %s!"
         (if already-bound "RE" "") symbol)
       (fset symbol
         (lust-style-syntax--make-pattern-dispatcher-fun symbol))
       (put
         (function symbol)
-        :PATTERN-DISPATCHER-FUN
+        :PATTERN-DISPATCHER-GROUP
         symbol)
-      (print "Marked fun with %s / %s / %s." symbol (function symbol)
+      (print "MARKED FUN WITH %s / %s / %s." symbol (function symbol)
         (get
           (function symbol)
-          :PATTERN-DISPATCHER-FUN)))))
+          :PATTERN-DISPATCHER-GROUP)))))
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -236,9 +236,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
+  (message "MAKING DISPATCHER FOR %s..." symbol)
   (lambda (&rest args)
     (let* ( (function (function symbol))
-            (symbol (get function :PATTERN-DISPATCHER-FUN))
+            (symbol (get function :PATTERN-DISPATCHER-GROUP))
             (group (lust-style-syntax--get-patterns-for-group symbol))
             (call-pattern (cons symbol args)))
       (message "LOOKING FOR GROUP %s..." group)
