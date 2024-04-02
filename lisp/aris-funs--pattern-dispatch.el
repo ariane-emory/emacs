@@ -14,36 +14,36 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defgroup lust-style-syntax nil
+(defgroup pattern-dispatch nil
   "Dispatch calls to pseudo-functions using pattern matchings.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *lust-style-syntax--verbose* t
+(defcustom *pattern-dispatch--verbose* t
   "Whether the pseudo-function dispatcher should print verbose messages."
-  :group 'lust-style-syntax
+  :group 'pattern-dispatch
   :type 'boolean)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *lust-style-syntax--print-fun* 'indented-message
+(defcustom *pattern-dispatch--print-fun* 'indented-message
   "The function to use to print messages."
-  :group 'lust-style-syntax 
+  :group 'pattern-dispatch 
   :type 'function)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defvar *lust-style-syntax--match-count* 0
+(defvar *pattern-dispatch--match-count* 0
   "This is part of an ugly hack and is not meant to be customized.")
 
-(defvar *lust-style-syntax--handler-count* 0
+(defvar *pattern-dispatch--handler-count* 0
   "A serial number on dispatch handler functions.")
 
-(defvar *lust-style-syntax--pattern-dispatch-table* nil
+(defvar *pattern-dispatch--pattern-dispatch-table* nil
   "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
 
-(defvar *lust-style-syntax--pattern-dispatch-table* nil
+(defvar *pattern-dispatch--pattern-dispatch-table* nil
   "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -57,8 +57,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro aris-lust-syle-defs--print (first &rest rest)
-  `(when *lust-style-syntax--verbose*
-     (funcall *lust-style-syntax--print-fun* ,first ,@rest)))
+  `(when *pattern-dispatch--verbose*
+     (funcall *pattern-dispatch--print-fun* ,first ,@rest)))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -72,14 +72,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--get-group (group-symbol)
+(defun pattern-dispatch--get-group (group-symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
+  (cdr (assoc group-symbol *pattern-dispatch--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--eval-match-result (match-result)
+(defun pattern-dispatch--eval-match-result (match-result)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the MATCH-RESULT for a call pattern."
   (pd-print "Evaluating match result '%s" match-result)
@@ -116,17 +116,17 @@
       (dolist (pattern-case group)
         (let ( (pattern (car pattern-case))
                (*match-pattern--init-fun*
-                 (lambda () (setq *lust-style-syntax--match-count* 0)))
+                 (lambda () (setq *pattern-dispatch--match-count* 0)))
                (*match-pattern--merge-duplicate-alist-keys* nil)
                (*match-pattern--kleene-tag* nil)
                (*match-pattern--anything-tag* 'anything)
                (*match-pattern--verbatim-element?* nil)
                (*match-pattern--capture-element?*
                  (lambda (elem)
-                   (if (> *lust-style-syntax--match-count* 1)
+                   (if (> *pattern-dispatch--match-count* 1)
                      (symbolp elem)
-                     (setq *lust-style-syntax--match-count*
-                       (1+ *lust-style-syntax--match-count*))
+                     (setq *pattern-dispatch--match-count*
+                       (1+ *pattern-dispatch--match-count*))
                      nil)))
                (*match-pattern--get-capture-symbol-fun* (lambda (e) e))
                (*match-pattern--get-capture-tag-fun* (lambda (e) 'anything))
@@ -149,7 +149,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro lust-style-syntax--make-dispatcher-fun (symbol)
+(defmacro pattern-dispatch--make-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
@@ -163,7 +163,7 @@ because we're gong to be stshing stuff in their symbol properties."
        (pd-print "Doing dispatch for '%s..." ',symbol)
        (with-indentation
          (let* ( (group-symbol (get ',symbol :PD-GROUP))
-                 (group (lust-style-syntax--get-group group-symbol))
+                 (group (pattern-dispatch--get-group group-symbol))
                  (call-pattern (cons ',symbol args)))
            (pd-print "Looked up group for '%s and found:" ',symbol)
            (with-indentation
@@ -174,7 +174,7 @@ because we're gong to be stshing stuff in their symbol properties."
                  (pd-print "  %s" (car lines))
                  (dolist (line (cdr lines))
                    (pd-print "  %s" line)))))
-           (lust-style-syntax--eval-match-result
+           (pattern-dispatch--eval-match-result
              (aris-lust-syle-defs--match-call-pattern-in-group
                call-pattern group)))))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -185,7 +185,7 @@ because we're gong to be stshing stuff in their symbol properties."
   (PD-PRINT-DIVIDER)
   (pd-print "RESET PATTERN DISPATCHER!")
   (PD-PRINT-DIVIDER)
-  (dolist (group *lust-style-syntax--pattern-dispatch-table*)
+  (dolist (group *pattern-dispatch--pattern-dispatch-table*)
     (let ((group-symbol (car group)))
       (pd-print "Unbinding %s..." group-symbol)
       (fmakunbound group-symbol)
@@ -194,7 +194,7 @@ because we're gong to be stshing stuff in their symbol properties."
         (put group-symbol :PD-GROUP nil)
         (put group-symbol :PD-COUNT nil)
         (pd-print "Props after: %s" (symbol-plist group-symbol)))))
-  (setq *lust-style-syntax--pattern-dispatch-table* nil)
+  (setq *pattern-dispatch--pattern-dispatch-table* nil)
   (PD-PRINT-DIVIDER))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -202,7 +202,7 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define functions with a Lust-style syntax:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro lust-style-syntax--def (pattern-or-symbol &rest def-body) 
+(defmacro pattern-dispatch--def (pattern-or-symbol &rest def-body) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a function call pattern case or a variable using a Lust-style syntax."
   (let* ( (is-variable-definition (symbolp pattern-or-symbol))
@@ -227,12 +227,12 @@ because we're gong to be stshing stuff in their symbol properties."
         `(progn
            ;;(debug)
            (pd-print "DEF: Defining pattern '%s in group '%s." ',pattern ',group)
-           (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun ',group) ;; ',(car pattern)
-           (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
+           (pattern-dispatch--bind-group-symbol-to-pattern-dispatcher-fun ',group) ;; ',(car pattern)
+           (let ((group (assoc ',group *pattern-dispatch--pattern-dispatch-table*)))
              (if (not group)
                (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
                  (pd-print "DEF:   Added new group '%s" group)
-                 (push group *lust-style-syntax--pattern-dispatch-table*))
+                 (push group *pattern-dispatch--pattern-dispatch-table*))
                (let ((pattern-case (assoc ',pattern (cdr group))))
                  (when pattern-case
                    (pd-print "DEF:   Found pattern-case '%s in group '%s."
@@ -244,20 +244,20 @@ because we're gong to be stshing stuff in their symbol properties."
                  (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
                  (pd-print
                    "DEF: Added pattern case for pattern '%s to group '%s." ',pattern group)))
-             (pd-print (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*)))
-             *lust-style-syntax--pattern-dispatch-table*))))))
+             (pd-print (string-trim (pp-to-string *pattern-dispatch--pattern-dispatch-table*)))
+             *pattern-dispatch--pattern-dispatch-table*))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro aris-lust-syle-defs--print (first &rest rest)
-  `(when *lust-style-syntax--verbose*
+  `(when *pattern-dispatch--verbose*
      (indented-message ,first ,@rest)))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
+(defun pattern-dispatch--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (PD-PRINT-DIVIDER ?\#)
@@ -282,11 +282,11 @@ because we're gong to be stshing stuff in their symbol properties."
       (pd-print "[%d] '%s isn't bound or was bound by us, we can %sbind it."
         unique symbol (if already-bound "re" "")))
     ;; Attach our handler function to SYMBOL's function cell:
-    (fset symbol (eval `(lust-style-syntax--make-dispatcher-fun ,symbol)))
+    (fset symbol (eval `(pattern-dispatch--make-dispatcher-fun ,symbol)))
     ;; Stash the group label and a serial numbe in properties on SYMBOL:
     (put symbol :PD-GROUP symbol)
-    (setq *lust-style-syntax--handler-count* (1+ *lust-style-syntax--handler-count*))
-    (put symbol :PD-COUNT *lust-style-syntax--handler-count*)
+    (setq *pattern-dispatch--handler-count* (1+ *pattern-dispatch--handler-count*))
+    (put symbol :PD-COUNT *pattern-dispatch--handler-count*)
     ;; Make sure the label was set properly and then return SYMBOL's plist:
     (let ( (group-label (get symbol :PD-GROUP))
            (plist (symbol-plist symbol)))
@@ -329,7 +329,7 @@ because we're gong to be stshing stuff in their symbol properties."
 (defun format-table-as-lines ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let (result)
-    (dolist (group *lust-style-syntax--pattern-dispatch-table*)
+    (dolist (group *pattern-dispatch--pattern-dispatch-table*)
       (push (format "[%s]" (car group)) result)
       (dolist (line (format-group-as-lines (cdr group)))
         (push (format "  %s" line) result)))
@@ -363,14 +363,14 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Aliases:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'def 'lust-style-syntax--def)
+(defalias 'def 'pattern-dispatch--def)
 (defalias 'begin 'progn)
-(defalias 'bind ' lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun)
+(defalias 'bind ' pattern-dispatch--bind-group-symbol-to-pattern-dispatcher-fun)
 (defalias 'pd-reset 'aris-lust-syle-syntax--reset)
 (defalias 'pd-print 'aris-lust-syle-defs--print)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--lust-style-syntax)
+(provide 'aris-funs--pattern-dispatch)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

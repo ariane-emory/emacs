@@ -2,7 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
-(require 'aris-funs--lust-style-syntax)
+(require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -24,14 +24,14 @@
 (square 7)
 (funcall #'square 8)
 
-*lust-style-syntax--pattern-dispatch-table*
+*pattern-dispatch--pattern-dispatch-table*
 
 
 (print-table)
 
-;; (indent-string-lines (format-group-as-string (lust-style-syntax--get-group 'fib)))
+;; (indent-string-lines (format-group-as-string (pattern-dispatch--get-group 'fib)))
 
-;; (indent-string-lines (print-group (format-group-as-string (lust-style-syntax--get-group 'fib))))
+;; (indent-string-lines (print-group (format-group-as-string (pattern-dispatch--get-group 'fib))))
 ;; (fib 8)
 ;; (symbol-function 'square)
 ;; (symbol-plist 'square)

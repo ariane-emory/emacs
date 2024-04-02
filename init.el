@@ -866,7 +866,7 @@
         '( aris-funs--unsorted
            aris-funs--match-pattern
            aris-funs--alist-funs
-           aris-funs--lust-style-syntax
+           aris-funs--pattern-dispatch
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
            aris-funs--error-when-and-error-unless
