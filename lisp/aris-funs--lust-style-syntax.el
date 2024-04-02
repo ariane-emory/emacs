@@ -145,12 +145,12 @@ because we're gong to be stshing stuff in their symbol properties."
      (let ((the-symbol ',symbol))
        (PRINT-DIVIDER)
        (print "Doing dispatch for '%s..." ',symbol)
-       (with-message-indent
+       (with-indentation
          (let* ( (group-symbol (get ',symbol :PD-GROUP))
                  (group (lust-style-syntax--get-group group-symbol))
                  (call-pattern (cons ',symbol args)))
            (print "Looked up group for '%s and found:" ',symbol)
-           (with-message-indent
+           (with-indentation
              (dolist (row group)
                (print "%s ⇒" (string-trim (pp-to-string (car row))))
                (let ( (lines
@@ -173,7 +173,7 @@ because we're gong to be stshing stuff in their symbol properties."
     (let ((group-symbol (car group)))
       (print "Unbinding %s..." group-symbol)
       (fmakunbound group-symbol)
-      (with-message-indent
+      (with-indentation
         (print "Props before: %s" (symbol-plist group-symbol))
         (put group-symbol :PD-GROUP nil)
         (put group-symbol :PD-COUNT nil)

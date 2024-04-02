@@ -27,7 +27,7 @@ This variable is not meant to be customized." )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro with-message-indent (&rest body)
+(defmacro with-indentation (&rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate body with one more level of indentation."
   `(let ((*aris-indent* (1+ *aris-indent*))) ,@body))
