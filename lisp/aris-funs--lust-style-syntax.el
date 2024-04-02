@@ -18,7 +18,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *lust-style-syntax--verbose* nil
+(defcustom *lust-style-syntax--verbose* t
   "Whether the pseudo-function dispatcher should print verbose messages."
   :group 'lust-style-syntax
   :type 'boolean)
@@ -39,22 +39,15 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun aris-lust-syle-defs--print (fmt &rest fmt-args)
-  "Do this dumb hack to prevent apostrophes from being turned into single quotes.
-
-TEMPORARILY NOT IN USE!"
-  (indented-message "%s" (apply #'format fmt fmt-args)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(defmacro aris-lust-syle-defs--print (first &rest rest)
+  "Do this dumb hack to prevent apostrophes from being turned into single quotes."
+  `(when *lust-style-syntax--verbose*
+     (indented-message ,first ,@rest)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro aris-lust-syle-defs--use-print (&rest body)
-  "Helper macro to conditionally bind #'pring to either `aris-lust-syle-defs--print' or `ignore'."
-  `(cl-letf (((symbol-function 'print) 
-               ;;(if *lust-style-syntax--verbose* #'aris-lust-syle-defs--print #'ignore)
-               (if *lust-style-syntax--verbose* #'indented-message #'ignore)))
-     ,@body))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'print 'aris-lust-syle-defs--print)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,7 +55,6 @@ TEMPORARILY NOT IN USE!"
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun (symbol)
