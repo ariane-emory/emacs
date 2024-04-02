@@ -65,6 +65,13 @@
 
 (progn
   (pd-reset)
-  (def (boop x y) (* x y))
-  ;; (message "%s" (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9))
-  )
+  (def (boop 5) 10)
+  (def (boop y) (* y y))
+
+  (boop 7)
+  
+  (message "Table: %s" (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*))))
+
+*lust-style-syntax--pattern-dispatch-table*
+
+
