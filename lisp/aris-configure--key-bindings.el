@@ -55,6 +55,8 @@
 (bind-keys*
  ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
  ("C-x C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
+
+ ("C-s-z" . eval-last-sexp)
  
  ;; Thumb keys:
  ("C-<backspace>" . aris-delete-previous-word)
