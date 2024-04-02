@@ -277,15 +277,14 @@ Examples:
                                (let ((complaint
                                        (format "target-head %s is not a verbatim element."
                                          target-head)))
-                                 (if *match-pattern--signal-error-if-target-elements-is-not-verbatim*
+                                 (when *match-pattern--signal-error-if-target-elements-is-not-verbatim*
                                    (error complaint)
                                    (print complaint)
                                    (fail-to-match)))))
                            ;; If `pattern-head' isn't either a verbatim element or a capture,
                            ;; something has gone wrong:
                            ((case 5 "Error case: invalid pattern element" (pattern-head-is-invalid?))
-                             (indent
-                               (error "pattern-head '%s' is an invalid element." pattern-head)))
+                             (error "pattern-head '%s' is an invalid element." pattern-head))
                            ;; From here on, we know that `pattern-head' must be a capture.
                            ;; Case when `pattern-head' is tagged with the "anything" tag:
                            ((case 6 "`anything' pattern element"
@@ -328,8 +327,7 @@ Examples:
                                (continue pattern-tail target-tail target-head)))
                            ;; Some unimplemented case happened, signal an error:
                            ((case 9 "Error case: this case should be unrachable" t)
-                             (indent
-                               (error "Unhandled case! Double-check your configuration."))))))))))))
+                             (error "Unhandled case! Double-check your configuration.")))))))))))
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

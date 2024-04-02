@@ -402,33 +402,33 @@
           ("<prior>" . company-previous-page)
           ("<next>" . company-next-page))
         :hook
-        (company-completion-started .
-          (lambda (&rest _)
-            "Stash the original states of some modes and then disable them during company."
-            (setq-local aris-stashed-beacon-mode
-              (bound-and-true-p beacon-mode))
-            (setq-local aris-stashed-flycheck-mode
-              (bound-and-true-p flycheck-mode))
-            (setq-local aris-stashed-flycheck-inline-mode
-              (bound-and-true-p flycheck-inline-mode))
-            (when (bound-and-true-p beacon-mode) (beacon-mode -1))
-            (when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
-            (when (bound-and-true-p flycheck-inline-mode)
-              (flycheck-inline-mode -1))
-            (setq-local hl-line-mode nil)))
-        (company-after-completion-hook .
-          (lambda (&rest _)
-            "Restore the state of modes that might have been on during company."
-            (when (boundp 'aris-stashed-flycheck-mode)
-	            (when aris-stashed-flycheck-mode (flycheck-mode 1))
-	            (kill-local-variable 'aris-stashed-flycheck-mode))
-            (when (boundp 'aris-stashed-flycheck-inline-mode)
-	            (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-	            (kill-local-variable 'aris-stashed-flycheck-inline-mode))
-            (when (boundp 'aris-stashed-beacon-mode)
-	            (when aris-stashed-beacon-mode (beacon-mode 1))
-	            (kill-local-variable 'aris-stashed-beacon-mode)))))
-
+        ;; (company-completion-started .
+        ;;   (lambda (&rest _)
+        ;;     "Stash the original states of some modes and then disable them during company."
+        ;;     (setq-local aris-stashed-beacon-mode
+        ;;       (bound-and-true-p beacon-mode))
+        ;;     (setq-local aris-stashed-flycheck-mode
+        ;;       (bound-and-true-p flycheck-mode))
+        ;;     (setq-local aris-stashed-flycheck-inline-mode
+        ;;       (bound-and-true-p flycheck-inline-mode))
+        ;;     (when (bound-and-true-p beacon-mode) (beacon-mode -1))
+        ;;     (when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
+        ;;     (when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
+        ;;     (setq-local hl-line-mode nil)))
+        ;; (company-after-completion-hook .
+        ;;   (lambda (&rest _)
+        ;;     "Restore the state of modes that might have been on during company."
+        ;;     (when (boundp 'aris-stashed-flycheck-mode)
+	      ;;       (when aris-stashed-flycheck-mode (flycheck-mode 1))
+	      ;;       (kill-local-variable 'aris-stashed-flycheck-mode))
+        ;;     (when (boundp 'aris-stashed-flycheck-inline-mode)
+	      ;;       (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
+	      ;;       (kill-local-variable 'aris-stashed-flycheck-inline-mode))
+        ;;     (when (boundp 'aris-stashed-beacon-mode)
+	      ;;       (when aris-stashed-beacon-mode (beacon-mode 1))
+	      ;;       (kill-local-variable 'aris-stashed-beacon-mode))))
+        )
+      
       ;; (use-package-with-message company-quickhelp :ensure t
       ;;   :config
       ;;   (setq company-quickhelp-delay 0)
