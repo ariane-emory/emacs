@@ -278,11 +278,8 @@ because we're gong to be stshing stuff in their symbol properties."
         unique symbol (if already-bound "re" "")))
 
     ;; Attach our handler function to SYMBOL's function cell:
-    (print "CALL ONE!")
-    (fset symbol (lust-style-syntax--make-dispatcher-fun symbol))
     (print "CALL TWO!")
     (fset symbol (eval `(lust-style-syntax--make-dispatcher-fun ,symbol)))
-
 
     ;; Stash the group label and a serial numbe in properties on SYMBOL:
     (put symbol :PD-GROUP symbol)
