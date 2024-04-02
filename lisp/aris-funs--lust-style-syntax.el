@@ -126,10 +126,7 @@
               (not (let ((got-symbol (get (function symbol) :PATTERN-DISPATCHER-FUN)))
                    (print "Retrieved %s for %s." got-symbol symbol)
                    got-symbol)))
-        (error (concat
-                 "Logic error: function %s already bound "
-                 "elsewherm, fmakunbound it first!")
-          symbol))
+        (error (concat "Logic error: function %s already bound " "elsewherm, fmakunbound it first!") symbol))
       (print "%sBINDING DISPATCH FUN FOR %s!"
         (if already-bound "RE" "") symbol)
       (fset symbol
@@ -219,20 +216,19 @@
               (when match-result
                 (throw 'matched
                   (setq result (cons match-result (cdr pattern-case)))))))))
-      (if result
-        (progn
-          (print
-            (concat
-              "================================================"
-              "================================================"))
-          (print "Found match for '%s = '%s" call-pattern result)
-          (print
-            (concat
-              "================================================"
-              "================================================"))
-          result)
-        (error "No pattern case found for '%s." call-pattern)))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (error-unless "No pattern case found for '%s." '(call-pattern)
+        result)
+      (print
+        (concat
+          "================================================"
+          "================================================"))
+      (print "Found match for '%s = '%s" call-pattern result)
+      (print
+        (concat
+          "================================================"
+          "================================================"))
+      result)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
