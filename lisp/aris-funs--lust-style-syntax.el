@@ -25,8 +25,11 @@
   :group 'lust-style-syntax
   :type 'boolean)
 
-(defvar *lust-style-syntax--match-counter* 0
+(defvar *lust-style-syntax--match-count* 0
   "This is part of an ugly hack and is not meant to be customized.")
+
+(defvar *lust-style-syntax--handler-count* 0
+  "A serial number on dispatch handler functions.")
 
 (defvar *lust-style-syntax--pattern-dispatch-table* nil
   "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
@@ -98,17 +101,17 @@
       (dolist (pattern-case group)
         (let ( (pattern (car pattern-case))
                (*match-pattern--init-fun*
-                 (lambda () (setq *lust-style-syntax--match-counter* 0)))
+                 (lambda () (setq *lust-style-syntax--match-count* 0)))
                (*match-pattern--merge-duplicate-alist-keys* nil)
                (*match-pattern--kleene-tag* nil)
                (*match-pattern--anything-tag* 'anything)
                (*match-pattern--verbatim-element?* nil)
                (*match-pattern--capture-element?*
                  (lambda (elem)
-                   (if (> *lust-style-syntax--match-counter* 1)
+                   (if (> *lust-style-syntax--match-count* 1)
                      (symbolp elem)
-                     (setq *lust-style-syntax--match-counter*
-                       (1+ *lust-style-syntax--match-counter*))
+                     (setq *lust-style-syntax--match-count*
+                       (1+ *lust-style-syntax--match-count*))
                      nil)))
                (*match-pattern--get-capture-symbol-fun* (lambda (e) e))
                (*match-pattern--get-capture-tag-fun* (lambda (e) 'anything))
@@ -173,6 +176,7 @@ because we're gong to be stshing stuff in their symbol properties."
       (fmakunbound group-symbol)
       (print "Props before: %s" (symbol-plist group-symbol))
       (put group-symbol :PATTERN-DISPATCHER-GROUP nil)
+      (put group-symbol :PATTERN-DISPATCHER-COUNT nil)
       (print "Props after: %s" (symbol-plist group-symbol))))
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
   (PRINT-DIVIDER))
@@ -279,8 +283,11 @@ because we're gong to be stshing stuff in their symbol properties."
     (print "CALL TWO!")
     (fset symbol (eval `(lust-style-syntax--make-dispatcher-fun ,symbol)))
 
-    ;; Stash the group label in a property on SYMBOL:
+
+    ;; Stash the group label and a serial numbe in properties on SYMBOL:
     (put symbol :PATTERN-DISPATCHER-GROUP symbol)
+    (setq *lust-style-syntax--handler-count* (1+ *lust-style-syntax--handler-count*))
+    (put symbol PATTERN-DISPATCHER-COUNT *lust-style-syntax--handler-count*)
 
     ;; Make sure the label was set properly and then return SYMBOL's plist:
     (let ( (group-label (get symbol :PATTERN-DISPATCHER-GROUP))
