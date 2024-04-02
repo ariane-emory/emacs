@@ -75,7 +75,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun pd--get-group (group-symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cdr (assoc group-symbol *pd--pattern-dispatch-table*)))
+  (assoc group-symbol *pd--pattern-dispatch-table*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -165,6 +165,7 @@ because we're gong to be stshing stuff in their symbol properties."
        (with-indentation
          (let* ( (group-symbol (get ',symbol :PD-GROUP))
                  (group (pd--get-group group-symbol))
+                 (group-rows (cdr group))
                  (call-pattern (cons ',symbol args)))
            (pd--print "Looked up group for '%s and found:" ',symbol)
            (pd--print-group group)
@@ -178,7 +179,7 @@ because we're gong to be stshing stuff in their symbol properties."
            ;;         (pd--print "  %s" line)))))
            (pd--eval-match-result
              (pd--match-call-pattern-in-group
-               call-pattern group)))))))
+               call-pattern group-rows)))))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
