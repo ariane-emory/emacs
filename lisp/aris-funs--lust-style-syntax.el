@@ -56,7 +56,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lust-style-syntax--get-patterns-for-group (group-symbol)
+(defun lust-style-syntax--get-group (group-symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cdr (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -148,7 +148,7 @@ because we're gong to be stshing stuff in their symbol properties."
        (print "Doing dispatch for '%s..." ',symbol)
        (with-message-indent
          (let* ( (group-symbol (get ',symbol :PD-GROUP))
-                 (group (lust-style-syntax--get-patterns-for-group group-symbol))
+                 (group (lust-style-syntax--get-group group-symbol))
                  (call-pattern (cons ',symbol args)))
            (print "Looked up group for '%s and found:" ',symbol)
            (with-message-indent
