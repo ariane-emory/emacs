@@ -305,13 +305,16 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun format-group-as-lines (group)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let (result)
-    (dolist (row group)
-      (push (format "%s ⇒" (string-trim (pp-to-string (car row)))) result)
+  (let ( result
+         (group-name (car group))
+         (group-rows (cdr group)))
+    (push (format "[%s]" group-name) result)
+    (dolist (row group-rows)
+      (push (format "  %s ⇒" (string-trim (pp-to-string (car row)))) result)
       (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-        (push (format "  %s" (car lines)) result)
+        (push (format "    %s" (car lines)) result)
         (dolist (line (cdr lines))
-          (push (format "  %s" line) result))))
+          (push (format "    %s" line) result))))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -330,9 +333,8 @@ because we're gong to be stshing stuff in their symbol properties."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let (result)
     (dolist (group *pd--pattern-dispatch-table*)
-      (push (format "[%s]" (car group)) result)
-      (dolist (line (format-group-as-lines (cdr group)))
-        (push (format "  %s" line) result)))
+      (dolist (line (format-group-as-lines group))
+        (push (format "%s" line) result)))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
