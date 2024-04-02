@@ -3,6 +3,7 @@
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
+  '(*lust-style-syntax--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
   '(beacon-mode t)

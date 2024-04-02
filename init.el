@@ -401,7 +401,7 @@
           ("M-." . company-show-location)
           ("<prior>" . company-previous-page)
           ("<next>" . company-next-page))
-        :hook
+        ;; :hook
         ;; (company-completion-started .
         ;;   (lambda (&rest _)
         ;;     "Stash the original states of some modes and then disable them during company."

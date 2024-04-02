@@ -241,6 +241,7 @@ because we're gong to be stshing stuff in their symbol properties."
             (symbol (get function :PATTERN-DISPATCHER-FUN))
             (group (lust-style-syntax--get-patterns-for-group symbol))
             (call-pattern (cons symbol args)))
+      (message "LOOKING FOR GROUP %s..." group)
       (lust-style-syntax--eval-match-result
         (aris-lust-syle-defs--match-call-pattern-in-group call-pattern group)))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
