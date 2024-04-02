@@ -256,13 +256,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro indent (&body body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let ((*aris-indent* (1+ *aris-indent*))) ,@body))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lust-style-syntax--make-pattern-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
@@ -280,7 +273,7 @@ because we're gong to be stshing stuff in their symbol properties."
                   (group (lust-style-syntax--get-patterns-for-group group-symbol))
                   (call-pattern (cons symbol args)))
             (print "Looked up group for '%s and found:" symbol)
-            (let ((*aris-indent* (1+ *aris-indent*)))
+            (with-message-indent
               (dolist (row group)
                 (print "%s ⇒" (string-trim (pp-to-string (car row))))
                 (let ( (lines
