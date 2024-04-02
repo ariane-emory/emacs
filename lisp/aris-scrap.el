@@ -51,15 +51,15 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(when nil
-  (pd-reset)
-  ;; (def (boop 5) 10)
-  (def (boop y) (* y y))
-  (boop 7)
-  (message "Table: %s"
-    (string-trim (pp-to-string *lust-style-syntax--pattern-dispatch-table*))))
+
+(pd-reset)
+;; (def (boop 5) 10)
+(def (boop y) (* y y))
+
+(boop 7)
 
 *lust-style-syntax--pattern-dispatch-table*
+
 
 (symbol-plist 'boop)
 
