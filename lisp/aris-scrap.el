@@ -65,12 +65,7 @@
 
 (progn
   (setq *lust-style-syntax--pattern-dispatch-table* nil)
+  (def (boop x 666) (* x 400))
   (def (boop x y) (* x y))
-  (def (boop x 10)
-    (* x 100)
-    (if t
-      100
-      200)
-    (* x 300)
-    (* x 400))
-  (message "%s" (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9)))
+  (message "%s" (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 9))
+  (message "%s" (funcall (lust-style-syntax--make-pattern-dispatcher-fun 'boop) 8 666)))
