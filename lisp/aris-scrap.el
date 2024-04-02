@@ -55,22 +55,22 @@
 ;;      (fib
 ;;        (- n 2))))
 
-(defun print-group (group-symbol)
-  (print "Table: %s" *lust-style-syntax--pattern-dispatch-table*)
-  (let* ((group (lust-style-syntax--get-patterns-for-group group-symbol)))
-    (print "Looked up group for '%s and found:" group-symbol)
-    (with-message-indent
-      (dolist (row group)
-        (print "%s ⇒" (string-trim (pp-to-string (car row))))
-        (let ( (lines
-                 (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-          (print "  %s" (car lines))
-          (dolist (line (cdr lines))
-            (print "  %s" line)))))))
+(defun print-group (group)
+  (with-output-to-string
+    (dolist (row group)
+      (print "%s ⇒" (string-trim (pp-to-string (car row))))
+    (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
+      (print "  %s" (car lines))
+      (dolist (line (cdr lines))
+        (print "  %s" line)))))
 
+(defun print-table ()
+    (dolist (group *lust-style-syntax--pattern-dispatch-table*)
+      (print-group (cdr group)))
+(print-table)
 
-(print-group 'fib)
-
+  (print-group (lust-style-syntax--get-group 'fib))
 (fib 8)
 (symbol-function 'square)
 (symbol-plist 'square)
+(print-group (lust-style-syntax--get-group 'fib))
