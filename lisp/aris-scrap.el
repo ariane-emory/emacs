@@ -53,7 +53,7 @@
 
 
 (pd-reset)
-;; (def (boop 5) 10)
+
 (def (boop y) (* y y))
 
 (boop 7)
