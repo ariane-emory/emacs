@@ -38,7 +38,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-lust-syle-defs--print (fmt &rest fmt-args)
   "Do this dumb hack to prevent apostrophes from being turned into single quotes."
@@ -82,12 +81,11 @@
         (error-when "DEF: Function definition's body must be either an atom or a proper list."
           is-illegal-definition)
         `(aris-lust-syle-defs--use-print
-           (let ( (group-symbol ',group)
-                  (pat ',pattern))
+           (let ()
              ;;(debug)
-             (print "DEF: Defining pattern '%s in group '%s." pat group-symbol)
-             (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun group-symbol) ;; ',(car pattern)
-             (let ((group (assoc group-symbol *lust-style-syntax--pattern-dispatch-table*)))
+             (print "DEF: Defining pattern '%s in group '%s." ',pattern ',group)
+             (lust-style-syntax--bind-group-symbol-to-pattern-dispatcher-fun ',group) ;; ',(car pattern)
+             (let ((group (assoc ',group *lust-style-syntax--pattern-dispatch-table*)))
                (if (not group)
                  (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
                    (print "DEF:   Added new group '%s" group)
@@ -288,6 +286,24 @@ because we're gong to be stshing stuff in their symbol properties."
               (lust-style-syntax--eval-match-result
                 (aris-lust-syle-defs--match-call-pattern-in-group
                   call-pattern group)))))))))
+                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun aris-lust-syle-syntax--reset ()
+  "Reset the dispatch table and unbind bound functions."
+  (aris-lust-syle-defs--use-print
+    (dolist (group *lust-style-syntax--pattern-dispatch-table*)
+      (let ((group-symbol (car group)))
+        (print "Unbinding %s..." group-symbol)
+        (fmakunbound group-symbol)))
+    (setq *lust-style-syntax--pattern-dispatch-table* nil)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'pd-reset 'aris-lust-syle-syntax--reset)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
