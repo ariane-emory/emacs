@@ -11,9 +11,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro error-when (error-message &rest format-args-and-body)
+(defmacro error-unless (error-message &rest format-args-and-body)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Assert that the last expression in FORMAT-ARGS-AND-BODY is nil. If it is not,
+  "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
 signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
 
 When ERROR-MESSAGE is a format string, the car of FORMAT-ARGS-AND-BODY is
@@ -54,41 +54,8 @@ Unacceptable case:
   (error-when
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
     (not nil))
-  "
+"
 
-  (let* ( (string-is-format-string
-            (string-is-format-string-p error-message))
-          (body
-            (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
-          (format-args
-            (when string-is-format-string
-              (let ((unquoted-format-args (cadar format-args-and-body)))
-                `(list ,@unquoted-format-args)))))
-    `(let ((it (progn ,@body)))
-       (when it
-         (apply #'error ,error-message ,format-args)))))
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
-  (error-when "This should NOT raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
-  (error-when "This should raise an error because condition is non-nil." 1 nil "THIS STRING IS TRUE")
-  (error-when "This should NOT raise an error because condition is nil." 1 nil nil)
-  )
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro error-unless (error-message &rest format-args-and-body)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
-signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
-
-See `error-when' for caveats about the use of format speciiers."
-  (unless format-args-and-body
-    (error "error-when: No body provided."))
   (let* ( (string-is-format-string
             (string-is-format-string-p error-message))
           (body
@@ -106,15 +73,46 @@ See `error-when' for caveats about the use of format speciiers."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
-  (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s"
-    '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
-  (error-unless "This should raise an error because condition is nil: %s %s %s"
-    '(it 8 (+ 2 3)) 1 nil nil)
-  (error-unless "This should NOT raise an error because condition is non-nil."
-    1 nil "THIS STRING IS TRUE")
-  (error-unless "This should raise an error because condition is nil."
-    1 nil nil))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+  (error-unless "This should raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
+  (error-unless "This should NOT raise an error because condition is non-nil." 1 nil "THIS STRING IS TRUE")
+  (error-unless "This should raise an error because condition is nil." 1 nil nil)
+  )
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro error-when (error-message &rest format-args-and-body)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Assert that the last expression in FORMAT-ARGS-AND-BODY evaluates tonil. If
+it is not, signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
+
+See `error-unless' for caveats about the use of format speciiers."
+  (unless format-args-and-body
+    (error "error-when: No body provided."))
+  (let* ( (string-is-format-string
+            (string-is-format-string-p error-message))
+          (body
+            (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
+          (format-args
+            (when string-is-format-string
+              (let ((unquoted-format-args (cadar format-args-and-body)))
+                `(list ,@unquoted-format-args)))))
+    `(let ((it (progn ,@body)))
+       (if it
+         (apply #'error ,error-message ,format-args)
+         it))))
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;.
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when nil
+  (error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+  (error-when "This should NOT raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
+  (error-when "This should raise an error because condition is non-nil." 1 nil "THIS STRING IS TRUE")
+  (error-when "This should NOT raise an error because condition is nil." 1 nil nil)
+  )
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
