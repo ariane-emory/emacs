@@ -93,6 +93,11 @@ non-verbatim TARGET element is encountered. This setting only applies when
   "Whether `match-pattern' should print verbose messages."
   :group 'match-pattern
   :type 'boolean)
+
+(defcustom *match-pattern--use-dotted-pairs-in-result* t
+  "Whether `match-pattern' should use dotted pairs in the result alist."
+  :group 'match-pattern
+  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
