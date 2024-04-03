@@ -84,8 +84,9 @@ Unacceptable case:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro error-when (error-message &rest format-args-and-body)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Assert that the last expression in FORMAT-ARGS-AND-BODY evaluates tonil. If
-it is not, signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
+  "Signal an error unless the last expression in FORMAT-ARGS-AND-BODY evaluates
+to nil. Ifit is not, signal an error with ERROR-MESSAGE and
+FORMAT-ARGS-AND-BODY.
 
 See `error-unless' for caveats about the use of format speciiers."
   (unless format-args-and-body
