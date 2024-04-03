@@ -196,6 +196,7 @@ because we're gong to be stshing stuff in their symbol properties."
     (error-when "DEF:  PATTERN-OR-SYMBOL must be either a symbol or a proper list."
       is-illegal-definition)
     (if is-variable-definition
+      ;; Variable definition case:
       (let ( (symbol pattern-or-symbol)
              (value-expr (car def-body))
              (is-illegal-definition (cdr def-body)))
@@ -204,6 +205,7 @@ because we're gong to be stshing stuff in their symbol properties."
         `(progn
            (pd--print "DEF: Defining variable '%s." ',symbol)
            (setq ,symbol ,value-expr)))
+      ;; Pseudo-function definition case:
       (let* ( (full-pattern-including-group-symbol pattern-or-symbol)
               (group-symbol (car full-pattern-including-group-symbol))
               (pattern-without-group-symbol (cdr full-pattern-including-group-symbol))
