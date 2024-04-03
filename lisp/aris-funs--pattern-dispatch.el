@@ -215,18 +215,21 @@ because we're gong to be stshing stuff in their symbol properties."
         `(progn
            ;;(debug)
            (PD--PRINT-DIVIDER ?\#)
-           (pd--print "DEF:  Defining pattern '%s in group '%s." ',full-pattern-including-group-symbol ',group-symbol)
+           (pd--print "DEF:  Defining pattern '%s in group '%s."
+             ',full-pattern-including-group-symbol ',group-symbol)
            (pd--bind ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
            (let ( (group (assoc ',group-symbol *pd--pattern-dispatch-table*))
                   (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body))))
              (if (not group)
-               (let ((group (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
+               (let ((group
+                       (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
                  (push group *pd--pattern-dispatch-table*)
                  (pd--print "DEF:  Added new group:")
                  (PD--PRINT-DIVIDER)
                  (pd--print-group group))
-               (let ((existing-pattern-case (assoc ',full-pattern-including-group-symbol (cdr group))))
+               (let ((existing-pattern-case
+                       (assoc ',full-pattern-including-group-symbol (cdr group))))
                  (when existing-pattern-case
                    (pd--print "DEF:  Found existing-pattern-case '%s in group '%s."
                      existing-pattern-case group)
@@ -236,8 +239,8 @@ because we're gong to be stshing stuff in their symbol properties."
                      existing-pattern-case))
                  (setcdr group (nconc (cdr group) new-pattern-case))
                  (PD--PRINT-DIVIDER)
-                 (pd--print
-                   "DEF:  Added pattern case for pattern '%s to group '%s:" ',full-pattern-including-group-symbol group)
+                 (pd--print "DEF:  Added pattern case for pattern '%s to group '%s:"
+                   ',full-pattern-including-group-symbol group)
                  (pd--print-group group)))
              ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
              ;; *pd--pattern-dispatch-table*
