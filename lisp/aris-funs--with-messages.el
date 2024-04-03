@@ -51,7 +51,7 @@ last expression in `body' and printing a variant message afterwards."
           (second-message-string-tail
             (when is-double-message(substring second-message-string 1)))
           (start-message-string
-            (concat
+            (format "%s%s%s"
               (upcase message-string-head)
               message-string-tail
               (if 1st-is-just-kw "." "...")))
@@ -63,7 +63,8 @@ last expression in `body' and printing a variant message afterwards."
                 (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (when end-message-fmt-args
-              (list `(apply #'message "%sDone %s%s." indent-string ',end-message-fmt-args))))
+              (list `(apply #'message "%d%sDone %s%s."
+                       *with-messages--indent* indent-string ',end-message-fmt-args))))
           (body
             (cond
               (is-double-message (cddr args))
