@@ -11,6 +11,26 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro no-name (expr)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(progn (unless format-args-and-body
+            (error "error-when: No body provided."))
+     (let* ( (string-is-format-string
+               (string-is-format-string-p error-message))
+             (body
+               (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
+             (format-args
+               (when string-is-format-string
+                 (let ((unquoted-format-args (cadar format-args-and-body)))
+                   `(list ,@unquoted-format-args)))))
+       `(let ((it (progn ,@body)))
+          (if ,',expr
+            (apply #'error ,error-message ,format-args)
+            it)))))
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro error-unless (error-message &rest format-args-and-body)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
@@ -55,20 +75,8 @@ Unacceptable case:
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
     (not nil))
 "
-
-  (let* ( (string-is-format-string
-            (string-is-format-string-p error-message))
-          (body
-            (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
-          (format-args
-            (when string-is-format-string
-              (let ((unquoted-format-args (cadar format-args-and-body)))
-                `(list ,@unquoted-format-args)))))
-    `(let ((it (progn ,@body)))
-       (if (not it)
-         (apply #'error ,error-message ,format-args)
-         it))))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (no-name (not it)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,21 +97,8 @@ to nil. Ifit is not, signal an error with ERROR-MESSAGE and
 FORMAT-ARGS-AND-BODY.
 
 See `error-unless' for caveats about the use of format speciiers."
-  (unless format-args-and-body
-    (error "error-when: No body provided."))
-  (let* ( (string-is-format-string
-            (string-is-format-string-p error-message))
-          (body
-            (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
-          (format-args
-            (when string-is-format-string
-              (let ((unquoted-format-args (cadar format-args-and-body)))
-                `(list ,@unquoted-format-args)))))
-    `(let ((it (progn ,@body)))
-       (if it
-         (apply #'error ,error-message ,format-args)
-         it))))
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;.
+  (no-name it))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -114,22 +109,6 @@ See `error-unless' for caveats about the use of format speciiers."
   (error-when "This should NOT raise an error because condition is nil." 1 nil nil)
   )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro error-unless (error-message &rest format-args-and-body)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
-;; signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
-
-;; See `error-when' for caveats about the use of format speciiers."
-;;   (let* ( (string-is-format-string (string-is-format-string-p error-message))
-;;           (body (if string-is-format-string
-;;                   (cdr format-args-and-body)
-;;                   format-args-and-body))
-;;           (format-args (when string-is-format-string (car format-args-and-body))))
-;;     `(error-when ,error-message ,format-args (not (progn ,@body)))))
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
