@@ -26,8 +26,6 @@
   (pd--print-table))
 
 ;; todo:
-;;     fix error-unless return
-;;   finish this test
 ;;   finish tidying pd def
 ;;   fix finding existing pattern case
 ;;   continue match2
