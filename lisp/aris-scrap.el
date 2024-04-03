@@ -29,7 +29,7 @@
 (pd--reset)
 (def (fib 0) 0)
 (def (fib 1) 1)
-(def (fib n) (message "hello") (+ (fib (- n 1)) (fib (- n 2))))
+(def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
 (def (double n) (+ n n))
 (def (square y) (* y y))
 ;; (def result

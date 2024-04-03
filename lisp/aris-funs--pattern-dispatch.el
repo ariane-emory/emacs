@@ -228,9 +228,10 @@ because we're gong to be stshing stuff in their symbol properties."
            (let ((group (assoc ',group *pd--pattern-dispatch-table*)))
              (if (not group)
                (let ((group (cons ',(car pattern) (list (cons ',pattern ',def-body)))))
+                 (push group *pd--pattern-dispatch-table*)
                  (pd--print "DEF:  Added new group:")
-                 (pd--print-group group)
-                 (push group *pd--pattern-dispatch-table*))
+                 (PD--PRINT-DIVIDER)
+                 (pd--print-group group))
                (let ((pattern-case (assoc ',pattern (cdr group))))
                  (when pattern-case
                    (pd--print "DEF:  Found pattern-case '%s in group '%s."
@@ -240,6 +241,7 @@ because we're gong to be stshing stuff in their symbol properties."
                      '(',pattern ',group)
                      pattern-case))
                  (setcdr group (nconc (cdr group) (list (cons ',pattern ',def-body))))
+                 (PD--PRINT-DIVIDER)
                  (pd--print
                    "DEF:  Added pattern case for pattern '%s to group '%s:" ',pattern group)
                  (pd--print-group group)))
