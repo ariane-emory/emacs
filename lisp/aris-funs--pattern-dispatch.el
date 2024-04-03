@@ -222,8 +222,7 @@ because we're gong to be stshing stuff in their symbol properties."
            (let* ( (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body)))
                    (group-alist (assoc ',group-symbol *pd--pattern-dispatch-table*)))
              (if (not group-alist)
-               (let ((group-alist
-                       (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
+               (let ((group-alist (cons ',group-symbol new-pattern-case)))
                  (push group-alist *pd--pattern-dispatch-table*)
                  (pd--print "DEF:  Added new group:")
                  (PD--PRINT-DIVIDER)
