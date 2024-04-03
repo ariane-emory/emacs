@@ -219,29 +219,29 @@ because we're gong to be stshing stuff in their symbol properties."
              ',full-pattern-including-group-symbol ',group-symbol)
            (pd--bind ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
-           (let ( (group (assoc ',group-symbol *pd--pattern-dispatch-table*))
+           (let ( (group-alist (assoc ',group-symbol *pd--pattern-dispatch-table*))
                   (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body))))
-             (if (not group)
-               (let ((group
+             (if (not group-alist)
+               (let ((group-alist
                        (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
-                 (push group *pd--pattern-dispatch-table*)
+                 (push group-alist *pd--pattern-dispatch-table*)
                  (pd--print "DEF:  Added new group:")
                  (PD--PRINT-DIVIDER)
-                 (pd--print-group group))
-               (let ((existing-pattern-case
-                       (assoc ',full-pattern-including-group-symbol (cdr group))))
+                 (pd--print-group group-alist))
+               (let* ( (existing-pattern-case
+                         (assoc ',full-pattern-including-group-symbol (cdr group-alist))))
                  (when existing-pattern-case
                    (pd--print "DEF:  Found existing-pattern-case '%s in group '%s."
-                     existing-pattern-case group)
+                     existing-pattern-case group-alist)
                    ;; (or existing-pattern-case "<none>") group)
                    (error-when "DEF:  Pattern %s already defined in group '%s."
                      '(',full-pattern-including-group-symbol ',group-symbol)
                      existing-pattern-case))
-                 (setcdr group (nconc (cdr group) new-pattern-case))
+                 (setcdr group-alist (nconc (cdr group-alist) new-pattern-case))
                  (PD--PRINT-DIVIDER)
                  (pd--print "DEF:  Added pattern case for pattern '%s to group '%s:"
-                   ',full-pattern-including-group-symbol group)
-                 (pd--print-group group)))
+                   ',full-pattern-including-group-symbol group-alist)
+                 (pd--print-group group-alist)))
              ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
              ;; *pd--pattern-dispatch-table*
              (PD--PRINT-DIVIDER ?\#)
