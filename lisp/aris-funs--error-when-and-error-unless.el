@@ -63,11 +63,10 @@ Unacceptable case:
             (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
           (format-args
             (when string-is-format-string
-              (message "format-args-and-body: %s" format-args-and-body)
-              (message "car   format-args-and-body: %s" (car format-args-and-body))
-              (message "cdar  format-args-and-body: %s" (cdar format-args-and-body))
-              (message "cadar format-args-and-body: %s" (cadar format-args-and-body))
-
+              ;; (message "format-args-and-body: %s" format-args-and-body)
+              ;; (message "car   format-args-and-body: %s" (car format-args-and-body))
+              ;; (message "cdar  format-args-and-body: %s" (cdar format-args-and-body))
+              ;; (message "cadar format-args-and-body: %s" (cadar format-args-and-body))
               (let ((unquoted-format-args (cadar format-args-and-body)))
                 `(list ,@unquoted-format-args)))))
     `(let ((it (progn ,@body)))
