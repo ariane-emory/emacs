@@ -76,7 +76,7 @@ last expression in `body' and printing a variant message afterwards."
             (*with-messages--indent* (1+ *with-messages--indent*)))
        (unwind-protect
          (progn
-           (message "%s%s" indent-string ,start-message-string)
+           (message "%d%s%s" *with-messages--indent* indent-string ,start-message-string)
            ,@body)
          ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
