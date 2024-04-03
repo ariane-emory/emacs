@@ -19,7 +19,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pd--verbose* t
+(defcustom *pd--verbose* nil
   "Whether the pseudo-function dispatcher should print verbose messages."
   :group 'pattern-dispatch
   :type 'boolean)
