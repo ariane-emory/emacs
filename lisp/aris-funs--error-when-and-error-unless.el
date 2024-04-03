@@ -18,7 +18,9 @@
      (let* ( (string-is-format-string
                (string-is-format-string-p error-message))
              (body
-               (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
+               (if string-is-format-string
+                 (cdr format-args-and-body)
+                 format-args-and-body))
              (format-args
                (when string-is-format-string
                  (let ((unquoted-format-args (cadar format-args-and-body)))
