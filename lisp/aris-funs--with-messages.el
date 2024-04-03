@@ -17,6 +17,11 @@
   "The number of `*with-messages--indent-char*' characters used for each level of indentation in `with-messages'."
   :group 'with-messages
   :type 'integer)
+
+(defcustom *with-messages--depth-indicator t
+  "Whether to display the current indentation level in `with-messages'."
+  :group 'with-messages
+  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
