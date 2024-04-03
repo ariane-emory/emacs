@@ -78,7 +78,7 @@
   ;; Join lines:
   ("C-j".  (lambda () (interactive) (join-line) (beginning-of-line-text)))
   ;; ("C-j" . join-line)
-  ("M-j" . aris-join-next-line)
+  ("M-j" . (lambda () (interactive) (aris-join-next-line) (end-of-line)))
   
   ;; Find function at point in new tab:
   ("C-c C-S-d" .
