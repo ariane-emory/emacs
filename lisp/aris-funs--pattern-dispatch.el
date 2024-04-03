@@ -241,8 +241,6 @@ because we're gong to be stshing stuff in their symbol properties."
                  (pd--print "DEF:  Added pattern case for pattern '%s to group '%s:"
                    ',full-pattern-including-group-symbol group-alist)
                  (pd--print-group group-alist)))
-             ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
-             ;; *pd--pattern-dispatch-table*
              (PD--PRINT-DIVIDER ?\#)
              nil))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
