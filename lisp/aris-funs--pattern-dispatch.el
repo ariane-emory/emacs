@@ -115,7 +115,7 @@
     (catch 'matched
       (dolist (pattern-case group)
         (let ( (pattern (car pattern-case))
-               (*with-messages--indent-char* ?\_)
+               ;; (*withs-messages--indent-char* ?\_)
                ;; (*match-pattern--init-fun*
                ;;   (lambda () (setq *pd--match-count* 0)))
                (*match-pattern--merge-duplicate-alist-keys* nil)
@@ -357,7 +357,8 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun pd--print-group (group)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (pd--print (pd--format-group-as-string group))
+  (dolist (line (pd--format-group-as-lines group))
+    (pd--print line))
   nil)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
