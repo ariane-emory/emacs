@@ -6,9 +6,6 @@
 (defmacro --make-error-if-macro (symbol fun docstring)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(defmacro ,symbol (error-message &rest format-args-and-body)
-     ,docstring
-     ;; (unless (stringp error-message)
-     ;;   (error "--make-error-if-macro: ERROR-MESSAGE must be a string."))
      (unless format-args-and-body
        (error "--make-error-if-macro: No body provided."))
      (let* ( (string-is-format-string
@@ -98,12 +95,8 @@ See `error-unless' for caveats about the use of format speciiers.")
   (error-unless "This should NOT raise an error because condition is non-nil."
     1 nil "THIS STRING IS TRUE")
   (error-unless "This should raise an error because condition is nil."
-    1 nil nil))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    1 nil nil)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
   (error-when "This should raise an error because condition is non-nil: %s %s %s"
     '(it 8 (+ 2 3))
     1 nil "THIS STRING IS TRUE")
@@ -114,7 +107,7 @@ See `error-unless' for caveats about the use of format speciiers.")
     1 nil "THIS STRING IS TRUE")
   (error-when "This should NOT raise an error because condition is nil."
     1 nil nil))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;y
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
