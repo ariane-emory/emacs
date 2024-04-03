@@ -112,7 +112,7 @@ last expression in `body'."
             (* *with-messages--indent* *with-messages--indent-size*)
             *with-messages--indent-char*))
          (depth-indicator (if *with-messages--depth-indicator*
-                            (format "[% 2d] " *with-messages--indent*) "")))
+                            (format "[%2d] " *with-messages--indent*) "")))
     (format "%s%s" depth-indicator indent-string)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
