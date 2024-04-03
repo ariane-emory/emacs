@@ -11,7 +11,7 @@
   (def (fib 0) 0)
   (def (fib 1) 1)
   (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-  (def (double n) (+ n n))
+  (def (double n) (+ n n n))
   (def (square y) (* y y))
   ;; (def (double-square y) (double 2 (square y)))
   ;; (double-square 3)
@@ -26,10 +26,9 @@
   (pd--print-table))
 
 ;; todo:
-;;   fix pattern match verbosity?
-;;   finish tidying pd def
-;;   finish this test
 ;;     fix error-unless return
+;;   finish this test
+;;   finish tidying pd def
 ;;   fix finding existing pattern case
 ;;   continue match2
 
