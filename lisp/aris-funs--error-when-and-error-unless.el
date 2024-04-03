@@ -3,7 +3,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --make-error-if-macro (symbol expr docstring)
+(defmacro --make-error-if-macro (symbol fun docstring)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(defmacro ,symbol (error-message &rest format-args-and-body)
      ,docstring
@@ -22,7 +22,7 @@
                  (let ((unquoted-format-args (cadar format-args-and-body)))
                    `(list ,@unquoted-format-args)))))
        `(let ((it (progn ,@body)))
-          (if (,',expr it)
+          (if (,',fun it)
             (apply #'error ,error-message ,format-args)
             it)))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
