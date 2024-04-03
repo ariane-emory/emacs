@@ -31,6 +31,7 @@
 (def (fib 1) 1)
 (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
 (fib 4)
+(fib 10)
 (pd--print-table)
 (def (double n) (+ n n))
 (def (square y) (* y y))

@@ -123,13 +123,15 @@
                (*match-pattern--kleene-tag* nil)
                (*match-pattern--anything-tag* 'anything)
                (*match-pattern--verbatim-element?* nil)
-               (*match-pattern--capture-element?*
-                 (lambda (elem)
-                   (if (> *pd--match-count* 1)
-                     (symbolp elem)
-                     (setq *pd--match-count*
-                       (1+ *pd--match-count*))
-                     nil)))
+               (*match-pattern--verbose* t)
+               (*match-pattern--capture-element?* 'symbolp)
+               ;; (*match-pattern--capture-element?*
+               ;;   (lambda (elem)
+               ;;     (if (> *pd--match-count* 1)
+               ;;       (symbolp elem)
+               ;;       (setq *pd--match-count*
+               ;;         (1+ *pd--match-count*))
+               ;;       nil)))
                (*match-pattern--get-capture-symbol-fun* (lambda (e) e))
                (*match-pattern--get-capture-tag-fun* (lambda (e) 'anything))
                (*match-pattern--capture-can-be-predicate* nil)
@@ -160,20 +162,20 @@ because we're gong to be stshing stuff in their symbol properties."
     (error "MAKE: Symbol must be a symbol, but got '%s." symbol))
   `(lambda (&rest args)
      "Pattern call dispatch hander function to call into the pattern group SYMBOL with ARGs."
-     (let ((the-symbol ',symbol))
-       (PD--PRINT-DIVIDER)
-       (pd--print "MAKE: Doing dispatch for '%s..." ',symbol)
-       (with-indentation
-         (let* ( (group-symbol (get ',symbol :PD-GROUP))
-                 (group (pd--get-group group-symbol))
-                 (group-rows (cdr group))
-                 (call-pattern (cons ',symbol args)))
-           (pd--print "MAKE: Looked up group for '%s and found:" ',symbol)
-           (pd--print-group group)
-           (pd--eval-match-result
-             (pd--match-call-pattern-in-group
-               call-pattern group-rows)))))))
-            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     (PD--PRINT-DIVIDER)
+     (pd--print "MAKE: Doing dispatch for '%s..." ',symbol)
+     (with-indentation
+       (let* ( (group-symbol (get ',symbol :PD-GROUP))
+               (group (pd--get-group group-symbol))
+               (group-rows (cdr group))
+               (call-pattern args))
+         (pd--print "MAKE: Looked up group for '%s and found:" ',symbol)
+         (PD--PRINT-DIVIDER)
+         (pd--print-group group)
+         (pd--eval-match-result
+           (pd--match-call-pattern-in-group
+             call-pattern group-rows))))))
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun pd--reset ()
