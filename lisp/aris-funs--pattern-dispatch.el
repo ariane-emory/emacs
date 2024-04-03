@@ -128,7 +128,7 @@
                (*match-pattern--verbose* t)
                )
           (pd--print "Trying pattern '%s on target '%s..." pattern call-pattern)
-          (let ((match-result (match-pattern pattern call-pattern)))
+          (let ((match-result (match pattern call-pattern)))
             (when match-result
               (throw 'matched
                 (setq result (cons match-result (cdr pattern-case)))))))))

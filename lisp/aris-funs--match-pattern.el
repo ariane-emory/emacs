@@ -102,7 +102,7 @@ verbatim element."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun aris-match-pattern--match-pattern (pattern target)
+(defun aris-match-pattern--match (pattern target)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Match a PATTERN list against a TARGET list.
 
@@ -110,18 +110,18 @@ This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of
 Intelligence' but with several improvements.
 
 Examples:
-  (`aris-match-pattern--match-pattern' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`aris-match-pattern--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
 
-  (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`aris-match-pattern--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
   (setq `*match-pattern--use-dotted-pairs-in-result*' nil)
 
-  (`aris-match-pattern--match-pattern' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`aris-match-pattern--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`aris-match-pattern--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ( (original-indent *with-messages--indent*)
          ;; (*with-messages--indent-char* ?\ )
@@ -357,7 +357,7 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'match-pattern 'aris-match-pattern--match-pattern)
+(defalias 'match 'aris-match-pattern--match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -367,18 +367,18 @@ Examples:
 (when nil
   (setq *match-pattern--use-dotted-pairs-in-result* t)
 
-  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (aris-match-pattern--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (aris-match-pattern--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ;; ⇒ t
 
   (setq *match-pattern--use-dotted-pairs-in-result* nil)
 
-  (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (aris-match-pattern--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (aris-match-pattern--match-pattern '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (aris-match-pattern--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ;; ⇒ t
   )
 
