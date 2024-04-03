@@ -2,6 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'cl-lib)
+(require 'aris-funs--alist-funs)
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,4 +31,15 @@
        (*match-pattern2--merge-duplicate-alist-keys* nil))
   (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
+(let ( (*match-pattern2--verbose* t)
+       (*match-pattern2--merge-duplicate-alist-keys* t))
+  (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
+(aris-add-dots-to-alist
+  (aris-merge-duplicate-alist-keys
+    '( (a . 1)
+       (a . 2)
+       (a . 3)
+       (a . 4)
+       (a . 5)
+       (b . 8))))

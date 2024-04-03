@@ -343,9 +343,10 @@ Examples:
 		              t
 		              (print "Extracted match result %s." match-result)
 		              (let ((match-result
-			                    (if *match-pattern2--merge-duplicate-alist-keys*
-			                      (nreverse (aris-merge-duplicate-alist-keys match-result))
-			                      match-result)))
+			                    (nreverse
+                            (if *match-pattern2--merge-duplicate-alist-keys*
+			                        (aris-merge-duplicate-alist-keys match-result)
+			                        match-result))))
 		                (print "Post-merge match result %s." match-result)
 		                (if *match-pattern2--use-dotted-pairs-in-result*
 		                  (aris-add-dots-to-alist match-result)
