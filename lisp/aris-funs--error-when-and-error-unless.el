@@ -57,16 +57,35 @@ Unacceptable case:
   "
   (unless format-args-and-body
     (error "error-when: No body provided."))
-  (if (not (string-is-format-string-p error-message))
-    (let ((body `(progn ,@format-args-and-body)))
-      `(let ((it ,body))
-         (when ,body
-           (error ,error-message))))
-    (let ( (body `(progn ,@(cdr format-args-and-body)))
-           (format-args `(list ,@(cadar format-args-and-body))))
-      `(let ((it ,body))
-         (when it
-           (apply #'error ,error-message ,format-args))))))
+
+  (let* ( (string-is-format-string (string-is-format-string-p error-message))
+          (body
+            `(progn 
+               ,@(if string-is-format-string
+                   (cdr format-args-and-body)
+                   format-args-and-body)))
+          (format-args
+            (when string-is-format-string
+              `(list ,@(cadar format-args-and-body)))))
+    `(let ((it ,body))
+       (when it
+         (apply #'error ,error-message ,format-args))
+       )))
+
+(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+
+(error-when "This should NOT raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
+
+;; (if (not (string-is-format-string-p error-message))
+;;   (let ((body `(progn ,@format-args-and-body)))
+;;     `(let ((it ,body))
+;;        (when ,body
+;;          (error ,error-message))))
+;;   (let ( (body `(progn ,@(cdr format-args-and-body)))
+;;          (format-args `(list ,@(cadar format-args-and-body))))
+;;     `(let ((it ,body))
+;;        (when it
+;;          (apply #'error ,error-message ,format-args))))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
