@@ -101,6 +101,22 @@ See `error-when' for caveats about the use of format speciiers."
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro error-unless (error-message &rest format-args-and-body)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
+;; signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
+
+;; See `error-when' for caveats about the use of format speciiers."
+;;   (let* ( (string-is-format-string (string-is-format-string-p error-message))
+;;           (body (if string-is-format-string
+;;                   (cdr format-args-and-body)
+;;                   format-args-and-body))
+;;           (format-args (when string-is-format-string (car format-args-and-body))))
+;;     `(error-when ,error-message ,format-args (not (progn ,@body)))))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (error-when "This should raise an error because condition is non-nil: %s %s %s"
