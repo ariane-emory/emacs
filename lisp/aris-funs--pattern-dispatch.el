@@ -216,7 +216,7 @@ because we're gong to be stshing stuff in their symbol properties."
            ;;(debug)
            (PD--PRINT-DIVIDER ?\#)
            (pd--print "DEF:  Defining pattern '%s in group '%s."
-             ',full-pattern-including-group-symbol ',group-symbol)
+             ',pattern-without-group-symbol ',group-symbol)
            (pd--bind ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
            (let* ( (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body)))
@@ -228,7 +228,7 @@ because we're gong to be stshing stuff in their symbol properties."
                  (PD--PRINT-DIVIDER)
                  (pd--print-group group-alist))
                (let* ( (existing-pattern-case
-                         (assoc ',full-pattern-including-group-symbol (cdr group-alist))))
+                         (assoc ',pattern-without-group-symbol (cdr group-alist))))
                  (when existing-pattern-case
                    (pd--print "DEF:  Found existing-pattern-case '%s in group '%s."
                      existing-pattern-case group-alist)
