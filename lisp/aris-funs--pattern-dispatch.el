@@ -206,37 +206,37 @@ because we're gong to be stshing stuff in their symbol properties."
         `(progn
            (pd--print "DEF: Defining variable '%s." ',symbol)
            (setq ,symbol ,value-expr)))
-      (let* ( (full-pattern-including-group pattern-or-symbol)
-              (pattern-without-group (cdr full-pattern-including-group))
-              (group (car full-pattern-including-group))
+      (let* ( (full-pattern-including-group-symbol pattern-or-symbol)
+              (pattern-without-group-symbol (cdr full-pattern-including-group-symbol))
+              (group (car full-pattern-including-group-symbol))
               (is-illegal-definition (not (proper-list-p def-body))))
         (error-when "DEF:  Function definition's body must a proper list."
           is-illegal-definition)
         `(progn
            ;;(debug)
            (PD--PRINT-DIVIDER ?\#)
-           (pd--print "DEF:  Defining pattern '%s in group '%s." ',full-pattern-including-group ',group)
+           (pd--print "DEF:  Defining pattern '%s in group '%s." ',full-pattern-including-group-symbol ',group)
            (pd--bind ',group) 
            (let ( (group (assoc ',group *pd--pattern-dispatch-table*))
-                  (new-pattern-case (list (cons ',pattern-without-group ',def-body))))
+                  (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body))))
              (if (not group)
-               (let ((group (cons ',(car full-pattern-including-group) new-pattern-case)))
+               (let ((group (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
                  (push group *pd--pattern-dispatch-table*)
                  (pd--print "DEF:  Added new group:")
                  (PD--PRINT-DIVIDER)
                  (pd--print-group group))
-               (let ((existing-pattern-case (assoc ',full-pattern-including-group (cdr group))))
+               (let ((existing-pattern-case (assoc ',full-pattern-including-group-symbol (cdr group))))
                  (when existing-pattern-case
                    (pd--print "DEF:  Found existing-pattern-case '%s in group '%s."
                      existing-pattern-case group)
                    ;; (or existing-pattern-case "<none>") group)
                    (error-when "DEF:  Pattern %s already defined in group '%s."
-                     '(',full-pattern-including-group ',group)
+                     '(',full-pattern-including-group-symbol ',group)
                      existing-pattern-case))
                  (setcdr group (nconc (cdr group) new-pattern-case))
                  (PD--PRINT-DIVIDER)
                  (pd--print
-                   "DEF:  Added pattern case for pattern '%s to group '%s:" ',full-pattern-including-group group)
+                   "DEF:  Added pattern case for pattern '%s to group '%s:" ',full-pattern-including-group-symbol group)
                  (pd--print-group group)))
              ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
              ;; *pd--pattern-dispatch-table*
