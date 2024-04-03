@@ -57,8 +57,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pd--print (first &rest rest)
-  `(when *pd--verbose*
-     
+  `(when *pd--verbose*     
      (funcall *pd--print-fun* ,first ,@rest)
      nil))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -117,8 +116,9 @@
     (catch 'matched
       (dolist (pattern-case group)
         (let ( (pattern (car pattern-case))
-               (*match-pattern--init-fun*
-                 (lambda () (setq *pd--match-count* 0)))
+               (*with-messages--indent-char* ?\_)
+               ;; (*match-pattern--init-fun*
+               ;;   (lambda () (setq *pd--match-count* 0)))
                (*match-pattern--merge-duplicate-alist-keys* nil)
                (*match-pattern--kleene-tag* nil)
                (*match-pattern--anything-tag* 'anything)
@@ -139,7 +139,6 @@
                (*match-pattern--use-dotted-pairs-in-result* nil))
           (pd--print "Trying pattern '%s on target '%s..." pattern call-pattern)
           (let ((match-result (match-pattern pattern call-pattern)))
-            ;; (pd--print "Match result reveived ist: %s" match-result)
             (when match-result
               (throw 'matched
                 (setq result (cons match-result (cdr pattern-case)))))))))
@@ -333,7 +332,7 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun pd--format-group-as-string (group &optional (indent 0) (indent-char ?\ ))
+(cl-defun pd--format-group-as-string (group &optional (indent 0) (indent-char ?\.))
   (string-join (pd--format-group-as-lines group indent indent-char) "\n"))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
