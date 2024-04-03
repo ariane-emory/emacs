@@ -63,7 +63,7 @@ last expression in `body' and printing a variant message afterwards."
                 (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (when end-message-fmt-args
-              (list `(apply #'message "%d%sDone %s%s."
+              (list `(apply #'message "%d %sDone %s%s."
                        *with-messages--indent* indent-string ',end-message-fmt-args))))
           (body
             (cond
@@ -77,7 +77,7 @@ last expression in `body' and printing a variant message afterwards."
             (*with-messages--indent* (1+ *with-messages--indent*)))
        (unwind-protect
          (progn
-           (message "%d%s%s" *with-messages--indent* indent-string ,start-message-string)
+           (message "%d %s%s" *with-messages--indent* indent-string ,start-message-string)
            ,@body)
          ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -94,8 +94,9 @@ last expression in `body'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
   (let ((indent-string
-          (format "%d%s" *with-messages--indent*
-            (make-string (* *with-messages--indent* *with-messages--indent-size*) *with-messages--indent-char*))))
+          (format "%d %s" *with-messages--indent*
+            (make-string (* *with-messages--indent* *with-messages--indent-size*)
+              *with-messages--indent-char*))))
     (apply 'message (concat indent-string fmt) rest)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
