@@ -9,8 +9,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
      `(defmacro ,symbol (error-message &rest format-args-and-body)
         ,docstring
+        (unless (stringp error-message)
+          (error "make-error-if-macro: ERROR-MESSAGE must be a string."))
         (unless format-args-and-body
-          (error "error-when: No body provided."))
+          (error "make-error-if-macro: No body provided."))
         (let* ( (string-is-format-string
                   (and (stringp error-message) (string-match-p "%[a-zA-Z]" error-message)))
                 (body
@@ -84,7 +86,7 @@ does not evaluate to nil. If it does not, signal an error with ERROR-MESSAGE
 and FORMAT-ARGS-AND-BODY.
 
 See `error-unless' for caveats about the use of format speciiers."
-    it)
+    it))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -114,7 +116,7 @@ See `error-unless' for caveats about the use of format speciiers."
     (error-when "This should raise an error because condition is non-nil."
       1 nil "THIS STRING IS TRUE")
     (error-when "This should NOT raise an error because condition is nil."
-      1 nil nil)))
+      1 nil nil))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
