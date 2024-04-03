@@ -18,11 +18,11 @@
 (pd--print-table)
 (message "Printing the table:")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (pd--get-group 'fib)
 (pd--print-group (pd--get-group 'fib))
 (pd--format-group-as-lines (pd--get-group 'fib))
 (pd--format-group-as-string (pd--get-group 'fib))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(aris-match-pattern2--match
-  '((? . v) (* . w) 4 5 (* . x) (even? . y)) '(77 1 2 3 4 5 66 7 9 22))
+(match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+
