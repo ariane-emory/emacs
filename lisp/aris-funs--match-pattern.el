@@ -19,37 +19,12 @@ Artificial Intelligence' but several improvements.")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *match-pattern--init-fun* nil
-  "The function `match-pattern' calls to initialize a new match."
-  :group 'match-pattern
-  :type 'function)
-
-(defcustom *match-pattern--merge-duplicate-alist-keys* t
-  "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
-  :group 'match-pattern
-  :type 'boolean)
-
-(defcustom *match-pattern--kleene-tag* '*
-  "The symbol used by `match-pattern' to represent a Kleene star, matching 0 or more times."
-  :group 'match-pattern
-  :type 'symbol)
-
 ;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
 (defcustom *match-pattern--anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
   "The symbol used by `match-pattern' to represent a wildcard, matching any single item in
 TARGET."
   :group 'match-pattern
   :type 'symbol)
-
-(defcustom *match-pattern--get-capture-symbol-fun* #'cdr
-  "The function used by `match-pattern' to extract the symbol from a capture."
-  :group 'match-pattern
-  :type 'function)
-
-(defcustom *match-pattern--get-capture-tag-fun* #'car
-  "The function used by `match-pattern' to extract the 'tag' from a capture element."
-  :group 'match-pattern
-  :type 'function)
 
 (defcustom *match-pattern--capture-can-be-predicate* t
   "Whether a capture's 'tag' in th PATTERN argument to `match-pattern' is
@@ -63,10 +38,25 @@ represents a capture. By default, true pairs are considered captures."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *match-pattern--verbatim-element?* nil 
-  "The function used by `match-pattern' to determine if a PATTERN element is a verbatim
-(non-capturing).  element. By default any element that isn't a capture element is a
-verbatim element."
+(defcustom *match-pattern--error-if-target-element-is-not-verbatim* t
+  "Whether `match-pattern' shoud signal an error (or merely fail to match) if a
+non-verbatim TARGET element is encountered. This setting only applies when
+*MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
+  :group 'match-pattern
+  :type 'boolean)
+
+(defcustom *match-pattern--get-capture-symbol-fun* #'cdr
+  "The function used by `match-pattern' to extract the symbol from a capture."
+  :group 'match-pattern
+  :type 'function)
+
+(defcustom *match-pattern--get-capture-tag-fun* #'car
+  "The function used by `match-pattern' to extract the 'tag' from a capture element."
+  :group 'match-pattern
+  :type 'function)
+
+(defcustom *match-pattern--init-fun* nil
+  "The function `match-pattern' calls to initialize a new match."
   :group 'match-pattern
   :type 'function)
 
@@ -77,25 +67,35 @@ element is an invalid element."
   :group 'match-pattern
   :type 'function)
 
+(defcustom *match-pattern--kleene-tag* '*
+  "The symbol used by `match-pattern' to represent a Kleene star, matching 0 or more times."
+  :group 'match-pattern
+  :type 'symbol)
+
+(defcustom *match-pattern--merge-duplicate-alist-keys* t
+  "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
+  :group 'match-pattern
+  :type 'boolean)
+
 (defcustom *match-pattern--target-elements-must-be-verbatim* t
   "Whether the elements of  the TARGET argument to `match-pattern' must be verbatim elements."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *match-pattern--signal-error-if-target-elements-is-not-verbatim* t
-  "Whether `match-pattern' shoud signal an error (or merely fail to match) if a
-non-verbatim TARGET element is encountered. This setting only applies when
-*MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
+(defcustom *match-pattern--use-dotted-pairs-in-result* t
+  "Whether `match-pattern' should use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
+
+(defcustom *match-pattern--verbatim-element?* nil 
+  "The function used by `match-pattern' to determine if a PATTERN element is a verbatim
+(non-capturing).  element. By default any element that isn't a capture element is a
+verbatim element."
+  :group 'match-pattern
+  :type 'function)
 
 (defcustom *match-pattern--verbose* nil
   "Whether `match-pattern' should print verbose messages."
-  :group 'match-pattern
-  :type 'boolean)
-
-(defcustom *match-pattern--use-dotted-pairs-in-result* t
-  "Whether `match-pattern' should use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -281,7 +281,7 @@ Examples:
                              (let ((complaint
                                      (format "target-head %s is not a verbatim element."
                                        target-head)))
-                               (when *match-pattern--signal-error-if-target-elements-is-not-verbatim*
+                               (when *match-pattern--error-if-target-element-is-not-verbatim*
                                  (error complaint)
                                  (print complaint)
                                  (fail-to-match)))))
@@ -364,7 +364,7 @@ Examples:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Just a quick test that should match successfully with the default configuration:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when t
+(when nil
   (setq *match-pattern--use-dotted-pairs-in-result* t)
 
   (aris-match-pattern--match-pattern '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
