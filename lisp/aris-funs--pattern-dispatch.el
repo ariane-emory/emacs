@@ -207,8 +207,8 @@ because we're gong to be stshing stuff in their symbol properties."
            (pd--print "DEF: Defining variable '%s." ',symbol)
            (setq ,symbol ,value-expr)))
       (let* ( (full-pattern-including-group-symbol pattern-or-symbol)
-              (pattern-without-group-symbol (cdr full-pattern-including-group-symbol))
               (group (car full-pattern-including-group-symbol))
+              (pattern-without-group-symbol (cdr full-pattern-including-group-symbol))
               (is-illegal-definition (not (proper-list-p def-body))))
         (error-when "DEF:  Function definition's body must a proper list."
           is-illegal-definition)
