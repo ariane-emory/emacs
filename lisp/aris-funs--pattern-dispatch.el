@@ -216,7 +216,8 @@ because we're gong to be stshing stuff in their symbol properties."
            ;;(debug)
            (PD--PRINT-DIVIDER ?\#)
            (pd--print "DEF:  Defining pattern '%s in group '%s." ',full-pattern-including-group-symbol ',group)
-           (pd--bind ',group) 
+           (pd--bind ',group)
+           ;; Look up existing group and add new case to it if it exists.
            (let ( (group (assoc ',group *pd--pattern-dispatch-table*))
                   (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body))))
              (if (not group)
