@@ -322,7 +322,7 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun pd--format-group-as-string (group &optional (indent 0) (indent-char ?\.))
+(cl-defun pd--format-group-as-string (group &optional (indent 0) (indent-char ?\ ))
   (string-join (pd--format-group-as-lines group indent indent-char) "\n"))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -374,3 +374,4 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--pattern-dispatch)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+j
