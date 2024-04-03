@@ -189,7 +189,7 @@ because we're gong to be stshing stuff in their symbol properties."
         (pd--print "Props before: %s" (symbol-plist group-symbol))
         (put group-symbol :PD-GROUP nil)
         (put group-symbol :PD-COUNT nil)
-        (pd--print "Props after: %s" (symbol-plist group-symbol)))))
+        (pd--print "Props after:  %s" (symbol-plist group-symbol)))))
   (setq *pd--pattern-dispatch-table* nil)
   (PD--PRINT-DIVIDER))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -245,6 +245,7 @@ because we're gong to be stshing stuff in their symbol properties."
                  (pd--print-group group)))
              ;; (pd--print (string-trim (pp-to-string *pd--pattern-dispatch-table*)))
              ;; *pd--pattern-dispatch-table*
+             (PD--PRINT-DIVIDER ?\#)
              nil))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
