@@ -72,10 +72,12 @@ Unacceptable case:
          (apply #'error ,error-message ,format-args))
        )))
 
-(error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+(when nil
+  (error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
 
-(error-when "This should NOT raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
+  (error-when "This should NOT raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
 
+  )
 ;; (if (not (string-is-format-string-p error-message))
 ;;   (let ((body `(progn ,@format-args-and-body)))
 ;;     `(let ((it ,body))
