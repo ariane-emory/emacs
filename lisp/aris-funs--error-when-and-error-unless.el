@@ -59,10 +59,14 @@ Unacceptable case:
     (error "error-when: No body provided."))
   (if (not (string-is-format-string-p error-message))
     (let ((body `(progn ,@format-args-and-body)))
-      `(let ((it ,body)) (when ,body (error ,error-message))))
+      `(let ((it ,body))
+         (when ,body
+           (error ,error-message))))
     (let ( (body `(progn ,@(cdr format-args-and-body)))
            (format-args `(list ,@(cadar format-args-and-body))))
-      `(let ((it ,body)) (when it (apply #'error ,error-message ,format-args))))))
+      `(let ((it ,body))
+         (when it
+           (apply #'error ,error-message ,format-args))))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
