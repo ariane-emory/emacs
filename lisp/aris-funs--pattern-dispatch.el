@@ -226,22 +226,22 @@ because we're gong to be stshing stuff in their symbol properties."
            (pd--print "DEF:  Defining pattern '%s in group '%s." ',pattern ',group)
            (pd--bind ',group) 
            (let ( (group (assoc ',group *pd--pattern-dispatch-table*))
-                  (pattern-case (list (cons ',pattern ',def-body))))
+                  (new-pattern-case (list (cons ',pattern ',def-body))))
              (if (not group)
-               (let ((group (cons ',(car pattern) pattern-case)))
+               (let ((group (cons ',(car pattern) new-pattern-case)))
                  (push group *pd--pattern-dispatch-table*)
                  (pd--print "DEF:  Added new group:")
                  (PD--PRINT-DIVIDER)
                  (pd--print-group group))
-               (let ((pattern-case (assoc ',pattern (cdr group))))
-                 (when pattern-case
-                   (pd--print "DEF:  Found pattern-case '%s in group '%s."
-                     pattern-case group)
-                   ;; (or pattern-case "<none>") group)
+               (let ((existing-pattern-case (assoc ',pattern (cdr group))))
+                 (when existing-pattern-case
+                   (pd--print "DEF:  Found existing-pattern-case '%s in group '%s."
+                     existing-pattern-case group)
+                   ;; (or existing-pattern-case "<none>") group)
                    (error-when "DEF:  Pattern %s already defined in group '%s."
                      '(',pattern ',group)
-                     pattern-case))
-                 (setcdr group (nconc (cdr group) pattern-case))
+                     existing-pattern-case))
+                 (setcdr group (nconc (cdr group) new-pattern-case))
                  (PD--PRINT-DIVIDER)
                  (pd--print
                    "DEF:  Added pattern case for pattern '%s to group '%s:" ',pattern group)
