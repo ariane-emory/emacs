@@ -30,6 +30,8 @@
 (def (fib 0) 0)
 (def (fib 1) 1)
 (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+(fib 4)
+(pd--print-table)
 (def (double n) (+ n n))
 (def (square y) (* y y))
 ;; (def result
@@ -41,7 +43,6 @@
 (funcall #'square 8)
 *pd--pattern-dispatch-table*
 (message "Printing the table:")
-(pd--print-table)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (pd--get-group 'fib)

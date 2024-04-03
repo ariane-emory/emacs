@@ -226,7 +226,7 @@ because we're gong to be stshing stuff in their symbol properties."
            (pd--print "DEF:  Defining pattern '%s in group '%s." ',pattern ',group)
            (pd--bind ',group) 
            (let ( (group (assoc ',group *pd--pattern-dispatch-table*))
-                  (new-pattern-case (list (cons ',pattern ',def-body))))
+                  (new-pattern-case (list (cons ',(cdr pattern) ',def-body))))
              (if (not group)
                (let ((group (cons ',(car pattern) new-pattern-case)))
                  (push group *pd--pattern-dispatch-table*)
