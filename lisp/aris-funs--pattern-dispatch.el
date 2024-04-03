@@ -217,8 +217,8 @@ because we're gong to be stshing stuff in their symbol properties."
            (setq ,symbol ,value-expr)))
       (let* ( (pattern pattern-or-symbol)
               (group (car pattern))
-              (is-illegal-definition (not (or (proper-list-p def-body) (atom def-body)))))
-        (error-when "DEF:  Function definition's body must be either an atom or a proper list."
+              (is-illegal-definition (not (proper-list-p def-body))))
+        (error-when "DEF:  Function definition's body must a proper list."
           is-illegal-definition)
         `(progn
            ;;(debug)
@@ -341,7 +341,7 @@ because we're gong to be stshing stuff in their symbol properties."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let (result)
     (dolist (group *pd--pattern-dispatch-table*)
-      (dolist (line (format-group-as-lines group))
+      (dolist (line (pd--format-group-as-lines group))
         (push (format "%s" line) result)))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
