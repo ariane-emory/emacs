@@ -219,8 +219,8 @@ because we're gong to be stshing stuff in their symbol properties."
              ',full-pattern-including-group-symbol ',group-symbol)
            (pd--bind ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
-           (let ( (group-alist (assoc ',group-symbol *pd--pattern-dispatch-table*))
-                  (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body))))
+           (let* ( (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body)))
+                   (group-alist (assoc ',group-symbol *pd--pattern-dispatch-table*)))
              (if (not group-alist)
                (let ((group-alist
                        (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
