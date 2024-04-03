@@ -207,7 +207,7 @@ because we're gong to be stshing stuff in their symbol properties."
            (pd--print "DEF: Defining variable '%s." ',symbol)
            (setq ,symbol ,value-expr)))
       (let* ( (full-pattern-including-group-symbol pattern-or-symbol)
-              (group (car full-pattern-including-group-symbol))
+              (group-symbol (car full-pattern-including-group-symbol))
               (pattern-without-group-symbol (cdr full-pattern-including-group-symbol))
               (is-illegal-definition (not (proper-list-p def-body))))
         (error-when "DEF:  Function definition's body must a proper list."
@@ -215,10 +215,10 @@ because we're gong to be stshing stuff in their symbol properties."
         `(progn
            ;;(debug)
            (PD--PRINT-DIVIDER ?\#)
-           (pd--print "DEF:  Defining pattern '%s in group '%s." ',full-pattern-including-group-symbol ',group)
-           (pd--bind ',group)
+           (pd--print "DEF:  Defining pattern '%s in group '%s." ',full-pattern-including-group-symbol ',group-symbol)
+           (pd--bind ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
-           (let ( (group (assoc ',group *pd--pattern-dispatch-table*))
+           (let ( (group (assoc ',group-symbol *pd--pattern-dispatch-table*))
                   (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body))))
              (if (not group)
                (let ((group (cons ',(car full-pattern-including-group-symbol) new-pattern-case)))
@@ -232,7 +232,7 @@ because we're gong to be stshing stuff in their symbol properties."
                      existing-pattern-case group)
                    ;; (or existing-pattern-case "<none>") group)
                    (error-when "DEF:  Pattern %s already defined in group '%s."
-                     '(',full-pattern-including-group-symbol ',group)
+                     '(',full-pattern-including-group-symbol ',group-symbol)
                      existing-pattern-case))
                  (setcdr group (nconc (cdr group) new-pattern-case))
                  (PD--PRINT-DIVIDER)
