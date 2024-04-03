@@ -60,10 +60,6 @@
        (fib
          (- n 2)))))
 
-
-
-
-
 (pd--print-group (pd--get-group 'fib))
 (pd--format-group-as-lines (pd--get-group 'fib))
 (pd--format-group-as-string (pd--get-group 'fib))
