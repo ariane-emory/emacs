@@ -337,21 +337,20 @@ Examples:
             (print "Match result is %s." match-result)
 	          (when (car match-result)
 	            (let ((match-result (cdr match-result)))
-	              ;;(print "Cdr of match result is %s." match-result)
 	              (if (not match-result)
 		              ;; If the match succeeded but there were no captures, just return t:
 		              t
 		              (print "Extracted match result %s." match-result)
-		              (let ((match-result
-			                    (nreverse
-                            (if *match-pattern2--merge-duplicate-alist-keys*
+                  (let ((match-result (nreverse match-result)))
+		                (let ((match-result
+			                      (if *match-pattern2--merge-duplicate-alist-keys*
 			                        (aris-merge-duplicate-alist-keys match-result)
-			                        match-result))))
-		                (print "Post-merge match result %s." match-result)
-		                (if *match-pattern2--use-dotted-pairs-in-result*
-		                  (aris-add-dots-to-alist match-result)
-		                  match-result)))))))))))
-                      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			                        match-result)))
+		                  (print "Post-merge match result %s." match-result)
+		                  (if *match-pattern2--use-dotted-pairs-in-result*
+		                    (aris-add-dots-to-alist match-result)
+		                    match-result))))))))))))
+                             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
