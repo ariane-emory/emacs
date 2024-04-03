@@ -3,50 +3,35 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun string-is-format-string-p (string)
+(cl-macrolet
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "True when STRING is a string and contains format specifiers."
-  (and (stringp string) (string-match-p "%[a-zA-Z]" string)))
+  ((make-error-if-macro (symbol docstring expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     `(defmacro ,symbol (error-message &rest format-args-and-body)
+        ,docstring
+        (unless format-args-and-body
+          (error "error-when: No body provided."))
+        (let* ( (string-is-format-string
+                  (and (stringp error-message) (string-match-p "%[a-zA-Z]" error-message)))
+                (body
+                  (if string-is-format-string
+                    (cdr format-args-and-body)
+                    format-args-and-body))
+                (format-args
+                  (when string-is-format-string
+                    (let ((unquoted-format-args (cadar format-args-and-body)))
+                      `(list ,@unquoted-format-args)))))
+          `(let ((it (progn ,@body)))
+             (if ,',expr
+               (apply #'error ,error-message ,format-args)
+               it))))))
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-macrolet ((make-error-if-macro (symbol docstring expr)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                `(defmacro ,symbol (error-message &rest format-args-and-body)
-                   ,docstring
-                   (unless format-args-and-body
-                     (error "error-when: No body provided."))
-                   (let* ( (string-is-format-string
-                             (string-is-format-string-p error-message))
-                           (body
-                             (if string-is-format-string
-                               (cdr format-args-and-body)
-                               format-args-and-body))
-                           (format-args
-                             (when string-is-format-string
-                               (let ((unquoted-format-args (cadar format-args-and-body)))
-                                 `(list ,@unquoted-format-args)))))
-                     `(let ((it (progn ,@body)))
-                        (if ,',expr
-                          (apply #'error ,error-message ,format-args)
-                          it))))))
-            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (make-error-if-macro error-unless   "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (make-error-if-macro error-unless
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
 signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
 
 When ERROR-MESSAGE is a format string, the car of FORMAT-ARGS-AND-BODY is
@@ -86,43 +71,51 @@ Acceptable cases:
 Unacceptable case:
   (error-when
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
-    (not nil))
-"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (not nil))"
     (not it))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (when nil
-    (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
-    (error-unless "This should raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
-    (error-unless "This should NOT raise an error because condition is non-nil." 1 nil "THIS STRING IS TRUE")
-    (error-unless "This should raise an error because condition is nil." 1 nil nil)
-    )
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (make-error-if-macro error-when
-    "Signal an error unless the last expression in FORMAT-ARGS-AND-BODY evaluates
-to nil. Ifit is not, signal an error with ERROR-MESSAGE and
-FORMAT-ARGS-AND-BODY.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "Signal an error when the last expression in FORMAT-ARGS-AND-BODY
+does not evaluate to nil. If it does not, signal an error with ERROR-MESSAGE
+and FORMAT-ARGS-AND-BODY.
 
 See `error-unless' for caveats about the use of format speciiers."
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     it)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (when nil
-    (error-when "This should raise an error because condition is non-nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
-    (error-when "This should NOT raise an error because condition is nil: %s %s %s" '(it 8 (+ 2 3)) 1 nil nil)
-    (error-when "This should raise an error because condition is non-nil." 1 nil "THIS STRING IS TRUE")
-    (error-when "This should NOT raise an error because condition is nil." 1 nil nil)
-    ))
+    (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s"
+      '(it 8 (+ 2 3))
+      1 nil "THIS STRING IS TRUE")
+    (error-unless "This should raise an error because condition is nil: %s %s %s"
+      '(it 8 (+ 2 3))
+      1 nil nil)
+    (error-unless "This should NOT raise an error because condition is non-nil."
+      1 nil "THIS STRING IS TRUE")
+    (error-unless "This should raise an error because condition is nil."
+      1 nil nil))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (when nil
+    (error-when "This should raise an error because condition is non-nil: %s %s %s"
+      '(it 8 (+ 2 3))
+      1 nil "THIS STRING IS TRUE")
+    (error-when "This should NOT raise an error because condition is nil: %s %s %s"
+      '(it 8 (+ 2 3))
+      1 nil nil)
+    (error-when "This should raise an error because condition is non-nil."
+      1 nil "THIS STRING IS TRUE")
+    (error-when "This should NOT raise an error because condition is nil."
+      1 nil nil)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -130,7 +123,7 @@ See `error-unless' for caveats about the use of format speciiers."
   '(("(\\(error-when\\_>\\)" . font-lock-warning-face)))
 (font-lock-add-keywords 'emacs-lisp-mode
   '(("(\\(error-unless\\_>\\)" . font-lock-warning-face)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
