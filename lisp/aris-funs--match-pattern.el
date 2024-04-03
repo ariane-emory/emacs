@@ -119,8 +119,9 @@ Examples:
   (`aris-match-pattern--match-pattern' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ( (original-indent *with-messages--indent*)
-         (*with-messages--indent-char* ?\ )
-         (*with-messages--indent-size* 3))
+         ;; (*with-messages--indent-char* ?\ )
+         ;; (*with-messages--indent-size* 3)
+         )
     (cl-letf (((symbol-function 'print) (if *match-pattern--verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
       (let ((*with-messages--indent* (1+ *with-messages--indent*)))

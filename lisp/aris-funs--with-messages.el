@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *with-messages--indent-char* ?\   ;; DO NOT NEGLECT THE SPACE!
+(defcustom *with-messages--indent-char* ?\,  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
@@ -93,7 +93,8 @@ last expression in `body'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
   (let ((indent-string
-          (make-string (* *with-messages--indent* *with-messages--indent-size*) *with-messages--indent-char*)))
+          (format "%d%s" *with-messages--indent*
+            (make-string (* *with-messages--indent* *with-messages--indent-size*) *with-messages--indent-char*))))
     (apply 'message (concat indent-string fmt) rest)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
