@@ -6,18 +6,27 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(pd--reset)
-(def (fib 0) 0)
-(def (fib 1) 1)
-(def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-(fib 4)
-(fib 10)
-(def (double n) (+ n n))
-(def (square y) (* y y))
-(square 7)
-(funcall #'square 8)
-(pd--print-table)
-(message "Printing the table:")
+(progn
+  (pd--reset)
+  (def (fib 0) 0)
+  (def (fib 1) 1)
+  (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+  (def (double n) (+ n n))
+  (def (square y) (* y y))
+  
+  (error-unless "You broke (fib 4): %s" '(it) (fib 4))
+  (error-unless "You broke (fib 4): %s" '(it) (fib 4))
+  (fib 10)
+
+  (double 9)
+  (square 7)
+  (message "Printing the table:")
+  (pd--print-table))
+
+;; finish this test
+;; fix error-unless returned
+;; fix finding existing pattern case
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)
 (pd--print-group (pd--get-group 'fib))
@@ -25,21 +34,25 @@
 (pd--format-group-as-string (pd--get-group 'fib))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
-(let ( (*match-pattern2--verbose* t)
-       (*match-pattern2--merge-duplicate-alist-keys* nil))
-  (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when nil
+  (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
-(let ( (*match-pattern2--verbose* t)
-       (*match-pattern2--merge-duplicate-alist-keys* t))
-  (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+  (let ( (*match-pattern2--verbose* t)
+         (*match-pattern2--merge-duplicate-alist-keys* nil))
+    (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
-(aris-add-dots-to-alist
-  (aris-merge-duplicate-alist-keys
-    '( (a . 1)
-       (a . 2)
-       (a . 3)
-       (a . 4)
-       (a . 5)
-       (b . 8))))
+  (let ( (*match-pattern2--verbose* t)
+         (*match-pattern2--merge-duplicate-alist-keys* t))
+    (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+
+  (aris-add-dots-to-alist
+    (aris-merge-duplicate-alist-keys
+      '( (a . 1)
+         (a . 2)
+         (a . 3)
+         (a . 4)
+         (a . 5)
+         (b . 8))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
