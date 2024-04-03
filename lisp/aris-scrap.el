@@ -14,12 +14,10 @@
   (def (double n) (+ n n))
   (def (square y) (* y y))
   
-  (error-unless "You broke (fib 4): %s" '(it) (fib 4))
-  (error-unless "You broke (fib 4): %s" '(it) (fib 4))
-  (fib 10)
-
-  (double 9)
-  (square 7)
+  (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
+  (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
+  (error-unless "You broke (double 9): %x" '(it) (double 9))
+  (error-unless "You broke (square 7): %x" '(it) (square 7))
   (message "Printing the table:")
   (pd--print-table))
 
