@@ -11,7 +11,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro no-name (symbol expr docstring)
+(defmacro no-name (symbol docstring expr)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(defmacro ,symbol (error-message &rest format-args-and-body)
      ,docstring
@@ -33,9 +33,6 @@
             it)))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(no-name this it "foo")
-
-
 
 
 
@@ -49,9 +46,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(no-name error-unless   (not it)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
+(no-name error-unless   "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
 signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
 
 When ERROR-MESSAGE is a format string, the car of FORMAT-ARGS-AND-BODY is
@@ -92,7 +87,9 @@ Unacceptable case:
   (error-when
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
     (not nil))
-")
+"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (not it))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -107,14 +104,14 @@ Unacceptable case:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro error-when (error-message &rest format-args-and-body)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(no-name error-when
   "Signal an error unless the last expression in FORMAT-ARGS-AND-BODY evaluates
 to nil. Ifit is not, signal an error with ERROR-MESSAGE and
 FORMAT-ARGS-AND-BODY.
 
 See `error-unless' for caveats about the use of format speciiers."
-  (no-name it))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  it)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
