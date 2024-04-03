@@ -18,7 +18,7 @@
   :group 'with-messages
   :type 'integer)
 
-(defcustom *with-messages--depth-indicator t
+(defcustom *with-messages--depth-indicator* t
   "Whether to display the current indentation level in `with-messages'."
   :group 'with-messages
   :type 'boolean)
@@ -107,10 +107,14 @@ last expression in `body'."
 (defun indent-string ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a string of spaces corresponding to the current indentation level."
-  (format "[% 2d] %s" *with-messages--indent*
-    (make-string (* *with-messages--indent* *with-messages--indent-size*)
-      *with-messages--indent-char*)))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let ((indent-string
+          (make-string
+            (* *with-messages--indent* *with-messages--indent-size*)
+            *with-messages--indent-char*))
+         (depth-indicator (if *with-messages--depth-indicator*
+                            (format "[% 2d] " *with-messages--indent*) "")))
+    (format "%s%s" depth-indicator indent-string)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
