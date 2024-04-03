@@ -64,8 +64,8 @@ last expression in `body' and printing a variant message afterwards."
                 (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (when end-message-fmt-args
-              (list `(apply #'message "[% 2d] %sDone %s%s."
-                       *with-messages--indent* indent-string ',end-message-fmt-args))))
+              (list `(apply #'message "%sDone %s%s."
+                       indent-string ',end-message-fmt-args))))
           (body
             (cond
               (is-double-message (cddr args))
@@ -75,8 +75,7 @@ last expression in `body' and printing a variant message afterwards."
             (*with-messages--indent* (1+ *with-messages--indent*)))
        (unwind-protect
          (progn
-           (message "[% 2d] %s%s" *with-messages--indent* indent-string
-             ,start-message-string)
+           (message "%s%s" indent-string ,start-message-string)
            ,@body)
          ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -95,7 +94,7 @@ last expression in `body'."
 (defun indented-message (fmt &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a message with the current indentation level."
-  (apply 'message (format "[% 2d] %s%s" *with-messages--indent* (indent-string) fmt) rest))
+  (apply 'message (format "%s%s" (indent-string) fmt) rest))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -103,9 +102,10 @@ last expression in `body'."
 (defun indent-string ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a string of spaces corresponding to the current indentation level."
-  (make-string (* *with-messages--indent* *with-messages--indent-size*)
-    *with-messages--indent-char*))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (format "[% 2d] %s" *with-messages--indent*
+    (make-string (* *with-messages--indent* *with-messages--indent-size*)
+      *with-messages--indent-char*)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
