@@ -25,12 +25,13 @@
   (message "Printing the table:")
   (pd--print-table))
 
-
-;; fix parrern match verbosity?
-;; finish tidying pd def
-;; finish this test
-;;   fix error-unless return
-;; fix finding existing pattern case
+;; todo:
+;;   fix pattern match verbosity?
+;;   finish tidying pd def
+;;   finish this test
+;;     fix error-unless return
+;;   fix finding existing pattern case
+;;   continue match2
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)

@@ -124,9 +124,7 @@
                (*match-pattern--merge-duplicate-alist-keys* nil)
                (*match-pattern--target-elements-must-be-verbatim* nil)
                (*match-pattern--use-dotted-pairs-in-result* nil)
-               (*match-pattern--verbatim-element?* nil)
-               (*match-pattern--verbose* t)
-               )
+               (*match-pattern--verbatim-element?* nil))
           (pd--print "Trying pattern '%s on target '%s..." pattern call-pattern)
           (let ((match-result (match pattern call-pattern)))
             (when match-result

@@ -94,7 +94,7 @@ verbatim element."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--verbose* nil
+(defcustom *match-pattern2--verbose* t
   "Whether `match-pattern2' should print verbose messages."
   :group 'match-pattern2
   :type 'boolean)
