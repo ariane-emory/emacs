@@ -44,6 +44,7 @@
   '(tool-bar-mode nil)
   '(tooltip-mode nil)
   '(truncate-lines t)
+  '(use-short-answers t)
   '(word-wrap t))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.

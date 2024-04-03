@@ -53,43 +53,40 @@
 ;; bind-keys:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
+  ;; Ignore there:
   ("C-x C-<left>" . ignore)
   ("C-x C-<right>" . ignore)
-  ("C-x C-n" . aris-eval-buffer)
+  ("C-x C-<up>" . ignore)
+  ("C-x C-<down>" . ignore)
 
+  ;; Ignore these with a message:
   ("C-c C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
   ("C-x C-<escape>" . (lambda () (interactive) (message "Cancelled.")))
 
-  ;; Thumb keys:
+  ;; Delete previous word:
   ("C-<backspace>" . aris-delete-previous-word)
-  ("s-<backspace>" . macrostep-mode)
+
+  ;; Insert macro expansion:
+  ("C-s-z" .
+    (lambda ()
+      (interactive)
+      (pp-macroexpand-last-sexp t) (insert "\n") (message "Inserted macro.")))
   
-  ("C-s-z" . (lambda () (interactive) (pp-macroexpand-last-sexp t) (insert "\n") (message "Inserted macro.")))
   ;; ("C-x C-e" . eval-last-sexp) ;; Default, don't actually bind.
   ("C-c C-<backspace>" .
     (lambda ()
       (interactive)
-      (let ((old-lisp-indnt-offset lisp-indent-offset))
+      (let ((old-lisp-indent-offset lisp-indent-offset))
         (setq lisp-indent-offset 1)
         (unwind-protect
           (pp-eval-last-sexp t) (insert "\n") (message "Inserted sexp.")
-          (setq lisp-indent-offset old-lisp-indnt-offset)))))
+          (setq lisp-indent-offset old-lisp-indent-offset)))))
 
   ;; Join lines:
   ("C-j".  (lambda () (interactive) (join-line) (beginning-of-line-text)))
   ;; ("C-j" . join-line)
   ("M-j" . (lambda () (interactive) (aris-join-next-line) (end-of-line)))
   
-  ;; Find function at point in new tab:
-  ("C-c C-S-d" .
-    (lambda ()
-      "Find directly the function at point in a new tab."
-      (interactive)
-      (let ((symb (function-called-at-point)))
-        (when symb
-          (tab-bar-new-tab)
-          (find-function symb)))))
-
   ;; Find function at point in current window:
   ("C-c C-d" .
     (lambda ()
@@ -185,9 +182,9 @@
   ("C-/" . comment-or-uncomment-region)
 
   ;; Describe these:
+  ("s-<backspace>" . macrostep-mode)
   ("s-m" . macrostep-mode)
   ("M-m" . macrostep-mode)
-  ("C-c f c" . (lambda () (interactive) (byte-recompile-directory aris-lisp-dir 0)))
   ("C-c C-e" . ignore)
   ("M-\\" . ignore)
   ("S-<delete>" . ignore)
@@ -217,7 +214,8 @@
 
   ;; eval buffer:
   ("C-x C-z" . aris-eval-buffer)
-
+  ("C-x C-n" . aris-eval-buffer)
+  
   ;; Copy without unselecting:
   ("s-c" . aris-ns-copy-including-secondary-keep-selection)
 
@@ -245,10 +243,10 @@
   ("M-s-c" . aris-local-caps-lock-mode)
 
   ;; Swap windows... undecrided whether to keep this or the next one:
-  ("C-c w s s" . window-swap-states)
+  ;;("C-c w s s" . window-swap-states)
 
   ;; Swap split windows:
-  ("C-x C-<tab>" . aris-swap-buffers-in-windows)
+  ;; ("C-x C-<tab>" . aris-swap-buffers-in-windows)
 
   ;; Repeat last command:
   ("C-z" . repeat)
