@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *with-messages--indent-char* ?\,  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *with-messages--indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
@@ -38,6 +38,7 @@ This variable is not meant to be customized." )
 (defmacro with-messages (&rest args)
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body' and printing a variant message afterwards."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (1st-is-just-kw (eql :just (car args)))
           (is-double-message (and (not 1st-is-just-kw) (stringp (cadr args))))
           (message-string (if 1st-is-just-kw (cadr args) (car args)))
@@ -63,21 +64,19 @@ last expression in `body' and printing a variant message afterwards."
                 (list (downcase message-string-head) message-string-tail))))
           (end-message-expr
             (when end-message-fmt-args
-              (list `(apply #'message "%d %sDone %s%s."
+              (list `(apply #'message "[% 2d] %sDone %s%s."
                        *with-messages--indent* indent-string ',end-message-fmt-args))))
           (body
             (cond
               (is-double-message (cddr args))
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
-    `(let ((indent-string
-             (make-string
-               (* *with-messages--indent* *with-messages--indent-size*)
-               *with-messages--indent-char*))
+    `(let ( (indent-string (indent-string))
             (*with-messages--indent* (1+ *with-messages--indent*)))
        (unwind-protect
          (progn
-           (message "%d %s%s" *with-messages--indent* indent-string ,start-message-string)
+           (message "[% 2d] %s%s" *with-messages--indent* indent-string
+             ,start-message-string)
            ,@body)
          ,@end-message-expr))))
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,6 +84,7 @@ last expression in `body' and printing a variant message afterwards."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-message (&rest args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body'."
   `(with-messages :just ,@args))
@@ -93,16 +93,24 @@ last expression in `body'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indented-message (fmt &rest rest)
-  (let ((indent-string
-          (format "%d %s" *with-messages--indent*
-            (make-string (* *with-messages--indent* *with-messages--indent-size*)
-              *with-messages--indent-char*))))
-    (apply 'message (concat indent-string fmt) rest)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Print a message with the current indentation level."
+  (apply 'message (format "[% 2d] %s%s" *with-messages--indent* (indent-string) fmt) rest))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun indent-string ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return a string of spaces corresponding to the current indentation level."
+  (make-string (* *with-messages--indent* *with-messages--indent-size*)
+    *with-messages--indent-char*))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-messages (&rest args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(with-messages (format "using %s" ',(car args))
      (use-package ,@args)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,6 +118,7 @@ last expression in `body'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro use-package-with-message (&rest args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(with-message (format "using %s" ',(car args))
      (use-package ,@args)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
