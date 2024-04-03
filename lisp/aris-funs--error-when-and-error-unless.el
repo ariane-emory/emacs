@@ -55,18 +55,13 @@ Unacceptable case:
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
     (not nil))
   "
-  (unless format-args-and-body
-    (error "error-when: No body provided."))
+
   (let* ( (string-is-format-string
             (string-is-format-string-p error-message))
           (body
             (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
           (format-args
             (when string-is-format-string
-              ;; (message "format-args-and-body: %s" format-args-and-body)
-              ;; (message "car   format-args-and-body: %s" (car format-args-and-body))
-              ;; (message "cdar  format-args-and-body: %s" (cdar format-args-and-body))
-              ;; (message "cadar format-args-and-body: %s" (cadar format-args-and-body))
               (let ((unquoted-format-args (cadar format-args-and-body)))
                 `(list ,@unquoted-format-args)))))
     `(let ((it (progn ,@body)))
@@ -92,12 +87,33 @@ Unacceptable case:
 signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
 
 See `error-when' for caveats about the use of format speciiers."
-  (let* ( (string-is-format-string (string-is-format-string-p error-message))
-          (body (if string-is-format-string
-                  (cdr format-args-and-body)
-                  format-args-and-body))
-          (format-args (when string-is-format-string (car format-args-and-body))))
-    `(error-when ,error-message ,format-args (not (progn ,@body)))))
+  (unless format-args-and-body
+    (error "error-when: No body provided."))
+  (let* ( (string-is-format-string
+            (string-is-format-string-p error-message))
+          (body
+            (if string-is-format-string (cdr format-args-and-body) format-args-and-body))
+          (format-args
+            (when string-is-format-string
+              (let ((unquoted-format-args (cadar format-args-and-body)))
+                `(list ,@unquoted-format-args)))))
+    `(let ((it (progn ,@body)))
+       (if (not it)
+         (apply #'error ,error-message ,format-args)
+         it))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when nil
+  (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s"
+    '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
+  (error-unless "This should raise an error because condition is nil: %s %s %s"
+    '(it 8 (+ 2 3)) 1 nil nil)
+  (error-unless "This should NOT raise an error because condition is non-nil."
+    1 nil "THIS STRING IS TRUE")
+  (error-unless "This should raise an error because condition is nil."
+    1 nil nil))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -115,27 +131,6 @@ See `error-when' for caveats about the use of format speciiers."
 ;;           (format-args (when string-is-format-string (car format-args-and-body))))
 ;;     `(error-when ,error-message ,format-args (not (progn ,@body)))))
 ;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (error-when "This should raise an error because condition is non-nil: %s %s %s"
-    '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
-  (error-when "This should NOT raise an error because condition is nil: %s %s %s"
-    '(it 8 (+ 2 3)) 1 nil nil)
-  (error-when (concat "This should raise an error because condition is non-nil." "sdf")
-    1 nil "THIS STRING IS TRUE")
-  (error-when "This should NOT raise an error because condition is nil."
-    1 nil nil)
-  (error-unless "This should NOT raise an error because condition is non-nil: %s %s %s"
-    '(it 8 (+ 2 3)) 1 nil "THIS STRING IS TRUE")
-  (error-unless "This should raise an error because condition is nil: %s %s %s"
-    '(it 8 (+ 2 3)) 1 nil nil)
-  (error-unless "This should NOT raise an error because condition is non-nil."
-    1 nil "THIS STRING IS TRUE")
-  (error-unless "This should raise an error because condition is nil."
-    1 nil nil))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
