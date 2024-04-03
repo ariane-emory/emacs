@@ -5,62 +5,24 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (let* ( (group (pd--get-group 'fib))
-;;         (group-name (car group))
-;;         (group-rows (cdr group)))
-;;   (pd--print "Group: %s" group-rows)
-;;   (pd--print "Group name: %s" group-name)
-;;   (pd--print "Group rows: %s" group-rows)
-;;   (pd--print "[%s]" group-name)
-;;   (dolist (row group-rows)
-;;     (let ((pattern (car row)))
-;;       (pd--print "  %s ⇒" pattern)
-;;       (let ((lines (butlast (split-string (pp-to-string (cdr row)) "\n"))))
-;;         (dolist (line lines)
-;;           (pd--print "    %s" line)))
-
-;;       ;; (let ( (pattern (car row))
-;;       ;;        (body (cdr row)))
-;;       ;;   (pd--print "   ⇒ %s" pattern))
-;;       )))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--reset)
 (def (fib 0) 0)
 (def (fib 1) 1)
 (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
 (fib 4)
 (fib 10)
-(pd--print-table)
 (def (double n) (+ n n))
 (def (square y) (* y y))
-;; (def result
-;;   (list
-;;     (fib 4)
-;;     (fib 6)
-;;     (fib 8)))
 (square 7)
 (funcall #'square 8)
-*pd--pattern-dispatch-table*
+(pd--print-table)
 (message "Printing the table:")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (pd--get-group 'fib)
-'(fib
-   ((fib 0)
-     0)
-   ((fib 1)
-     1)
-   ((fib n)
-     (message "hello")
-     (+
-       (fib
-         (- n 1))
-       (fib
-         (- n 2)))))
-
 (pd--print-group (pd--get-group 'fib))
 (pd--format-group-as-lines (pd--get-group 'fib))
 (pd--format-group-as-string (pd--get-group 'fib))
 
+(aris-match-pattern2--match-pattern
+  '((? . v) (* . w) 4 5 (* . x) (even? . y)) '(77 1 2 3 4 5 66 7 9 22))
