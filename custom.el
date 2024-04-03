@@ -6,6 +6,7 @@
   '(*pattern-dispatch--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
+  '(backtrace-line-length 20000)
   '(beacon-mode t)
   '(c-backslash-column 90)
   '(c-backslash-max-column 90)
