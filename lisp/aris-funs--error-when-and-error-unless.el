@@ -11,10 +11,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro no-name (expr)
+(defmacro no-name (symbol expr docstring)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(progn (unless format-args-and-body
-            (error "error-when: No body provided."))
+  `(defmacro ,symbol (error-message &rest format-args-and-body)
+     ,docstring
+     (unless format-args-and-body
+       (error "error-when: No body provided."))
      (let* ( (string-is-format-string
                (string-is-format-string-p error-message))
              (body
@@ -31,9 +33,23 @@
             it)))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(no-name this it "foo")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro error-unless (error-message &rest format-args-and-body)
+(no-name error-unless   (not it)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Assert that the last expression in FORMAT-ARGS-AND-BODY is not nil. If it is not,
 signal an error with ERROR-MESSAGE and FORMAT-ARGS-AND-BODY.
@@ -76,8 +92,7 @@ Unacceptable case:
   (error-when
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
     (not nil))
-"
-  (no-name (not it)))
+")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
