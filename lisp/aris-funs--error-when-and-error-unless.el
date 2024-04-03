@@ -9,8 +9,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
      `(defmacro ,symbol (error-message &rest format-args-and-body)
         ,docstring
-        (unless (stringp error-message)
-          (error "make-error-if-macro: ERROR-MESSAGE must be a string."))
+        ;; (unless (stringp error-message)
+        ;;   (error "make-error-if-macro: ERROR-MESSAGE must be a string."))
         (unless format-args-and-body
           (error "make-error-if-macro: No body provided."))
         (let* ( (string-is-format-string
@@ -24,7 +24,7 @@
                     (let ((unquoted-format-args (cadar format-args-and-body)))
                       `(list ,@unquoted-format-args)))))
           `(let ((it (progn ,@body)))
-             (if ,',expr
+             (if (,',expr it)
                (apply #'error ,error-message ,format-args)
                it))))))
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,7 +74,7 @@ Unacceptable case:
   (error-when
     (concat \"Raise an %s because \" \"the %s is true.\") '(\"error\" \"condition\")
     (not nil))"
-    (not it))
+    not)
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -86,7 +86,7 @@ does not evaluate to nil. If it does not, signal an error with ERROR-MESSAGE
 and FORMAT-ARGS-AND-BODY.
 
 See `error-unless' for caveats about the use of format speciiers."
-    it))
+    identity))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
