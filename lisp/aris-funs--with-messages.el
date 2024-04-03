@@ -18,16 +18,21 @@
   :group 'with-messages
   :type 'integer)
 
-(defcustom *with-messages--depth-indicator* t
+(defcustom *with-messages--depth-indicator-enable* t
   "Whether to display the current indentation level in `with-messages'."
   :group 'with-messages
   :type 'boolean)
+
+(defcustom *with-messages--depth-indicator-format* "[%2d] "
+  "The format string used to display the current indentation level in `with-messages'."
+  :group 'with-messages
+  :type 'string)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *with-messages--indent* 0 "The current indentation level in `with-messages'.
-This variable is not meant to be customized." )
+This variable is not meant to be customized but can be safely dynamically shadowed." )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -111,8 +116,10 @@ last expression in `body'."
           (make-string
             (* *with-messages--indent* *with-messages--indent-size*)
             *with-messages--indent-char*))
-         (depth-indicator (if *with-messages--depth-indicator*
-                            (format "[%2d] " *with-messages--indent*) "")))
+         (depth-indicator
+           (if *with-messages--depth-indicator-enable*
+             (format  *with-messages--depth-indicator-format*
+               *with-messages--indent*) "")))
     (format "%s%s" depth-indicator indent-string)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
