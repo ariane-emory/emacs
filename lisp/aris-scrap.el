@@ -10,7 +10,7 @@
 (def (fib 1) 1)
 (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
 (fib 4)
-(fib 10)
+;;(fib 10)
 (def (double n) (+ n n))
 (def (square y) (* y y))
 (square 7)
@@ -25,4 +25,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+
+(let ( (*match-pattern2--verbose* t)
+       (*match-pattern2--merge-duplicate-alist-keys* nil))
+  (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+
 
