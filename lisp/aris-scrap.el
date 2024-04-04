@@ -57,7 +57,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 (pipe 8
   (+ 3 _)
   :
@@ -65,6 +64,11 @@
   (* 2 _)
   (ret)
   (- _ 1))
+
+
+
+
+
 
 (let ((x 5))
   (pipe ((x (+ 3 x)))
@@ -77,7 +81,6 @@
   (+ 3 x)
   (* 2 x)
   (- x 1))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,7 +114,7 @@
        (catch 'return
          (mapr ',body
            (lambda (expr)
-             (cl-macrolet ((ret () `(throw 'return it)))
+             (cl-macrolet ((ret () `(throw 'return nil)))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  ((eq expr 'return) (throw 'return nil))
@@ -123,6 +126,8 @@
                    (setq ignore-flag nil))))))
          ,sym))))
 
+(defmacro ret () `(throw 'return it))
+
 (|>
   8
   (+ 3 _)
@@ -130,6 +135,7 @@
   (* 2 _)
   (ret) ;;return
   (- _ 1))
+
 
 
 
