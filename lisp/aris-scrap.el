@@ -123,18 +123,18 @@
                    (eval expr)
                    (setq ignore-flag nil))
                  (t
-                   (setq ,sym (eval expr))
+                   ;;(throw 'bang nil)
+                   (let ((fun `(lambda (_) ,expr)))
+                     (setq ,sym (funcall fun _)))
                    (setq ignore-flag nil))))))
          ,sym))))
-
-
 
 (|
   8
   (+ 3 _)
   :(message "A message! _ = %s" _) 
   (* 2 _)
-  (ret)
+  ;;  (ret)
   (- _ 1))
 
 
