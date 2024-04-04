@@ -811,7 +811,7 @@
 
       (add-hook 'Custom-mode-hook
         (lambda () (face-remap-add-relative 'default
-                     '(:family "XITS" :height 1.25))))
+                '(:family "XITS" :height 1.25))))
 
       (add-hook 'find-file-hooks
         (lambda ()
@@ -827,7 +827,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                     '(:family "Gill Sans" :height 1.15))))
+                '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()

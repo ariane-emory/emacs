@@ -39,12 +39,13 @@
       ;; Do some simple arithmetic with a pipe:
       (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-      ;; Reset the pattern-call dispatcher's alist.
+      ;; Reset the pattern-call dispatcher's alist:
       (pd--reset) 
 
-      ;; Define some simple functions::
+      ;; Define some simple functions:
       (def (double n) (|> n -> (+ _ _)))
       (def (square y) (|> y -> (* _ _)))
+      (def (double-square y) (double (square y)))
       
       ;; Define a fib:
       (def (fib 0) 0)

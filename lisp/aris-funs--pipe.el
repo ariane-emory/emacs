@@ -24,7 +24,78 @@
   "The function to use to print messages."
   :group 'pipe
   :type 'function)
+
+(defcustom *pipe--default-var-sym* '_
+  "The default symbol to use for the pipe operator."
+  :group 'pipe
+  :type 'symbol)
+
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe (initial &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Older, simple version of `pipe'."
+;;   `(let ((_ ,initial))
+;;      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
+;;      _))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe (init &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Codex's unattractive `pipe'."
+;;   `(let ((_ ,init))
+;;      (dolist (expr ',body)
+;;        (let ((fun `(lambda (_) ,expr)))
+;;          (setq _ (funcall fun _))))
+;;      _))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming.
+(pipe 
+  8
+  (+ 3 it)
+  :(message \"A message! it = %s\" it)
+  (* 2 it)
+  (- it 1))"
+  (let* ((head-is-spec
+           (and
+             (consp head)
+             (consp (car head))
+             (length> (car head) 0)
+             (length< (car head) 3)))
+          (sym (if head-is-spec (caar head) *pipe--default-var-sym*))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    ;;(debug)
+    ;; (message "head: %s" head)
+    ;; (message "head-is-spec: %s" head-is-spec)
+    ;; (message "sym: %s" sym)
+    ;; (message "init-form: %s" init-form)
+    ;; (message "body: %s" body)
+    body
+    `(let ( (,sym ,init-form)
+            (ignore-flag nil))
+       (mapr ',body
+         (lambda (expr)
+           (cond
+             ((eq : expr) (setq ignore-flag t))
+             (ignore-flag
+               (eval expr)
+               (setq ignore-flag nil))
+             (t
+               (setq ,sym (eval expr))
+               (setq ignore-flag nil)))))
+       ,sym)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,7 +119,7 @@
              (consp (car head))
              (length> (car head) 0)
              (length< (car head) 3)))
-          (var (if head-is-spec (caar head) pipe-default-var-sym))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (init-form (if head-is-spec (cadar head) head))
           (body tail))
 
@@ -118,8 +189,13 @@
       ;; Do some simple arithmetic with a pipe:
       (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-      ;; Reset the pattern-call dispatcher's alist.
+      ;; Reset the pattern-call dispatcher's alist:
       (pd--reset) 
+
+      ;; Define some simple functions:
+      (def (double n) (|> n -> (+ _ _)))
+      (def (square y) (|> y -> (* _ _)))
+      (def (double-square y) (double (square y)))
 
       ;; Define a fib:
       (def (fib 0) 0)
