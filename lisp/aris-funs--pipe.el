@@ -19,6 +19,7 @@
           (var (if head-is-spec (caar head) pipe-default-var-sym))
           (init-form (if head-is-spec (cadar head) head))
           (body tail))
+
     (prn (make-string 80 ?\=))
     (prn "PIPE CALLED")
     (prn (make-string 80 ?\=))
@@ -27,6 +28,7 @@
     (prn "var: %s" var)
     (prn "init-form: %s" init-form)
     (prn "body: %s" body)
+
     `(progn
        (prn (make-string 80 ?\=))
        (let ( (last ,init-form)
@@ -39,10 +41,10 @@
                (prn "Expr: %S" expr)
                (prn "Var:  %S" ,var)
                (prn "Last: %S" last)
+
                (cl-flet ((expr-fun
                            `(lambda (sym)
-                              (cl-flet ((return (,sym)
-                                          (throw 'return ,sym)))
+                              (cl-flet ((return (,sym) (throw 'return ,sym)))
                                 ;;(prn "Eval: %S" ',expr)
                                 (let ((result ,expr))
                                   ;;(prn "Next: %S" result)
