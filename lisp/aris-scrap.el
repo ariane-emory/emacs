@@ -86,8 +86,13 @@
     3 -> (prn "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
     (prn "Getting the result of (fib %d)" _) (fib _) ->
     "I'm just a harmless string sitting in the pipe doing doing nothing."
-    (prn "Result =  %d" _) _)) ;; ⇒ 55
+    (prn "Result =  %d" _) _) ;; ⇒ 55
 
+  (|> 5 -> (square _) -> (when (odd? _) (return (double _)) ->_))
+  (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
+  )
+
+(|> 3)
 ;; Output that eventually ends with this (with free automatic indentation as a side
 ;; effect of how my message-printing code works):
 ;;           Calculating (fib 3)...
@@ -109,5 +114,3 @@
 ;; Result =  55
 
 
-(|> 5 -> (square _) -> (when (odd? _) (return (double _))))
-(|> 6 -> (square _) -> (when (odd? _) (return (double _))))
