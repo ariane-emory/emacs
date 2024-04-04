@@ -72,20 +72,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(pipe 8
+(| 8
   (+ 3 _)
-  :
-  (message "A message! _ = %s" _)
+  :(message "A message! _ = %s" _)
   (* 2 _)
   (- _ 1))
 
 (let ((x 5))
-  (pipe ((x (+ 3 x)))
+  (| ((x (+ 3 x)))
     (+ 3 x)
     (* 2 x)
     (- x 1)))
 
-(pipe ((x))
+(| ((x))
   8 
   (+ 3 x)
   (* 2 x)
@@ -118,46 +117,37 @@
     ;; (message "init-form: %s" init-form)
     ;; (message "body: %s" body)
     body
-    `(let ( (,sym ,init-form)
+    `(let ( (symbol ',sym)
+            (,sym ,init-form)
             (ignore-flag nil))
-       ;;(fset 'return (lambda () (throw 'return nil)))
        (catch 'return
          (mapr ',body
            (lambda (expr)
              (cond
                ((eq expr :) (setq ignore-flag t))
-               ;;((eq expr 'return) (throw 'return nil))
                (ignore-flag
                  (let ((fun
-                         `(lambda (_)
-                            (cl-flet ((return (_) (throw 'return _))) ,expr))))
-                   (funcall fun _))
+                         `(lambda (symbol)
+                            (cl-flet ((return (,symbol)
+                                        (throw 'return ,symbol)))
+                              ,expr))))
+                   (funcall fun ,sym))
                  (setq ignore-flag nil))
                (t
-                 ;;(throw 'bang nil)
                  (let ((fun
-                         `(lambda (_)
-                            (cl-flet ((return (_) (throw 'return _))) ,expr))))
-                   (setq ,sym (funcall fun _)))
+                         `(lambda (,symbol)
+                            (cl-flet ((return (,symbol)
+                                        (throw 'return ,symbol)))
+                              ,expr))))
+                   (setq ,sym (funcall fun ,sym)))
                  (setq ignore-flag nil)))))
          (throw 'return ,sym)))))
-
 
 (| ((x 2))
   8
   (+ 3 x))
 
+11
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(|
-  8
-  (+ 3 _)
-  :(message "It's %s" _) 
-  (* 2 _)
-  :(message "Now it's %s" _)
-  :(if (> _ 25) (return 100))
-  :(message "And now it's %s" _)
-  ;;:(return (+ _ 50))
-  :(message "Finally it's %s" _)
-  (- _ 1))
+
 
