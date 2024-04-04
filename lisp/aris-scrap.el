@@ -8,24 +8,26 @@
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
-  (pd--reset)
-  (def (fib 0) 0)
-  (def (fib 1) 1)
-  (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-  (def (double n) (+ n n))
-  (def (square y) (* y y))
-  ;; (def (double-square y) (double 2 (square y)))
-  ;; (double-square 3)
+  (progn
+    (pd--reset)
+    (def (fib 0) 0)
+    (def (fib 1) 1)
+    (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+    (def (double n) (+ n n))
+    (def (square y) (* y y))
+    ;; (def (double-square y) (double 2 (square y)))
+    ;; (double-square 3)
 
-  (let ( (*match-pattern--verbose* t)
-         (*match-pattern2--verbose* t))
-    ;; (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
-    ;; (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
-    ;; (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
-    (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7))))
-  
-  (message "Printing the table:")
-  (pd--print-table))
+    (prin (make-string 80 ?\=))
+    (let ( (*match-pattern--verbose* nil)
+           (*match-pattern2--verbose* nil))
+      (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
+      (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
+      (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
+      (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7))))
+    
+    (prin "Printing the table:")
+    (pd--print-table)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)
