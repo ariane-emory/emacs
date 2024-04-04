@@ -83,6 +83,24 @@ is odd, the last cons in the resulting alist's value cell will be nil."
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun make-plist (keys vals)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Build a plist from KEYS and VALS."
+  (unless (list? keys) (error "KEYS must be a list."))
+  (unless (list? vals) (error "VALS must be a list."))
+  (unless (>= (length keys) (length vals)) (error "KEYS must be at least as long as VALS."))
+  (when keys
+    (let* ( (result (list (pop keys) (pop vals)))
+            (tail (cdr result)))
+      (while keys
+        (let ((new-tail (list (pop keys) (pop vals))))
+          (setq tail (cdr (rplacd! tail new-tail)))))
+      result)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

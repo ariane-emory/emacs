@@ -2,18 +2,364 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define some random functions:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'cl-lib)
 (require 'aris-funs--prettify-symbols)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Start of AeLisp compat content.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO:
+;;   - various map*/apply* funs
+;;   - reduce/zip funs
+;;   - copy/transform tree funs
+;;   - matrix funs
+;;   - string funs
+;;   - test macros
+;;   - maybe ratmath funs?
+;;   - delq!/delql!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Aliases:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'atom?           'atom)
 (defalias 'bound?          'boundp)
 (defalias 'bound-and-true? 'bound-and-true-p)
+(defalias 'cons?           'consp)
+(defalias 'equal?          'equal)
+(defalias 'integer?        'integerp)
 (defalias 'list?           'listp)
+(defalias 'number?         'numberp)
 (defalias 'rplaca!         'rplaca)
 (defalias 'rplacd!         'rplacd)
+(defalias 'string?         'stringp)
+(defalias 'zero?           'zerop)
+(defalias 'decr            'cl-decf)
+(defalias 'incr            'cl-incf)
+(setq else t) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; manipulate predicates:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compose-pred1s (&rest preds)
+  "Does what it says on the tin and composes unary predicatess PREDS."
+  (unless (all fun? preds) (error "PREDS must be functions"))
+  (lambda (val)
+    (letrec
+      ((fun
+         (lambda (preds)
+           (cond
+             ((nil? (car preds))       t)
+             ((not  ((car preds) val)) nil)
+             (else  (fun (cdr preds)))))))
+      (fun preds))))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; invert a predicate:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun invert-pred1 (pred?)
+  "Does what it says on the tin and inverts a unary predicate PRED?."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (lambda (val)
+    (not (pred? val))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun depth (lst)
+  "Get the depth of a nested list structure."
+  (unless (list? lst) (error "LST must be a list"))
+  (let ((stack (list (cons lst 1))) ; Stack with initial list and depth of 1
+         (max-depth 0))
+    (while stack
+      (let* ((current (pop stack))
+              (current-list (car current))
+              (current-depth (cdr current)))
+        (if (> current-depth max-depth)
+          (setq max-depth current-depth))
+        (mapc (lambda (item)
+                (when (list? item)
+                  (push (cons item (1+ current-depth)) stack)))
+          current-list)))
+    max-depth))
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compact (lst)
+  "Filter nil items from LST."
+  (unless (list? lst) (error "LST must be a list")) 
+  (while (and lst (nil? (car lst)))
+    (pop lst)) ;; (setq lst (cdr lst)))
+  (when lst
+    (let* ((result (list (pop lst)))
+            (tail result))
+      (while lst
+        (let ((head (pop lst)))
+          (unless (nil? head)
+            (setq tail (rplacd! tail (list head))))))
+      result)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun filter (pred? lst)
+  "Return a list containing those members of lst satisfying pred?."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (list? lst)  (error "LST must be a list"))
+  (let (result tail)
+    (while lst
+      (let ((head (pop lst)))
+        (if (pred? head)
+          (let ((new-tail (list head)))
+            (if tail
+              (progn
+                (rplacd! tail new-tail)
+                (setq   tail new-tail))
+              (setq
+                result new-tail
+                tail   result))))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun copy-list (lst)
+  "Take a shallow copy of LST."
+  (unless (list? lst) (error "LST must be a list"))
+  (when lst
+    (let* ((result (list (pop lst)))
+            (tail result))
+      (while lst
+        (let ((new-tail (list (pop lst))))
+          (rplacd! tail new-tail)
+          (setq   tail new-tail)))
+      result)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun intercalate (intercalated lst)
+  "Intercalate INTERCALATED between items in LST."
+  (unless (list? lst) (error "LST must be a list"))
+  (when lst
+    (let* ((result (list (car lst)))
+            (tail   result))
+      (setq lst (cdr lst))
+      (while lst
+        (let* ((head     (pop lst))
+                (new-tail (list intercalated head)))
+          (rplacd! tail new-tail)
+          (setq tail (cdr new-tail))))
+      result)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun reverse (lst)
+  "Return a new list that is the reverse of the input list LST."
+  (unless (list? lst) (error "LST must be a list"))
+  (let (result)
+    (while lst
+      (setq result (cons (pop lst) result)))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun split-list (pred? lst)
+  "Destructivly split LST into two sublists:"
+  "1. The longest initial sublist of elements satisfying PRED?"
+  "2. The rest of the elements."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (list? lst) (error "LST must be a list"))
+  (when lst
+    (let (prev
+           (current lst))
+      (while (and current (pred? (car current)))
+        (setq
+          prev    current
+          current (cdr current)))
+      (if prev
+        (progn
+          (rplacd! prev nil)
+          $(lst current))
+        $(nil lst)))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun all (pred? lst)
+  "t when all elems in LST? are PRED?"
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (while (and lst (pred? (car lst)))
+    (pop lst))
+  (nil? lst))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun any (pred? lst)
+  "t when any elem in LST? is PRED?."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (let (result)
+    (while (and lst (not result))
+      (setq result (pred? (pop lst))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun heads (lsts)
+  "Return a list of the heads of the lists in LSTS."
+  (unless (list? lsts)     (error "LSTS must be a list of lists"))
+  (unless (all list? lsts) (error "LSTS must be a list of lists"))
+  (let* ((result (list (car (pop lsts))))
+          (tail   result))
+    (while lsts
+      (let ((new-tail (list (car (pop lsts)))))
+        (setq tail (rplacd! tail new-tail))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun tails (lsts)
+  "Return a list of the tails of the lists in LSTS."
+  (unless (list? lsts)     (error "LSTS must be a list of lists"))
+  (unless (all list? lsts) (error "LSTS must be a list of lists"))
+  (let* ((result (list (cdr (pop lsts))))
+          (tail   result))
+    (while lsts
+      (let ((new-tail (list (cdr (pop lsts)))))
+        (setq tail (rplacd! tail new-tail))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Aliases:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'atom?           'atom)
+(defalias 'bound?          'boundp)
+(defalias 'bound-and-true? 'bound-and-true-p)
+(defalias 'cons?           'consp)
+(defalias 'equal?          'equal)
+(defalias 'integer?        'integerp)
+(defalias 'list?           'listp)
+(defalias 'number?         'numberp)
+(defalias 'rplaca!         'rplaca)
+(defalias 'rplacd!         'rplacd)
+(defalias 'string?         'stringp)
+(defalias 'zero?           'zerop)
+(defalias 'decr            'cl-decf)
+(defalias 'incr            'cl-incf)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun positive? (n)
+  "Return t if N is a positive number."
+  (and (number? n) (> n 0)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun negative? (n)
+  "Return t if N is a negative integer."
+  (and (integer? n) (< n 0)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun odd? (x) (= (mod x 2) 1))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'oddp 'odd?)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun even? (x) (= (mod x 2) 0))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'evenp 'even?)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun 2* (x) (* x 2))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun /2 (x) (/ x 2))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list funs (retrieving by position):
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun first    (lst)                    (car lst))
+(defun second   (lst)                   (cadr lst))
+(defun third    (lst)                  (caddr lst))
+(defun fourth   (lst)                 (cadddr lst))
+(defun fifth    (lst)            (car (cddddr lst)))
+(defun sixth    (lst)           (cadr (cddddr lst)))
+(defun seventh  (lst)          (caddr (cddddr lst)))
+(defun eighth   (lst)         (cadddr (cddddr lst)))
+(defun ninth    (lst)    (car (cddddr (cddddr lst))))
+(defun tenth    (lst)   (cadr (cddddr (cddddr lst))))
+(defun eleventh (lst)  (caddr (cddddr (cddddr lst))))
+(defun twelfth  (lst) (cadddr (cddddr (cddddr lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; always?/never? predicates:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun always? (x) "always true." t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun never?  (x) "never true."  nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun single? (lst)
+  "true if LST is a list with single item."
+  (unless (list? lst) (error "LST must be a cons"))
+  (and (cons? lst) (not (cdr lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun double? (lst)
+  "true if LST is list with two items."
+  (unless (list? lst) (error "LST must be a cons"))
+  (and (cons? lst) (cdr lst) (not (cddr lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun triple? (lst)
+  "true if LST is a list with three items."
+  (unless (list? lst) (error "LST must be a cons"))
+  (and (cons? lst) (cddr lst) (not (cdddr lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro until (test &rest body)
+  "Repeat BODY until TEST is true."
+  `(while (not ,test) ,@body))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun nthcdr (index lst)
+  "Get the INDEXth cdr of LST."
+  (unless (and (integer? index) (positive? index)) (error "N must be a positive integer"))
+  (unless (list? lst)                              (error "LST must be a list"))
+  (unless (>= index 0)                              (error "INDEX must be non-negative"))
+  (until (zero? index)
+    (setq lst (cdr lst))
+    (decr index))
+  lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; End of AeLisp compat content.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun mapr (lst fn)
@@ -719,30 +1065,6 @@ new color string."
 	        (internal-set-lisp-face-attribute face-name :foreground
 	          (nth counter shades)))))))
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun odd? (x) (= (mod x 2) 1))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'oddp 'odd?)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun even? (x) (= (mod x 2) 0))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'evenp 'even?)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun 2* (x) (* x 2))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun /2 (x) (/ x 2))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
