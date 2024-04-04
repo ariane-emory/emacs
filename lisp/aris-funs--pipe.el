@@ -66,26 +66,29 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (progn
-    ;; Do some simple arithmetic:
-    (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
+(let ((*with-messages--depth-indicator-enable*))
+  ;; Do some simple arithmetic with a pipe:
+  (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-    ;; Reset the pattern-call dispatcher's alist.
-    (pd--reset) 
+  ;; Reset the pattern-call dispatcher's alist.
+  (pd--reset) 
 
-    ;; Define a fib:
-    (def (fib 0) 0)
-    (def (fib 1) 1)
-    (def (fib n)
-      (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _)))))
+  ;; Define a fib:
+  (def (fib 0) 0)
+  (def (fib 1) 1)
+  (def (fib n)
+    (|> (prn "Calculating (fib %d) using a pipe-based fib..." n)
+      (|> n -> (- _ 1) -> (fib _)) ->
+      (+ _ (|> n -> (- _ 2) -> (fib _) ->
+             (prn "Calculated (fib %d) = %d" n _) _))))
 
-    ;; Call it with some output commenting on the proceedings:
-    (|>
-      3 -> (prn "Starting with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-      (prn "Calculating (fib %d)" _) (fib _) ->
-      "I'm just a harmless string sitting around doing doing nothing."
-      (prn "Result: %d" _) _))) ;; ⇒ 55
+  ;; Call it with some output commenting on the proceedings:
+  (|>
+    3 -> (prn "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+    (prn "Getting the result of (fib %d)" _) (fib _) ->
+    "I'm just a harmless string sitting in the pipe doing doing nothing."
+    (prn "Result =  %d" _) _)) ;; ⇒ 55
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
