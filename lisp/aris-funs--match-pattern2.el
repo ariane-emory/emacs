@@ -1,4 +1,4 @@
-;; -*- fill-column: 105;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;; -*- lexical-binding: nil; fill-column: 105;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pattern matching functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -9,96 +9,6 @@
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq lexical-binding nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defgroup match-pattern2 nil
-  "Pattern matching inspired by the MATCH6 function from StevenTanimoto's book `The Elements of
-Artificial Intelligence' but several improvements.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
-(defcustom *match-pattern--anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
-  "The symbol used by `match-pattern2' to represent a wildcard, matching any single item in
-TARGET."
-  :group 'match-pattern2
-  :type 'symbol)
-
-(defcustom *match-pattern--capture-can-be-predicate* t
-  "Whether a capture's 'tag' in th PATTERN argument to `match-pattern2' is
-allowed to be a predicate function."
-  :group 'match-pattern2
-  :type 'boolean)
-
-(defcustom *match-pattern--capture-element?* #'-cons-pair?
-  "The function used by `match-pattern2' to determine if a PATTERN element
-represents a capture. By default, true pairs are considered captures."
-  :group 'match-pattern2
-  :type 'function)
-
-(defcustom *match-pattern--error-if-target-element-is-not-verbatim* t
-  "Whether `match-pattern2' shoud signal an error (or merely fail to match) if a
-non-verbatim TARGET element is encountered. This setting only applies when
-*MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
-  :group 'match-pattern2
-  :type 'boolean)
-
-(defcustom *match-pattern--get-capture-symbol-fun* #'cdr
-  "The function used by `match-pattern2' to extract the symbol from a capture."
-  :group 'match-pattern2
-  :type 'function)
-
-(defcustom *match-pattern--get-capture-tag-fun* #'car
-  "The function used by `match-pattern2' to extract the 'tag' from a capture element."
-  :group 'match-pattern2
-  :type 'function)
-
-(defcustom *match-pattern--init-fun* nil
-  "The function `match-pattern2' calls to initialize a new match."
-  :group 'match-pattern2
-  :type 'function)
-
-(defcustom *match-pattern--invalid-element?* nil
-  "The function used by `match-pattern2' to determine if a PATTERN element is an illegal
-element. By default, any element that is neither a capture element or a verbatim
-element is an invalid element."
-  :group 'match-pattern2
-  :type 'function)
-
-(defcustom *match-pattern--kleene-tag* '*
-  "The symbol used by `match-pattern2' to represent a Kleene star, matching 0 or more times."
-  :group 'match-pattern2
-  :type 'symbol)
-
-(defcustom *match-pattern--merge-duplicate-alist-keys* t
-  "Whether `match-pattern2' should merge the values of duplicate keys in the result alist."
-  :group 'match-pattern2
-  :type 'boolean)
-
-(defcustom *match-pattern--target-elements-must-be-verbatim* t
-  "Whether the elements of  the TARGET argument to `match-pattern2' must be verbatim elements."
-  :group 'match-pattern2
-  :type 'boolean)
-
-(defcustom *match-pattern--use-dotted-pairs-in-result* t
-  "Whether `match-pattern2' should use dotted pairs in the result alist."
-  :group 'match-pattern2
-  :type 'boolean)
-
-(defcustom *match-pattern--verbatim-element?* nil 
-  "The function used by `match-pattern2' to determine if a PATTERN element is a verbatim
-(non-capturing).  element. By default any element that isn't a capture element is a
-verbatim element."
-  :group 'match-pattern2
-  :type 'function)
-
-(defcustom *match-pattern--verbose* nil
-  "Whether `match-pattern2' should print verbose messages."
-  :group 'match-pattern2
-  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
