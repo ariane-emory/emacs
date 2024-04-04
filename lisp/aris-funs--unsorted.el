@@ -29,8 +29,11 @@
 (defalias 'bound-and-true? 'bound-and-true-p)
 (defalias 'cons?           'consp)
 (defalias 'equal?          'equal)
+(defalias 'fun?            'functionp)
+(defalias 'function?       'functionp)
 (defalias 'integer?        'integerp)
 (defalias 'list?           'listp)
+(defalias 'nil?            'null)
 (defalias 'number?         'numberp)
 (defalias 'rplaca!         'rplaca)
 (defalias 'rplacd!         'rplacd)
@@ -45,39 +48,42 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; manipulate predicates:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compose-pred1s (&rest preds)
-  "Does what it says on the tin and composes unary predicatess PREDS."
-  (unless (all fun? preds) (error "PREDS must be functions"))
-  (lambda (val)
-    (letrec
-      ((fun
-         (lambda (preds)
-           (cond
-             ((nil? (car preds))       t)
-             ((not  ((car preds) val)) nil)
-             (else  (fun (cdr preds)))))))
-      (fun preds))))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro compose-pred1s (&rest preds)
+  "NOT YET WORKING IN ELISP.
+
+Does what it says on the tin and composes unary predicatess PREDS."
+  (unless (all fun? (mapcar (lambda (f) (eval f)) preds)) (error "PREDS must be functions"))
+  `(lambda (val)
+     (letrec
+       ((fun
+          (lambda (preds)
+            (cond
+              ((nil? (car preds))       t)
+              ((not  ((car preds) val)) nil)
+              (else  (fun (cdr preds))))))
+         (fun ',preds)))))
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; invert a predicate:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun invert-pred1 (pred?)
+(defmacro invert-pred1 (pred?)
   "Does what it says on the tin and inverts a unary predicate PRED?."
-  (unless (fun? pred?) (error "PRED? must be a function"))
-  (lambda (val)
-    (not (pred? val))))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let ((pred? (eval pred?)))
+    (unless (fun? pred?) (error "PRED? must be a function but is %S." pred?))
+    `(lambda (val)
+       (not (funcall ',pred? val)))))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun depth (lst)
   "Get the depth of a nested list structure."
   (unless (list? lst) (error "LST must be a list"))
-  (let ((stack (list (cons lst 1))) ; Stack with initial list and depth of 1
+  (let ( (stack (list (cons lst 1))) ; Stack with initial list and depth of 1
          (max-depth 0))
     (while stack
-      (let* ((current (pop stack))
+      (let* ( (current (pop stack))
               (current-list (car current))
               (current-depth (cdr current)))
         (if (> current-depth max-depth)
@@ -106,6 +112,7 @@
       result)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun filter (pred? lst)
   "Return a list containing those members of lst satisfying pred?."
@@ -114,7 +121,7 @@
   (let (result tail)
     (while lst
       (let ((head (pop lst)))
-        (if (pred? head)
+        (if (funcall pred? head)
           (let ((new-tail (list head)))
             (if tail
               (progn
@@ -126,12 +133,13 @@
     result))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun copy-list (lst)
   "Take a shallow copy of LST."
   (unless (list? lst) (error "LST must be a list"))
   (when lst
-    (let* ((result (list (pop lst)))
+    (let* ( (result (list (pop lst)))
             (tail result))
       (while lst
         (let ((new-tail (list (pop lst))))
@@ -146,11 +154,11 @@
   "Intercalate INTERCALATED between items in LST."
   (unless (list? lst) (error "LST must be a list"))
   (when lst
-    (let* ((result (list (car lst)))
+    (let* ( (result (list (car lst)))
             (tail   result))
       (setq lst (cdr lst))
       (while lst
-        (let* ((head     (pop lst))
+        (let* ( (head     (pop lst))
                 (new-tail (list intercalated head)))
           (rplacd! tail new-tail)
           (setq tail (cdr new-tail))))
@@ -171,34 +179,40 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun split-list (pred? lst)
-  "Destructivly split LST into two sublists:"
-  "1. The longest initial sublist of elements satisfying PRED?"
-  "2. The rest of the elements."
+  "Destructivly split LST into two sublists:
+1. The longest initial sublist of elements satisfying PRED?
+2. The rest of the elements."
   (unless (fun? pred?) (error "PRED? must be a function"))
-  (unless (list? lst) (error "LST must be a list"))
+  (unless (list? lst)  (error "LST must be a list"))
   (when lst
-    (let (prev
+    (let ( prev
            (current lst))
-      (while (and current (pred? (car current)))
+      (while (and current (funcall pred? (car current)))
         (setq
           prev    current
           current (cdr current)))
       (if prev
         (progn
           (rplacd! prev nil)
-          $(lst current))
-        $(nil lst)))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          (list lst current))
+        (list nil lst)))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun all (pred? lst)
   "t when all elems in LST? are PRED?"
   (unless (fun? pred?) (error "PRED? must be a function"))
-  (while (and lst (pred? (car lst)))
+  (while (and lst (funcall pred? (car lst)))
     (pop lst))
   (nil? lst))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (all (lambda (x) (even? x)) '(2 4 6 8 10))
+;; (all (lambda (x) (even? x)) '(2 4 6 7 8 10))
+;; (all 'even? '(2 4 6 8 10))
+;; (all 'even? '(2 4 6 7 8 10))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun any (pred? lst)
@@ -206,9 +220,14 @@
   (unless (fun? pred?) (error "PRED? must be a function"))
   (let (result)
     (while (and lst (not result))
-      (setq result (pred? (pop lst))))
+      (setq result (funcall pred? (pop lst))))
     result))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (any 'even? '(1 3 5 7 9 10))
+;; (any 'even? '(1 3 5 7 9 11))
+;; (any (lambda (x) (even? x)) '(1 3 5 7 9 10))
+;; (any (lambda (x) (even? x)) '(1 3 5 7 9 11))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun heads (lsts)
@@ -714,7 +733,7 @@
     (kbd
       (concat
         "C-M-a C-M-f C-SPC C-e C-w SPC ; ; SPC "
-  "C-u C-x C-e C-r ; ; <right> <right> <right> = > SPC C-e"))))
+        "C-u C-x C-e C-r ; ; <right> <right> <right> = > SPC C-e"))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
