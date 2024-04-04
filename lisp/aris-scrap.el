@@ -70,7 +70,7 @@
 ;;   ->
 ;;   (- _ 1))
 
-(| 8
+(| ((_ 8))
   (+ 3 _)
   :(message "It's %s" _)
   (* 2 _)
@@ -81,6 +81,29 @@
   :(message "Finally it's %s" _)
   (- _ 1))
 
+(| ((_))
+  8
+  (+ 3 _)
+  :(message "It's %s" _)
+  (* 2 _)
+  :(message "Now it's %s" _)
+  :(if (> _ 25) (return 100))
+  :(message "And now it's %s" _)
+  :(return (+ _ 50))
+  :(message "Finally it's %s" _)
+  (- _ 1))
+
+(| 
+  8
+  (+ 3 _)
+  :(message "It's %s" _)
+  (* 2 _)
+  :(message "Now it's %s" _)
+  :(if (> _ 25) (return 100))
+  :(message "And now it's %s" _)
+  :(return (+ _ 50))
+  :(message "Finally it's %s" _)
+  (- _ 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (| 8
@@ -100,7 +123,6 @@
   (+ 3 x)
   (* 2 x)
   (- x 1))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |(head &rest tail)
@@ -153,12 +175,4 @@
                    (setq ,sym (funcall fun ,sym)))
                  (setq ignore-flag nil)))))
          (throw 'return ,sym)))))
-
-(| ((x 2))
-  8
-  (+ 3 x))
-
-11
-
-
 
