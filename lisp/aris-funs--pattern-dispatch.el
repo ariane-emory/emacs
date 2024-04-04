@@ -47,6 +47,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(setq *pd--allow-match-fallback* t)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Just a quick test here:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -137,12 +139,14 @@
                (*match-pattern2--use-dotted-pairs-in-result* nil)
                (*match-pattern2--verbatim-element?* nil))
           (pd--print "Trying pattern '%s on target '%s..." pattern call-pattern)
-          (let ( (match-result (match pattern call-pattern))
-                 (match-result2 (match2 pattern call-pattern)))
-            (message "%s vs. %s" match-result match-result2)
-            (when match-result
-              (throw 'matched
-                (setq result (cons match-result (cdr pattern-case)))))))))
+          (let ( (match-result (match2 pattern call-pattern)))
+            (when *pd--allow-match-fallback*
+              (pd--print "MATCH2 FAILED, FALLING BACK TO MATCH!"))
+            (let ((match-result (or match-result
+                                  (and *pd--allow-match-fallback* (match pattern call-pattern)))))
+              (when match-result
+                (throw 'matched
+                  (setq result (cons match-result (cdr pattern-case))))))))))
     (error-unless "No pattern case found for '%s." '(call-pattern)
       result)
     (PD--PRINT-DIVIDER)
