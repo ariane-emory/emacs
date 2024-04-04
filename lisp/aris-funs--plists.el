@@ -39,18 +39,46 @@
          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun plist-keys (plist)
+  "Extracts the keys from a plist PLIST."
+  (unless (listp plist) (error "PLIST must be a list"))
+  (when plist
+    (let* ( (result (list (car plist)))
+            (tail result))
+      (setq plist (cddr plist))
+      (while plist
+        (let ((new-tail (list (pop plist))))
+          (setq tail (setcdr tail new-tail)))
+        (pop plist))
+      result)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun plist-vals (plist)
+  "Extracts the values from a plist PLIST."
+  (unless (listp plist)          (error "PLIST must be a list"))
+  (unless (even? (length plist)) (error "PLIST must have an even number of elements"))
+  (plist-keys (cdr plist)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(plist-keys plist)
+(plist-vals plist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (progn
-    (setq plist  nil)
-    (progn
-      (plist-put! plist 'a 1) 
-      (plist-put! plist 'b 2)
-      (plist-put! plist 'c 3))
-    (plist-sort! plist)
+    (if (not (boundp 'plist))
+      (setq plist nil))
+    (plist-put! plist 'a 1)
+    (plist-put! plist 'b 2)
+    (plist-put! plist 'c 3)
     (plist-remove! plist 'a)
     (plist-remove! plist 'b)
-    (plist-remove! plist 'c)))
+    (plist-remove! plist 'c)
+    (plist-put! plist 'c 3)
+    (plist-put! plist 'a 1)
+    (plist-put! plist 'b 2)
+    (plist-sort! plist))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
