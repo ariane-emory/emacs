@@ -130,9 +130,7 @@
                          `(lambda (_)
                             (cl-flet ((return (_) (throw 'return _))) ,expr))))
                    (setq ,sym (funcall fun _)))
-                 (setq ignore-flag nil))))))
-       ;; ,sym
-       )))
+                 (setq ignore-flag nil)))))))))
 
 (|
   8
@@ -140,11 +138,13 @@
   :(message "It's %s" _) 
   (* 2 _)
   :(message "Now it's %s" _)
-  :(when t (return 100))
+  :(if (> _ 25) (return 100))
   :(message "And now it's %s" _)
-  (throw 'return 50)
+  (return (+ _ 50))
   :(message "Finally it's %s" _)
   (- _ 1))
+
+
 
 
 
