@@ -156,22 +156,22 @@ Does what it says on the tin and composes unary predicatess PREDS."
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun intercalate (intercalated lst)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Intercalate INTERCALATED between items in LST."
-;;   (unless (list? lst) (error "LST must be a list"))
-;;   (when lst
-;;     (let* ( (result (list (car lst)))
-;;             (tail   result))
-;;       (setq lst (cdr lst))
-;;       (while lst
-;;         (let* ( (head     (pop lst))
-;;                 (new-tail (list intercalated head)))
-;;           (rplacd! tail new-tail)
-;;           (setq tail (cdr new-tail))))
-;;       result)))
-;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun intercalate (intercalated lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Intercalate INTERCALATED between items in LST."
+  (unless (list? lst) (error "LST must be a list"))
+  (when lst
+    (let* ( (result (list (car lst)))
+            (tail   result))
+      (setq lst (cdr lst))
+      (while lst
+        (let* ( (head     (pop lst))
+                (new-tail (list intercalated head)))
+          (rplacd! tail new-tail)
+          (setq tail (cdr new-tail))))
+      result)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
