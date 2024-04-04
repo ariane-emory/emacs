@@ -868,6 +868,7 @@
            aris-funs--match-pattern2
            aris-funs--alist-funs
            aris-funs--pattern-dispatch
+           ;;aris-funs--pipe
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
            aris-funs--error-when-and-error-unless
