@@ -119,22 +119,31 @@
                ((eq expr :) (setq ignore-flag t))
                ;;((eq expr 'return) (throw 'return nil))
                (ignore-flag
-                 (let ((fun `(lambda (_) (cl-flet ((return () (throw 'return nil))) ,expr))))
+                 (let ((fun
+                         `(lambda (_)
+                            (cl-flet ((return (_) (throw 'return _))) ,expr))))
                    (funcall fun _))
                  (setq ignore-flag nil))
                (t
                  ;;(throw 'bang nil)
-                 (let ((fun `(lambda (_) (cl-flet ((return () (throw 'return nil))) ,expr))))
+                 (let ((fun
+                         `(lambda (_)
+                            (cl-flet ((return (_) (throw 'return _))) ,expr))))
                    (setq ,sym (funcall fun _)))
                  (setq ignore-flag nil))))))
-       ,sym)))
+       ;; ,sym
+       )))
 
 (|
   8
   (+ 3 _)
-  :(message "A message! _ = %s" _) 
+  :(message "It's %s" _) 
   (* 2 _)
-  (return)
+  :(message "Now it's %s" _)
+  :(when t (return 100))
+  :(message "And now it's %s" _)
+  (throw 'return 50)
+  :(message "Finally it's %s" _)
   (- _ 1))
 
 
