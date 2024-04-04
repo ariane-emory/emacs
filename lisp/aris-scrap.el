@@ -142,9 +142,10 @@
              (cl-flet ((expr-fun
                          `(lambda (sym)
                             (cl-flet ((return (,sym)
-                                        (throw 'return ,sym)))
+                                        (throw 'return ,sym)))                              
                               (prin "Eval %S..." ',expr)
-                              ,expr))))
+                              (let ((result ,expr))
+                                result)))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  (ignore-flag
