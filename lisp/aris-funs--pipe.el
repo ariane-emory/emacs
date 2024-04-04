@@ -103,82 +103,35 @@
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro plist-put! (plist-symbol key value)
+(while nil
+  (progn 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Add or updated a key-value pair in a plist."
-  `(setq ,plist-symbol (plist-put ,plist-symbol ,key ,value)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (let ( (*pipe--verbose* nil)
+           (*with-messages--depth-indicator-enable* nil))
+      ;; Do some simple arithmetic with a pipe:
+      (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
+      ;; Reset the pattern-call dispatcher's alist.
+      (pd--reset) 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro plist-remove!(plist-symbol key)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Remove a key and it's associated value - this actually removes it, it doesn't just set it to nill"
-  `(let (new-plist (old-plist ,plist-symbol))
-     (while old-plist
-       (let ((k (car old-plist))
-              (v (cadr old-plist)))
-         (unless (eq k ,key)
-           (plist-put! new-plist k v))
-         (setq old-plist (cddr old-plist))))
-     (setq ,plist-symbol new-plist)))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; Define a fib:
+      (def (fib 0) 0)
+      (def (fib 1) 1)
+      (def (fib n)
+        (|> (pipe--print "Calculating (fib %d) using a pipe-based fib..." n)
+          (|> n -> (- _ 1) -> (fib _)) ->
+          (+ _ (|> n -> (- _ 2) -> (fib _) ->
+                 (pipe--print "Calculated (fib %d) = %d" n _) _))))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro plist-sort! (plist-symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Sort a plist by key."
-  `(setq ,plist-symbol
-     (apply 'append
-       (sort (cl-loop for (key value) on ,plist-symbol by #'cddr
-               collect (list key value))
-         (lambda (a b) (string< (car a) (car b)))))))
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (progn
-    (setq plist  nil)
-    (progn
-      (plist-put! plist 'a 1) 
-      (plist-put! plist 'b 2)
-      (plist-put! plist 'c 3))
-    (plist-sort! plist)
-    (plist-remove! plist 'a)
-    (plist-remove! plist 'b)
-    (plist-remove! plist 'c)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ( (*pipe--verbose* nil)
-       (*with-messages--depth-indicator-enable* nil))
-  ;; Do some simple arithmetic with a pipe:
-  (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
-
-  ;; Reset the pattern-call dispatcher's alist.
-  (pd--reset) 
-
-  ;; Define a fib:
-  (def (fib 0) 0)
-  (def (fib 1) 1)
-  (def (fib n)
-    (|> (pipe--print "Calculating (fib %d) using a pipe-based fib..." n)
-      (|> n -> (- _ 1) -> (fib _)) ->
-      (+ _ (|> n -> (- _ 2) -> (fib _) ->
-             (pipe--print "Calculated (fib %d) = %d" n _) _))))
-
-  ;; Call it with some output commenting on the proceedings:
-  (|>
-    3 -> (pipe--print "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-    (pipe--print "Getting the result of (fib %d)" _) (fib _) ->
-    "I'm just a harmless string sitting in the pipe doing doing nothing."
-    (pipe--print "Result =  %d" _) _)) ;; ⇒ 55
+      ;; Call it with some output commenting on the proceedings:
+      (|>
+        3 -> (pipe--print "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+        (pipe--print "Getting the result of (fib %d)" _) (fib _) ->
+        "I'm just a harmless string sitting in the pipe doing doing nothing."
+        (pipe--print "Result =  %d" _) _)) ;; ⇒ 55
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
