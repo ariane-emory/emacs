@@ -7,6 +7,54 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (initial &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Older, simple version of `pipe'."
+  `(let ((_ ,initial))
+     (mapc (lambda (expr) (setq _ (eval expr))) ',body)
+     _))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (init &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Codex's unattractive `pipe'."
+  `(let ((_ ,init))
+     (dolist (expr ',body)
+       (let ((fun `(lambda (_) ,expr)))
+         (setq _ (funcall fun _))))
+     _))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming."
+  (let* ((head-is-spec
+           (and
+             (consp head)
+             (consp (car head))
+             (length> (car head) 0)
+             (length< (car head) 3)))
+          (sym (if head-is-spec (caar head) '_))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    ;;(debug)
+    ;; (message "head: %s" head)
+    ;; (message "head-is-spec: %s" head-is-spec)
+    ;; (message "sym: %s" sym)
+    ;; (message "init-form: %s" init-form)
+    ;; (message "body: %s" body)
+    body
+    `(let ((,sym ,init-form))
+       (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
+       ,sym)))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun mapr (lst fn)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Map FN over LST."
@@ -146,7 +194,7 @@
 (defun aris-cycle-position-back ()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Cycle cursor position backwards between beginning of line text, beginning
-of line, end of line and the initial position."
+  of line, end of line and the initial position."
   (interactive)
   (when (not (or
              (eq last-command 'aris-cycle-position-back)
@@ -172,7 +220,7 @@ of line, end of line and the initial position."
 (defun aris-cycle-position-forward ()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Cycle cursor position forwards between beginning of line text, beginning of
- line, end of line and the initial position."
+  line, end of line and the initial position."
   (interactive)
   (when (not (or
              (eq last-command 'aris-cycle-position-back)
@@ -312,8 +360,8 @@ of line, end of line and the initial position."
 (defun aris-truthify(thing)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "If THING is a boolean return t, if it's a function, call it and return the
-result, if it's a bound symbol, return its value, if it's a function symbol,
-call it and return the result, otherwise return nil."
+  result, if it's a bound symbol, return its value, if it's a function symbol,
+  call it and return the result, otherwise return nil."
   (cond
     ((booleanp thing) thing)
     ((functionp thing) (funcall thing))
@@ -345,13 +393,13 @@ call it and return the result, otherwise return nil."
 (defun aris-eval-sexp-and-insert-as-comment ()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the first sexp on this line and insert the result after it as a
- comment."
+  comment."
   (interactive)
   (execute-kbd-macro
     (kbd
       (concat
         "C-M-a C-M-f C-SPC C-e C-w SPC ; ; SPC "
-        "C-u C-x C-e C-r ; ; <right> <right> <right> = > SPC C-e"))))
+  "C-u C-x C-e C-r ; ; <right> <right> <right> = > SPC C-e"))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

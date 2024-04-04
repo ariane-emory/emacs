@@ -57,17 +57,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defmacro pipe (&rest body)
-  `(let (_)
+
+(defmacro pipe (initial &rest body)
+  `(let ((_ ,initial))
      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
      _))
 
-(pipe 7
-  (+ 3 _)
-  (* 2 _)
-  (- _ 1))
 
-(defmacro pipe* (head &rest tail)
+
+(defmacro pipe (init &rest body)
+  "Codex, working."
+  `(let ((_ ,init))
+     (dolist (expr ',body)
+       (let ((fun `(lambda (_) ,expr)))
+         (setq _ (funcall fun _))))
+     _))
+
+(defmacro pipe (head &rest tail)
+  "With optional let-like binding/symbol naming."
   (let* ((head-is-spec
            (and
              (consp head)
@@ -78,65 +85,38 @@
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
     ;;(debug)
-    (message "head: %s" head)
-    (message "head-is-spec: %s" head-is-spec)
-    (message "sym: %s" sym)
-    (message "init-form: %s" init-form)
-    (message "body: %s" body)
+    ;; (message "head: %s" head)
+    ;; (message "head-is-spec: %s" head-is-spec)
+    ;; (message "sym: %s" sym)
+    ;; (message "init-form: %s" init-form)
+    ;; (message "body: %s" body)
     body
     `(let ((,sym ,init-form))
        (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
        ,sym)))
 
-(pipe*
+(pipe
   8
   (+ 3 _)
   (* 2 _)
   (- _ 1))
 
-(pipe* ((x (+ 3 5)))
+(setq x 5)
+(pipe ((x (+ 3 x)))
   (+ 3 x)
   (* 2 x)
   (- x 1))
 
-(pipe* ((x))
+(pipe ((x))
   8
   (+ 3 x)
   (* 2 x)
   (- x 1))
 
-(defmacro pipe (init &rest body)
-  "GPT, non-working."
-  `(let ((it ,init))
-     (dolist (expr (list ,@body))
-       (setq it `(progn ,expr)))
-     it))
 
-(defmacro pipe (init &rest body)
-  "Codex, working."
-  `(let ((it ,init))
-     (dolist (expr ',body)
-       (let ((fun (eval `(lambda (it) ,expr))))
-         (setq it (funcall fun it))))
-     it))
 
-(pipe
-  8
-  (+ 3 it)
-  (* 2 it)
-  (- it 1))
 
-(let
-  ((it 8))
-  (dolist
-    (expr
-      (list
-        (+ 3 it)
-        (* 2 it)
-        (- it 1)))
-    (setq it
-      `(progn ,expr)))
-  it)
+
 
 
 
