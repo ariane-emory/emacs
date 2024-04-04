@@ -8,22 +8,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *with-messages--indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *wm--indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
 
-(defcustom *with-messages--indent-size* 2
-  "The number of `*with-messages--indent-char*' characters used for each level of indentation in `with-messages'."
+(defcustom *wm--indent-size* 2
+  "The number of `*wm--indent-char*' characters used for each level of indentation in `with-messages'."
   :group 'with-messages
   :type 'integer)
 
-(defcustom *with-messages--depth-indicator-enable* t
+(defcustom *wm--depth-indicator-enable* t
   "Whether to display the current indentation level in `with-messages'."
   :group 'with-messages
   :type 'boolean)
 
-(defcustom *with-messages--depth-indicator-format* "[%2d] "
+(defcustom *wm--depth-indicator-format* "[%2d] "
   "The format string used to display the current indentation level in `with-messages'."
   :group 'with-messages
   :type 'string)
@@ -31,7 +31,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *with-messages--indent* 0 "The current indentation level in `with-messages'.
+(defvar *wm--indent* 0 "The current indentation level in `with-messages'.
 This variable is not meant to be customized but can be safely dynamically shadowed." )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -40,7 +40,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
 (defmacro with-indentation (&rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate body with one more level of indentation."
-  `(let ((*with-messages--indent* (1+ *with-messages--indent*))) ,@body))
+  `(let ((*wm--indent* (1+ *wm--indent*))) ,@body))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -82,7 +82,7 @@ last expression in `body' and printing a variant message afterwards."
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
     `(let ( (indent-string (indent-string))
-            (*with-messages--indent* (1+ *with-messages--indent*)))
+            (*wm--indent* (1+ *wm--indent*)))
        (unwind-protect
          (progn
            (message "%s%s" indent-string ,start-message-string)
@@ -119,12 +119,12 @@ last expression in `body'."
   "Return a string of spaces corresponding to the current indentation level."
   (let ((indent-string
           (make-string
-            (* *with-messages--indent* *with-messages--indent-size*)
-            *with-messages--indent-char*))
+            (* *wm--indent* *wm--indent-size*)
+            *wm--indent-char*))
          (depth-indicator
-           (if *with-messages--depth-indicator-enable*
-             (format  *with-messages--depth-indicator-format*
-               *with-messages--indent*) "")))
+           (if *wm--depth-indicator-enable*
+             (format  *wm--depth-indicator-format*
+               *wm--indent*) "")))
     (format "%s%s" depth-indicator indent-string)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

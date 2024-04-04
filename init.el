@@ -811,7 +811,7 @@
 
       (add-hook 'Custom-mode-hook
         (lambda () (face-remap-add-relative 'default
-                '(:family "XITS" :height 1.25))))
+                     '(:family "XITS" :height 1.25))))
 
       (add-hook 'find-file-hooks
         (lambda ()
@@ -827,7 +827,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                '(:family "Gill Sans" :height 1.15))))
+                     '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()
@@ -866,9 +866,10 @@
         '( aris-funs--unsorted
            aris-funs--match-pattern
            aris-funs--match-pattern2
-           aris-funs--alist-funs
+           aris-funs--alists
            aris-funs--pattern-dispatch
            aris-funs--pipe
+           aris-funs--plists
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
            aris-funs--error-when-and-error-unless

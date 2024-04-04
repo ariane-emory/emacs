@@ -4,7 +4,7 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
-(require 'aris-funs--plist-funs)
+(require 'aris-funs--plists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -19,10 +19,7 @@
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *pipe--print-fun* 'indented-message
   "The function to use to print messages."
   :group 'pipe
@@ -40,13 +37,6 @@
        nil)))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(let ((*pipe--verbose* nil))
-  (progn
-    (message "One")
-    (pipe--print "pipe!")
-    (message "Two")
-    (message "Three")
-    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
@@ -111,12 +101,20 @@
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(let ((*pipe--verbose* nil))
+  (progn
+    (message "One")
+    (pipe--print "pipe!")
+    (message "Two")
+    (message "Three")
+    ))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (while nil
   (progn 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (let ( (*pipe--verbose* nil)
-           (*with-messages--depth-indicator-enable* nil))
+    (let ( (*pipe--verbose* t)
+           (*wm--depth-indicator-enable* nil))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; Do some simple arithmetic with a pipe:
       (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
@@ -137,10 +135,16 @@
         3 -> (pipe--print "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
         (pipe--print "Getting the result of (fib %d)" _) (fib _) ->
         "I'm just a harmless string sitting in the pipe doing doing nothing."
-        (pipe--print "Result =  %d" _) _)) ;; ⇒ 55
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        (pipe--print "Result =  %d" _) _) ;; ⇒ 55
+
+      (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
+      (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
+      
+
+      (|> 3)
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      )))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

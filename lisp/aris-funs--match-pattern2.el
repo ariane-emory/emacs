@@ -4,7 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
 (require 'dash)
-(require 'aris-funs--alist-funs)
+(require 'aris-funs--alists)
 (require 'aris-funs--with-messages)
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,7 +13,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun aris-match-pattern2--match (pattern target)
+(defun match-pattern2--match (pattern target)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Match a PATTERN list against a TARGET list.
 
@@ -21,25 +21,25 @@ This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of
 Intelligence' but with several improvements.
 
 Examples:
-  (`aris-match-pattern2--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`match-pattern2--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
 
-  (`aris-match-pattern2--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`match-pattern2--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
-  (setq `*match-pattern--use-dotted-pairs-in-result*' nil)
+  (setq `*mp--use-dotted-pairs-in-result*' nil)
 
-  (`aris-match-pattern2--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`match-pattern2--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (`aris-match-pattern2--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`match-pattern2--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (let ((original-indent *with-messages--indent*))
-    (cl-letf (((symbol-function 'print) (if *match-pattern--verbose* #'indented-message #'ignore)))
+  (let ((original-indent *wm--indent*))
+    (cl-letf (((symbol-function 'print) (if *mp--verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
-      (let ((*with-messages--indent* (1+ *with-messages--indent*)))
-        (when *match-pattern--init-fun*
-          (funcall *match-pattern--init-fun*))
+      (let ((*wm--indent* (1+ *wm--indent*)))
+        (when *mp--init-fun*
+          (funcall *mp--init-fun*))
         (cl-labels
           ((matchrec (pattern target depth accumulator)
              (let  ( (pattern-head (car pattern))
@@ -74,12 +74,12 @@ Examples:
                                  result))
                              (elem-is-verbatim? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "verbatim"
-                                 *match-pattern--verbatim-element?*
-                                 *match-pattern--capture-element?*))
+                                 *mp--verbatim-element?*
+                                 *mp--capture-element?*))
                              (elem-is-capture? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "capture"
-                                 *match-pattern--capture-element?*
-                                 *match-pattern--verbatim-element?*))
+                                 *mp--capture-element?*
+                                 *mp--verbatim-element?*))
                              (heads-are-equal? ()
                                (print "compare %s with %s..." pattern-head target-head)
                                (let ((result (equal pattern-head target-head)))
@@ -99,13 +99,13 @@ Examples:
                                (funcall fun pattern-head))
                              (capture-symbol-of-pattern-head ()
                                (capture-field-of-pattern-head
-                                 *match-pattern--get-capture-symbol-fun*))
+                                 *mp--get-capture-symbol-fun*))
                              (capture-tag-of-pattern-head ()
                                (capture-field-of-pattern-head
-                                 *match-pattern--get-capture-tag-fun*))
+                                 *mp--get-capture-tag-fun*))
                              (pattern-head-is-invalid? ()
-                               (if *match-pattern--invalid-element?*
-                                 (funcall *match-pattern--invalid-element?* pattern-head)
+                               (if *mp--invalid-element?*
+                                 (funcall *mp--invalid-element?* pattern-head)
                                  (not (or (pattern-head-is-verbatim?) (pattern-head-is-capture?)))))
                              (capture-at-pattern-head-has-tag? (tag)
                                (when tag
@@ -114,7 +114,7 @@ Examples:
                              (make-kvp (value)
                                (cons (capture-symbol-of-pattern-head) (list value)))
                              (continue (pattern target &optional (value :NOT-SUPPLIED))
-                               (let ((*with-messages--indent* (1+ *with-messages--indent*)))
+                               (let ((*wm--indent* (1+ *wm--indent*)))
                                  (matchrec pattern target depth
                                    (if (eq value :NOT-SUPPLIED)
                                      accumulator
@@ -179,17 +179,17 @@ Examples:
                              (if (heads-are-equal?)
                                (continue pattern-tail target-tail)
                                (fail-to-match))))
-                         ;; If `*match-pattern--target-elements-must-be-verbatim*' is set, then signal 
+                         ;; If `*mp--target-elements-must-be-verbatim*' is set, then signal 
                          ;; an error if `target-head' isn't a verbatim element:
                          ((case 4 "Error case: non-verbatim target element"
                             (and
-                              *match-pattern--target-elements-must-be-verbatim*
+                              *mp--target-elements-must-be-verbatim*
                               (not (elem-is-verbatim? target-head))))
                            (with-indentation
                              (let ((complaint
                                      (format "target-head %s is not a verbatim element."
                                        target-head)))
-                               (when *match-pattern--error-if-target-element-is-not-verbatim*
+                               (when *mp--error-if-target-element-is-not-verbatim*
                                  (error complaint)
                                  (print complaint)
                                  (fail-to-match)))))
@@ -200,13 +200,13 @@ Examples:
                          ;; From here on, we know that `pattern-head' must be a capture.
                          ;; Case when `pattern-head' is tagged with the "anything" tag:
                          ((case 6 "`anything' pattern element"
-                            (capture-at-pattern-head-has-tag? *match-pattern--anything-tag*))
+                            (capture-at-pattern-head-has-tag? *mp--anything-tag*))
                            (with-indentation
                              (print "head of pattern has 'anything' tag.")
                              (continue pattern-tail target-tail target-head)))
                          ;; Case when `pattern-head' is tagged with the Kleene tag:
                          ((case 7 "Kleene pattern element"
-                            (capture-at-pattern-head-has-tag? *match-pattern--kleene-tag*))
+                            (capture-at-pattern-head-has-tag? *mp--kleene-tag*))
                            (with-indentation
                              (print "head of pattern has Kleene tag.")
                              (cond
@@ -233,7 +233,7 @@ Examples:
                          ;; Case when `pattern-head' starts with predicate form:
                          ((case 8 "Predicate pattern element"
                             (and
-                              *match-pattern--capture-can-be-predicate*
+                              *mp--capture-can-be-predicate*
                               (apply (capture-tag-of-pattern-head) (list target-head))))
                            (with-indentation
                              (continue pattern-tail target-tail target-head)))
@@ -243,7 +243,7 @@ Examples:
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          (let ( (*with-messages--indent* original-indent)
+          (let ( (*wm--indent* original-indent)
                  (match-result (matchrec pattern target 0 nil)))
             ;;(print "Match result is %s." match-result)
 	          (when (car match-result)
@@ -257,31 +257,31 @@ Examples:
                   ;; (let* ( (match-result
                   ;;           (nreverse match-result))
                   ;;         (match-result
-                  ;;           (if (not *match-pattern--merge-duplicate-alist-keys*)
+                  ;;           (if (not *mp--merge-duplicate-alist-keys*)
 			            ;;             match-result                              
-			            ;;             (let ((merged (aris-merge-duplicate-alist-keys match-result)))
+			            ;;             (let ((merged (merge-duplicate-alist-keys match-result)))
                   ;;               (print "Post-merge match result %s." merged)
                   ;;               merged)))
                   ;;         (match-result
-                  ;;           (if *match-pattern--use-dotted-pairs-in-result*
-		              ;;             (aris-add-dots-to-alist match-result)
+                  ;;           (if *mp--use-dotted-pairs-in-result*
+		              ;;             (add-dots-to-alist match-result)
 		              ;;             match-result)))
                   ;;   match-result)
                   (pipe ((it))
                     (nreverse match-result)
-                    (if (not *match-pattern--merge-duplicate-alist-keys*)
+                    (if (not *mp--merge-duplicate-alist-keys*)
 		                  it
-		                  (let ((merged (aris-merge-duplicate-alist-keys it)))
+		                  (let ((merged (merge-duplicate-alist-keys it)))
                         (print "Post-merge match result %s." merged)
                         merged))
-                    (if *match-pattern--use-dotted-pairs-in-result*
-		                  (aris-add-dots-to-alist it)
+                    (if *mp--use-dotted-pairs-in-result*
+		                  (add-dots-to-alist it)
 		                  it)))))))))))
                       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'match2 'aris-match-pattern2--match)
+(defalias 'match2 'match-pattern2--match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -289,24 +289,28 @@ Examples:
 ;; Just a quick test that should match successfully with the default configuration:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
-  (setq *match-pattern--use-dotted-pairs-in-result* t)
+  (progn
+    (let ((*mp--verbose* t))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (let ((*mp--use-dotted-pairs-in-result* t))
 
-  (aris-match-pattern2--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
+        (mp--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+        ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (aris-match-pattern2--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  ;; ⇒ t
+        (mp--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+        ;; ⇒ t
+        )
 
-  (setq *match-pattern--use-dotted-pairs-in-result* nil)
+      (let ((*mp--use-dotted-pairs-in-result* nil))
+        (mp--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+        ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (aris-match-pattern2--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-  ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
-
-  (aris-match-pattern2--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-  ;; ⇒ t
-  )
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        (mp--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+        ;; ⇒ t
+        )
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      )))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

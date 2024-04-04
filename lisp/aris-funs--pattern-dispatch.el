@@ -23,42 +23,31 @@
   "Whether the pseudo-function dispatcher should print verbose messages."
   :group 'pattern-dispatch
   :type 'boolean)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *pd--print-fun* 'indented-message
   "The function to use to print messages."
   :group 'pattern-dispatch 
   :type 'function)
+
+(defcustom *pd--allow-match-fallback* t
+  "(TEMPORARY) Whether to fall back to match when match2 fails."
+  :group 'pattern-dispatch
+  :type 'boolean)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defvar *pd--match-count* 0
-  "This is part of an ugly hack and is not meant to be customized.")
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *pd--handler-count* 0
-  "A serial number on dispatch handler functions.")
+  "A serial number used by dispatch handler functions, not meant to be customized")
 
 (defvar *pd--pattern-dispatch-table* nil
-  "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
-
-(defvar *pd--pattern-dispatch-table* nil
-  "This is where the pattern dispatch table is stored as an alis of alists and is not meant to be customized.")
+  "This is where the pattern dispatch table is stored as an alist of alists and is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(setq *pd--allow-match-fallback* t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Just a quick test here:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (match-pattern '(fib 1 n z) '(fib 1 5 8))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pd--print (first &rest rest)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pd--print-fun*"
   `(when *pd--verbose*     
      (funcall *pd--print-fun* ,first ,@rest)
@@ -72,7 +61,7 @@
   "Print a divider line."
   (pd--print (make-string 80 char))
   nil)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -119,16 +108,16 @@
     (catch 'matched
       (dolist (pattern-case group)
         (let ( (pattern (car pattern-case))
-               (*match-pattern--anything-tag* 'anything)
-               (*match-pattern--capture-can-be-predicate* nil)
-               (*match-pattern--capture-element?* 'symbolp)
-               (*match-pattern--get-capture-symbol-fun* (lambda (e) e))
-               (*match-pattern--get-capture-tag-fun* (lambda (e) 'anything))
-               (*match-pattern--kleene-tag* nil)
-               (*match-pattern--merge-duplicate-alist-keys* nil)
-               (*match-pattern--target-elements-must-be-verbatim* nil)
-               (*match-pattern--use-dotted-pairs-in-result* nil)
-               (*match-pattern--verbatim-element?* nil)
+               (*mp--anything-tag* 'anything)
+               (*mp--capture-can-be-predicate* nil)
+               (*mp--capture-element?* 'symbolp)
+               (*mp--get-capture-symbol-fun* (lambda (e) e))
+               (*mp--get-capture-tag-fun* (lambda (e) 'anything))
+               (*mp--kleene-tag* nil)
+               (*mp--merge-duplicate-alist-keys* nil)
+               (*mp--target-elements-must-be-verbatim* nil)
+               (*mp--use-dotted-pairs-in-result* nil)
+               (*mp--verbatim-element?* nil)
                ;; temporary:
                (*match-pattern2--anything-tag* 'anything)
                (*match-pattern2--capture-can-be-predicate* nil)
@@ -203,8 +192,6 @@ because we're gong to be stshing stuff in their symbol properties."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Define functions with a Lust-style syntax:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pd--def (pattern-or-symbol &rest def-body) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -395,29 +382,30 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (progn
-    (pd--reset)
-    (def (fib 0) 0)
-    (def (fib 1) 1)
-    (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-    (def (double n) (+ n n))
-    (def (square y) (* y y))
-    (def (double-square y) (double (square y)))
-    (double-square 3)
-
-    (prn (make-string 80 ?\=))
     (let ( (*pd--verbose* t)
-           (*match-pattern--verbose* nil)
+           (*mp--verbose* nil)
            (*match-pattern2--verbose* nil))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (pd--reset)
+      (def (fib 0) 0)
+      (def (fib 1) 1)
+      (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+      (def (double n) (+ n n))
+      (def (square y) (* y y))
+      (def (double-square y) (double (square y)))
+      (double-square 3)
+
+      (prn (make-string 80 ?\=))
       (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
       (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
       (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
       (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
       
       (prn "Prnting the table:")
-      (pd--print-table))
+      (pd--print-table)
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      )))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
