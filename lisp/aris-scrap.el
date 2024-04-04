@@ -143,7 +143,7 @@
                          `(lambda (sym)
                             (cl-flet ((return (,sym)
                                         (throw 'return ,sym)))
-                              (pr "Eval %S..." ',expr)
+                              (prin "Eval %S..." ',expr)
                               ,expr))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
@@ -160,13 +160,13 @@
 (|>
   8
   (+ 3 _)
-  :(pr "It's %S" _)
+  :(prin "It's %S" _)
   (* 2 _)
-  :(pr "Now it's %S" _)
+  :(prin "Now it's %S" _)
   :(if (> _ 25) (return 100))
-  :(pr "And now it's %S" _)
+  :(prin "And now it's %S" _)
   :(return (+ _ 50))
-  :(pr "Finally it's %S" _)
+  :(prin "Finally it's %S" _)
   (- _ 1))
 
 
