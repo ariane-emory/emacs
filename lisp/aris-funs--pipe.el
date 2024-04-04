@@ -43,19 +43,28 @@
                            `(lambda (sym)
                               (cl-flet ((return (,sym)
                                           (throw 'return ,sym)))
-                                (prn "Eval: %S" ',expr)
+                                ;;(prn "Eval: %S" ',expr)
                                 (let ((result ,expr))
-                                  (prn "Next: %S" result)
+                                  ;;(prn "Next: %S" result)
                                   result)))))
                  (cond
                    ((eq expr '->)
                      (setq ,var last)
                      (setq last nil)
-                     (prn "Updated! Var is %S, last is %S" ,var last)
+                     (prn "Updated by arrow! Var is %S, last is %S" ,var last)
                      )
-                   (t (setq last (expr-fun ,var)))))))
-           (throw 'return (or ,var last)))))))
-           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                   (t (setq last (expr-fun ,var))
+                     (prn "Updated by call! Var is %S, last is %S" ,var last))))))
+           (throw 'return
+             (progn
+               (prn (make-string 80 ?\=))
+               (prn "Returning: %S" (or last ,var))
+               (prn (make-string 80 ?\=))
+               ;;(prn "Expr: %S" expr)
+               (prn "Var:  %S" ,var)
+               (prn "Last: %S" last)
+               (or last ,var))))))))
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
