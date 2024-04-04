@@ -342,16 +342,16 @@ Examples:
                   (print "Just returning t.")
 		              t
 		              (print "Extracted match result %s." match-result)
-		              (let ((match-result (nreverse match-result)))
-                    (let ((match-result
+		              (let* ( (match-result (nreverse match-result))
+                          (match-result
                             (if (not *match-pattern--merge-duplicate-alist-keys*)
 			                        match-result                              
 			                        (let ((merged (aris-merge-duplicate-alist-keys match-result)))
                                 (print "Post-merge match result %s." merged)
                                 merged))))
-                      (if *match-pattern--use-dotted-pairs-in-result*
-		                    (aris-add-dots-to-alist match-result)
-		                    match-result))))))))))))
+                    (if *match-pattern--use-dotted-pairs-in-result*
+		                  (aris-add-dots-to-alist match-result)
+		                  match-result)))))))))))
                         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
