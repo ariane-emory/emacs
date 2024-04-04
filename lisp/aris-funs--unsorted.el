@@ -29,16 +29,24 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar pipe-default-sym 'it)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming."
+  "`pipe' with optional let-like binding/symbol naming.
+(pipe 
+  8
+  (+ 3 it)
+  :(message \"A message! it = %s\" it)
+  (* 2 it)
+  (- it 1))"
   (let* ((head-is-spec
            (and
              (consp head)
              (consp (car head))
              (length> (car head) 0)
              (length< (car head) 3)))
-          (sym (if head-is-spec (caar head) '_))
+          (sym (if head-is-spec (caar head) pipe-default-sym))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
     ;;(debug)
@@ -48,14 +56,25 @@
     ;; (message "init-form: %s" init-form)
     ;; (message "body: %s" body)
     body
-    `(let ((,sym ,init-form))
-       (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
+    `(let ( (,sym ,init-form)
+            (ignore-flag nil))
+       (mapr ',body
+         (lambda (expr)
+           (cond
+             ((eq : expr) (setq ignore-flag t))
+             (ignore-flag
+               (eval expr)
+               (setq ignore-flag nil))
+             (t
+               (setq ,sym (eval expr))
+               (setq ignore-flag nil)))))
        ,sym)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defalias '|> 'pipe
+(defalias '| 'pipe)
+;; (defalias '|> 'pipe)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
