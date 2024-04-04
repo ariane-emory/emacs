@@ -10,13 +10,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming.
-(pipe 
-  8
-  (+ 3 it)
-  :(message \"A message! it = %s\" it)
-  (* 2 it))
-  (- it 1))"
+  "`pipe' with optional let-like binding/symbol naming."
   (let* ((head-is-spec
            (and
              (consp head)
