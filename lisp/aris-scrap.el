@@ -114,7 +114,7 @@
        (catch 'return
          (mapr ',body
            (lambda (expr)
-             (cl-macrolet ((ret () `(throw 'return nil)))
+             (cl-flet ((ret () `(throw 'return nil)))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  ((eq expr 'return) (throw 'return nil))
@@ -126,14 +126,14 @@
                    (setq ignore-flag nil))))))
          ,sym))))
 
-(defmacro ret () `(throw 'return it))
+;;(defmacro ret () `(throw 'return _))
 
-(|>
+(|
   8
   (+ 3 _)
   :(message "A message! _ = %s" _) 
   (* 2 _)
-  (ret) ;;return
+  ;;(ret) ;;return
   (- _ 1))
 
 
