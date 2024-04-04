@@ -57,6 +57,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+(pipe 8
+  (+ 3 _)
+  :
+  (message "A message! _ = %s" _)
+  (* 2 _)
+  (ret)
+  (- _ 1))
+
+(let ((x 5))
+  (pipe ((x (+ 3 x)))
+    (+ 3 x)
+    (* 2 x)
+    (- x 1)))
+
+(pipe ((x))
+  8 
+  (+ 3 x)
+  (* 2 x)
+  (- x 1))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,7 +111,7 @@
        (catch 'return
          (mapr ',body
            (lambda (expr)
-             (cl-macrolet ((ret () `(throw 'return nil)))
+             (cl-macrolet ((ret () `(throw 'return it)))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  ((eq expr 'return) (throw 'return nil))
@@ -100,44 +123,15 @@
                    (setq ignore-flag nil))))))
          ,sym))))
 
-(defun ret () (throw 'return nil))
 (|>
   8
   (+ 3 _)
   :(message "A message! _ = %s" _) 
   (* 2 _)
-                                        ;(ret) ;;return
+  (ret) ;;return
   (- _ 1))
 
 
-
-
-
-
-(pipe 8
-  (+ 3 _)
-  :
-  (message "A message! _ = %s" _)
-  (* 2 _)
-  (ret)
-  (- _ 1))
-
-
-
-
-
-
-(let ((x 5))
-  (pipe ((x (+ 3 x)))
-    (+ 3 x)
-    (* 2 x)
-    (- x 1)))
-
-(pipe ((x))
-  8 
-  (+ 3 x)
-  (* 2 x)
-  (- x 1))
 
 
 
