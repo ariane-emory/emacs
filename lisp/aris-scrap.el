@@ -109,4 +109,5 @@
 ;; Result =  55
 
 
-(|> 5 -> 
+(|> 5 -> (square _) -> (when (odd? _) (return (double _))))
+(|> 6 -> (square _) -> (when (odd? _) (return (double _))))
