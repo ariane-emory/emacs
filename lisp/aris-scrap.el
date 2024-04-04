@@ -56,17 +56,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defmacro pipe (init &rest body)
-  `(let ((it ,init))
-     (mapc (lambda (expr) (setq it (eval expr))) ',body)
-     it))
+(defmacro pipe (&rest body)
+  `(let (_)
+     (mapc (lambda (expr) (setq _ (eval expr))) ',body)
+     _))
 
-;; Usage
 (pipe 7
-  (+ 3 it) 
-  (* 2 it))
+  (+ 3 _)
+  (* 2 _)
+  (- _ 1))
+
+(defmacro pipen (&rest body)
+  
+  `(let (_)
+     (mapc (lambda (expr) (setq _ (eval expr))) ',body)
+     _))
 
 
+(pipen x
+  (+ 3 x)
+  (* 2 x)
+  (- x 1))
+
+(pipen ((x 8))
+  (+ 3 x)
+  (* 2 x)
+  (- x 1))
 
 
 
