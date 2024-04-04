@@ -119,7 +119,8 @@
                ((eq expr :) (setq ignore-flag t))
                ;;((eq expr 'return) (throw 'return nil))
                (ignore-flag
-                 (eval expr)
+                 (let ((fun `(lambda (_) (cl-flet ((return () (throw 'return nil))) ,expr))))
+                   (funcall fun _))
                  (setq ignore-flag nil))
                (t
                  ;;(throw 'bang nil)
