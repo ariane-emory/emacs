@@ -51,33 +51,51 @@
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
     (aris-merge-duplicate-alist-keys '((a 1) (a 2) (a 3) (a 4) (a 5) (b 8)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro monad (&rest args) args)
 
-
-(>>= 8
+(|>
+  8
   (+ 3 _)
-  (* 2 _)
+  (* 2 3) 
   (- _ 1))
 
 (let ((x 5))
-  (>>= ((x (+ 3 x)))
+  (|> ((x (+ 3 x)))
     (+ 3 x)
     (* 2 x)
     (- x 1)))
 
-(>>= ((x))
+(|> ((x))
   8
   (+ 3 x)
   (* 2 x)
   (- x 1))
 
 
-
-
-
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming."
+  (let* ((head-is-spec
+           (and
+             (consp head)
+             (consp (car head))
+             (length> (car head) 0)
+             (length< (car head) 3)))
+          (sym (if head-is-spec (caar head) '_))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    ;;(debug)
+    ;; (message "head: %s" head)
+    ;; (message "head-is-spec: %s" head-is-spec)
+    ;; (message "sym: %s" sym)
+    ;; (message "init-form: %s" init-form)
+    ;; (message "body: %s" body)
+    body
+    `(let ((,sym ,init-form))
+       (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
+       ,sym)))

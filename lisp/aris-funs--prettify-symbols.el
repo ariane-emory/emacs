@@ -42,6 +42,7 @@
   (interactive)
   (setq-local prettify-symbols-alist
     '(
+       ("|>" . ?▶)
        ("lambda" . ?λ)
        ("member" . ?∈)
        ;;("mapcar" . ?∀)
