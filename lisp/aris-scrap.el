@@ -70,6 +70,25 @@
 ;;   ->
 ;;   (- _ 1))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(| 8
+  (+ 3 _)
+  :(message "A message! _ = %s" _)
+  (* 2 _)
+  (- _ 1))
+
+(let ((x 5))
+  (| ((x (+ 3 x)))
+    (+ 3 x)
+    (* 2 x)
+    (- x 1)))
+
+(| ((x))
+  8 
+  (+ 3 x)
+  (* 2 x)
+  (- x 1))
+
 (| ((_ 8))
   (+ 3 _)
   :(message "It's %s" _)
@@ -106,25 +125,6 @@
   (- _ 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(| 8
-  (+ 3 _)
-  :(message "A message! _ = %s" _)
-  (* 2 _)
-  (- _ 1))
-
-(let ((x 5))
-  (| ((x (+ 3 x)))
-    (+ 3 x)
-    (* 2 x)
-    (- x 1)))
-
-(| ((x))
-  8 
-  (+ 3 x)
-  (* 2 x)
-  (- x 1))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |(head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming.
@@ -159,20 +159,20 @@
              (cond
                ((eq expr :) (setq ignore-flag t))
                (ignore-flag
-                 (let ((fun
-                         `(lambda (symbol)
-                            (cl-flet ((return (,symbol)
-                                        (throw 'return ,symbol)))
-                              ,expr))))
-                   (funcall fun ,sym))
+                 (cl-flet ((fun
+                             `(lambda (symbol)
+                                (cl-flet ((return (,symbol)
+                                            (throw 'return ,symbol)))
+                                  ,expr))))
+                   (fun ,sym))
                  (setq ignore-flag nil))
                (t
-                 (let ((fun
-                         `(lambda (,symbol)
-                            (cl-flet ((return (,symbol)
-                                        (throw 'return ,symbol)))
-                              ,expr))))
-                   (setq ,sym (funcall fun ,sym)))
+                 (cl-flet ((fun
+                             `(lambda (,symbol)
+                                (cl-flet ((return (,symbol)
+                                            (throw 'return ,symbol)))
+                                  ,expr))))
+                   (setq ,sym (fun ,sym)))
                  (setq ignore-flag nil)))))
          (throw 'return ,sym)))))
 
