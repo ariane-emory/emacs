@@ -54,3 +54,20 @@
     )
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmacro pipe (init &rest body)
+  `(let ((it ,init))
+     (mapc (lambda (expr) (setq it (eval expr))) ',body)
+     it))
+
+;; Usage
+(pipe 7
+  (+ 3 it) 
+  (* 2 it))
+
+
+
+
+
+
