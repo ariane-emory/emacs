@@ -43,7 +43,8 @@
   (setq-local prettify-symbols-alist
     '(
        ;; ("|>" . ?▶)
-       ("pipe" . ?⤇)
+       ;;("pipe" . ?⤇)
+       ("pipe" . ?▶)
        ("lambda" . ?λ)
        ("member" . ?∈)
        ;;("mapcar" . ?∀)
