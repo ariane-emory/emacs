@@ -49,14 +49,7 @@
            (*match-pattern2--use-dotted-pairs-in-result* nil))
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
-    (aris-add-dots-to-alist
-      (aris-merge-duplicate-alist-keys
-        '( (a . 1)
-           (a . 2)
-           (a . 3)
-           (a . 4)
-           (a . 5)
-           (b . 8))))
+    (aris-merge-duplicate-alist-keys '((a 1) (a 2) (a 3) (a 4) (a 5) (b 8)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
   )

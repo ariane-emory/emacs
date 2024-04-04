@@ -20,81 +20,81 @@ Artificial Intelligence' but several improvements.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
-(defcustom *match-pattern2--anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
+(defcustom *match-pattern--anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
   "The symbol used by `match-pattern2' to represent a wildcard, matching any single item in
 TARGET."
   :group 'match-pattern2
   :type 'symbol)
 
-(defcustom *match-pattern2--capture-can-be-predicate* t
+(defcustom *match-pattern--capture-can-be-predicate* t
   "Whether a capture's 'tag' in th PATTERN argument to `match-pattern2' is
 allowed to be a predicate function."
   :group 'match-pattern2
   :type 'boolean)
 
-(defcustom *match-pattern2--capture-element?* #'-cons-pair?
+(defcustom *match-pattern--capture-element?* #'-cons-pair?
   "The function used by `match-pattern2' to determine if a PATTERN element
 represents a capture. By default, true pairs are considered captures."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--error-if-target-element-is-not-verbatim* t
+(defcustom *match-pattern--error-if-target-element-is-not-verbatim* t
   "Whether `match-pattern2' shoud signal an error (or merely fail to match) if a
 non-verbatim TARGET element is encountered. This setting only applies when
-*MATCH-PATTERN2--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
+*MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
   :group 'match-pattern2
   :type 'boolean)
 
-(defcustom *match-pattern2--get-capture-symbol-fun* #'cdr
+(defcustom *match-pattern--get-capture-symbol-fun* #'cdr
   "The function used by `match-pattern2' to extract the symbol from a capture."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--get-capture-tag-fun* #'car
+(defcustom *match-pattern--get-capture-tag-fun* #'car
   "The function used by `match-pattern2' to extract the 'tag' from a capture element."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--init-fun* nil
+(defcustom *match-pattern--init-fun* nil
   "The function `match-pattern2' calls to initialize a new match."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--invalid-element?* nil
+(defcustom *match-pattern--invalid-element?* nil
   "The function used by `match-pattern2' to determine if a PATTERN element is an illegal
 element. By default, any element that is neither a capture element or a verbatim
 element is an invalid element."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--kleene-tag* '*
+(defcustom *match-pattern--kleene-tag* '*
   "The symbol used by `match-pattern2' to represent a Kleene star, matching 0 or more times."
   :group 'match-pattern2
   :type 'symbol)
 
-(defcustom *match-pattern2--merge-duplicate-alist-keys* t
+(defcustom *match-pattern--merge-duplicate-alist-keys* t
   "Whether `match-pattern2' should merge the values of duplicate keys in the result alist."
   :group 'match-pattern2
   :type 'boolean)
 
-(defcustom *match-pattern2--target-elements-must-be-verbatim* t
+(defcustom *match-pattern--target-elements-must-be-verbatim* t
   "Whether the elements of  the TARGET argument to `match-pattern2' must be verbatim elements."
   :group 'match-pattern2
   :type 'boolean)
 
-(defcustom *match-pattern2--use-dotted-pairs-in-result* t
+(defcustom *match-pattern--use-dotted-pairs-in-result* t
   "Whether `match-pattern2' should use dotted pairs in the result alist."
   :group 'match-pattern2
   :type 'boolean)
 
-(defcustom *match-pattern2--verbatim-element?* nil 
+(defcustom *match-pattern--verbatim-element?* nil 
   "The function used by `match-pattern2' to determine if a PATTERN element is a verbatim
 (non-capturing).  element. By default any element that isn't a capture element is a
 verbatim element."
   :group 'match-pattern2
   :type 'function)
 
-(defcustom *match-pattern2--verbose* nil
+(defcustom *match-pattern--verbose* nil
   "Whether `match-pattern2' should print verbose messages."
   :group 'match-pattern2
   :type 'boolean)
@@ -341,12 +341,13 @@ Examples:
 		              ;; If the match succeeded but there were no captures, just return t:
 		              t
 		              (print "Extracted match result %s." match-result)
-		              (nreverse
-                    (let ((match-result
-                            (if *match-pattern2--merge-duplicate-alist-keys*
-			                        (aris-merge-duplicate-alist-keys match-result)
-			                        match-result)))
-		                  (print "Post-merge match result %s." match-result)
+                  (let ((match-result
+                          (if (not *match-pattern2--merge-duplicate-alist-keys*)
+			                      match-result                              
+			                      (let ((merged (aris-merge-duplicate-alist-keys match-result)))
+                              (print "Post-merge match result %s." merged)
+                              merged))))
+		                (nreverse
 		                  (if *match-pattern2--use-dotted-pairs-in-result*
 		                    (aris-add-dots-to-alist match-result)
 		                    match-result))))))))))))
