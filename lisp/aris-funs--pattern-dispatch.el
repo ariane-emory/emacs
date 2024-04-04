@@ -391,6 +391,34 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when nil
+  (progn
+    (pd--reset)
+    (def (fib 0) 0)
+    (def (fib 1) 1)
+    (def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+    (def (double n) (+ n n))
+    (def (square y) (* y y))
+    (def (double-square y) (double (square y)))
+    (double-square 3)
+
+    (prn (make-string 80 ?\=))
+    (let ( (*pd--verbose* t)
+           (*match-pattern--verbose* nil)
+           (*match-pattern2--verbose* nil))
+      (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
+      (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
+      (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
+      (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
+      
+      (prn "Prnting the table:")
+      (pd--print-table))
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--pattern-dispatch)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
