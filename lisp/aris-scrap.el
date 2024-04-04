@@ -139,17 +139,17 @@
        (catch 'return
          (mapr ',body
            (lambda (expr)
-             (cl-flet ((fun2
+             (cl-flet ((eval-expr
                          `(lambda (sym)
                             (cl-flet ((return (,sym) (throw 'return ,sym)))
                               ,expr))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  (ignore-flag
-                   (fun2 ,var)
+                   (eval-expr ,var)
                    (setq ignore-flag nil))
                  (t
-                   (setq ,var (fun2 ,var))
+                   (setq ,var (eval-expr ,var))
                    (setq ignore-flag nil))))))
          (throw 'return ,var)))))
 
