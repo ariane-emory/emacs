@@ -212,7 +212,8 @@
            (mapcr ',body
              (lambda (expr)
                (prin (make-string 80 ?\=))
-               (prin "Expr: %S..." expr)
+               (prin "Expr: %S" expr)
+               (prin "Var:  %S" ,var)
                (prin "Last: %S" last)
                (cl-flet ((expr-fun
                            `(lambda (sym)
@@ -227,14 +228,23 @@
                      (setq ,var last)
                      (setq last nil)
                      (prin "Updated! Var %S, last %S" ,var last))
-                   (t
-                     ;;(setq ,var (eval expr))
-                     (setq last (eval expr)))))))
-           (throw 'return ,var))))))
+                   (t (setq last (expr-fun ,var)))))))
+           (throw 'return last))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(|>  8 -> _)
-;; (prin "It's %S" _) -> (* 2 _)
+(|> 8 ->
+  (prin "It's %S" _)
+  (* 2 _) -> _)
+
+(|> ((x 8)) ->
+  (prin "It's %S" x)
+  (* 2 x) -> x)
+
+(|> ((x)) 8 ->
+  (prin "It's %S" x)
+  (return (* 3 x))
+  (* 2 x) -> x)
+
 ;; (prin "Now it's %S" _)
 ;; (if (> _ 25) (return 100))
 ;; (prin "And now it's %S" _)
