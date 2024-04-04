@@ -137,19 +137,19 @@
             (,var ,init-form)
             (ignore-flag nil))
        (catch 'return
-         (mapr ',body
+         (mapcr ',body
            (lambda (expr)
-             (cl-flet ((eval-expr
+             (cl-flet ((expr-fun
                          `(lambda (sym)
                             (cl-flet ((return (,sym) (throw 'return ,sym)))
                               ,expr))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  (ignore-flag
-                   (eval-expr ,var)
+                   (expr-fun ,var)
                    (setq ignore-flag nil))
                  (t
-                   (setq ,var (eval-expr ,var))
+                   (setq ,var (expr-fun ,var))
                    (setq ignore-flag nil))))))
          (throw 'return ,var)))))
 
