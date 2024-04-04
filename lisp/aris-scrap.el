@@ -106,9 +106,18 @@
   (- x 1))
 
 (defmacro pipe (init &rest body)
+  "GPT, non-working."
   `(let ((it ,init))
      (dolist (expr (list ,@body))
-       (setq it (eval expr)))
+       (setq it `(progn ,expr)))
+     it))
+
+(defmacro pipe (init &rest body)
+  "Codex, working."
+  `(let ((it ,init))
+     (dolist (expr ',body)
+       (let ((fun (eval `(lambda (it) ,expr))))
+         (setq it (funcall fun it))))
      it))
 
 (pipe
@@ -117,25 +126,17 @@
   (* 2 it)
   (- it 1))
 
-;; expansion:
-(let ((it 8))
-  (let ((tail (list (+ 3 it) (* 2 it) (- it 1))))
-    (while tail
-      (let ((expr (car tail)))
-        (setq it (eval expr))
-        (setq tail (cdr tail)))))
+(let
+  ((it 8))
+  (dolist
+    (expr
+      (list
+        (+ 3 it)
+        (* 2 it)
+        (- it 1)))
+    (setq it
+      `(progn ,expr)))
   it)
 
 
-(defmacro pipe (init &rest body)
-  "Codex version."
-  `(let ((it ,init))
-     (dolist (expr (list ,@body))
-       (setq it (funcall expr it)))
-     it))
 
-(pipe
-  8
-  (lambda (it) (+ 3 it))
-  (lambda (it) (* 2 it))
-  (lambda (it) (- it 1)))
