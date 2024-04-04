@@ -209,91 +209,91 @@ Does what it says on the tin and composes unary predicatess PREDS."
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun all (pred? lst)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "t when all elems in LST? are PRED?"
-;;   (unless (fun? pred?) (error "PRED? must be a function"))
-;;   (while (and lst (funcall pred? (car lst)))
-;;     (pop lst))
-;;   (nil? lst))
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (all (lambda (x) (even? x)) '(2 4 6 8 10))
-;; ;; (all (lambda (x) (even? x)) '(2 4 6 7 8 10))
-;; ;; (all 'even? '(2 4 6 8 10))
-;; ;; (all 'even? '(2 4 6 7 8 10))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun all (pred? lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when all elems in LST? are PRED?"
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (while (and lst (funcall pred? (car lst)))
+    (pop lst))
+  (nil? lst))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (all (lambda (x) (even? x)) '(2 4 6 8 10))
+;; (all (lambda (x) (even? x)) '(2 4 6 7 8 10))
+;; (all 'even? '(2 4 6 8 10))
+;; (all 'even? '(2 4 6 7 8 10))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun any (pred? lst)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "t when any elem in LST? is PRED?."
-;;   (unless (fun? pred?) (error "PRED? must be a function"))
-;;   (let (result)
-;;     (while (and lst (not result))
-;;       (setq result (funcall pred? (pop lst))))
-;;     result))
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (any 'even? '(1 3 5 7 9 10))
-;; ;; (any 'even? '(1 3 5 7 9 11))
-;; ;; (any (lambda (x) (even? x)) '(1 3 5 7 9 10))
-;; ;; (any (lambda (x) (even? x)) '(1 3 5 7 9 11))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun any (pred? lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when any elem in LST? is PRED?."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (let (result)
+    (while (and lst (not result))
+      (setq result (funcall pred? (pop lst))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (any 'even? '(1 3 5 7 9 10))
+;; (any 'even? '(1 3 5 7 9 11))
+;; (any (lambda (x) (even? x)) '(1 3 5 7 9 10))
+;; (any (lambda (x) (even? x)) '(1 3 5 7 9 11))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun heads (lsts)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Return a list of the heads of the lists in LSTS."
-;;   (unless (list? lsts)     (error "LSTS must be a list of lists"))
-;;   (unless (all 'list? lsts) (error "LSTS must be a list of lists"))
-;;   (let* ( (result (list (car (pop lsts))))
-;;           (tail   result))
-;;     (while lsts
-;;       (let ((new-tail (list (car (pop lsts)))))
-;;         (setq tail (rplacd! tail new-tail))))
-;;     result))
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (heads '((1 2 3) (4 5 6) (7 8 9)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun heads (lsts)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return a list of the heads of the lists in LSTS."
+  (unless (list? lsts)     (error "LSTS must be a list of lists"))
+  (unless (all 'list? lsts) (error "LSTS must be a list of lists"))
+  (let* ( (result (list (car (pop lsts))))
+          (tail   result))
+    (while lsts
+      (let ((new-tail (list (car (pop lsts)))))
+        (setq tail (rplacd! tail new-tail))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (heads '((1 2 3) (4 5 6) (7 8 9)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun tails (lsts)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Return a list of the tails of the lists in LSTS."
-;;   (unless (list? lsts)     (error "LSTS must be a list of lists"))
-;;   (unless (all 'list? lsts) (error "LSTS must be a list of lists"))
-;;   (let* ((result (list (cdr (pop lsts))))
-;;           (tail   result))
-;;     (while lsts
-;;       (let ((new-tail (list (cdr (pop lsts)))))
-;;         (setq tail (rplacd! tail new-tail))))
-;;     result))
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (tails '((1 2 3) (4 5 6) (7 8 9)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun tails (lsts)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return a list of the tails of the lists in LSTS."
+  (unless (list? lsts)     (error "LSTS must be a list of lists"))
+  (unless (all 'list? lsts) (error "LSTS must be a list of lists"))
+  (let* ((result (list (cdr (pop lsts))))
+          (tail   result))
+    (while lsts
+      (let ((new-tail (list (cdr (pop lsts)))))
+        (setq tail (rplacd! tail new-tail))))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (tails '((1 2 3) (4 5 6) (7 8 9)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; Aliases:
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defalias 'atom?           'atom)
-;; (defalias 'bound?          'boundp)
-;; (defalias 'bound-and-true? 'bound-and-true-p)
-;; (defalias 'cons?           'consp)
-;; (defalias 'equal?          'equal)
-;; (defalias 'integer?        'integerp)
-;; (defalias 'list?           'listp)
-;; (defalias 'number?         'numberp)
-;; (defalias 'rplaca!         'rplaca)
-;; (defalias 'rplacd!         'rplacd)
-;; (defalias 'string?         'stringp)
-;; (defalias 'zero?           'zerop)
-;; (defalias 'decr            'cl-decf)
-;; (defalias 'incr            'cl-incf)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Aliases:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'atom?           'atom)
+(defalias 'bound?          'boundp)
+(defalias 'bound-and-true? 'bound-and-true-p)
+(defalias 'cons?           'consp)
+(defalias 'equal?          'equal)
+(defalias 'integer?        'integerp)
+(defalias 'list?           'listp)
+(defalias 'number?         'numberp)
+(defalias 'rplaca!         'rplaca)
+(defalias 'rplacd!         'rplacd)
+(defalias 'string?         'stringp)
+(defalias 'zero?           'zerop)
+(defalias 'decr            'cl-decf)
+(defalias 'incr            'cl-incf)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
