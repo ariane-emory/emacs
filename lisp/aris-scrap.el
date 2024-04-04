@@ -84,7 +84,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe (head &rest tail)
+(defmacro |(head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming.
 (pipe 
@@ -99,7 +99,7 @@
              (consp (car head))
              (length> (car head) 0)
              (length< (car head) 3)))
-          (sym (if head-is-spec (caar head) pipe-default-sym))
+          (sym (if head-is-spec (caar head) pipe-default-var-sym))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
     ;;(debug)
@@ -111,10 +111,11 @@
     body
     `(let ( (,sym ,init-form)
             (ignore-flag nil))
-       (catch 'return
-         (mapr ',body
-           (lambda (expr)
-             (cl-flet ((ret () `(throw 'return nil)))
+       ;;(fset 'return (lambda () (throw 'return nil)))
+       (cl-flet ((ret () (throw 'return nil)))
+         (catch 'return
+           (mapr ',body
+             (lambda (expr)
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  ((eq expr 'return) (throw 'return nil))
@@ -126,15 +127,20 @@
                    (setq ignore-flag nil))))))
          ,sym))))
 
-;;(defmacro ret () `(throw 'return _))
+
 
 (|
   8
   (+ 3 _)
   :(message "A message! _ = %s" _) 
   (* 2 _)
-  ;;(ret) ;;return
+  (ret)
   (- _ 1))
+
+
+
+
+
 
 
 
