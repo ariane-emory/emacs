@@ -26,69 +26,66 @@
           (var (if head-is-spec (caar head) pipe-default-var-sym))
           (init-form (if head-is-spec (cadar head) head))
           (body tail))
-    (prn (make-string 80 ?\=))
-    (prn "PIPE CALLED")
-    (prn (make-string 80 ?\=))
-    (prn "head: %s" head)
-    (prn "head-is-spec: %s" head-is-spec)
-    (prn "var: %s" var)
-    (prn "init-form: %s" init-form)
-    (prn "body: %s" body)
+    ;; (prn (make-string 80 ?\=))
+    ;; (prn "PIPE CALLED")
+    ;; (prn (make-string 80 ?\=))
+    ;; (prn "head: %s" head)
+    ;; (prn "head-is-spec: %s" head-is-spec)
+    ;; (prn "var: %s" var)
+    ;; (prn "init-form: %s" init-form)
+    ;; (prn "body: %s" body)
     `(progn
-       (prn (make-string 80 ?\=))
+       ;; (prn (make-string 80 ?\=))
        (let ( (last ,init-form)
               (sym ',var)
               (,var nil))
          (catch 'return
            (mapcr ',body
              (lambda (expr)
-               (prn (make-string 80 ?\=))
-               (prn "Expr: %S" expr)
-               (prn "Var:  %S" ,var)
-               (prn "Last: %S" last)
+               ;; (prn (make-string 80 ?\=))
+               ;; (prn "Expr: %S" expr)
+               ;; (prn "Var:  %S" ,var)
+               ;; (prn "Last: %S" last)
                (cl-flet ((expr-fun
                            `(lambda (sym)
                               (cl-flet ((return (,sym)
                                           (throw 'return ,sym)))
-                                (prn "Eval: %S" ',expr)
+                                ;; (prn "Eval: %S" ',expr)
                                 (let ((result ,expr))
-                                  (prn "Next: %S" result)
+                                  ;; (prn "Next: %S" result)
                                   result)))))
                  (cond
                    ((eq expr '->)
                      (setq ,var last)
                      (setq last nil)
-                     (prn "Updated! Var is %S, last is %S" ,var last))
+                     ;; (prn "Updated! Var is %S, last is %S" ,var last)
+                     )
                    (t (setq last (expr-fun ,var)))))))
            (throw 'return last))))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;(when nil
-(progn
-  ;; Do some simple arithmetic:
-  (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
+(when nil
+  (progn
+    ;; Do some simple arithmetic:
+    (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-  ;; Reset the pattern-call dispatcher's alist.
-  (pd--reset) 
+    ;; Reset the pattern-call dispatcher's alist.
+    (pd--reset) 
 
-  ;; Define a fib:
-  (def (fib 0) 0)
-  (def (fib 1) 1)
-  (def (fib n)
-    (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _)))))
+    ;; Define a fib:
+    (def (fib 0) 0)
+    (def (fib 1) 1)
+    (def (fib n)
+      (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _)))))
 
-  ;; Call it with some output commenting on the proceedings:
-  (|>
-    3 -> (prn "Starting with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-    (prn "Calculating (fib %d)" _) (fib _) ->
-    "I'm just a harmless string sitting around doing doing nothing."
-    (prn "Result: %d" _) _)) ;; ⇒ 55
-
-
-
-
+    ;; Call it with some output commenting on the proceedings:
+    (|>
+      3 -> (prn "Starting with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+      (prn "Calculating (fib %d)" _) (fib _) ->
+      "I'm just a harmless string sitting around doing doing nothing."
+      (prn "Result: %d" _) _))) ;; ⇒ 55
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
