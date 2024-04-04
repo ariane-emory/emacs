@@ -57,57 +57,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-(defmacro pipe (initial &rest body)
-  `(let ((_ ,initial))
-     (mapc (lambda (expr) (setq _ (eval expr))) ',body)
-     _))
-
-
-
-(defmacro pipe (init &rest body)
-  "Codex, working."
-  `(let ((_ ,init))
-     (dolist (expr ',body)
-       (let ((fun `(lambda (_) ,expr)))
-         (setq _ (funcall fun _))))
-     _))
-
-(defmacro pipe (head &rest tail)
-  "With optional let-like binding/symbol naming."
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (sym (if head-is-spec (caar head) '_))
-          (init-form (when head-is-spec (cadar head)))
-          (body (if head-is-spec tail (cons head tail))))
-    ;;(debug)
-    ;; (message "head: %s" head)
-    ;; (message "head-is-spec: %s" head-is-spec)
-    ;; (message "sym: %s" sym)
-    ;; (message "init-form: %s" init-form)
-    ;; (message "body: %s" body)
-    body
-    `(let ((,sym ,init-form))
-       (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
-       ,sym)))
-
-(pipe
-  8
+(>>= 8
   (+ 3 _)
   (* 2 _)
   (- _ 1))
 
-(setq x 5)
-(pipe ((x (+ 3 x)))
-  (+ 3 x)
-  (* 2 x)
-  (- x 1))
+(let ((x 5))
+  (>>= ((x (+ 3 x)))
+    (+ 3 x)
+    (* 2 x)
+    (- x 1)))
 
-(pipe ((x))
+(>>= ((x))
   8
   (+ 3 x)
   (* 2 x)
