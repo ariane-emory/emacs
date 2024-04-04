@@ -186,27 +186,27 @@ Does what it says on the tin and composes unary predicatess PREDS."
 ;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun split-list (pred? lst)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Destructivly split LST into two sublists:
-;; 1. The longest initial sublist of elements satisfying PRED?
-;; 2. The rest of the elements."
-;;   (unless (fun? pred?) (error "PRED? must be a function"))
-;;   (unless (list? lst)  (error "LST must be a list"))
-;;   (when lst
-;;     (let ( prev
-;;            (current lst))
-;;       (while (and current (funcall pred? (car current)))
-;;         (setq
-;;           prev    current
-;;           current (cdr current)))
-;;       (if prev
-;;         (progn
-;;           (rplacd! prev nil)
-;;           (list lst current))
-;;         (list nil lst)))))
-;;         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun split-list (pred? lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructivly split LST into two sublists:
+1. The longest initial sublist of elements satisfying PRED?
+2. The rest of the elements."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (list? lst)  (error "LST must be a list"))
+  (when lst
+    (let ( prev
+           (current lst))
+      (while (and current (funcall pred? (car current)))
+        (setq
+          prev    current
+          current (cdr current)))
+      (if prev
+        (progn
+          (rplacd! prev nil)
+          (list lst current))
+        (list nil lst)))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
