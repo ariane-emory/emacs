@@ -18,7 +18,7 @@
     ;; (def (double-square y) (double 2 (square y)))
     ;; (double-square 3)
 
-    (prin (make-string 80 ?\=))
+    (prn (make-string 80 ?\=))
     (let ( (*pd--verbose* t)
            (*match-pattern--verbose* nil)
            (*match-pattern2--verbose* nil))
@@ -27,12 +27,12 @@
       (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
       (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
       
-      (prin "Printing the table:")
-      (pd--print-table))))
+      (prn "Prnting the table:")
+      (pd--prnt-table))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)
-(pd--print-group (pd--get-group 'fib))
+(pd--prnt-group (pd--get-group 'fib))
 (pd--format-group-as-lines (pd--get-group 'fib))
 (pd--format-group-as-string (pd--get-group 'fib))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -146,7 +146,7 @@
                          `(lambda (sym)
                             (cl-flet ((return (,sym)
                                         (throw 'return ,sym)))                              
-                              (prin "Eval %S..." ',expr)
+                              (prn "Eval %S..." ',expr)
                               (let ((result ,expr))
                                 result)))))
                (cond
@@ -164,13 +164,13 @@
 (|>
   8
   (+ 3 _)
-  :(prin "It's %S" _)
+  :(prn "It's %S" _)
   (* 2 _)
-  :(prin "Now it's %S" _)
+  :(prn "Now it's %S" _)
   :(if (> _ 25) (return 100))
-  :(prin "And now it's %S" _)
+  :(prn "And now it's %S" _)
   :(return (+ _ 50))
-  :(prin "Finally it's %S" _)
+  :(prn "Finally it's %S" _)
   (- _ 1))
 
 
@@ -184,7 +184,7 @@
   8
   (+ 3 it)
   :(message \"A message! it = %s\" it)
-  (* 2 it)
+  (* 2 it))
   (- it 1))"
   (let* ((head-is-spec
            (and
@@ -195,59 +195,80 @@
           (var (if head-is-spec (caar head) pipe-default-var-sym))
           (init-form (if head-is-spec (cadar head) head))
           (body tail))
-    (prin (make-string 80 ?\=))
-    (prin "PIPE CALLED")
-    (prin (make-string 80 ?\=))
-    (prin "head: %s" head)
-    (prin "head-is-spec: %s" head-is-spec)
-    (prin "var: %s" var)
-    (prin "init-form: %s" init-form)
-    (prin "body: %s" body)
+    (prn (make-string 80 ?\=))
+    (prn "PIPE CALLED")
+    (prn (make-string 80 ?\=))
+    (prn "head: %s" head)
+    (prn "head-is-spec: %s" head-is-spec)
+    (prn "var: %s" var)
+    (prn "init-form: %s" init-form)
+    (prn "body: %s" body)
     `(progn
-       (prin (make-string 80 ?\=))
+       (prn (make-string 80 ?\=))
        (let ( (last ,init-form)
               (sym ',var)
               (,var nil))
          (catch 'return
            (mapcr ',body
              (lambda (expr)
-               (prin (make-string 80 ?\=))
-               (prin "Expr: %S" expr)
-               (prin "Var:  %S" ,var)
-               (prin "Last: %S" last)
+               (prn (make-string 80 ?\=))
+               (prn "Expr: %S" expr)
+               (prn "Var:  %S" ,var)
+               (prn "Last: %S" last)
                (cl-flet ((expr-fun
                            `(lambda (sym)
                               (cl-flet ((return (,sym)
                                           (throw 'return ,sym)))
-                                (prin "Eval: %S" ',expr)
+                                (prn "Eval: %S" ',expr)
                                 (let ((result ,expr))
-                                  (prin "Next: %S" result)
+                                  (prn "Next: %S" result)
                                   result)))))
                  (cond
                    ((eq expr '->)
                      (setq ,var last)
                      (setq last nil)
-                     (prin "Updated! Var %S, last %S" ,var last))
+                     (prn "Updated! Var is %S, last is %S" ,var last))
                    (t (setq last (expr-fun ,var)))))))
            (throw 'return last))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (|> 8 ->
-  (prin "It's %S" _)
+  (prn "It's %S" _)
   (* 2 _) -> _)
 
 (|> ((x 8)) ->
-  (prin "It's %S" x)
+  (prn "It's %S" x)
   (* 2 x) -> x)
 
 (|> ((x)) 8 ->
-  (prin "It's %S" x)
+  (prn "It's %S" x)
   (return (* 3 x))
   (* 2 x) -> x)
 
-;; (prin "Now it's %S" _)
+;; (prn "Now it's %S" _)
 ;; (if (> _ 25) (return 100))
-;; (prin "And now it's %S" _)
+;; (prn "And now it's %S" _)
 ;; (return (+ _ 50))
-;; (prin "Finally it's %S" _) ->(- _ 1)
+;; (prn "Finally it's %S" _) ->(- _ 1)
+
+(progn
+  (pd--reset)
+  (def (fib 0) 0)
+  (def (fib 1) 1)
+  (def (fib n)
+
+    (|> n -> (- _ 1) -> (fib _))
+    
+
+    (let ((n 10))
+      (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _))))
+      )
+
+    
+    (+ (fib (- n 1)) (fib (- n 2))))
+
+  (|>
+    3 -> (prn "Starting with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+    (prn "Calculating (fib %d)" _) (fib _)))
+
 
