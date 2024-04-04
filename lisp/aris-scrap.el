@@ -32,7 +32,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)
-(pd--prnt-group (pd--get-group 'fib))
+(pd--print-group (pd--get-group 'fib))
 (pd--format-group-as-lines (pd--get-group 'fib))
 (pd--format-group-as-string (pd--get-group 'fib))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -61,204 +61,25 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (=> 8
-;;   -> (+ 3 _)
-;;   (message "It's %s" _)
-;;   -> (* 2 _)
-;;   (message "Now it's %s" _)
-;;   (if (> _ 25) (return 100))
-;;   (message "And now it's %s" _)
-;;   (return (+ _ 50))
-;;   (message "Finally it's %s" _)
-;;   ->
-;;   (- _ 1))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(| 8
-  (+ 3 _)
-  :(message "A message! _ = %s" _)
-  (* 2 _)
-  (- _ 1))
-
-(let ((x 5))
-  (| ((x (+ 3 x)))
-    (+ 3 x)
-    (* 2 x)
-    (- x 1)))
-
-(| ((x))
-  8 
-  (+ 3 x)
-  (* 2 x)
-  (- x 1))
-
-(| ((_ 8))
-  (+ 3 _)
-  :(message "It's %s" _)
-  (* 2 _)
-  :(message "Now it's %s" _)
-  :(if (> _ 25) (return 100))
-  :(message "And now it's %s" _)
-  :(return (+ _ 50))
-  :(message "Finally it's %s" _)
-  (- _ 1))
-
-(| ((_))
-  8
-  (+ 3 _)
-  :(message "It's %s" _)
-  (* 2 _)
-  :(message "Now it's %s" _)
-  :(if (> _ 25) (return 100))
-  :(message "And now it's %s" _)
-  :(return (+ _ 50))
-  :(message "Finally it's %s" _)
-  (- _ 1))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro |> (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming.
-(pipe 
-  8
-  (+ 3 it)
-  :(message \"A message! it = %s\" it)
-  (* 2 it)
-  (- it 1))"
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (var (if head-is-spec (caar head) pipe-default-var-sym))
-          (init-form (when head-is-spec (cadar head)))
-          (body (if head-is-spec tail (cons head tail))))
-    `(let ( (sym ',var)
-            (,var ,init-form)
-            (ignore-flag nil))
-       (catch 'return
-         (mapcr ',body
-           (lambda (expr)
-             (cl-flet ((expr-fun
-                         `(lambda (sym)
-                            (cl-flet ((return (,sym)
-                                        (throw 'return ,sym)))                              
-                              (prn "Eval %S..." ',expr)
-                              (let ((result ,expr))
-                                result)))))
-               (cond
-                 ((eq expr :) (setq ignore-flag t))
-                 (ignore-flag
-                   (expr-fun ,var)
-                   (setq ignore-flag nil))
-                 (t
-                   (setq ,var (expr-fun ,var))
-                   (setq ignore-flag nil))))))
-         (throw 'return ,var)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(|>
-  8
-  (+ 3 _)
-  :(prn "It's %S" _)
-  (* 2 _)
-  :(prn "Now it's %S" _)
-  :(if (> _ 25) (return 100))
-  :(prn "And now it's %S" _)
-  :(return (+ _ 50))
-  :(prn "Finally it's %S" _)
-  (- _ 1))
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro |> (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming.
-(pipe 
-  8
-  (+ 3 it)
-  :(message \"A message! it = %s\" it)
-  (* 2 it))
-  (- it 1))"
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (var (if head-is-spec (caar head) pipe-default-var-sym))
-          (init-form (if head-is-spec (cadar head) head))
-          (body tail))
-    (prn (make-string 80 ?\=))
-    (prn "PIPE CALLED")
-    (prn (make-string 80 ?\=))
-    (prn "head: %s" head)
-    (prn "head-is-spec: %s" head-is-spec)
-    (prn "var: %s" var)
-    (prn "init-form: %s" init-form)
-    (prn "body: %s" body)
-    `(progn
-       (prn (make-string 80 ?\=))
-       (let ( (last ,init-form)
-              (sym ',var)
-              (,var nil))
-         (catch 'return
-           (mapcr ',body
-             (lambda (expr)
-               (prn (make-string 80 ?\=))
-               (prn "Expr: %S" expr)
-               (prn "Var:  %S" ,var)
-               (prn "Last: %S" last)
-               (cl-flet ((expr-fun
-                           `(lambda (sym)
-                              (cl-flet ((return (,sym)
-                                          (throw 'return ,sym)))
-                                (prn "Eval: %S" ',expr)
-                                (let ((result ,expr))
-                                  (prn "Next: %S" result)
-                                  result)))))
-                 (cond
-                   ((eq expr '->)
-                     (setq ,var last)
-                     (setq last nil)
-                     (prn "Updated! Var is %S, last is %S" ,var last))
-                   (t (setq last (expr-fun ,var)))))))
-           (throw 'return last))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(|> 8 ->
-  (prn "It's %S" _)
-  (* 2 _) -> _)
-
-(|> ((x 8)) ->
-  (prn "It's %S" x)
-  (* 2 x) -> x)
-
-(|> ((x)) 8 ->
-  (prn "It's %S" x)
-  (return (* 3 x))
-  (* 2 x) -> x)
-
-;; (prn "Now it's %S" _)
-;; (if (> _ 25) (return 100))
-;; (prn "And now it's %S" _)
-;; (return (+ _ 50))
-;; (prn "Finally it's %S" _) ->(- _ 1)
-
+;;(when nil
 (progn
-  (pd--reset)
+  ;; Do some simple arithmetic:
+  (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
+
+  ;; Reset the pattern-call dispatcher's alist.
+  (pd--reset) 
+
+  ;; Define a fib:
   (def (fib 0) 0)
   (def (fib 1) 1)
-  (def (fib n) (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _)))))
+  (def (fib n)
+    (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _)))))
 
+  ;; Call it with some output commenting on the proceedings:
   (|>
     3 -> (prn "Starting with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-    (prn "Calculating (fib %d)" _) (fib _)))
+    (prn "Calculating (fib %d)" _) (fib _) ->
+    "I'm just a harmless string sitting around doing doing nothing."
+    (prn "Result: %d" _) _)) ;; ⇒ 55
 
 
