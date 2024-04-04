@@ -55,7 +55,7 @@
                                   (prn "Next: %S" result)
                                   result)))))
                  (cond
-                   ((eq expr '|>)
+                   ((eq expr '->)
                      (setq ,var last)
                      (setq last nil)
                      (prn "Updated! Var is %S, last is %S" ,var last))
@@ -65,18 +65,28 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (progn
-    (pd--reset)
+;;(when nil
+(progn
+  ;; Do some simple arithmetic:
+  (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-    (def (fib 0) 0)
-    (def (fib 1) 1)
-    (def (fib n)
-      (|> (|> n |> (- _ 1) |> (fib _)) |> (+ _ (|> n |> (- _ 2) |> (fib _)))))
+  ;; Reset the pattern-call dispatcher's alist.
+  (pd--reset) 
 
-    (|>
-      3 |> (prn "Starting with %d" _) (+ _ (|> 2 |> (+ _ 5))) |>
-      (prn "Calculating (fib %d)" _) (fib _))))
+  ;; Define a fib:
+  (def (fib 0) 0)
+  (def (fib 1) 1)
+  (def (fib n)
+    (|> (|> n -> (- _ 1) -> (fib _)) -> (+ _ (|> n -> (- _ 2) -> (fib _)))))
+
+  ;; Call it with some output commenting on the proceedings:
+  (|>
+    3 -> (prn "Starting with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+    (prn "Calculating (fib %d)" _) (fib _) ->
+    "I'm just a harmless string sitting around doing doing nothing."
+    (prn "Result: %d" _) _)) ;; ⇒ 55
+
+
 
 
 
