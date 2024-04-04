@@ -112,17 +112,7 @@
   :(message "Finally it's %s" _)
   (- _ 1))
 
-(| 
-  8
-  (+ 3 _)
-  :(message "It's %s" _)
-  (* 2 _)
-  :(message "Now it's %s" _)
-  :(if (> _ 25) (return 100))
-  :(message "And now it's %s" _)
-  :(return (+ _ 50))
-  :(message "Finally it's %s" _)
-  (- _ 1))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |(head &rest tail)
@@ -156,23 +146,45 @@
        (catch 'return
          (mapr ',body
            (lambda (expr)
-             (cond
-               ((eq expr :) (setq ignore-flag t))
-               (ignore-flag
-                 (cl-flet ((fun
-                             `(lambda (symbol)
-                                (cl-flet ((return (,symbol)
-                                            (throw 'return ,symbol)))
+             (cl-flet ((fun2 `(lambda (symbol)
+                                (cl-flet ((return (,symbol) (throw 'return ,symbol)))
                                   ,expr))))
-                   (fun ,sym))
-                 (setq ignore-flag nil))
-               (t
-                 (cl-flet ((fun
-                             `(lambda (,symbol)
-                                (cl-flet ((return (,symbol)
-                                            (throw 'return ,symbol)))
-                                  ,expr))))
-                   (setq ,sym (fun ,sym)))
-                 (setq ignore-flag nil)))))
+               (cond
+                 ((eq expr :) (setq ignore-flag t))
+                 (ignore-flag
+                   (cl-flet ((fun
+                               `(lambda (symbol)
+                                  (cl-flet ((return (,symbol) (throw 'return ,symbol)))
+                                    ,expr))))
+                     (fun2 ,sym))
+                   (setq ignore-flag nil))
+                 (t
+                   (cl-flet ((fun
+                               `(lambda (,symbol)
+                                  (cl-flet ((return (,symbol) (throw 'return ,symbol)))
+                                    ,expr))))
+                     (setq ,sym (fun2 ,sym)))
+                   (setq ignore-flag nil))))))
          (throw 'return ,sym)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(| 
+  8
+  (+ 3 _)
+  :(message "It's %s" _)
+  (* 2 _)
+  :(message "Now it's %s" _)
+  :(if (> _ 25) (return 100))
+  :(message "And now it's %s" _)
+  :(return (+ _ 50))
+  :(message "Finally it's %s" _)
+  (- _ 1))
+
+
+
+
+
+
+
 
