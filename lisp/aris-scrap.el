@@ -130,35 +130,28 @@
              (consp (car head))
              (length> (car head) 0)
              (length< (car head) 3)))
-          (sym (if head-is-spec (caar head) pipe-default-var-sym))
+          (var (if head-is-spec (caar head) pipe-default-var-sym))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
-    ;;(debug)
-    ;; (message "head: %s" head)
-    ;; (message "head-is-spec: %s" head-is-spec)
-    ;; (message "sym: %s" sym)
-    ;; (message "init-form: %s" init-form)
-    ;; (message "body: %s" body)
-    body
-    `(let ( (symbol ',sym)
-            (,sym ,init-form)
+    `(let ( (sym ',var)
+            (,var ,init-form)
             (ignore-flag nil))
        (catch 'return
          (mapr ',body
            (lambda (expr)
              (cl-flet ((fun2
-                         `(lambda (symbol)
-                            (cl-flet ((return (,symbol) (throw 'return ,symbol)))
+                         `(lambda (sym)
+                            (cl-flet ((return (,sym) (throw 'return ,sym)))
                               ,expr))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  (ignore-flag
-                   (fun2 ,sym)
+                   (fun2 ,var)
                    (setq ignore-flag nil))
                  (t
-                   (setq ,sym (fun2 ,sym))
+                   (setq ,var (fun2 ,var))
                    (setq ignore-flag nil))))))
-         (throw 'return ,sym)))))
+         (throw 'return ,var)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
