@@ -6,7 +6,7 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(progn
+(when nil
   (pd--reset)
   (def (fib 0) 0)
   (def (fib 1) 1)
@@ -26,9 +26,6 @@
   (message "Printing the table:")
   (pd--print-table))
 
-;; todo:
-;;   continue match2
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)
 (pd--print-group (pd--get-group 'fib))
@@ -39,22 +36,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
-  (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (progn
+    (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
-  (let ( (*match-pattern2--verbose* t)
-         (*match-pattern2--merge-duplicate-alist-keys* nil))
-    (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+    (let ( (*match-pattern2--verbose* t)
+           (*match-pattern2--merge-duplicate-alist-keys* nil)
+           (*match-pattern2--use-dotted-pairs-in-result* nil))
+      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
-  (let ( (*match-pattern2--verbose* t)
-         (*match-pattern2--merge-duplicate-alist-keys* t))
-    (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+    (let ( (*match-pattern2--verbose* t)
+           (*match-pattern2--merge-duplicate-alist-keys* t)
+           (*match-pattern2--use-dotted-pairs-in-result* nil))
+      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
-  (aris-add-dots-to-alist
-    (aris-merge-duplicate-alist-keys
-      '( (a . 1)
-         (a . 2)
-         (a . 3)
-         (a . 4)
-         (a . 5)
-         (b . 8)))))
+    (aris-add-dots-to-alist
+      (aris-merge-duplicate-alist-keys
+        '( (a . 1)
+           (a . 2)
+           (a . 3)
+           (a . 4)
+           (a . 5)
+           (b . 8))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    )
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -228,9 +228,9 @@ Examples:
                    ;; Body of matchrec:
                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                    (print "matching %s against %s with acc %s..." pattern target accumulator)
-                   (let ((*with-messages--indent* (1+ *with-messages--indent*)))
-                     (print "target-head %s is %sa verbatim element." target-head
-                       (if (elem-is-verbatim? target-head) "" "not "))
+                   (with-indentation
+                     ;; (print "target-head %s is %sa verbatim element." target-head
+                     ;;   (if (elem-is-verbatim? target-head) "" "not "))
                      (cl-macrolet ((case (index descr &body body)
                                      `(progn
                                         (print "trying case %s: %s..." ,index ,descr)
