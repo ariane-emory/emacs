@@ -58,9 +58,9 @@
 (defmacro monad (&rest args) args)
 
 (|>
-  8
-  (+ 3 _)
-  (* 2 3) 
+  8 :
+  (+ 3 _) :
+  (* 2 3) :
   (- _ 1))
 
 (let ((x 5))
@@ -89,12 +89,6 @@
           (sym (if head-is-spec (caar head) '_))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
-    ;;(debug)
-    ;; (message "head: %s" head)
-    ;; (message "head-is-spec: %s" head-is-spec)
-    ;; (message "sym: %s" sym)
-    ;; (message "init-form: %s" init-form)
-    ;; (message "body: %s" body)
     body
     `(let ((,sym ,init-form))
        (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
