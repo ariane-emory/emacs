@@ -176,4 +176,59 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro |> (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming.
+(pipe 
+  8
+  (+ 3 it)
+  :(message \"A message! it = %s\" it)
+  (* 2 it)
+  (- it 1))"
+  (let* ((head-is-spec
+           (and
+             (consp head)
+             (consp (car head))
+             (length> (car head) 0)
+             (length< (car head) 3)))
+          (var (if head-is-spec (caar head) pipe-default-var-sym))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    `(let ( (sym ',var)
+            (,var ,init-form)
+            (ignore-flag nil))
+       (catch 'return
+         (mapcr ',body
+           (lambda (expr)
+             (cl-flet ((expr-fun
+                         `(lambda (sym)
+                            (cl-flet ((return (,sym)
+                                        (throw 'return ,sym)))
+                              (prin "Eval %S..." ',expr)
+                              (let ((result ,expr))
+                                result)))))
+               (cond
+                 ((eq expr '->) (setq record-flag t))
+                 (record-flag
+                   (setq ,var (expr-fun ,var))
+                   (setq record-flag nil))
+                 (t
+                   (expr-fun ,var)
+                   (setq record-flag nil))))))
+         (throw 'return ,var)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(|>
+  ((_ 8)) -> (+ 3 _)
+  (prin "It's %S" _) -> (* 2 _)
+  (prin "Now it's %S" _)
+  (if (> _ 25) (return 100))
+  (prin "And now it's %S" _)
+  (return (+ _ 50))
+  (prin "Finally it's %S" _) ->(- _ 1))
+
+
+
+
 
