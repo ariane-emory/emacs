@@ -5,6 +5,7 @@
 (require 'aris-funs--alist-funs)
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
+(require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (pd--reset)
@@ -66,23 +67,75 @@
   (* 2 _)
   (- _ 1))
 
-(defmacro pipen (&rest body)
-  
-  `(let (_)
-     (mapc (lambda (expr) (setq _ (eval expr))) ',body)
-     _))
+(defmacro pipe* (head &rest tail)
+  (let* ((head-is-spec
+           (and
+             (consp head)
+             (consp (car head))
+             (length> (car head) 0)
+             (length< (car head) 3)))
+          (sym (if head-is-spec (caar head) '_))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    ;;(debug)
+    (message "head: %s" head)
+    (message "head-is-spec: %s" head-is-spec)
+    (message "sym: %s" sym)
+    (message "init-form: %s" init-form)
+    (message "body: %s" body)
+    body
+    `(let ((,sym ,init-form))
+       (mapc (lambda (expr) (setq ,sym (eval expr))) ',body)
+       ,sym)))
 
+(pipe*
+  8
+  (+ 3 _)
+  (* 2 _)
+  (- _ 1))
 
-(pipen x
+(pipe* ((x (+ 3 5)))
   (+ 3 x)
   (* 2 x)
   (- x 1))
 
-(pipen ((x 8))
+(pipe* ((x))
+  8
   (+ 3 x)
   (* 2 x)
   (- x 1))
 
+(defmacro pipe (init &rest body)
+  `(let ((it ,init))
+     (dolist (expr (list ,@body))
+       (setq it (eval expr)))
+     it))
+
+(pipe
+  8
+  (+ 3 it)
+  (* 2 it)
+  (- it 1))
+
+;; expansion:
+(let ((it 8))
+  (let ((tail (list (+ 3 it) (* 2 it) (- it 1))))
+    (while tail
+      (let ((expr (car tail)))
+        (setq it (eval expr))
+        (setq tail (cdr tail)))))
+  it)
 
 
+(defmacro pipe (init &rest body)
+  "Codex version."
+  `(let ((it ,init))
+     (dolist (expr (list ,@body))
+       (setq it (funcall expr it)))
+     it))
 
+(pipe
+  8
+  (lambda (it) (+ 3 it))
+  (lambda (it) (* 2 it))
+  (lambda (it) (- it 1)))
