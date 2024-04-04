@@ -19,15 +19,16 @@
     ;; (double-square 3)
 
     (prin (make-string 80 ?\=))
-    (let ( (*match-pattern--verbose* nil)
+    (let ( (*pd--verbose* t)
+           (*match-pattern--verbose* nil)
            (*match-pattern2--verbose* nil))
       (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
       (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
       (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
-      (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7))))
-    
-    (prin "Printing the table:")
-    (pd--print-table)))
+      (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
+      
+      (prin "Printing the table:")
+      (pd--print-table))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--get-group 'fib)
