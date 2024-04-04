@@ -151,5 +151,23 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun alist-to-plist (alist)
+  "Convert a dotted alist ALIST to a plist."
+  (unless (list? alist) (error "ALIST must be a list"))
+  (let (result tail)
+    (while alist
+      (let* ((pair  (pop alist))
+              (key   (car pair))
+              (value (cdr pair)))
+        (let ((new-tail (list key value)))
+          (if tail
+            (rplacd! tail new-tail)
+            (setq result new-tail))
+          (setq tail (cdr new-tail))
+          )))
+    result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--alists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
