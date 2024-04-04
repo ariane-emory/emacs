@@ -39,14 +39,14 @@
   (progn
     (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
-    (let ( (*match-pattern2--verbose* t)
-           (*match-pattern2--merge-duplicate-alist-keys* nil)
-           (*match-pattern2--use-dotted-pairs-in-result* nil))
+    (let ( (*match-pattern--verbose* t)
+           (*match-pattern--merge-duplicate-alist-keys* nil)
+           (*match-pattern--use-dotted-pairs-in-result* nil))
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
-    (let ( (*match-pattern2--verbose* t)
-           (*match-pattern2--merge-duplicate-alist-keys* t)
-           (*match-pattern2--use-dotted-pairs-in-result* nil))
+    (let ( (*match-pattern--verbose* t)
+           (*match-pattern--merge-duplicate-alist-keys* t)
+           (*match-pattern--use-dotted-pairs-in-result* nil))
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
     (aris-merge-duplicate-alist-keys '((a 1) (a 2) (a 3) (a 4) (a 5) (b 8)))
