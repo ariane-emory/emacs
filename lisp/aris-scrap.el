@@ -195,43 +195,44 @@
           (var (if head-is-spec (caar head) pipe-default-var-sym))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
+    (prin (make-string 80 ?\=))
+    (prin "PIPE CALLED")
+    (prin (make-string 80 ?\=))
+    (prin "head: %s" head)
+    (prin "head-is-spec: %s" head-is-spec)
+    (prin "var: %s" var)
+    (prin "init-form: %s" init-form)
+    (prin "body: %s" body)
+    (prin (make-string 80 ?\=))
     `(progn
        ;; (prin (make-string 80 ?\=))
-
-       (prin (make-string 80 ?\=))
-       (prin "PIPE CALLED")
-       (prin (make-string 80 ?\=))
-       (prin "head: %s" ',head)
-       (prin "head-is-spec: %s" ,head-is-spec)
-       (prin "var: %s" ',var)
-       (prin "init-form: %s" ',init-form)
-       (prin "body: %s" ',body)
-       (let ( (last nil)
-              (sym ',var)
-              (,var ,init-form)
-              (ignore-flag nil))
-         (catch 'return
-           (mapcr ',body
-             (lambda (expr)
-               (cl-flet ((expr-fun
-                           `(lambda (sym)
-                              (cl-flet ((return (,sym)
-                                          (throw 'return ,sym)))
-                                (prin (make-string 80 ?\=))
-                                (prin "Eval: %S..." ',expr)
-                                (prin "Last: %S." last)
-                                (let ((result ,expr))
-                                  (prin "Next: %S." result)
-                                  result)))))
-                 (cond
-                   ((eq expr '->) (setq record-flag t))
-                   (record-flag
-                     (setq ,var (expr-fun ,var))
-                     (setq record-flag nil))
-                   (t
-                     (setq last (expr-fun ,var))
-                     (setq record-flag nil))))))
-           (throw 'return ,var))))))
+       ;; (let ( (last nil)
+       ;;        (sym ',var)
+       ;;        (,var ,init-form)
+       ;;        (ignore-flag nil))
+       ;;   (catch 'return
+       ;;     (mapcr ',body
+       ;;       (lambda (expr)
+       ;;         (cl-flet ((expr-fun
+       ;;                     `(lambda (sym)
+       ;;                        (cl-flet ((return (,sym)
+       ;;                                    (throw 'return ,sym)))
+       ;;                          (prin (make-string 80 ?\=))
+       ;;                          (prin "Eval: %S..." ',expr)
+       ;;                          (prin "Last: %S." last)
+       ;;                          (let ((result ,expr))
+       ;;                            (prin "Next: %S." result)
+       ;;                            result)))))
+       ;;           (cond
+       ;;             ((eq expr '->) (setq record-flag t))
+       ;;             (record-flag
+       ;;               (setq ,var (expr-fun ,var))
+       ;;               (setq record-flag nil))
+       ;;             (t
+       ;;               (setq last (expr-fun ,var))
+       ;;               (setq record-flag nil))))))
+       ;;     (throw 'return ,var)))
+       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (|>
