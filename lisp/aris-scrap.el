@@ -12,6 +12,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (progn
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
     (let ( (*match-pattern--verbose* t)
@@ -31,56 +32,42 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((*with-messages--depth-indicator-enable*))
-  ;; Do some simple arithmetic with a pipe:
-  (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
+(when nil
+  (progn
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (let ((*with-messages--depth-indicator-enable*))
+      ;; Do some simple arithmetic with a pipe:
+      (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-  ;; Reset the pattern-call dispatcher's alist.
-  (pd--reset) 
+      ;; Reset the pattern-call dispatcher's alist.
+      (pd--reset) 
 
-  ;; Define some simple functions::
-  (def (double n) (|> n -> (+ _ _)))
-  (def (square y) (|> y -> (* _ _)))
-  
-  ;; Define a fib:
-  (def (fib 0) 0)
-  (def (fib 1) 1)
-  (def (fib n)
-    (|> (prn "Calculating (fib %d) using a pipe-based fib..." n)
-      (|> n -> (- _ 1) -> (fib _)) ->
-      (+ _ (|> n -> (- _ 2) -> (fib _) ->
-             (prn "Calculated (fib %d) = %d" n _) _))))
+      ;; Define some simple functions::
+      (def (double n) (|> n -> (+ _ _)))
+      (def (square y) (|> y -> (* _ _)))
+      
+      ;; Define a fib:
+      (def (fib 0) 0)
+      (def (fib 1) 1)
+      (def (fib n)
+        (|> (prn "Calculating (fib %d) using a pipe-based fib..." n)
+          (|> n -> (- _ 1) -> (fib _)) ->
+          (+ _ (|> n -> (- _ 2) -> (fib _) ->
+                 (prn "Calculated (fib %d) = %d" n _) _))))
 
-  ;; Call it with some output commenting on the proceedings:
-  (|>
-    3 -> (prn "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-    (prn "Getting the result of (fib %d)" _) (fib _) ->
-    "I'm just a harmless string sitting in the pipe doing doing nothing."
-    (prn "Result =  %d" _) _) ;; ⇒ 55
+      ;; Call it with some output commenting on the proceedings:
+      (|>
+        3 -> (prn "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+        (prn "Getting the result of (fib %d)" _) (fib _) ->
+        "I'm just a harmless string sitting in the pipe doing doing nothing."
+        (prn "Result =  %d" _) _) ;; ⇒ 55
 
-  (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
-  (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
+      (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
+      (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
+      )
+
+    (|> 3)
+    )
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   )
-
-(|> 3)
-;; Output that eventually ends with this (with free automatic indentation as a side
-;; effect of how my message-printing code works):
-;;           Calculating (fib 3)...
-;;             Calculating (fib 2)...
-;;             Calculated (fib 2) = 0
-;;           Calculated (fib 3) = 1
-;;         Calculated (fib 5) = 2
-;;         Calculating (fib 4)...
-;;           Calculating (fib 3)...
-;;             Calculating (fib 2)...
-;;             Calculated (fib 2) = 0
-;;           Calculated (fib 3) = 1
-;;           Calculating (fib 2)...
-;;           Calculated (fib 2) = 0
-;;         Calculated (fib 4) = 1
-;;       Calculated (fib 6) = 3
-;;     Calculated (fib 8) = 8
-;;   Calculated (fib 10) = 21
-;; Result =  55
-
-
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
