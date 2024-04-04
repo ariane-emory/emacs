@@ -141,7 +141,9 @@
            (lambda (expr)
              (cl-flet ((expr-fun
                          `(lambda (sym)
-                            (cl-flet ((return (,sym) (throw 'return ,sym)))
+                            (cl-flet ((return (,sym)
+                                        (throw 'return ,sym)))
+                              (indented-message "Eval %S..." ',expr)
                               ,expr))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
@@ -153,18 +155,20 @@
                    (setq ignore-flag nil))))))
          (throw 'return ,var)))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defalias 'print 'indented-message)
+
 (|>
   8
   (+ 3 _)
-  :(message "It's %s" _)
+  :(print "It's %S" _)
   (* 2 _)
-  :(message "Now it's %s" _)
+  :(print "Now it's %S" _)
   :(if (> _ 25) (return 100))
-  :(message "And now it's %s" _)
+  :(print "And now it's %S" _)
   :(return (+ _ 50))
-  :(message "Finally it's %s" _)
+  :(print "Finally it's %S" _)
   (- _ 1))
 
 
