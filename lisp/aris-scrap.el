@@ -88,7 +88,7 @@
     "I'm just a harmless string sitting in the pipe doing doing nothing."
     (prn "Result =  %d" _) _) ;; ⇒ 55
 
-  (|> 5 -> (square _) -> (when (odd? _) (return (double _)) ->_))
+  (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
   (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
   )
 
