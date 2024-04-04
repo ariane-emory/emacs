@@ -115,7 +115,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro |(head &rest tail)
+(defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming.
 (pipe 
@@ -152,24 +152,16 @@
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  (ignore-flag
-                   (cl-flet ((fun
-                               `(lambda (symbol)
-                                  (cl-flet ((return (,symbol) (throw 'return ,symbol)))
-                                    ,expr))))
-                     (fun2 ,sym))
+                   (fun2 ,sym)
                    (setq ignore-flag nil))
                  (t
-                   (cl-flet ((fun
-                               `(lambda (,symbol)
-                                  (cl-flet ((return (,symbol) (throw 'return ,symbol)))
-                                    ,expr))))
-                     (setq ,sym (fun2 ,sym)))
+                   (setq ,sym (fun2 ,sym))
                    (setq ignore-flag nil))))))
          (throw 'return ,sym)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(| 
+(|>
   8
   (+ 3 _)
   :(message "It's %s" _)
@@ -180,9 +172,6 @@
   :(return (+ _ 50))
   :(message "Finally it's %s" _)
   (- _ 1))
-
-
-
 
 
 
