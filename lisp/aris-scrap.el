@@ -68,6 +68,10 @@
   ;; Reset the pattern-call dispatcher's alist.
   (pd--reset) 
 
+  ;; Define some simple functions::
+  (def (double n) (|> n -> (+ _ _)))
+  (def (square y) (|> y -> (* _ _)))
+  
   ;; Define a fib:
   (def (fib 0) 0)
   (def (fib 1) 1)
@@ -104,3 +108,5 @@
 ;;   Calculated (fib 10) = 21
 ;; Result =  55
 
+
+(|> 5 -> 
