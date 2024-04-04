@@ -146,9 +146,10 @@
        (catch 'return
          (mapr ',body
            (lambda (expr)
-             (cl-flet ((fun2 `(lambda (symbol)
-                                (cl-flet ((return (,symbol) (throw 'return ,symbol)))
-                                  ,expr))))
+             (cl-flet ((fun2
+                         `(lambda (symbol)
+                            (cl-flet ((return (,symbol) (throw 'return ,symbol)))
+                              ,expr))))
                (cond
                  ((eq expr :) (setq ignore-flag t))
                  (ignore-flag
