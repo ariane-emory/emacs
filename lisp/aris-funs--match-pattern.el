@@ -123,10 +123,7 @@ Examples:
 
   (`aris-match-pattern--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (let ( (original-indent *with-messages--indent*)
-         ;; (*with-messages--indent-char* ?\ )
-         ;; (*with-messages--indent-size* 3)
-         )
+  (let ((original-indent *with-messages--indent*))
     (cl-letf (((symbol-function 'print) (if *match-pattern--verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
       (let ((*with-messages--indent* (1+ *with-messages--indent*)))
@@ -340,19 +337,19 @@ Examples:
             (print "Match result is %s." match-result)
 	          (when (car match-result)
 	            (let ((match-result (cdr match-result)))
-	              ;;(print "Cdr of match result is %s." match-result)
 	              (if (not match-result)
 		              ;; If the match succeeded but there were no captures, just return t:
 		              t
 		              (print "Extracted match result %s." match-result)
-		              (let ((match-result
-			                    (if *match-pattern--merge-duplicate-alist-keys*
-			                      (nreverse (aris-merge-duplicate-alist-keys match-result))
-			                      match-result)))
-		                (print "Post-merge match result %s." match-result)
-		                (if *match-pattern--use-dotted-pairs-in-result*
-		                  (aris-add-dots-to-alist match-result)
-		                  match-result)))))))))))
+                  (let ((match-result (nreverse match-result)))
+		                (let ((match-result
+			                      (if *match-pattern--merge-duplicate-alist-keys*
+			                        (aris-merge-duplicate-alist-keys match-result)
+			                        match-result)))
+		                  (print "Post-merge match result %s." match-result)
+		                  (if *match-pattern--use-dotted-pairs-in-result*
+		                    (aris-add-dots-to-alist match-result)
+		                    match-result))))))))))))
                       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

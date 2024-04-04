@@ -341,16 +341,16 @@ Examples:
 		              ;; If the match succeeded but there were no captures, just return t:
 		              t
 		              (print "Extracted match result %s." match-result)
-                  (let ((match-result (nreverse match-result)))
-		                (let ((match-result
-			                      (if *match-pattern2--merge-duplicate-alist-keys*
-			                        (aris-merge-duplicate-alist-keys match-result)
-			                        match-result)))
-		                  (print "Post-merge match result %s." match-result)
-		                  (if *match-pattern2--use-dotted-pairs-in-result*
-		                    (aris-add-dots-to-alist match-result)
-		                    match-result))))))))))))
-                             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                  
+		              (nreverse (let ((match-result
+			                              (if *match-pattern2--merge-duplicate-alist-keys*
+			                                (aris-merge-duplicate-alist-keys match-result)
+			                                match-result)))
+		                          (print "Post-merge match result %s." match-result)
+		                          (if *match-pattern2--use-dotted-pairs-in-result*
+		                            (aris-add-dots-to-alist match-result)
+		                            match-result))))))))))))
+                        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -126,7 +126,9 @@
                (*match-pattern--use-dotted-pairs-in-result* nil)
                (*match-pattern--verbatim-element?* nil))
           (pd--print "Trying pattern '%s on target '%s..." pattern call-pattern)
-          (let ((match-result (match pattern call-pattern)))
+          (let ( (match-result (match pattern call-pattern))
+                 (match-result2 (match2 pattern call-pattern)))
+            (message "%s vs. %s" match-result match-result2)
             (when match-result
               (throw 'matched
                 (setq result (cons match-result (cdr pattern-case)))))))))

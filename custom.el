@@ -34,7 +34,8 @@
      '(spaceline slime-company rainbow-mode rainbow-delimiters powerline persistent-scratch nov modern-cpp-font-lock multiple-cursors lsp-ui lsp-mode idle-highlight-mode highlight-parentheses dpaste default-text-scale company-sourcekit company-posframe centered-cursor-mode beacon which-key swift-mode rust-mode platformio-mode paredit markdown-mode macrostep flycheck-rust flycheck-inline f editorconfig diminish devdocs-browser devdocs company-box coffee-mode clhs adjust-parens ac-inf-ruby aggressive-indent))
   '(pp-use-max-width nil)
   '(safe-local-variable-values
-     '((lexical-scoping . t)
+     '((c-backslash-max-column . 80)
+        (lexical-scoping . t)
         (c-backslash-max-column . 95)
         (eval display-fill-column-indicator 1)
         (glasses-mode)
