@@ -252,15 +252,7 @@ Examples:
 ;; (setq alist '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (z . 7)))
 ;; (merge-duplicate-alist-keys alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil 
-  (|> '(a 1 a 2 a 3 b 1 b 2 c 3)
-    -> (plist-to-alist _) ;;  ((a . 1) (a . 2) (a . 3) (b . 1) (b . 2) (c . 3))
-    -> (merge-duplicate-alist-keys _)
-    ;;-> (flatten-alist-values _)
-    -> (alist-to-plist _)
-    ;;-> _
-    )
-  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun flatten-alist-values (alist)

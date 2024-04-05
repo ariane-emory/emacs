@@ -172,55 +172,80 @@
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(let ((*pipe--verbose* nil))
-  (progn
-    (message "One")
-    (pipe--print "pipe!")
-    (message "Two")
-    (message "Three")
-    ))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(while nil
-  (progn 
-    (let ( (*pipe--verbose* t)
-           (*wm--depth-indicator-enable* nil))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; Do some simple arithmetic with a pipe:
-      (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
+(defmacro |||> (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming."
+  (let* ( (head-is-spec
+            (and
+              (consp head)
+              (consp (car head))
+              (length> (car head) 0)
+              (length< (car head) 3)))
+          (head-includes-init-form (and head-is-spec (length> head 1)))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
+          (init-form (if head-is-spec (cadr head) head))
+          (body tail))
+    `'( (head . ,head)
+        (head-is-spec . ,head-is-spec)
+        (head-includes-init-form . ,head-includes-init-form)
+        (var . ,var)
+        (init-form . ,init-form)
+        (body . ,body))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      ;; Reset the pattern-call dispatcher's alist:
-      (pd--reset) 
 
-      ;; Define some simple functions:
-      (def (double n) (|> n -> (+ _ _)))
-      (def (square y) (|> y -> (* _ _)))
-      (def (double-square y) (double (square y)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (let ((*pipe--verbose* nil))
+;;   (progn
+;;     (message "One")
+;;     (pipe--print "pipe!")
+;;     (message "Two")
+;;     (message "Three")
+;;     ))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      ;; Define a fib:
-      (def (fib 0) 0)
-      (def (fib 1) 1)
-      (def (fib n)
-        (|> (pipe--print "Calculating (fib %d) using a pipe-based fib..." n)
-          (|> n -> (- _ 1) -> (fib _)) ->
-          (+ _ (|> n -> (- _ 2) -> (fib _) ->
-                 (pipe--print "Calculated (fib %d) = %d" n _) _))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (while nil
+;;   (progn 
+;;     (let ( (*pipe--verbose* t)
+;;            (*wm--depth-indicator-enable* nil))
+;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;       ;; Do some simple arithmetic with a pipe:
+;;       (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
 
-      ;; Call it with some output commenting on the proceedings:
-      (|>
-        3 -> (pipe--print "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-        (pipe--print "Getting the result of (fib %d)" _) (fib _) ->
-        "I'm just a harmless string sitting in the pipe doing doing nothing."
-        (pipe--print "Result =  %d" _) _) ;; ⇒ 55
+;;       ;; Reset the pattern-call dispatcher's alist:
+;;       (pd--reset) 
 
-      (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
-      (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
-      
+;;       ;; Define some simple functions:
+;;       (def (double n) (|> n -> (+ _ _)))
+;;       (def (square y) (|> y -> (* _ _)))
+;;       (def (double-square y) (double (square y)))
 
-      (|> 3)
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      )))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;       ;; Define a fib:
+;;       (def (fib 0) 0)
+;;       (def (fib 1) 1)
+;;       (def (fib n)
+;;         (|> (pipe--print "Calculating (fib %d) using a pipe-based fib..." n)
+;;           (|> n -> (- _ 1) -> (fib _)) ->
+;;           (+ _ (|> n -> (- _ 2) -> (fib _) ->
+;;                  (pipe--print "Calculated (fib %d) = %d" n _) _))))
+
+;;       ;; Call it with some output commenting on the proceedings:
+;;       (|>
+;;         3 -> (pipe--print "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
+;;         (pipe--print "Getting the result of (fib %d)" _) (fib _) ->
+;;         "I'm just a harmless string sitting in the pipe doing doing nothing."
+;;         (pipe--print "Result =  %d" _) _) ;; ⇒ 55
+
+;;       (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
+;;       (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
+
+
+;;       (|> 3)
+;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;       )))
+;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
