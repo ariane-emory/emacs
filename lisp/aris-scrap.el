@@ -88,21 +88,68 @@
 ;; Basic case:
 (|||> 5 -> (* _ _) -> (+ _ 8) -> (when (odd? _) (return (* _ 2))))
 
-'()
+'( (consp-head)
+   (car-head)
+   (consp-car-head)
+   (car-head-length)
+   (head-is-spec)
+   (head-is-spec-with-init-form)
+   (head . 5)
+   (var . _)
+   (init-form . 5)
+   (body
+     -> (* _ _)
+     -> (+ _ 8)
+     -> (when
+         (odd? _)
+         (return
+           (* _ 2)))))
 
 ;; Named binding:
 (|||> ((x)) 5 -> (* x x) -> (+ x 8) -> (when (odd? x) (return (* x 2))))
 
-'()
+'( (consp-head . t)
+   (car-head x)
+   (consp-car-head . t)
+   (car-head-length . 1)
+   (head-is-spec . t)
+   (head-is-spec-with-init-form)
+   (head
+     (x))
+   (var . x)
+   (init-form . 5)
+   (body
+     -> (* x x)
+     -> (+ x 8)
+     -> (when
+         (odd? x)
+         (return
+           (* x 2)))))
 
 ;; Named binding with value:
 (|||> ((x 5)) -> (* x x) -> (+ x 8) -> (when (odd? x) (return (* x 2))))
 
-'()
+'( (consp-head . t)
+   (car-head x 5)
+   (consp-car-head . t)
+   (car-head-length . 2)
+   (head-is-spec . t)
+   (head-is-spec-with-init-form . t)
+   (head
+     (x 5))
+   (var . x)
+   (init-form . 5)
+   (body
+     -> (* x x)
+     -> (+ x 8)
+     -> (when
+         (odd? x)
+         (return
+           (* x 2)))))
 
 
 ;; These should all end up returning nil?
-(|||> ((x 5))) ;; nothing entered in pipe
+(|||> ((x 5))) ;; nothing entered in pipe?
 (|||> ((x))) ;; nothing entered in pipe
 (|||>);; nothing entered in pipe
 
