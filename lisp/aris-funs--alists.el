@@ -47,6 +47,21 @@ may be applied before or after to get your desired result."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro alist-set! (alist key value)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively set a KEY in ALIST to VALUE by modifying the alist in
+place, adding a new key/value pair if it wasn't already present."
+  `(setf ,alist (alist-set ,alist ,key ,value)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
+;; (alist-set! alist 'b 20)
+;; (alist-get 'd alist)
+;; (alist-set! (alist-get 'd alist) 'e 40)
+;; alist 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-dots-to-alist (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn length 2 lists in ALIST into dotted pairs.
