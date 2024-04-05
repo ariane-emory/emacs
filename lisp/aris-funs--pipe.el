@@ -267,7 +267,7 @@
         (head . ,head)
         (var . ,var)
         (init-form . ,init-form)
-        (body . ,body))))
+        (body ,@body))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -281,6 +281,7 @@
           (var       (alist-get 'var  args))
           (body      (car (alist-get 'body args))))
     (message "ARGS: %S" args)
+    (message "THIS: %S" (alist-get 'body args))
     `(progn
        (pipe--print (make-string 80 ?\=))
        (let ( (last ,init-form)
