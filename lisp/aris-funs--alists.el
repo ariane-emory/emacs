@@ -2,6 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pattern matching functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'cl-lib)
 (require 'dash)
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,10 +45,39 @@ which KEY is not present, doing nothing if it was not already present."
 place."
   `(setf ,alist (alist-remove ,key ,alist)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3)))
-;; (alist-remove! 'a alist)
+;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
 ;; (alist-remove! 'b alist)
-;; (alist-remove! 'c alist)
+;; (alist-get 'd alist)
+;; (alist-remove! 'e (alist-get 'd alist))
+;; (alist-remove! 'f (alist-get 'd alist))
+;; alist  
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro alist-remove-empty (alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively remove all empty values from ALIST by building a new alist
+in which they are not present."
+  `(cl-remove-if (lambda (pair) (null (cdr pair))) ,alist))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c) (d (e 4) (f 5))))
+;; (alist-remove-empty alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro alist-remove-empty! (alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively remove all empty values from ALIST by modifying it in place."
+  `(setf ,alist (alist-remove-empty ,alist))
+  ;; `(setf ,alist (cl-remove-if (lambda (pair) (null (cdr pair))) ,alist))
+  )
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
+;; (alist-remove! 'e (alist-get 'd alist))
+;; (alist-remove! 'f (alist-get 'd alist))
+;; (alist-remove-empty! alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
