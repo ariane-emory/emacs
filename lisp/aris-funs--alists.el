@@ -8,6 +8,33 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun alist-set (alist key value)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively set a KEY in ALIST to VALUE by building a new alist in
+which KEY is set to VALUE, adding a new key/value pair if it wasn't already present.
+
+This is meant for non-dotted ALISTs and might produce unexpexted results if
+applied to dotted ALISTs. As usual, `add-dots-to-alist'/`remove-dots-from-alist'
+may be applied before or after to get your desired result."
+  (unless (proper-list-p alist)
+    (error "ALIST must be a proper list, not %S!" alist))
+  (let (result key-found)
+    (dolist (pair alist)
+      (if (not (eq (car pair) key))
+        (push pair result)
+        (push (cons key (list value)) result)
+        (setq key-found t)))
+    (unless key-found
+      (push (cons key (list value)) result))
+    (nreverse result)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c 3)))
+;; (alist-set alist 'b 4)
+;; (alist-set alist 'd 5)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-dots-to-alist (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn length 2 lists in ALIST into dotted pairs.
