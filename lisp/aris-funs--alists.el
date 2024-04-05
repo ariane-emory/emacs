@@ -8,19 +8,50 @@
 
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun alist-getr (alist key)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;   "Like `alist-get' but with a more conventional argument order."
+;;   (alist-get key alist))
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; (setq alist '((a 1) (b 2) (c 3)))
+;; ;; (alist-getr alist 'b)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun alist-getr (alist key)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-  "Like `alist-get' but with a more conventional argument order."
-  (alist-get key alist))
+(defun alist-remove (key alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively remove a KEY from ALIST to VALUE by building a new alist in
+which KEY is not present, doing nothing if it was not already present."
+  (unless (proper-list-p alist)
+    (error "ALIST must be a proper list, not %S!" alist))
+  (let (result)
+    (dolist (pair alist)
+      (unless (eq (car pair) key)
+        (push pair result)))
+    (nreverse result)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c 3)))
+;; (alist-remove 'b alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro alist-remove! (key alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively remove a KEY from ALIST to VALUE by modifying the alist in
+place."
+  `(setf ,alist (alist-remove ,key ,alist)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setq alist '((a 1) (b 2) (c 3)))
-;; (alist-getr alist 'b)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (alist-remove! 'a alist)
+;; (alist-remove! 'b alist)
+;; (alist-remove! 'c alist)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun alist-set (alist key value)
+(defun alist-set (key alist value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively set a KEY in ALIST to VALUE by building a new alist in
 which KEY is set to VALUE, adding a new key/value pair if it wasn't already present.
@@ -47,17 +78,17 @@ may be applied before or after to get your desired result."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro alist-set! (alist key value)
+(defmacro alist-set! (key alist value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively set a KEY in ALIST to VALUE by modifying the alist in
 place, adding a new key/value pair if it wasn't already present."
-  `(setf ,alist (alist-set ,alist ,key ,value)))
+  `(setf ,alist (alist-set ,key ,alist ,value)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
-;; (alist-set! alist 'b 20)
+;; (alist-set! 'b alist 20)
 ;; (alist-get 'd alist)
-;; (alist-set! (alist-get 'd alist) 'e 40)
-;; alist 
+;; (alist-set! 'e (alist-get 'd alist) 40)
+;; alist  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
