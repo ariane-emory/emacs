@@ -864,15 +864,16 @@
       (mapc
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
         '( aris-funs--aliases
-           aris-funs--fixmath
            aris-funs--unsorted
+           aris-funs--lists
+           aris-funs--alists
+           aris-funs--plists
+           aris-funs--fixmath
+           aris-funs--rgb
            aris-funs--match-pattern
            aris-funs--match-pattern2
-           aris-funs--alists
            aris-funs--pattern-dispatch
-           aris-funs--lists
            aris-funs--pipe
-           aris-funs--plists
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
            aris-funs--error-when-and-error-unless
