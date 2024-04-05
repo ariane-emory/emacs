@@ -866,6 +866,7 @@
         '( aris-funs--aliases
            aris-funs--basic-preds
            aris-funs--unsorted
+           aris-funs--interactive
            aris-funs--lists
            aris-funs--alists
            aris-funs--plists
