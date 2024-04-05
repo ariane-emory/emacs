@@ -864,6 +864,7 @@
       (mapc
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
         '( aris-funs--aliases
+           aris-funs--fixmath
            aris-funs--unsorted
            aris-funs--match-pattern
            aris-funs--match-pattern2
