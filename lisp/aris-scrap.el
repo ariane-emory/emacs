@@ -244,16 +244,6 @@
 (pipe-args 5 -> (* _ _) -> (+ _ 8))
 
 (|> 5 -> (* _ _) -> (+ _ 8))
-(progn
-  (pipe--print
-    (make-string 80 61))
-  (let
-    ((xxx _))))
-
-
-
-
-
 
 
 
