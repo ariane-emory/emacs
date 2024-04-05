@@ -176,19 +176,26 @@
 (defmacro |||> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (head-is-spec
+  (let* ( (consp-head (consp head))
+          (car-head (when consp-head (car head)))
+          (consp-car-head (when consp-head (consp car-head)))
+          (car-head-length (when consp-car-head (length car-head)))
+          (head-is-spec
             (and
-              (consp head)
-              (consp (car head))
-              (length> (car head) 0)
-              (length< (car head) 3)))
-          (head-includes-init-form (and head-is-spec (length> head 1)))
+              consp-head
+              (> car-head-length 0)
+              (< car-head-length 3)))
+          (head-is-spec-with-init-form (eql car-head-length 2))
           (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (init-form (if head-is-spec (cadr head) head))
           (body tail))
-    `'( (head . ,head)
+    `'( (consp-head . ,consp-head)
+        (car-head . ,car-head)
+        (consp-car-head . ,consp-car-head)
+        (car-head-length . ,car-head-length)
+        (head . ,head)
         (head-is-spec . ,head-is-spec)
-        (head-includes-init-form . ,head-includes-init-form)
+        (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
         (var . ,var)
         (init-form . ,init-form)
         (body . ,body))))

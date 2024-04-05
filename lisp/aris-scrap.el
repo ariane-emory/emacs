@@ -88,10 +88,63 @@
 ;; Basic case:
 (|||> 5 -> (* _ _) -> (+ _ 8) -> (when (odd? _) (return (* _ 2))))
 
+'((consp-head)
+   (car-head)
+   (consp-car-head)
+   (car-head-length)
+   (head . 5)
+   (head-is-spec)
+   (head-includes-init-form)
+   (var . _)
+   (init-form . 5)
+   (body
+     -> (* _ _)
+     -> (+ _ 8)
+     -> (when
+         (odd? _)
+         (return
+           (* _ 2)))))
+
 ;; Named binding:
 (|||> ((x)) 5 -> (* x x) -> (+ x 8) -> (when (odd? x) (return (* x 2))))
 
+'((consp-head . t)
+   (car-head x)
+   (consp-car-head . t)
+   (car-head-length . 1)
+   (head
+     (x))
+   (head-is-spec . t)
+   (head-includes-init-form)
+   (var . x)
+   (init-form)
+   (body 5
+     -> (* x x)
+     -> (+ x 8)
+     -> (when
+         (odd? x)
+         (return
+           (* x 2)))))
+
 ;; Named binding with value:
 (|||> ((x 5)) -> (* x x) -> (+ x 8) -> (when (odd? x) (return (* x 2))))
+
+'((consp-head . t)
+   (car-head x 5)
+   (consp-car-head . t)
+   (car-head-length . 2)
+   (head
+     (x 5))
+   (head-is-spec . t)
+   (head-includes-init-form . t)
+   (var . x)
+   (init-form)
+   (body
+     -> (* x x)
+     -> (+ x 8)
+     -> (when
+         (odd? x)
+         (return
+           (* x 2)))))
 
 

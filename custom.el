@@ -20,6 +20,7 @@
   '(c-offsets-alist '((arglist-close . c-lineup-arglist)))
   '(c-syntactic-indentation-in-macros t)
   '(c-syntactic-indentationt t)
+  '(cursor-in-non-selected-windows 'bar)
   '(debug-on-error t)
   '(delete-selection-mode t)
   '(fill-column 80)
