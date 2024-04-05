@@ -173,7 +173,18 @@ Examples:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun alist-to-plist (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Convert a dotted alist ALIST to a plist."
+  "Convert a dotted alist ALIST to a plist.
+
+Note that the result is structured slightly differently depending on whether
+ALIST used dotted lists or not:
+
+(setq alist '((a 1) (b 2 2) (c 3) (d 4 5 6)))
+(`alist-to-plist' alist) ⇒ (a (1) b (2 2) c (3) d (4 5 6))
+(setq alist '((a . 1) (b 2 2) (c . 3) (d 4 5 6)))
+(`alist-to-plist' alist) ⇒ (a 1 b (2 2) c 3 d (4 5 6))
+
+`add-dots-to-alist'/`remove-dots-from-alist' may be applied beforehand in order
+to achieve your preferred structure."
   (unless (list? alist) (error "ALIST must be a list"))
   (let (result tail)
     (while alist
