@@ -276,9 +276,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (args (eval `(pipe-args ,head ,tail)))
-          (sym  (alist-get 'var  args))
-          (var  (alist-get 'var  args))
-          (body (car (alist-get 'body args))))
+          (sym       (alist-get 'var  args))
+          (init-form (alist-get 'init-form args))
+          (var       (alist-get 'var  args))
+          (body      (car (alist-get 'body args))))
     (message "ARGS: %S" args)
     `(progn
        (pipe--print (make-string 80 ?\=))
