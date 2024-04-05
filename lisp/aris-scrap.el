@@ -101,4 +101,7 @@
 '()
 
 
-
+;; These should all end up returning nil?
+(|||> ((x 5))) ;; nothing entered in pipe
+(|||> ((x))) ;; nothing entered in pipe
+(|||> () ;; nothing entered in pipe
