@@ -85,7 +85,10 @@
 ;; Arg gen:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Basic case:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; BASIC CASES:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (|||> 5 -> (* _ _) -> (+ _ 8) -> (when (odd? _) (return (* _ 2))))
 
 '( (consp-head)
@@ -97,61 +100,141 @@
    (head . 5)
    (var . _)
    (init-form . 5)
-   (body
-     -> (* _ _)
-     -> (+ _ 8)
-     -> (when
-         (odd? _)
-         (return
-           (* _ 2)))))
+   (body ->
+     (* _ _)
+     ->
+     (+ _ 8)
+     ->
+     (when
+       (odd? _)
+       (return
+         (* _ 2)))))
 
 ;; Named binding:
-(|||> ((x)) 5 -> (* x x) -> (+ x 8) -> (when (odd? x) (return (* x 2))))
+(|||> ((z)) 5 -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
-   (car-head x)
+   (car-head z)
    (consp-car-head . t)
    (car-head-length . 1)
    (head-is-spec . t)
    (head-is-spec-with-init-form)
    (head
-     (x))
-   (var . x)
+     (z))
+   (var . z)
    (init-form . 5)
-   (body
-     -> (* x x)
-     -> (+ x 8)
-     -> (when
-         (odd? x)
-         (return
-           (* x 2)))))
+   (body ->
+     (* z z)
+     ->
+     (+ z 8)
+     ->
+     (when
+       (odd? z)
+       (return
+         (* z 2)))))
 
 ;; Named binding with value:
-(|||> ((x 5)) -> (* x x) -> (+ x 8) -> (when (odd? x) (return (* x 2))))
+(|||> ((z 5)) -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
-   (car-head x 5)
+   (car-head z 5)
    (consp-car-head . t)
    (car-head-length . 2)
    (head-is-spec . t)
    (head-is-spec-with-init-form . t)
    (head
-     (x 5))
-   (var . x)
+     (z 5))
+   (var . z)
    (init-form . 5)
-   (body
-     -> (* x x)
-     -> (+ x 8)
-     -> (when
-         (odd? x)
-         (return
-           (* x 2)))))
+   (body ->
+     (* z z)
+     ->
+     (+ z 8)
+     ->
+     (when
+       (odd? z)
+       (return
+         (* z 2)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; EMPTY BODY CASES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; These should all end up returning nil?
-(|||> ((x 5))) ;; nothing entered in pipe?
-(|||> ((x))) ;; nothing entered in pipe
+(|||> ((z 5))) ;; nothing entered in pipe?
+
+'( (consp-head . t)
+   (car-head z 5)
+   (consp-car-head . t)
+   (car-head-length . 2)
+   (head-is-spec . t)
+   (head-is-spec-with-init-form . t)
+   (head
+     (z 5))
+   (var . z)
+   (init-form . 5)
+   (body))
+
+(|||> ((z))) ;; nothing entered in pipe
+
+'( (consp-head . t)
+   (car-head z)
+   (consp-car-head . t)
+   (car-head-length . 1)
+   (head-is-spec . t)
+   (head-is-spec-with-init-form)
+   (head
+     (z))
+   (var . z)
+   (init-form)
+   (body))
+
 (|||>);; nothing entered in pipe
 
+'() ;; ILLEGAL EXPANSION
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; ONE ARG CASES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(|||> ((z 5))) ;; nothing entered in pipe?
+
+'( (consp-head . t)
+   (car-head z 5)
+   (consp-car-head . t)
+   (car-head-length . 2)
+   (head-is-spec . t)
+   (head-is-spec-with-init-form . t)
+   (head
+     (z 5))
+   (var . z)
+   (init-form . 5)
+   (body))
+
+(|||> ((z))) ;; nothing entered in pipe
+
+'( (consp-head . t)
+   (car-head z)
+   (consp-car-head . t)
+   (car-head-length . 1)
+   (head-is-spec . t)
+   (head-is-spec-with-init-form)
+   (head
+     (z))
+   (var . z)
+   (init-form)
+   (body))
+
+(|||> 5);; nothing entered in pipe
+
+'( (consp-head)
+   (car-head)
+   (consp-car-head)
+   (car-head-length)
+   (head-is-spec)
+   (head-is-spec-with-init-form)
+   (head . 5)
+   (var . _)
+   (init-form . 5)
+   (body))
 
 
