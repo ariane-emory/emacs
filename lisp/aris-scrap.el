@@ -73,7 +73,7 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(|||> '(a 1 a 2 a 3 b 1 b 2 c 3)
+(pipe-args '(a 1 a 2 a 3 b 1 b 2 c 3)
   -> (plist-to-alist _) ;;  ((a . 1) (a . 2) (a . 3) (b . 1) (b . 2) (c . 3))
   -> (merge-duplicate-alist-keys _)
   ;;-> (flatten-alist-values _)
@@ -89,7 +89,7 @@
 ;; BASIC CASES:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(|||> 5 -> (* _ _) -> (+ _ 8) -> (when (odd? _) (return (* _ 2))))
+(pipe-args 5 -> (* _ _) -> (+ _ 8) -> (when (odd? _) (return (* _ 2))))
 
 '( (consp-head)
    (car-head)
@@ -111,7 +111,7 @@
          (* _ 2)))))
 
 ;; Named binding:
-(|||> ((z)) 5 -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
+(pipe-args ((z)) 5 -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
    (car-head z)
@@ -134,7 +134,7 @@
          (* z 2)))))
 
 ;; Named binding with value:
-(|||> ((z 5)) -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
+(pipe-args ((z 5)) -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
    (car-head z 5)
@@ -160,7 +160,7 @@
 ;;;; EMPTY BODY CASES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(|||> ((z 5))) ;; nothing entered in pipe?
+(pipe-args ((z 5))) ;; nothing entered in pipe?
 
 '( (consp-head . t)
    (car-head z 5)
@@ -174,7 +174,7 @@
    (init-form . 5)
    (body))
 
-(|||> ((z))) ;; nothing entered in pipe
+(pipe-args ((z))) ;; nothing entered in pipe
 
 '( (consp-head . t)
    (car-head z)
@@ -188,7 +188,7 @@
    (init-form)
    (body))
 
-(|||>);; nothing entered in pipe
+(pipe-args);; nothing entered in pipe
 
 '() ;; ILLEGAL EXPANSION
 
@@ -196,7 +196,7 @@
 ;;;; ONE ARG CASES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(|||> ((z 5))) ;; nothing entered in pipe?
+(pipe-args ((z 5))) ;; nothing entered in pipe?
 
 '( (consp-head . t)
    (car-head z 5)
@@ -210,7 +210,7 @@
    (init-form . 5)
    (body))
 
-(|||> ((z))) ;; nothing entered in pipe
+(pipe-args ((z))) ;; nothing entered in pipe
 
 '( (consp-head . t)
    (car-head z)
@@ -224,7 +224,7 @@
    (init-form)
    (body))
 
-(|||> 5);; nothing entered in pipe
+(pipe-args 5);; nothing entered in pipe
 
 '( (consp-head)
    (car-head)
