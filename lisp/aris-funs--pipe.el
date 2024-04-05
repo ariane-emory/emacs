@@ -283,7 +283,7 @@
     (message "ARGS: %S" args)
     `(progn
        (pipe--print (make-string 80 ?\=))
-       (let ( (last ,(alist-get 'init-form args))
+       (let ( (last ,init-form)
               (sym ',sym)
               (,var nil))
          (catch 'return
