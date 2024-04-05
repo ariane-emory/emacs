@@ -9,6 +9,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-dots-to-alist (alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn length 2 lists in ALIST into dotted pairs.
 
 Examples:
@@ -43,6 +44,7 @@ Examples:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun remove-dots-from-alist (alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn  dotted pairs in ALIST into length 2 lists.
 
 Examples:
@@ -93,7 +95,7 @@ Examples:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun merge-duplicate-alist-keys (alist)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A helper function used by `match-pattern' to merge the values of duplicate
  ALIST. This turns dotted pairs into length 2 lists in the process: if you preferred
 the dotted pairs, apply `add-dots-to-alist' to the result to restore them.
@@ -136,12 +138,15 @@ Examples:
 ;; (merge-duplicate-alist-keys alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun flatten-alist-values (alist)
-  "Flatten the values of ALIST if they are lists.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Flatten the values of ALIST if they are lists - in other words, unmerge keys
+whose values are lists and turn them into duplicated keys.
 
 Examples:
-(`flatten-alist-values')
+(`flatten-alist-values'
   '((a 1) (b 2 2) (c 3) (d 4 5 6))) ⇒
     ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))
 
@@ -160,10 +165,14 @@ Examples:
           (push (cons key value) result))))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2 2) (c 3) (d 4 5 6)))
+;; (flatten-alist-values alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun alist-to-plist (alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Convert a dotted alist ALIST to a plist."
   (unless (list? alist) (error "ALIST must be a list"))
   (let (result tail)
@@ -179,6 +188,12 @@ Examples:
           )))
     result))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2 2) (c 3) (d 4 5 6)))
+;; (alist-to-plist alist) ⇒ (a (1) b (2 2) c (3) d (4 5 6))
+;; (setq alist '((a . 1) (b 2 2) (c . 3) (d 4 5 6)))
+;; (alist-to-plist alist) ⇒ (a 1 b (2 2) c 3 d (4 5 6))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--alists)
