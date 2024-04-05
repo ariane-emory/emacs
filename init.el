@@ -868,6 +868,7 @@
            aris-funs--match-pattern2
            aris-funs--alists
            aris-funs--pattern-dispatch
+           aris-funs--lists
            aris-funs--pipe
            aris-funs--plists
            aris-funs--prettify-symbols
