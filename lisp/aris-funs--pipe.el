@@ -275,13 +275,15 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let ((args (eval `(pipe-args ,head ,tail))))
+  (let* ( (args (eval `(pipe-args ,head ,tail)))
+          (sym (alist-get 'var args))
+          (var (alist-get 'var args)))
     (message "ARGS: %S" args)
     `(progn
        (pipe--print (make-string 80 ?\=))
        (let ( (last ,(alist-get 'init-form args))
-              (sym ',(alist-get 'var args))
-              (,(alist-get 'var args) nil))
+              (sym ',sym)
+              (,var nil))
 
          ))))
 
