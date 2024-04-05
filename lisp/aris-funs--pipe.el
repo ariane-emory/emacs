@@ -258,16 +258,16 @@
               ((and head-is-spec (not head-is-spec-with-init-form))
                 (cdr tail))
               (t tail))))
-    `'( (consp-head ,consp-head)
-        (car-head ,car-head)
-        (consp-car-head ,consp-car-head)
-        (car-head-length ,car-head-length)
-        (head-is-spec ,head-is-spec)
-        (head-is-spec-with-init-form ,head-is-spec-with-init-form)
-        (head ,head)
-        (var ,var)
-        (init-form ,init-form)
-        (body ,body))))
+    `'( (consp-head . ,consp-head)
+        (car-head . ,car-head)
+        (consp-car-head . ,consp-car-head)
+        (car-head-length . ,car-head-length)
+        (head-is-spec . ,head-is-spec)
+        (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
+        (head . ,head)
+        (var . ,var)
+        (init-form . ,init-form)
+        (body . ,body))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -279,7 +279,7 @@
     (message "ARGS: %S" args)
     `(progn
        (pipe--print (make-string 80 ?\=))
-       (let ,args
+       (let ((xxx ,(alist-get 'var args)))
 
          ))))
 

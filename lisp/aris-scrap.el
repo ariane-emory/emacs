@@ -244,25 +244,17 @@
 (pipe-args 5 -> (* _ _) -> (+ _ 8))
 
 (|> 5 -> (* _ _) -> (+ _ 8))
-
 (progn
   (pipe--print
     (make-string 80 61))
   (let
-    ((consp-head nil)
-      (car-head nil)
-      (consp-car-head nil)
-      (car-head-length nil)
-      (head-is-spec nil)
-      (head-is-spec-with-init-form nil)
-      (head 5)
-      (var _)
-      (init-form 5)
-      (body
-        ((->
-           (* _ _)
-           ->
-           (+ _ 8)))))))
+    ((xxx _))))
+
+
+
+
+
+
 
 
 
