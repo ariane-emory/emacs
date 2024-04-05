@@ -245,6 +245,16 @@
 
 (|> 5 -> (* _ _) -> (+ _ 8))
 
+(progn
+  (pipe--print
+    (make-string 80 61))
+  (let
+    ((last 5)
+      (sym '_)
+      (_ nil))))
+
+
+
 
 
 
