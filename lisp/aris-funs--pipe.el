@@ -199,9 +199,10 @@
        (pipe--print (make-string 80 ?\=))
        (catch 'return
          (cl-flet ((set-flag (new-flag &optional force)
-                     (when (and flag (not force))
+                     (when (and flag new-flag (not force))
                        (error "Cannot set flag to %S when flag is already set to %S."
                          new-flag flag))
+                     (when force (pipe-print "FORCING FLAG TO %S." new-flag))
                      (pipe--print "Setting flag from %S to %S%s." new-flag flag (if force " (forced)" ""))
                      (setq flag new-flag)))
            (mapcr ',body
@@ -230,34 +231,33 @@
                          ((eq flag :RETURN)
                            (pipe--print "Returning: %S" result)
                            (throw 'return result)
-                           (setq flag nil))
+                           (set-flag nil))
                          ((eq flag :WHEN)
                            (if result
                              (progn
                                (pipe--print "Next command will be processed.")
-                               (setq flag nil))
+                               (set-flag nil))
                              (progn
                                (pipe--print "Next command will be ignored.")
-                               (setq flag nil)
+                               (set-flag nil)
                                (set-flag :IGNORE))))
                          ((eq flag :UNLESS)
                            (if result
                              (progn
                                (pipe--print "Next command will be ignored.")
-                               (setq flag nil)
-                               (set-flag :IGNORE))
+                               (set-flag :IGNORE t))
                              (progn
                                (pipe--print "Next command will be processed.")
-                               (setq flag nil))))
+                               (set-flag nil))))
                          ((eq flag :NO-SET)
                            (if (not result)
                              (pipe--print "%S: Not setting %S and unsetting the %S flag." flag result flag)
                              (pipe--print "%S: Updating var to %S and unsetting the %S flag." flag ,var flag)
                              (setq ,var result))
-                           (setq flag nil))
+                           (set-flag nil))
                          ((eq flag :IGNORE)
                            (pipe--print "Not setting %S and unsetting %S flag." result flag)
-                           (setq flag nil))
+                           (set-flag nil))
                          (t 
                            (setq ,var result)
                            (pipe--print "Updating var to %S and last to %S." ,var result)
