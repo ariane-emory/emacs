@@ -170,7 +170,7 @@
                                     (pipe--print "Evaluated expr: %S." expr)
                                     ,expr))))
                      (let* ((result (if (fun? expr)
-                                      (eval (list expr ,var))
+                                      (eval (list expr ',var)) ;; unsure about this quote.
                                       (expr-fun expr ,var))))
                        (cond
                          ((eq flag :MAYBE)
