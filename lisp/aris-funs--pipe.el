@@ -198,12 +198,13 @@
        (pipe--print "START")
        (pipe--print (make-string 80 ?\=))
        (catch 'return
-         (cl-flet ((set-flag (new-flag &optional force)
+         (cl-flet ((set-flag (new-flag force)
                      (when (and flag new-flag (not force))
                        (error "Cannot set flag to %S when flag is already set to %S."
                          new-flag flag))
-                     (when force (pipe-print "FORCING FLAG TO %S." new-flag))
-                     (pipe--print "Setting flag from %S to %S%s." new-flag flag (if force " (forced)" ""))
+                     (if force
+                       (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                       (pipe--print "Setting flag from %S to %S%s." new-flag flag (if force " (forced)" "")))
                      (setq flag new-flag)))
            (mapcr ',body
              (lambda (expr)
@@ -217,7 +218,7 @@
                  ((and (eq flag :IGNORE) (memq expr *--pipe--arity-1-commands*))
                    (pipe--print "Do nothing for %S because %S." expr flag))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
-                   (set-flag (alist-get expr *--pipe--commands-to-flags*)))
+                   (set-flag (alist-get expr *--pipe--commands-to-flags*) nil))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -231,16 +232,15 @@
                          ((eq flag :RETURN)
                            (pipe--print "Returning: %S" result)
                            (throw 'return result)
-                           (set-flag nil))
+                           (set-flag nil nil))
                          ((eq flag :WHEN)
                            (if result
                              (progn
                                (pipe--print "Next command will be processed.")
-                               (set-flag nil))
+                               (set-flag nil nil))
                              (progn
                                (pipe--print "Next command will be ignored.")
-                               (set-flag nil)
-                               (set-flag :IGNORE))))
+                               (set-flag :IGNORE t))))
                          ((eq flag :UNLESS)
                            (if result
                              (progn
@@ -248,16 +248,16 @@
                                (set-flag :IGNORE t))
                              (progn
                                (pipe--print "Next command will be processed.")
-                               (set-flag nil))))
+                               (set-flag nil nil))))
                          ((eq flag :NO-SET)
                            (if (not result)
                              (pipe--print "%S: Not setting %S and unsetting the %S flag." flag result flag)
                              (pipe--print "%S: Updating var to %S and unsetting the %S flag." flag ,var flag)
                              (setq ,var result))
-                           (set-flag nil))
+                           (set-flag nil nil))
                          ((eq flag :IGNORE)
                            (pipe--print "Not setting %S and unsetting %S flag." result flag)
-                           (set-flag nil))
+                           (set-flag nil nil))
                          (t 
                            (setq ,var result)
                            (pipe--print "Updating var to %S and last to %S." ,var result)
