@@ -267,8 +267,8 @@ Examples:
                   (if *mp--use-new-pipe-macro*
                     (|> ((it match-result))
                       :(print "USING NEW PIPE.")
-                      (nreverse it)
-                      ;; nreverse
+                      ;;(nreverse it)
+                      nreverse
                       :?(when *mp--merge-duplicate-alist-keys*
 		                      (|> ((it it))
                             (merge-duplicate-alist-keys it)
