@@ -270,10 +270,13 @@
                      (setq last nil)
                      ;; (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
                      )
+                   ((eq expr ':)
+                     (setq ignore-flag t))
                    (t
-                     (setq last (expr-fun ,var))
-                     ;; (pipe--print "Updated by call! Var is %S, last is %S" ,var last)
-                     )))))
+                     (let ((result (expr-fun ,var)))
+                       (setq last result)
+                       ;; (pipe--print "Updated by call! Var is %S, last is %S" ,var last)
+                       ))))))
            (throw 'return
              (progn
                ;; (pipe--print (make-string 80 ?\=))
