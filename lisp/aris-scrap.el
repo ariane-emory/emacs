@@ -50,9 +50,6 @@
   (progn
     (let ((*wm--depth-indicator-enable*))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; Do some simple arithmetic with a pipe:
-      (|> 2 (+ _ 1) (* 3 _)) ;; ⇒ 9
-
       ;; Reset the pattern-call dispatcher's alist:
       (pd--reset)
 
@@ -65,28 +62,30 @@
       (def (fib 0) 0)
       (def (fib 1) 1)
       (def (fib n)
-        (|> :(prn "Calculating (fib %d) using a pipe-based fib..." n)
-          (|> n (- _ 1) (fib _))
-          (+ _ (|> n (- _ 2) (fib _)
-                 :(prn "Calculated (fib %d) = %d" n _) _))))
+        (|>
+          :(prn "Calculating (fib %d) using a pipe-based fib..." n)
+          (|> n
+            (- _ 1)
+            (fib _))
+          (+ _
+            (|> n
+              (- _ 2)
+              (fib _)
+              :(prn "Calculated (fib %d) = %d" n _)))))
 
       ;; Call it with some output commenting on the proceedings:
-      (|>
-        3 :(prn "Starting out with %d" _) (+ _ (|> 2 (+ _ 5)))
-        :(prn "Getting the result of (fib %d)" _) (fib _)
+      (|> 3
+        :(prn "Starting out with %d" _)
+        (+ _ (|> 2 (+ _ 5)))
+        :(prn "Getting the result of (fib %d)" _)
+        (fib _)
         :(prn "Result =  %d" _)) ;; ⇒ 55
-
-      (|> 5 (square _) :(when (odd? _) (return (double _)) _))
-      (|> 6 (square _) :(when (odd? _) (return (double _)) _))
-      
-
-      (|> 3)
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       )))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Arg gen:
+;; PIPE ARG GEN:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
