@@ -239,8 +239,9 @@
                                     (cl-flet ((return (,sym) (throw 'return ,sym)))
                                       (pipe--print "Evaluated expr %S." expr)
                                       ,expr))))
-                       (let* ( (is-fun (fun? expr))
-                               (result(if is-fun (eval (list expr ,var)) (expr-fun expr ,var))))
+                       (let* ((result (if (fun? expr)
+                                        (eval (list expr ,var))
+                                        (expr-fun expr ,var))))
                          (cond
                            ((eq flag :MAYBE)
                              (progn
