@@ -258,5 +258,8 @@
 (pipe-args ((z 5)) (* z z) (+ z 8))
 
 
+(|> 5 double (lambda (x) (+ 3 x)))
+
+5
 
 

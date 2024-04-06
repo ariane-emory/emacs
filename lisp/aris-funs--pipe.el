@@ -235,7 +235,8 @@
                    ((fun? expr)
                      (pipe--print "Hit function %S" expr)
                      (let ((expr (list expr ,var)))
-                       (pipe--print "Concocted %S" expr)))
+                       (pipe--print "Concocted %S" expr)
+                       (pipe--print "Concocted evaled to %S" (eval expr))))
                    (t
                      (let ((result (expr-fun ,var)))
                        (if ignore-flag
