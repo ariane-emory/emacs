@@ -257,13 +257,11 @@
 (pipe-args ((z)) 5 (* z z) (+ z 8))
 (pipe-args ((z 5)) (* z z) (+ z 8))
 
-(defun neg (x)
-  (* -1 x))
 
 (setq y 88)
 
 (|> 5 (+ _ 7) double (+ _ 3) neg)
 (|> ((e)) 5 (+ e 7) double (+ e 3) neg)
-(|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :(prn "Done!") e y)
+(|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :(prn "Done!") e)
 
 
