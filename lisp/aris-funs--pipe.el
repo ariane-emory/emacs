@@ -299,7 +299,7 @@
                (pipe--print "Last: %S" last)
 
                (cl-flet ((expr-fun
-                           `(lambda (sym)
+                           `(lambda (,sym)
                               (cl-flet ((return (,sym) (throw 'return ,sym)))
                                 ;;(pipe--print "Eval: %S" ',expr)
                                 ,expr))))
