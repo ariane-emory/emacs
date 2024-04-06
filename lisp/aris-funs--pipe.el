@@ -291,7 +291,7 @@
               (sym ',sym)
               (,var nil))
          (catch 'return
-           (mapcr ,body
+           (mapcr ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Expr: %S" expr)

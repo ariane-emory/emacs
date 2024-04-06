@@ -291,22 +291,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (alist-get 'body (pipe-args 5 -> (* _ _) -> (+ _ 8)))
+(pipe-args 5 -> (* _ _) -> (+ _ 8))
 (|> 5 -> (* _ _) -> (+ _ 8))
 
-(pipe-args 5 -> (* _ _) -> (+ _ 8))
-((consp-head)
-  (car-head)
-  (consp-car-head)
-  (car-head-length)
-  (head-is-spec)
-  (head-is-spec-with-init-form)
-  (head . 5)
-  (var . _)
-  (init-form . 5)
-  (body ->
-    (* _ _)
-    ->
-    (+ _ 8)))
+
 
 
 
