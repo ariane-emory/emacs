@@ -12,7 +12,7 @@
 ;; TODO of AeLisp compat content:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   - various map*/apply* funs
-;;   - reduce/zip funs
+;;   - reduce/fold/zip funs
 ;;   - copy/transform tree funs
 ;;   - matrix funs
 ;;   - string funs
