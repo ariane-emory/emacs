@@ -269,12 +269,12 @@ Examples:
                       :(print "USING NEW PIPE.")
                       (nreverse it)
                       ;; nreverse
-                      :(when *mp--merge-duplicate-alist-keys*
-		                     (let ((merged (merge-duplicate-alist-keys it)))
-                           (print "Post-merge match result %s." merged)
-                           merged))
-                      :(when *mp--use-dotted-pairs-in-result*
-		                     (add-dots-to-alist it)))
+                      :?(when *mp--merge-duplicate-alist-keys*
+		                      (|> ((it it))
+                            (merge-duplicate-alist-keys it)
+                            :(print "Post-merge match result %s." it)))
+                      :?(when *mp--use-dotted-pairs-in-result*
+		                      (add-dots-to-alist it)))
                     (pipe ((it match-result))
                       :(print "USING OLD PIPE.")
                       (nreverse it)
