@@ -231,55 +231,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GOOD EXPANSION:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(progn
-  (pipe--print
-    (make-string 80 61))
-  (let
-    ((last 5)
-      (sym '_)
-      (_ nil))
-    (catch 'return
-      (mapcr
-        '(->
-           (* _ _)
-           ->
-           (+ _ 8))
-        (lambda
-          (expr)
-          (pipe--print
-            (make-string 80 61))
-          (pipe--print "Expr: %S" expr)
-          (pipe--print "Var:  %S" _)
-          (pipe--print "Last: %S" last)
-          (cl-flet
-            ((expr-fun
-               `(lambda
-                  (sym)
-                  (cl-flet
-                    ((return
-                       (,sym)
-                       (throw 'return ,sym)))
-                    ,expr))))
-            (cond
-              ((eq expr '->)
-                (setq _ last)
-                (setq last nil)
-                (pipe--print "Updated by arrow! Var is %S, last is %S" _ last))
-              (t
-                (setq last
-                  (expr-fun _))
-                (pipe--print "Updated by call! Var is %S, last is %S" _ last))))))
-      (throw 'return
-        (progn
-          (pipe--print
-            (make-string 80 61))
-          (pipe--print "Returning: %S"
-            (or last _))
-          (pipe--print
-            (make-string 80 61))
-          (pipe--print "Var:  %S" _)
-          (pipe--print "Last: %S" last)
-          (or last _))))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -289,7 +241,16 @@
 (|> ((z)) 5 -> (* z z) -> (+ z 8))
 (|> ((z 5)) (* z z) -> (+ z 8))
 
-(pipe-args -> 5 -> (* _ _) -> (+ _ 8))
-(pipe-args -> ((z)) 5 -> (* z z) -> (+ z 8))
-(pipe-args -> ((z 5)) (* z z) -> (+ z 8))
+(pipe-args 5 -> (* _ _) -> (+ _ 8))
+(pipe-args ((z)) 5 -> (* z z) -> (+ z 8))
+(pipe-args ((z 5)) (* z z) -> (+ z 8))
+
+
+
+(|> 8 -> (prn "Hello"))
+(|> 8 -> (when (eql _ 8) (return (* 7 6))))
+(|> 8 -> (when (eql _ 8) (* 7 6)) -> _)
+
+
+
 

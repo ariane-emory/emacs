@@ -289,17 +289,17 @@
               (> car-head-length 0)
               (< car-head-length 3)))
           (head-is-spec-with-init-form (eql car-head-length 2))
-          (init-form
-            (cond
-              (head-is-spec-with-init-form
-                (message "Chose case 1")
-                (cadr car-head))
-              ))
+          ;; (init-form
+          ;;   (cond
+          ;;     (head-is-spec-with-init-form
+          ;;       (message "Chose case 1")
+          ;;       )
+          ;;     ))
           (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (body
             (cond
               (head-is-spec-with-init-form
-                (cons inject-sym tail))
+                (cons (cadr car-head) (cons inject-sym tail)))
               (head-is-spec
                 tail)
               (t (cons head tail))))
@@ -312,7 +312,7 @@
                 (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
                 (head . ,head)
                 (var . ,var)
-                (init-form . ,init-form)
+                ;; (init-form . ,init-form)
                 (body . ,body))))
     alist))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -324,15 +324,11 @@
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (args      (eval `(pipe-args -> ,head ,@tail)))
           (sym       (alist-get 'var  args))
-          (init-form (alist-get 'init-form args))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
-    ;; (message "ARGS: %S" args)
-    ;; (message "(alist-get 'body '%S) = %S" args (alist-get 'body args))
-    ;; (message "THIS: %S" body)
     `(progn
        (pipe--print (make-string 80 ?\=))
-       (let ( (last ,init-form)
+       (let ( (last nil)
               (sym ',sym)
               (,var nil))
          (catch 'return
@@ -346,7 +342,6 @@
                (cl-flet ((expr-fun
                            `(lambda (,sym)
                               (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                ;;(pipe--print "Eval: %S" ',expr)
                                 ,expr))))
                  (cond
                    ((eq expr '->)
@@ -361,10 +356,9 @@
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Returning: %S" (or last ,var))
                (pipe--print (make-string 80 ?\=))
-               ;;(pipe--print "Expr: %S" expr)
                (pipe--print "Var:  %S" ,var)
                (pipe--print "Last: %S" last)
-               (or last ,var))))))))
+               ,var)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
