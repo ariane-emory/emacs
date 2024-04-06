@@ -104,7 +104,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming."
   (let* ( (consp-head (consp head))
           (car-head (when consp-head (car head)))
           (consp-car-head (when consp-head (consp car-head)))
@@ -141,7 +140,6 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (args      (eval `(pipe-args ,head ,@tail)))
-          (sym       (alist-get 'var  args))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
     `(let ( (,var nil)
