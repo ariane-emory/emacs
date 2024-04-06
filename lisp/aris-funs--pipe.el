@@ -231,6 +231,8 @@
                      (set-flag :IGNORE))
                    ((eq expr ':?)
                      (set-flag :MAYBE))
+                   ((eq expr ':!)
+                     (set-flag :MAYBE-NOT))
                    (t
                      (cl-flet ((expr-fun
                                  `(lambda (expr ,sym)
@@ -243,10 +245,18 @@
                            ((eq flag :MAYBE)
                              (progn
                                (if result
+                                 (pipe--print "%S: Ignoring %S and unsetting the %S flat." flag result flag)
+                                 (progn 
+                                   (setq ,var result)
+                                   (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)))
+                               (setq flag nil)))
+                           ((eq flag :MAYBE-NOT)
+                             (progn
+                               (if result
                                  (progn
                                    (setq ,var result)
-                                   (pipe--print "MAYBE: Updating var to %S and unsetting %S flag." ,var flag))
-                                 (pipe--print "MAYBE: Ignoring %S and unsetting %S flag." flag result))
+                                   (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag))
+                                 (pipe--print "%S: Ignoring %S and unsetting %S the flag." flag flag result))
                                (setq flag nil)))
                            ((eq flag :IGNORE)
                              (progn 
