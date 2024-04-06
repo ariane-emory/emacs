@@ -255,6 +255,8 @@
                 head)))
           (body
             (cond
+              (head-is-spec-with-init-form
+                (cons '-> tail))
               ((and head-is-spec (not head-is-spec-with-init-form))
                 (cdr tail))
               (t tail)))
