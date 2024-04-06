@@ -210,8 +210,7 @@
           (body      (alist-get 'body args)))
     `(progn
        (pipe--print (make-string 80 ?\=))
-       (let ( (sym ',sym)
-              (,var nil)
+       (let ( (,var nil)
               (flag nil))
          (cl-flet ((set-flag (new-flag)
                      (when flag 
@@ -235,8 +234,8 @@
                      (set-flag :MAYBE-NOT))
                    (t
                      (cl-flet ((expr-fun
-                                 `(lambda (expr ,sym)
-                                    (cl-flet ((return (,sym) (throw 'return ,sym)))
+                                 `(lambda (expr ,',var)
+                                    (cl-flet ((return (value) (throw 'return value)))
                                       (pipe--print "Evaluated expr %S." expr)
                                       ,expr))))
                        (let* ((result (if (fun? expr)
