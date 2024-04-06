@@ -271,7 +271,8 @@ Examples:
                       nreverse
                       :?(when *mp--merge-duplicate-alist-keys*
 		                      (|> ((it it))
-                            (merge-duplicate-alist-keys it)
+                            ;;(merge-duplicate-alist-keys it)
+                            merge-duplicate-alist-keys
                             :(print "Post-merge match result %s." it)))
                       :?(when *mp--use-dotted-pairs-in-result*
 		                      (add-dots-to-alist it)))
