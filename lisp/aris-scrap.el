@@ -276,3 +276,5 @@
 (|> ((x 5)) (+ x 7) :(prn "hello") (+ x 3) (return 99) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
 (|> ((x 5)) (+ x 7) double :(prn "hello") (+ x 3) (return 99) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
 
+(|> 5 :when?(even? _) 10)
+(|> 6 :when?(even? _) 10)

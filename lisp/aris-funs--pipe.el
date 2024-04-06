@@ -160,9 +160,9 @@
                  ((eq expr :)
                    (set-flag :IGNORE))
                  ((eq expr :?)
-                   (set-flag :MAYBE))
-                 ((eq expr :!)
-                   (set-flag :MAYBE-NOT))
+                   (set-flag :WHEN-EXPR))
+                 ((eq expr :when?)
+                   (set-flag :WHEN-CMD))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -173,7 +173,7 @@
                                       (eval (list expr ',var)) ;; unsure about this quote.
                                       (expr-fun expr ,var))))
                        (cond
-                         ((eq flag :MAYBE)
+                         ((eq flag :WHEN-EXPR)
                            (if (not result)
                              (pipe--print "%S: Ignoring %S and unsetting the %S flat." flag result flag)
                              (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
