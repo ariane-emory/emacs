@@ -209,7 +209,7 @@
                        (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
                        (pipe--print "Setting flag from %S to %S%s." flag new-flag (if force " (forced)" "")))
                      (setq flag new-flag)))
-           (mapcr ',body
+           (maprc ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Expr:           %S" expr)
