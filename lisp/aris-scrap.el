@@ -245,13 +245,9 @@
 (pipe-args ((z)) 5 -> (* z z) -> (+ z 8))
 (pipe-args ((z 5)) (* z z) -> (+ z 8))
 
-
-
 (|> 8 -> (prn "Hello"))
 (|> 8 -> (when (eql _ 8) (return (* 7 6))))
 (|> 8 -> (when (eql _ 8) (* 7 6)) -> _)
-(|> 8 -> (when (eql _ 7) (* 7 6)) -> _)
-
-
+(|> 8 -> (when (eql _ 7) (* 7 6)) -> _) ;; sus
 
 
