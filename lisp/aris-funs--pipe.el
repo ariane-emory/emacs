@@ -282,9 +282,9 @@
           (init-form (alist-get 'init-form args))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
-    (message "ARGS: %S" args)
-    (message "(alist-get 'body '%S) = %S" args (alist-get 'body args))
-    (message "THIS: %S" body)
+    ;; (message "ARGS: %S" args)
+    ;; (message "(alist-get 'body '%S) = %S" args (alist-get 'body args))
+    ;; (message "THIS: %S" body)
     `(progn
        (pipe--print (make-string 80 ?\=))
        (let ( (last ,init-form)
