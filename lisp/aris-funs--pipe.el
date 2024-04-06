@@ -228,7 +228,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe-args (head &rest tail)
+(defmacro pipe-args (inject-sym head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (consp-head (consp head))
@@ -256,8 +256,8 @@
           (body
             (cond
               (head-is-spec-with-init-form
-                (cons '-> tail))
-              ((and head-is-spec (not head-is-spec-with-init-form))
+                (cons inject-sym tail))
+              (head-is-spec
                 (cdr tail))
               (t tail)))
           (alist
@@ -279,7 +279,7 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args      (eval `(pipe-args ,head ,@tail)))
+  (let* ( (args      (eval `(pipe-args -> ,head ,@tail)))
           (sym       (alist-get 'var  args))
           (init-form (alist-get 'init-form args))
           (var       (alist-get 'var  args))
