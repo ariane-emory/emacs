@@ -144,62 +144,58 @@
           (sym       (alist-get 'var  args))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
-    `(progn
+    `(let ( (,var nil)
+            (flag nil))
        (pipe--print (make-string 80 ?\=))
-       (let ( (,var nil)
-              (flag nil))
+       (catch 'return
          (cl-flet ((set-flag (new-flag)
                      (when flag 
                        (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
                      (pipe--print "Setting flag to %S." new-flag)
                      (setq flag new-flag)))
-           (catch 'return
-             (mapcr ',body
-               (lambda (expr)
-                 (pipe--print (make-string 80 ?\=))
-                 (pipe--print "Expr:   %S" expr)
-                 (pipe--print "Var:    %S" ,var)
-                 (pipe--print "Flag:   %S" flag)
+           (mapcr ',body
+             (lambda (expr)
+               (pipe--print (make-string 80 ?\=))
+               (pipe--print "Expr:   %S" expr)
+               (pipe--print "Var:    %S" ,var)
+               (pipe--print "Flag:   %S" flag)
 
-                 (cond
-                   ((eq expr :)
-                     (set-flag :IGNORE))
-                   ((eq expr :?)
-                     (set-flag :MAYBE))
-                   ((eq expr :!)
-                     (set-flag :MAYBE-NOT))
-                   (t
-                     (cl-flet ((expr-fun
-                                 `(lambda (expr ,',var)
-                                    (cl-flet ((return (value) (throw 'return value)))
-                                      (pipe--print "Evaluated expr %S." expr)
-                                      ,expr))))
-                       (let* ((result (if (fun? expr)
-                                        (eval (list expr ,var))
-                                        (expr-fun expr ,var))))
-                         (cond
-                           ((eq flag :MAYBE)
-                             (progn
-                               (if (not result)
-                                 (pipe--print "%S: Ignoring %S and unsetting the %S flat." flag result flag)
-                                 (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
-                                 (setq ,var result))
-                               (setq flag nil)))
-                           ((eq flag :IGNORE)
-                             (progn 
-                               (pipe--print "Ignoring %S and unsetting ignore flag." result)
-                               (setq flag nil)))
-                           (t 
-                             (progn
-                               (setq ,var result)
-                               (pipe--print "Updating var to %S and last to %S." ,var result)
-                               )))))))))
-             (throw 'return
-               (progn
-                 (pipe--print (make-string 80 ?\=))
-                 (pipe--print "Returning: %S" ,var)
-                 (pipe--print (make-string 80 ?\=))
-                 ,var))))))))
+               (cond
+                 ((eq expr :)
+                   (set-flag :IGNORE))
+                 ((eq expr :?)
+                   (set-flag :MAYBE))
+                 ((eq expr :!)
+                   (set-flag :MAYBE-NOT))
+                 (t
+                   (cl-flet ((expr-fun
+                               `(lambda (expr ,',var)
+                                  (cl-flet ((return (value) (throw 'return value)))
+                                    (pipe--print "Evaluated expr %S." expr)
+                                    ,expr))))
+                     (let* ((result (if (fun? expr)
+                                      (eval (list expr ,var))
+                                      (expr-fun expr ,var))))
+                       (cond
+                         ((eq flag :MAYBE)
+                           (if (not result)
+                             (pipe--print "%S: Ignoring %S and unsetting the %S flat." flag result flag)
+                             (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
+                             (setq ,var result))
+                           (setq flag nil))
+                         ((eq flag :IGNORE)
+                           (pipe--print "Ignoring %S and unsetting ignore flag." result)
+                           (setq flag nil))
+                         (t 
+                           (setq ,var result)
+                           (pipe--print "Updating var to %S and last to %S." ,var result)
+                           ))))))))
+           (throw 'return
+             (progn
+               (pipe--print (make-string 80 ?\=))
+               (pipe--print "Returning: %S" ,var)
+               (pipe--print (make-string 80 ?\=))
+               ,var)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
