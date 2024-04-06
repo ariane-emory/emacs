@@ -51,20 +51,19 @@
       (def (fib 0) 0)
       (def (fib 1) 1)
       (def (fib n)
-        (|> (prn "Calculating (fib %d) using a pipe-based fib..." n)
-          (|> n -> (- _ 1) -> (fib _)) ->
-          (+ _ (|> n -> (- _ 2) -> (fib _) ->
-                 (prn "Calculated (fib %d) = %d" n _) _))))
+        (|> :(prn "Calculating (fib %d) using a pipe-based fib..." n)
+          (|> n (- _ 1) (fib _))
+          (+ _ (|> n (- _ 2) (fib _)
+                 :(prn "Calculated (fib %d) = %d" n _) _))))
 
       ;; Call it with some output commenting on the proceedings:
       (|>
-        3 -> (prn "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-        (prn "Getting the result of (fib %d)" _) (fib _) ->
-        "I'm just a harmless string sitting in the pipe doing doing nothing."
-        (prn "Result =  %d" _) _) ;; ⇒ 55
+        3 :(prn "Starting out with %d" _) (+ _ (|> 2 (+ _ 5)))
+        :(prn "Getting the result of (fib %d)" _) (fib _)
+        :(prn "Result =  %d" _)) ;; ⇒ 55
 
-      (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
-      (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
+      (|> 5 (square _) :(when (odd? _) (return (double _)) _))
+      (|> 6 (square _) :(when (odd? _) (return (double _)) _))
       
 
       (|> 3)
@@ -80,7 +79,7 @@
 ;;;; BASIC CASES:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(pipe-args 5 -> (* _ _) -> (+ _ 8) -> (when (odd? _) (return (* _ 2))))
+(pipe-args 5 (* _ _) (+ _ 8) (when (odd? _) (return (* _ 2))))
 
 '( (consp-head)
    (car-head)
@@ -91,18 +90,16 @@
    (head . 5)
    (var . _)
    (init-form . 5)
-   (body ->
+   (body 
      (* _ _)
-     ->
      (+ _ 8)
-     ->
      (when
        (odd? _)
        (return
          (* _ 2)))))
 
 ;; Named binding:
-(pipe-args ((z)) 5 -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
+(pipe-args ((z)) 5 (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
    (car-head z)
@@ -114,18 +111,16 @@
      (z))
    (var . z)
    (init-form . 5)
-   (body ->
+   (body 
      (* z z)
-     ->
      (+ z 8)
-     ->
      (when
        (odd? z)
        (return
          (* z 2)))))
 
 ;; Named binding with value:
-(pipe-args ((z 5)) -> (* z z) -> (+ z 8) -> (when (odd? z) (return (* z 2))))
+(pipe-args ((z 5)) (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
    (car-head z 5)
@@ -137,11 +132,9 @@
      (z 5))
    (var . z)
    (init-form . 5)
-   (body ->
+   (body 
      (* z z)
-     ->
      (+ z 8)
-     ->
      (when
        (odd? z)
        (return
@@ -228,19 +221,14 @@
    (init-form . 5)
    (body))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; GOOD EXPANSION:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TEST ARG GEN VERSION:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (|> 8 :(prn "Hello"))
-(|> 8 (when (eql _ 8) (return (* 7 6))))
-(|> 8 (when (eql _ 8) (* 7 6)) _)
-(|> 8 (when (eql _ 7) (* 7 6)) _) ;; sus
+(|> 8 :(when (eql _ 8) (return (* 7 6))))
+(|> 8 :?(when (eql _ 8) (* 7 6)))
+(|> 8 :?(when (eql _ 7) (* 7 6)))
 
 (|> 5 6)
 (|> ((x)) 5 6)
@@ -262,7 +250,6 @@
 (|> ((e)) 5 (+ e 7) double (+ e 3) neg)
 (|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) (return 999) :(when (< e 40) 1) :(prn "Done!") (+ y e))
 (|> 2  :(prn "hello") (+ 2 _) :?(when t 99))
-
 
 (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
 (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
