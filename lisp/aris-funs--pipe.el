@@ -109,79 +109,6 @@
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro |> (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming."
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
-          (init-form (if head-is-spec (cadar head) head))
-          (body tail))
-
-    (pipe--print (make-string 80 ?\=))
-    (pipe--print "PIPE CALLED")
-    (pipe--print (make-string 80 ?\=))
-    (pipe--print "head: %s" head)
-    (pipe--print "head-is-spec: %s" head-is-spec)
-    (pipe--print "var: %s" var)
-    (pipe--print "init-form: %s" init-form)
-    (pipe--print "body: %s" body)
-
-    `(progn
-       (pipe--print (make-string 80 ?\=))
-       (let ( (last ,init-form)
-              (sym ',var)
-              (,var nil))
-         (catch 'return
-           (mapcr ',body
-             (lambda (expr)
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Expr: %S" expr)
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
-
-               (cl-flet ((expr-fun
-                           `(lambda (sym)
-                              (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                ;;(pipe--print "Eval: %S" ',expr)
-                                (let ((result ,expr))
-                                  ;;(pipe--print "Next: %S" result)
-                                  result)))))
-                 (cond
-                   ((eq expr '->)
-                     (setq ,var last)
-                     (setq last nil)
-                     (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
-                     )
-                   (t (setq last (expr-fun ,var))
-                     (pipe--print "Updated by call! Var is %S, last is %S" ,var last))))))
-           (throw 'return
-             (progn
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Returning: %S" (or last ,var))
-               (pipe--print (make-string 80 ?\=))
-               ;;(pipe--print "Expr: %S" expr)
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
-               (or last ,var))))))))
-               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (let ((*pipe--verbose* nil))
-;;   (progn
-;;     (message "One")
-;;     (pipe--print "pipe!")
-;;     (message "Two")
-;;     (message "Three")
-;;     ))
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; EXAMPLE:
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -227,54 +154,6 @@
 ;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro pipe-args (inject-sym head &rest tail)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "`pipe' with optional let-like binding/symbol naming."
-;;   (let* ( (consp-head (consp head))
-;;           (car-head (when consp-head (car head)))
-;;           (consp-car-head (when consp-head (consp car-head)))
-;;           (car-head-length (when consp-car-head (length car-head)))
-;;           (head-is-spec
-;;             (and
-;;               consp-car-head
-;;               (> car-head-length 0)
-;;               (< car-head-length 3)))
-;;           (head-is-spec-with-init-form (eql car-head-length 2))
-;;           (var (if head-is-spec (caar head) *pipe--default-var-sym*))
-;;           (init-form
-;;             (cond
-;;               (head-is-spec-with-init-form
-;;                 (message "Chose case 1")
-;;                 (cadr car-head))
-;;               (head-is-spec
-;;                 (message "Chose case 2")
-;;                 (car tail))
-;;               (t
-;;                 (message "Chose case 3")
-;;                 head)))
-;;           (body
-;;             (cond
-;;               (head-is-spec-with-init-form
-;;                 (cons inject-sym tail))
-;;               (head-is-spec
-;;                 (cdr tail))
-;;               (t tail)))
-;;           (alist
-;;             `'( (consp-head . ,consp-head)
-;;                 (car-head . ,car-head)
-;;                 (consp-car-head . ,consp-car-head)
-;;                 (car-head-length . ,car-head-length)
-;;                 (head-is-spec . ,head-is-spec)
-;;                 (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
-;;                 (head . ,head)
-;;                 (var . ,var)
-;;                 (init-form . ,init-form)
-;;                 (body . ,body))))
-;;     alist))
-;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -306,7 +185,6 @@
                 (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
                 (head . ,head)
                 (var . ,var)
-                ;; (init-form . ,init-form)
                 (body . ,body))))
     alist))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
