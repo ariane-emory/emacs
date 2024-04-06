@@ -259,18 +259,18 @@
                ;; (pipe--print "Var:  %S" ,var)
                ;; (pipe--print "Last: %S" last)
 
-               (cl-flet ((expr-fun
-                           `(lambda (,sym)
-                              (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                ;;(pipe--print "Eval: %S" ',expr)
-                                ,expr))))
-                 (cond
-                   ((eq expr '->)
-                     (setq ,var last)
-                     (setq last nil)
-                     ;; (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
-                     )
-                   (t
+               (cond
+                 ((eq expr '->)
+                   (setq ,var last)
+                   (setq last nil)
+                   ;; (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
+                   )
+                 (t
+                   (cl-flet ((expr-fun
+                               `(lambda (,sym)
+                                  (cl-flet ((return (,sym) (throw 'return ,sym)))
+                                    ;;(pipe--print "Eval: %S" ',expr)
+                                    ,expr))))
                      (setq last (expr-fun ,var))
                      ;; (pipe--print "Updated by call! Var is %S, last is %S" ,var last)
                      )))))
