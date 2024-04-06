@@ -224,10 +224,10 @@
                (pipe--print "Ignore: %S" ignore-flag)
 
                (cl-flet ((expr-fun
-                           `(lambda (,sym)
+                           `(lambda (,sym expr)
                               (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                (pipe--print "Evaluated expr %S." ',expr)
-                                ,expr))))
+                                (pipe--print "Evaluated expr %S." expr)
+                                (eval expr)))))
                  (cond
                    ((eq expr ':)
                      (pipe--print "Setting ignore flag.")
@@ -238,7 +238,7 @@
                        (pipe--print "Concocted %S" expr)
                        (pipe--print "Concocted evaled to %S" (eval expr))))
                    (t
-                     (let ((result (expr-fun ,var)))
+                     (let ((result (expr-fun ,var expr)))
                        (if ignore-flag
                          (progn
                            (pipe--print "Ignoring %S and unsetting ignore flag." result)
