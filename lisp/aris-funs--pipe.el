@@ -163,6 +163,8 @@
                    (set-flag :WHEN-EXPR))
                  ((eq expr :when?)
                    (set-flag :WHEN-CMD))
+                 ((eq expr :unless?)
+                   (set-flag :UNLESS-CMD))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -173,12 +175,30 @@
                                       (eval (list expr ',var)) ;; unsure about this quote.
                                       (expr-fun expr ,var))))
                        (cond
+                         ((eq flag :WHEN-CMD)
+                           (if result
+                             (progn
+                               (pipe--print "Next command will be processed.")
+                               (setq flag nil))
+                             (progn
+                               (pipe--print "Next command will be ignored.")
+                               (setq flag nil)
+                               (set-flag :IGNORE))))
                          ((eq flag :WHEN-EXPR)
                            (if (not result)
                              (pipe--print "%S: Ignoring %S and unsetting the %S flag." flag result flag)
                              (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
                              (setq ,var result))
                            (setq flag nil))
+                         ((eq flag :UNLESS-CMD)
+                           (if result
+                             (progn
+                               (pipe--print "Next command will be ignored.")
+                               (setq flag nil)
+                               (set-flag :IGNORE))
+                             (progn
+                               (pipe--print "Next command will be processed.")
+                               (setq flag nil))))
                          ((eq flag :IGNORE)
                            (pipe--print "Ignoring %S and unsetting ignore flag." result)
                            (setq flag nil))

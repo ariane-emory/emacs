@@ -278,3 +278,9 @@
 
 (|> 5 :when?(even? _) 10)
 (|> 6 :when?(even? _) 10)
+
+(|> 5 :when? even? 10)
+(|> 6 :when? even? 10)
+
+(|> 5 :when? t 10)
+(|> 6 :when? nil 10)
