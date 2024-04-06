@@ -263,30 +263,30 @@ Examples:
                     (print "Just returning t.")
 		                t)
 		              (print "Extracted match result %s." match-result)
-                  ;; (let* ( (match-result
-                  ;;           (nreverse match-result))
-                  ;;         (match-result
-                  ;;           (if (not *mp--merge-duplicate-alist-keys*)
-			            ;;             match-result                              
-			            ;;             (let ((merged (merge-duplicate-alist-keys match-result)))
-                  ;;               (print "Post-merge match result %s." merged)
-                  ;;               merged)))
-                  ;;         (match-result
-                  ;;           (if *mp--use-dotted-pairs-in-result*
-		              ;;             (add-dots-to-alist match-result)
-		              ;;             match-result)))
-                  ;;   match-result)
-                  (|> ((it))
-                    (nreverse match-result)
-                    (if (not *mp--merge-duplicate-alist-keys*)
-		                  it
-		                  (let ((merged (merge-duplicate-alist-keys it)))
-                        (print "Post-merge match result %s." merged)
-                        merged))
-                    (if *mp--use-dotted-pairs-in-result*
-		                  (add-dots-to-alist it)
-		                  it)))))))))))
-                      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                  ;; Temporarily duplicated section to accomodate use of both pipe macros:
+                  (if *mp--use-new-pipe-macro*
+                    (|> ((it))
+                      (nreverse match-result)
+                      (if (not *mp--merge-duplicate-alist-keys*)
+		                    it
+		                    (let ((merged (merge-duplicate-alist-keys it)))
+                          (print "Post-merge match result %s." merged)
+                          merged))
+                      (if *mp--use-dotted-pairs-in-result*
+		                    (add-dots-to-alist it)
+		                    it))
+                    (pipe ((it))
+                      (nreverse match-result)
+                      (if (not *mp--merge-duplicate-alist-keys*)
+		                    it
+		                    (let ((merged (merge-duplicate-alist-keys it)))
+                          (print "Post-merge match result %s." merged)
+                          merged))
+                      (if *mp--use-dotted-pairs-in-result*
+		                    (add-dots-to-alist it)
+		                    it)))
+                  )))))))))
+                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
