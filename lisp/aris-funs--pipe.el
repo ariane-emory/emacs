@@ -240,6 +240,14 @@
                        (let* ( (expr (if (fun? expr) (list expr ,var) expr))
                                (result (expr-fun expr ,var)))
                          (cond
+                           ((eq flag :MAYBE)
+                             (progn
+                               (if result
+                                 (progn
+                                   (setq ,var result)
+                                   (pipe--print "MAYBE: Updating var to %S and unsetting %S flag." ,var flag))
+                                 (pipe--print "MAYBE: Ignoring %S and unsetting %S flag." flag result))
+                               (setq flag nil)))
                            ((eq flag :IGNORE)
                              (progn 
                                (pipe--print "Ignoring %S and unsetting ignore flag." result)
