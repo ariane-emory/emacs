@@ -257,7 +257,18 @@
             (cond
               ((and head-is-spec (not head-is-spec-with-init-form))
                 (cdr tail))
-              (t tail))))
+              (t tail)))
+          (alist
+            '( (consp-head . consp-head)
+               (car-head . car-head)
+               (consp-car-head . consp-car-head)
+               (car-head-length . car-head-length)
+               (head-is-spec . head-is-spec)
+               (head-is-spec-with-init-form . head-is-spec-with-init-form)
+               (head . head)
+               (var . var)
+               (init-form . init-form)
+               (body . body))))
     `'( (consp-head . ,consp-head)
         (car-head . ,car-head)
         (consp-car-head . ,consp-car-head)
@@ -279,16 +290,17 @@
           (sym       (alist-get 'var  args))
           (init-form (alist-get 'init-form args))
           (var       (alist-get 'var  args))
-          (body      (car (alist-get 'body args))))
+          (body      (alist-get 'body args)))
     (message "ARGS: %S" args)
-    (message "THIS: %S" (alist-get 'body args))
+    (message "(alist-get 'body '%S) = %S" args (alist-get 'body args))
+    (message "THIS: %S" body)
     `(progn
        (pipe--print (make-string 80 ?\=))
        (let ( (last ,init-form)
               (sym ',sym)
               (,var nil))
          (catch 'return
-           (mapcr ',body
+           (mapcr ,body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Expr: %S" expr)
