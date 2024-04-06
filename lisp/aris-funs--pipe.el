@@ -29,9 +29,18 @@
   "The default symbol to use for the pipe operator."
   :group 'pipe
   :type 'symbol)
-
-
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe--print (first &rest rest)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Wrap *pipe--print-fun*"
+  (when *pipe--verbose*
+    `(progn
+       (funcall *pipe--print-fun* ,first ,@rest)
+       nil)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -96,17 +105,6 @@
                (setq ignore-flag nil)))))
        ,sym)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe--print (first &rest rest)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *pipe--print-fun*"
-  (when *pipe--verbose*
-    `(progn
-       (funcall *pipe--print-fun* ,first ,@rest)
-       nil)))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -214,41 +212,45 @@
        (pipe--print (make-string 80 ?\=))
        (let ( (sym ',sym)
               (,var nil)
-              (ignore-flag nil))
-         (catch 'return
-           (mapcr ',body
-             (lambda (expr)
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Expr:   %S" expr)
-               (pipe--print "Var:    %S" ,var)
-               (pipe--print "Ignore: %S" ignore-flag)
+              (flag nil))
+         (cl-flet ((set-flag (new-flag)
+                     (when flag
+                       (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
+                     (pipe--print "Setting flag to %S." new-flag)
+                     (setq flag :IGNORE)))
+           (catch 'return
+             (mapcr ',body
+               (lambda (expr)
+                 (pipe--print (make-string 80 ?\=))
+                 (pipe--print "Expr:   %S" expr)
+                 (pipe--print "Var:    %S" ,var)
+                 (pipe--print "Flag:   %S" flag)
 
-               (cl-flet ((expr-fun
-                           `(lambda (expr ,sym)
-                              (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                (pipe--print "Evaluated expr %S." expr)
-                                (eval expr)))))
                  (cond
                    ((eq expr ':)
-                     (pipe--print "Setting ignore flag.")
-                     (setq ignore-flag t))
+                     (set-flag :IGNORE))
                    (t
-                     (let* ( (expr (if (fun? expr) (list expr ,var) expr))
-                             (result (expr-fun expr ,var)))
-                       (if ignore-flag
-                         (progn
-                           (pipe--print "Ignoring %S and unsetting ignore flag." result)
-                           (setq ignore-flag nil))
-                         (progn
-                           (setq ,var result)
-                           (pipe--print "Updating var to %S and last to %S." ,var result)
-                           ))))))))
-           (throw 'return
-             (progn
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Returning: %S" ,var)
-               (pipe--print (make-string 80 ?\=))
-               ,var)))))))
+                     (cl-flet ((expr-fun
+                                 `(lambda (expr ,sym)
+                                    (cl-flet ((return (,sym) (throw 'return ,sym)))
+                                      (pipe--print "Evaluated expr %S." expr)
+                                      (eval expr)))))
+                       (let* ( (expr (if (fun? expr) (list expr ,var) expr))
+                               (result (expr-fun expr ,var)))
+                         (if (eq flag :IGNORE)
+                           (progn
+                             (pipe--print "Ignoring %S and unsetting ignore flag." result)
+                             (setq flag nil))
+                           (progn
+                             (setq ,var result)
+                             (pipe--print "Updating var to %S and last to %S." ,var result)
+                             ))))))))
+             (throw 'return
+               (progn
+                 (pipe--print (make-string 80 ?\=))
+                 (pipe--print "Returning: %S" ,var)
+                 (pipe--print (make-string 80 ?\=))
+                 ,var))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
