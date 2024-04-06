@@ -212,8 +212,7 @@
           (body      (alist-get 'body args)))
     `(progn
        (pipe--print (make-string 80 ?\=))
-       (let ( ;; (last nil)
-              (sym ',sym)
+       (let ( (sym ',sym)
               (,var nil)
               (ignore-flag nil))
          (catch 'return
@@ -222,7 +221,6 @@
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Expr:   %S" expr)
                (pipe--print "Var:    %S" ,var)
-               ;; (pipe--print "Last:   %S" last)
                (pipe--print "Ignore: %S" ignore-flag)
 
                (cl-flet ((expr-fun
@@ -231,14 +229,13 @@
                                 (pipe--print "Evaluated expr %S." ',expr)
                                 ,expr))))
                  (cond
-                   ;; ((eq expr '->)
-                   ;;   (setq ,var last)
-                   ;;   ;;(setq last nil) ;; Probably don't do this.
-                   ;;   (pipe--print "Piping last %S! Var is %S, last is %S" last ,var last)
-                   ;;   )
                    ((eq expr ':)
                      (pipe--print "Setting ignore flag.")
                      (setq ignore-flag t))
+                   ((fun? expr)
+                     (pipe--print "Hit function %S" expr)
+                     (let ((expr (list expr ,var)))
+                       (pipe--print "Concocted %S" expr)))
                    (t
                      (let ((result (expr-fun ,var)))
                        (if ignore-flag
@@ -253,10 +250,7 @@
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Returning: %S" ,var)
                (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Last: %S" last)
-               ;;last ;; maybe ,var?
-               ,var
-               )))))))
+               ,var)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
