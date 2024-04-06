@@ -159,7 +159,11 @@
                (cond
                  ((eq expr :)
                    (set-flag :IGNORE))
-                 ((eq expr :RETURN)
+                 ((and (eq expr :RETURN) (eq flag :IGNORE))
+                   (pipe--print "Do nothing.")
+                   ;; (set-flag :RETURN)
+                   )
+                 ((eq expr :return)
                    (set-flag :RETURN))
                  ((eq expr :?)
                    (set-flag :WHEN-EXPR))
