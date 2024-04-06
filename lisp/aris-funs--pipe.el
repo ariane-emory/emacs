@@ -109,6 +109,64 @@
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro |> (head &rest tail)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "`pipe' with optional let-like binding/symbol naming."
+;;   (let* ( (args      (eval `(pipe-args ,head ,@tail)))
+;;           (sym       (alist-get 'var  args))
+;;           (var       (alist-get 'var  args))
+;;           (body      (alist-get 'body args)))
+;;     `(progn
+;;        (pipe--print (make-string 80 ?\=))
+;;        (let ( (last nil)
+;;               (sym ',sym)
+;;               (,var nil)
+;;               (ignore-flag nil))
+;;          (catch 'return
+;;            (mapcr ',body
+;;              (lambda (expr)
+;;                (pipe--print (make-string 80 ?\=))
+;;                (pipe--print "Expr:   %S" expr)
+;;                (pipe--print "Var:    %S" ,var)
+;;                (pipe--print "Last:   %S" last)
+;;                (pipe--print "Ignore: %S" ignore-flag)
+
+;;                (cl-flet ((expr-fun
+;;                            `(lambda (,sym)
+;;                               (cl-flet ((return (,sym) (throw 'return ,sym)))
+;;                                 (pipe--print "Evaluated expr %S." ',expr)
+;;                                 ,expr))))
+;;                  (cond
+;;                    ((eq expr '->)
+;;                      (setq ,var last)
+;;                      ;;(setq last nil) ;; Probably don't do this.
+;;                      (pipe--print "Piping last %S! Var is %S, last is %S" last ,var last)
+;;                      )
+;;                    ((eq expr ':)
+;;                      (pipe--print "Setting ignore flag.")
+;;                      (setq ignore-flag t))
+;;                    (t
+;;                      (let ((result (expr-fun ,var)))
+;;                        (if ignore-flag
+;;                          (progn
+;;                            (pipe--print "Ignoring %S and unsetting ignore flag." result)
+;;                            (setq ignore-flag nil))
+;;                          (setq last result)
+;;                          (pipe--print "Updating var to %S and last to %S." ,var result)
+;;                          )))))))
+;;            (throw 'return
+;;              (progn
+;;                (pipe--print (make-string 80 ?\=))
+;;                (pipe--print "Returning: %S" (or last ,var))
+;;                (pipe--print (make-string 80 ?\=))
+;;                (pipe--print "Var:  %S" ,var)
+;;                (pipe--print "Last: %S" last)
+;;                ;;last ;; maybe ,var?
+;;                ,var
+;;                )))))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,12 +184,10 @@
           (var (if head-is-spec (car car-head) *pipe--default-var-sym*))
           (body
             (cond
-              (head-is-spec-with-init-form
-                (cons (cadr car-head) (cons '-> tail)))
-              (head-is-spec
-                tail)
+              (head-is-spec-with-init-form (cons (cadr car-head) tail))
+              (head-is-spec tail)
               (t (cons head tail))))
-          (body (append body '(->)))
+          ;;(body (append body '(->)))
           (alist
             `'( (consp-head . ,consp-head)
                 (car-head . ,car-head)
@@ -156,54 +212,7 @@
           (body      (alist-get 'body args)))
     `(progn
        (pipe--print (make-string 80 ?\=))
-       (let ( (last nil)
-              (sym ',sym)
-              (,var nil))
-         (catch 'return
-           (mapcr ',body
-             (lambda (expr)
-               ;; (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Expr: %S" expr)
-               ;; (pipe--print "Var:  %S" ,var)
-               ;; (pipe--print "Last: %S" last)
-
-               (cl-flet ((expr-fun
-                           `(lambda (,sym)
-                              (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                ;;(pipe--print "Eval: %S" ',expr)
-                                ,expr))))
-                 (cond
-                   ((eq expr '->)
-                     (setq ,var last)
-                     (setq last nil)
-                     ;; (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
-                     )
-                   (t
-                     (setq last (expr-fun ,var))
-                     ;; (pipe--print "Updated by call! Var is %S, last is %S" ,var last)
-                     )))))
-           (throw 'return
-             (progn
-               ;; (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Returning: %S" (or last ,var))
-               ;; (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Var:  %S" ,var)
-               ;; (pipe--print "Last: %S" last)
-               last ;; maybe ,var?
-               )))))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro |> (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args      (eval `(pipe-args ,head ,@tail)))
-          (sym       (alist-get 'var  args))
-          (var       (alist-get 'var  args))
-          (body      (alist-get 'body args)))
-    `(progn
-       (pipe--print (make-string 80 ?\=))
-       (let ( (last nil)
+       (let ( ;; (last nil)
               (sym ',sym)
               (,var nil)
               (ignore-flag nil))
@@ -213,7 +222,7 @@
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Expr:   %S" expr)
                (pipe--print "Var:    %S" ,var)
-               (pipe--print "Last:   %S" last)
+               ;; (pipe--print "Last:   %S" last)
                (pipe--print "Ignore: %S" ignore-flag)
 
                (cl-flet ((expr-fun
@@ -222,11 +231,11 @@
                                 (pipe--print "Evaluated expr %S." ',expr)
                                 ,expr))))
                  (cond
-                   ((eq expr '->)
-                     (setq ,var last)
-                     ;;(setq last nil) ;; Probably don't do this.
-                     (pipe--print "Piping last %S! Var is %S, last is %S" last ,var last)
-                     )
+                   ;; ((eq expr '->)
+                   ;;   (setq ,var last)
+                   ;;   ;;(setq last nil) ;; Probably don't do this.
+                   ;;   (pipe--print "Piping last %S! Var is %S, last is %S" last ,var last)
+                   ;;   )
                    ((eq expr ':)
                      (pipe--print "Setting ignore flag.")
                      (setq ignore-flag t))
@@ -236,16 +245,15 @@
                          (progn
                            (pipe--print "Ignoring %S and unsetting ignore flag." result)
                            (setq ignore-flag nil))
-                         (setq last result)
+                         (setq ,var result)
                          (pipe--print "Updating var to %S and last to %S." ,var result)
                          )))))))
            (throw 'return
              (progn
                (pipe--print (make-string 80 ?\=))
-               (pipe--print "Returning: %S" (or last ,var))
+               (pipe--print "Returning: %S" ,var)
                (pipe--print (make-string 80 ?\=))
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
+               ;; (pipe--print "Last: %S" last)
                ;;last ;; maybe ,var?
                ,var
                )))))))
