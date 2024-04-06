@@ -263,20 +263,18 @@ Examples:
                     (print "Just returning t.")
 		                t)
 		              (print "Extracted match result %s." match-result)
-                  ;; Temporarily duplicated section to accomodate use of both pipe macros:
+                  ;; Temporarily accomodate use of both pipe macros:
                   (if *mp--use-new-pipe-macro*
                     (|> ((it match-result))
                       :(print "USING NEW PIPE.")
                       (nreverse it)
                       ;; nreverse
-                      (if (not *mp--merge-duplicate-alist-keys*)
-		                    it
-		                    (let ((merged (merge-duplicate-alist-keys it)))
-                          (print "Post-merge match result %s." merged)
-                          merged))
-                      (if *mp--use-dotted-pairs-in-result*
-		                    (add-dots-to-alist it)
-		                    it))
+                      :(when *mp--merge-duplicate-alist-keys*
+		                     (let ((merged (merge-duplicate-alist-keys it)))
+                           (print "Post-merge match result %s." merged)
+                           merged))
+                      :(when *mp--use-dotted-pairs-in-result*
+		                     (add-dots-to-alist it)))
                     (pipe ((it match-result))
                       :(print "USING OLD PIPE.")
                       (nreverse it)
