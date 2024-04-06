@@ -263,11 +263,17 @@
 (|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) (return 999) :(when (< e 40) ) :(prn "Done!") (+ y e))
 (|> 2  :(prn "hello") (+ 2 _) :?(when t 99))
 
-(|> ((e 5)) (+ e 7) double :prn("hello") (+ e 3) neg (lambda (x) (* x 3)) :when(< e 40) 999 :(prn "Done!") (+ y e))
 
 
+(|> 5 (+ _ 7) double :(prn"hello") (+ _ 3)  neg)
+(|> 5 (+ _ 7) :(prn "hello") (+ _ 3) (return 99) neg)
+(|> 5 (+ _ 7) double :(prn"hello") (+ _ 3) (return 99) neg)
 
-(|> 5 (+ _ 7) double (+ _ 3)  neg)
-(|> 5 (+ _ 7) (+ _ 3) (return 99) neg)
-(|> 5 (+ _ 7) double (+ _ 3) (return 99) neg)
+(|> ((x)) 5 (+ x 7) double :(prn"hello") (+ x 3)  neg)
+(|> ((x)) 5 (+ x 7) (+ x 3) (return 99) neg)
+(|> ((x)) 5 (+ x 7) double :(prn"hello") (+ x 3) (return 99) neg)
+
+(|> ((x 5)) (+ x 7) double :(prn"hello") (+ x 3)  neg)
+(|> ((x 5)) (+ x 7) (+ x 3) (return 99) neg)
+(|> ((x 5)) (+ x 7) double :(prn"hello") (+ x 3) (return 99) neg)
 
