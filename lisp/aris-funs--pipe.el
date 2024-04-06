@@ -217,7 +217,7 @@
                      (when flag 
                        (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
                      (pipe--print "Setting flag to %S." new-flag)
-                     (setq flag :IGNORE)))
+                     (setq flag new-flag)))
            (catch 'return
              (mapcr ',body
                (lambda (expr)
