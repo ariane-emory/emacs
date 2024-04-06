@@ -75,8 +75,7 @@ which KEY is not present, doing nothing if it was not already present."
 place."
   `(setf ,alist (alist-remove ,key ,alist)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))) (alist-get 'd alist)
-;; (setq alist '((a . 1) (b . 2) (c . 3) (d . ((e . 4) (f . 5))))) (alist-get 'd alist)
+;; (setq alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5))))
 ;; (alist-remove! 'b alist)
 ;; (alist-get 'd alist)
 ;; (alist-remove! 'e (alist-get 'd alist))
