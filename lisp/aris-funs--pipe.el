@@ -217,7 +217,11 @@
                    (error "Ignoring the %S command because %S is not yet supported."
                      expr flag))
                  ((and (eq flag :IGNORE) (memq expr *--pipe--arity-1-commands*))
-                   (pipe--print "Do nothing for %S because %S." expr flag))
+                   (pipe--print "Do nothing for expr %S because %S." expr flag))
+                 ((eq flag :IGNORE)
+                   (pipe--print "Ignoring expr %S because %S and unsetting the flag."
+                     expr flag)
+                   (set-flag nil nil))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
                    (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
                      ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
