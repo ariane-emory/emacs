@@ -144,6 +144,8 @@
     `(let ( (,var nil)
             (flag nil))
        (pipe--print (make-string 80 ?\=))
+       (pipe--print "START")
+       (pipe--print (make-string 80 ?\=))
        (catch 'return
          (cl-flet ((set-flag (new-flag)
                      (when flag 
