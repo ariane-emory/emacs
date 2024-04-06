@@ -19,6 +19,7 @@
 (defalias 'integer?        'integerp)
 (defalias 'keyword?        'keywordp)
 (defalias 'list?           'listp)
+(defalias 'map             'mapcar)
 (defalias 'nil?            'null)
 (defalias 'number?         'numberp)
 (defalias 'rplaca!         'rplaca)
