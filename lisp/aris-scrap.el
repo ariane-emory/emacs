@@ -293,3 +293,5 @@
 ;;;;;;;;;;;
 (|> 5 :when? odd? :return 100)
 (|> 6 :when? odd? :return 100)
+(|> 5 :return 100)
+(|> 6 :return 100)
