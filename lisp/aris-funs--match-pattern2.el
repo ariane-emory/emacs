@@ -14,7 +14,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *mp--use-new-pipe-macro* nil
+(defcustom *mp--use-new-pipe-macro* t
   "Whether to use the new pipe macro or the old one."
   :group 'match-pattern
   :type 'boolean)

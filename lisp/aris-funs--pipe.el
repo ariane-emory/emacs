@@ -153,10 +153,9 @@
            (mapcr ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
-               (pipe--print "Expr:   %S" expr)
-               (pipe--print "Var:    %S" ,var)
-               (pipe--print "Flag:   %S" flag)
-
+               (pipe--print "Expr:           %S" expr)
+               (pipe--print "Var:            %S" ,var)
+               (pipe--print "Flag:           %S" flag)
                (cond
                  ((eq expr :)
                    (set-flag :IGNORE))
@@ -168,7 +167,7 @@
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
                                   (cl-flet ((return (value) (throw 'return value)))
-                                    (pipe--print "Evaluated expr %S." expr)
+                                    (pipe--print "Evaluated expr: %S." expr)
                                     ,expr))))
                      (let* ((result (if (fun? expr)
                                       (eval (list expr ,var))
@@ -190,7 +189,7 @@
            (throw 'return
              (progn
                (pipe--print (make-string 80 ?\=))
-               (pipe--print "Returning: %S" ,var)
+               (pipe--print "Returning:      %S" ,var)
                (pipe--print (make-string 80 ?\=))
                ,var)))))))
 
