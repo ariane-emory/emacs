@@ -214,7 +214,7 @@
               (,var nil)
               (flag nil))
          (cl-flet ((set-flag (new-flag)
-                     (when flag
+                     (when flag 
                        (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
                      (pipe--print "Setting flag to %S." new-flag)
                      (setq flag :IGNORE)))
@@ -229,6 +229,8 @@
                  (cond
                    ((eq expr ':)
                      (set-flag :IGNORE))
+                   ((eq expr ':?)
+                     (set-flag :MAYBE))
                    (t
                      (cl-flet ((expr-fun
                                  `(lambda (expr ,sym)

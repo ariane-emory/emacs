@@ -261,6 +261,6 @@
 
 (|> 5 (+ _ 7) double (+ _ 3) neg)
 (|> ((e)) 5 (+ e 7) double (+ e 3) neg)
-(|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :(prn "Done!") (+ y e))
+(|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :?(when (< e 40) (neg e)) :(prn "Done!") (+ y e))
 
 
