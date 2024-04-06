@@ -174,7 +174,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *--pipe-flags*
   '(
-     :IGNORE ;; this is the only flag not set by a command.
+     ;; :IGNORE is the only flag thas is not explicitly set by a command (it may be set as
+     ;; a consequence of :when and :unless commands instead) and that is handled outside
+     ;; the t case of the outer cond.
+     :IGNORE
      :MAYBE
      :NO-SET
      :RETURN
@@ -246,29 +249,31 @@
                              (progn
                                (pipe--print "Next command will be processed.")
                                (set-flag nil nil))
-                             (progn
-                               (pipe--print "Next command will be ignored.")
-                               (set-flag :IGNORE t))))
+                             (pipe--print "Next command will be ignored.")
+                             (set-flag :IGNORE t)))
                          ((eq flag :UNLESS)
                            (if result
                              (progn
                                (pipe--print "Next command will be ignored.")
                                (set-flag :IGNORE t))
-                             (progn
-                               (pipe--print "Next command will be processed.")
-                               (set-flag nil nil))))
+                             (pipe--print "Next command will be processed.")
+                             (set-flag nil nil)))
                          ((eq flag :MAYBE)
                            (if (not result)
-                             (pipe--print "%S: Ignoring %S and unsetting the %S flag." flag result flag)
-                             (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
+                             (pipe--print "%S: Ignoring %S and unsetting the %S flag."
+                               flag result flag)
+                             (pipe--print "%s: Updating var to %S and unsetting the %S flag."
+                               flag ,var flag)
                              (setq ,var result))
                            (set-flag nil nil))
                          ((eq flag :NO-SET)
-                           (pipe--print "Not setting %S because %S and unsetting the flag." result flag)
+                           (pipe--print "Not setting %S because %S and unsetting the flag."
+                             result flag)
                            (set-flag nil nil))
-                         ((eq flag :IGNORE)
-                           (pipe--print "Ignoring %S because %S and unsetting the flag." result flag)
-                           (set-flag nil nil))
+                         ;; ((eq flag :IGNORE)
+                         ;;   (pipe--print "Ignoring %S because %S and unsetting the flag."
+                         ;;     result flag)
+                         ;;   (set-flag nil nil))
                          (t 
                            (setq ,var result)
                            (pipe--print "Updating var to %S and last to %S." ,var result)
