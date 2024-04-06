@@ -328,10 +328,10 @@
          (catch 'return
            (mapcr ',body
              (lambda (expr)
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Expr: %S" expr)
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
+               ;; (pipe--print (make-string 80 ?\=))
+               ;; (pipe--print "Expr: %S" expr)
+               ;; (pipe--print "Var:  %S" ,var)
+               ;; (pipe--print "Last: %S" last)
 
                (cl-flet ((expr-fun
                            `(lambda (,sym)
@@ -342,17 +342,19 @@
                    ((eq expr '->)
                      (setq ,var last)
                      (setq last nil)
-                     (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
+                     ;; (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
                      )
-                   (t (setq last (expr-fun ,var))
-                     (pipe--print "Updated by call! Var is %S, last is %S" ,var last))))))
+                   (t
+                     (setq last (expr-fun ,var))
+                     ;; (pipe--print "Updated by call! Var is %S, last is %S" ,var last)
+                     )))))
            (throw 'return
              (progn
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Returning: %S" (or last ,var))
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
+               ;; (pipe--print (make-string 80 ?\=))
+               ;; (pipe--print "Returning: %S" (or last ,var))
+               ;; (pipe--print (make-string 80 ?\=))
+               ;; (pipe--print "Var:  %S" ,var)
+               ;; (pipe--print "Last: %S" last)
                last ;; maybe ,var?
                )))))))
 
