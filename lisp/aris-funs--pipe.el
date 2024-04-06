@@ -232,26 +232,17 @@
                    ((eq expr ':)
                      (pipe--print "Setting ignore flag.")
                      (setq ignore-flag t))
-                   ((fun? expr)
-                     (pipe--print "Hit function %S" expr)
-                     (let ((expr (list expr ,var)))
-                       (let ((result (expr-fun ,var expr)))
-                         (if ignore-flag
-                           (progn
-                             (pipe--print "Ignoring %S and unsetting ignore flag." result)
-                             (setq ignore-flag nil))
-                           (setq ,var result)
-                           (pipe--print "Updating var to %S and last to %S." ,var result)
-                           ))))
                    (t
-                     (let ((result (expr-fun ,var expr)))
+                     (let* ( (expr (if (fun? expr) (list expr ,var) expr))
+                             (result (expr-fun ,var expr)))
                        (if ignore-flag
                          (progn
                            (pipe--print "Ignoring %S and unsetting ignore flag." result)
                            (setq ignore-flag nil))
-                         (setq ,var result)
-                         (pipe--print "Updating var to %S and last to %S." ,var result)
-                         )))))))
+                         (progn
+                           (setq ,var result)
+                           (pipe--print "Updating var to %S and last to %S." ,var result)
+                           ))))))))
            (throw 'return
              (progn
                (pipe--print (make-string 80 ?\=))

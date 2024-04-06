@@ -261,5 +261,7 @@
   (* -1 x))
 
 (|> 5 (+ _ 7) double (+ _ 3) neg)
+(|> ((e)) 5 (+ e 7) double (+ e 3) neg)
+(|> ((e 5)) (+ e 7) double (+ e 3) neg :(prn "Done!"))
 
 
