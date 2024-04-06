@@ -260,8 +260,13 @@
 (defun neg (x)
   (* -1 x))
 
+(setq y 88)
+
 (|> 5 (+ _ 7) double (+ _ 3) neg)
 (|> ((e)) 5 (+ e 7) double (+ e 3) neg)
-(|> ((e 5)) (+ e 7) double (+ e 3) neg :(prn "Done!"))
+(|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :(prn "Done!") e y)
+(|> :(prn "Done!") 2)
+
+
 
 
