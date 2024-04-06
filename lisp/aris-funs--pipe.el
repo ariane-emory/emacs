@@ -276,7 +276,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe-args (inject-sym head &rest tail)
+(defmacro pipe-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (consp-head (consp head))
@@ -289,17 +289,11 @@
               (> car-head-length 0)
               (< car-head-length 3)))
           (head-is-spec-with-init-form (eql car-head-length 2))
-          ;; (init-form
-          ;;   (cond
-          ;;     (head-is-spec-with-init-form
-          ;;       (message "Chose case 1")
-          ;;       )
-          ;;     ))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
+          (var (if head-is-spec (car car-head) *pipe--default-var-sym*))
           (body
             (cond
               (head-is-spec-with-init-form
-                (cons (cadr car-head) (cons inject-sym tail)))
+                (cons (cadr car-head) (cons '-> tail)))
               (head-is-spec
                 tail)
               (t (cons head tail))))
@@ -322,7 +316,7 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args      (eval `(pipe-args -> ,head ,@tail)))
+  (let* ( (args      (eval `(pipe-args ,head ,@tail)))
           (sym       (alist-get 'var  args))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
@@ -342,6 +336,7 @@
                (cl-flet ((expr-fun
                            `(lambda (,sym)
                               (cl-flet ((return (,sym) (throw 'return ,sym)))
+                                ;;(pipe--print "Eval: %S" ',expr)
                                 ,expr))))
                  (cond
                    ((eq expr '->)
@@ -358,7 +353,8 @@
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Var:  %S" ,var)
                (pipe--print "Last: %S" last)
-               ,var)))))))
+               last ;; maybe ,var?
+               )))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
