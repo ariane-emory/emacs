@@ -265,8 +265,9 @@ Examples:
 		              (print "Extracted match result %s." match-result)
                   ;; Temporarily duplicated section to accomodate use of both pipe macros:
                   (if *mp--use-new-pipe-macro*
-                    (|> ((it))
-                      (nreverse match-result)
+                    (|> ((it match-result))
+                      :(print "USING NEW PIPE.")
+                      (nreverse it)
                       (if (not *mp--merge-duplicate-alist-keys*)
 		                    it
 		                    (let ((merged (merge-duplicate-alist-keys it)))
@@ -275,8 +276,9 @@ Examples:
                       (if *mp--use-dotted-pairs-in-result*
 		                    (add-dots-to-alist it)
 		                    it))
-                    (pipe ((it))
-                      (nreverse match-result)
+                    (pipe ((it match-result))
+                      :(print "USING OLD PIPE.")
+                      (nreverse it)
                       (if (not *mp--merge-duplicate-alist-keys*)
 		                    it
 		                    (let ((merged (merge-duplicate-alist-keys it)))
