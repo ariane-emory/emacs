@@ -244,11 +244,10 @@
                          (cond
                            ((eq flag :MAYBE)
                              (progn
-                               (if result
+                               (if (not result)
                                  (pipe--print "%S: Ignoring %S and unsetting the %S flat." flag result flag)
-                                 (progn 
-                                   (setq ,var result)
-                                   (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)))
+                                 (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag))
+                               (setq ,var result)
                                (setq flag nil)))
                            ((eq flag :IGNORE)
                              (progn 
