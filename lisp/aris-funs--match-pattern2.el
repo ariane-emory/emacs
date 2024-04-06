@@ -7,9 +7,18 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--with-messages)
 (require 'aris-funs--unsorted)
+(require 'aris-funs--pipe)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq lexical-binding nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defcustom *mp--use-new-pipe-macro* nil
+  "Whether to use the new pipe macro or the old one."
+  :group 'match-pattern
+  :type 'boolean)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -267,7 +276,7 @@ Examples:
 		              ;;             (add-dots-to-alist match-result)
 		              ;;             match-result)))
                   ;;   match-result)
-                  (pipe ((it))
+                  (|> ((it))
                     (nreverse match-result)
                     (if (not *mp--merge-duplicate-alist-keys*)
 		                  it
