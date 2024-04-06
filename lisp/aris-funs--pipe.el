@@ -175,7 +175,7 @@
                        (cond
                          ((eq flag :WHEN-EXPR)
                            (if (not result)
-                             (pipe--print "%S: Ignoring %S and unsetting the %S flat." flag result flag)
+                             (pipe--print "%S: Ignoring %S and unsetting the %S flag." flag result flag)
                              (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
                              (setq ,var result))
                            (setq flag nil))
