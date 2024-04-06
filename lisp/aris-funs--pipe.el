@@ -198,11 +198,11 @@
        (pipe--print "START")
        (pipe--print (make-string 80 ?\=))
        (catch 'return
-         (cl-flet ((set-flag (new-flag)
-                     (when flag 
+         (cl-flet ((set-flag (new-flag &optional force)
+                     (when (and flag (not force))
                        (error "Cannot set flag to %S when flag is already set to %S."
                          new-flag flag))
-                     (pipe--print "Setting flag to %S." new-flag)
+                     (pipe--print "Setting flag from %S to %S%s." new-flag flag (if force " (forced)" ""))
                      (setq flag new-flag)))
            (mapcr ',body
              (lambda (expr)
