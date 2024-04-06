@@ -244,21 +244,15 @@
            (* _ _)
            ->
            (+ _ 8))
-        (lambda
-          (expr)
-          (pipe--print
-            (make-string 80 61))
+        (lambda (expr)
+          (pipe--print (make-string 80 61))
           (pipe--print "Expr: %S" expr)
           (pipe--print "Var:  %S" _)
           (pipe--print "Last: %S" last)
           (cl-flet
             ((expr-fun
-               `(lambda
-                  (sym)
-                  (cl-flet
-                    ((return
-                       (,sym)
-                       (throw 'return ,sym)))
+               `(lambda (sym)
+                  (cl-flet ((return (,sym) (throw 'return ,sym)))
                     (let
                       ((result ,expr))
                       result)))))
@@ -291,8 +285,5 @@
 (alist-get 'body (pipe-args 5 -> (* _ _) -> (+ _ 8)))
 (pipe-args 5 -> (* _ _) -> (+ _ 8))
 (|> 5 -> (* _ _) -> (+ _ 8))
-
-
-
 
 
