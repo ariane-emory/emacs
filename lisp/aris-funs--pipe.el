@@ -159,6 +159,8 @@
                (cond
                  ((eq expr :)
                    (set-flag :IGNORE))
+                 ((eq expr :RETURN)
+                   (set-flag :RETURN))
                  ((eq expr :?)
                    (set-flag :WHEN-EXPR))
                  ((eq expr :when?)
@@ -175,6 +177,10 @@
                                       (eval (list expr ',var)) ;; unsure about this quote.
                                       (expr-fun expr ,var))))
                        (cond
+                         ((eq flag :RETURN)
+                           (pipe--print "Returning: %S" result)
+                           (throw 'return result)
+                           (setq flag nil))
                          ((eq flag :WHEN-CMD)
                            (if result
                              (progn
