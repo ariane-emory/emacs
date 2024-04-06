@@ -135,6 +135,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar pipe--keywords
+  '(
+     :?
+     :ignore
+     :maybe
+     :return
+     :unless
+     :when
+     ))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
@@ -161,18 +175,8 @@
                (cond
                  ((eq expr :)
                    (set-flag :IGNORE))
-                 ((and (eq expr :return) (eq flag :IGNORE))
-                   (pipe--print "Do nothing.")
-                   ;; (set-flag :RETURN)
-                   )
-                 ((and (eq expr :?) (eq flag :IGNORE))
-                   (pipe--print "Do nothing.")
-                   ;; (set-flag :RETURN)
-                   )
-                 ((and (eq expr :maybe) (eq flag :IGNORE))
-                   (pipe--print "Do nothing.")
-                   ;; (set-flag :RETURN)
-                   )
+                 ((and (eq flag :IGNORE) (memq expr pipe--keywords))
+                   (pipe--print "Do nothing for %S because %S." expr flag))
                  ((eq expr :return)
                    (set-flag :RETURN))
                  ((eq expr :?)
