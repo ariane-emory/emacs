@@ -1,10 +1,10 @@
 ;; -*- lexical-binding: nil; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
-(require 'aris-funs--pattern-dispatch)
+(require 'aris-funs--aliases)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
-(require 'aris-funs--plists)
+(require 'aris-funs--alists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -105,13 +105,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro --pipe-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (consp-head (consp head))
-          (car-head (when consp-head (car head)))
-          (consp-car-head (when consp-head (consp car-head)))
-          (car-head-length (when consp-car-head (length car-head)))
+  (let* ( (head-is-cons (cons? head))
+          (car-head (when head-is-cons (car head)))
+          (car-head-is-cons (when head-is-cons (consp car-head)))
+          (car-head-length (when car-head-is-cons (length car-head)))
           (head-is-spec
             (and
-              consp-car-head
+              car-head-is-cons
               (> car-head-length 0)
               (< car-head-length 3)))
           (head-is-spec-with-init-form (eql car-head-length 2))
@@ -123,9 +123,9 @@
               (t (cons head tail))))
           ;;(body (append body '(->)))
           (alist
-            `'( (consp-head . ,consp-head)
+            `'( (head-is-cons . ,head-is-cons)
                 (car-head . ,car-head)
-                (consp-car-head . ,consp-car-head)
+                (car-head-is-cons . ,car-head-is-cons)
                 (car-head-length . ,car-head-length)
                 (head-is-spec . ,head-is-spec)
                 (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
