@@ -227,6 +227,54 @@
 ;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe-args (inject-sym head &rest tail)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "`pipe' with optional let-like binding/symbol naming."
+;;   (let* ( (consp-head (consp head))
+;;           (car-head (when consp-head (car head)))
+;;           (consp-car-head (when consp-head (consp car-head)))
+;;           (car-head-length (when consp-car-head (length car-head)))
+;;           (head-is-spec
+;;             (and
+;;               consp-car-head
+;;               (> car-head-length 0)
+;;               (< car-head-length 3)))
+;;           (head-is-spec-with-init-form (eql car-head-length 2))
+;;           (var (if head-is-spec (caar head) *pipe--default-var-sym*))
+;;           (init-form
+;;             (cond
+;;               (head-is-spec-with-init-form
+;;                 (message "Chose case 1")
+;;                 (cadr car-head))
+;;               (head-is-spec
+;;                 (message "Chose case 2")
+;;                 (car tail))
+;;               (t
+;;                 (message "Chose case 3")
+;;                 head)))
+;;           (body
+;;             (cond
+;;               (head-is-spec-with-init-form
+;;                 (cons inject-sym tail))
+;;               (head-is-spec
+;;                 (cdr tail))
+;;               (t tail)))
+;;           (alist
+;;             `'( (consp-head . ,consp-head)
+;;                 (car-head . ,car-head)
+;;                 (consp-car-head . ,consp-car-head)
+;;                 (car-head-length . ,car-head-length)
+;;                 (head-is-spec . ,head-is-spec)
+;;                 (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
+;;                 (head . ,head)
+;;                 (var . ,var)
+;;                 (init-form . ,init-form)
+;;                 (body . ,body))))
+;;     alist))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe-args (inject-sym head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
