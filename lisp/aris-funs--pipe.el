@@ -131,6 +131,7 @@
               (head-is-spec
                 tail)
               (t (cons head tail))))
+          (body (append body '(->)))
           (alist
             `'( (consp-head . ,consp-head)
                 (car-head . ,car-head)
