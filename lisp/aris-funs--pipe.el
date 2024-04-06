@@ -204,7 +204,7 @@
                          new-flag flag))
                      (if force
                        (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
-                       (pipe--print "Setting flag from %S to %S%s." new-flag flag (if force " (forced)" "")))
+                       (pipe--print "Setting flag from %S to %S%s." flag new-flag (if force " (forced)" "")))
                      (setq flag new-flag)))
            (mapcr ',body
              (lambda (expr)
@@ -214,11 +214,15 @@
                (pipe--print "Flag:           %S" flag)
                (cond
                  ((and (eq flag :IGNORE) (memq expr *--pipe--arity-2-commands*))
-                   (error "Ignoring the %S command because %S is not yet supported." expr flag))
+                   (error "Ignoring the %S command because %S is not yet supported."
+                     expr flag))
                  ((and (eq flag :IGNORE) (memq expr *--pipe--arity-1-commands*))
                    (pipe--print "Do nothing for %S because %S." expr flag))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
-                   (set-flag (alist-get expr *--pipe--commands-to-flags*) nil))
+                   (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
+                     (pipe--print "Setting flag from %S to %S by alist entry for %S."
+                       flag new-flag expr)))
+
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -256,10 +260,10 @@
                              (setq ,var result))
                            (set-flag nil nil))
                          ((eq flag :NO-SET)
-                           (pipe--print "%S: Not setting %S and unsetting the %S flag." flag result flag)
+                           (pipe--print "%S: Not setting %S because %S and unsetting the flag." flag result flag)
                            (set-flag nil nil))
                          ((eq flag :IGNORE)
-                           (pipe--print "Not setting %S and unsetting %S flag." result flag)
+                           (pipe--print "%S: Not setting %S because %S and unsetting the flag." flag result flag)
                            (set-flag nil nil))
                          (t 
                            (setq ,var result)

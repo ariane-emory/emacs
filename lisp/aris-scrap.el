@@ -269,7 +269,7 @@
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
   (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
-
+  
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11) 1)
   (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :when negative? neg :when (> _ 20) (return 11) 1)
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) (return 99) neg :when negative? neg :when (> _ 20) (return 11) 1)
@@ -300,6 +300,7 @@
   (|> 5 :when odd? :return 100)
   (|> 6 :when odd? :return 100)
 
+  (|> 5 : 3)
   (prn "Ran all test cases.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   )
