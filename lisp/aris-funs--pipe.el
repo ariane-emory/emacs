@@ -15,7 +15,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* nil
+(defcustom *pipe--verbose* t
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
@@ -254,37 +254,44 @@
          (catch 'return
            (mapcr ',body
              (lambda (expr)
-               ;; (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Expr: %S" expr)
-               ;; (pipe--print "Var:  %S" ,var)
-               ;; (pipe--print "Last: %S" last)
+               (pipe--print (make-string 80 ?\=))
+               (pipe--print "Expr:   %S" expr)
+               (pipe--print "Var:    %S" ,var)
+               (pipe--print "Last:   %S" last)
+               (pipe--print "Ignore: %S" ignore-flag)
 
                (cl-flet ((expr-fun
                            `(lambda (,sym)
                               (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                ;;(pipe--print "Eval: %S" ',expr)
+                                (pipe--print "Evaluated expr %S." ',expr)
                                 ,expr))))
                  (cond
                    ((eq expr '->)
                      (setq ,var last)
-                     (setq last nil)
-                     ;; (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
+                     ;;(setq last nil) ;; Probably don't do this.
+                     (pipe--print "Piping last %S! Var is %S, last is %S" last ,var last)
                      )
                    ((eq expr ':)
+                     (pipe--print "Setting ignore flag.")
                      (setq ignore-flag t))
                    (t
                      (let ((result (expr-fun ,var)))
-                       (setq last result)
-                       ;; (pipe--print "Updated by call! Var is %S, last is %S" ,var last)
-                       ))))))
+                       (if ignore-flag
+                         (progn
+                           (pipe--print "Ignoring %S and unsetting ignore flag." result)
+                           (setq ignore-flag nil))
+                         (setq last result)
+                         (pipe--print "Updating var to %S and last to %S." ,var result)
+                         )))))))
            (throw 'return
              (progn
-               ;; (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Returning: %S" (or last ,var))
-               ;; (pipe--print (make-string 80 ?\=))
-               ;; (pipe--print "Var:  %S" ,var)
-               ;; (pipe--print "Last: %S" last)
-               last ;; maybe ,var?
+               (pipe--print (make-string 80 ?\=))
+               (pipe--print "Returning: %S" (or last ,var))
+               (pipe--print (make-string 80 ?\=))
+               (pipe--print "Var:  %S" ,var)
+               (pipe--print "Last: %S" last)
+               ;;last ;; maybe ,var?
+               ,var
                )))))))
 
 
