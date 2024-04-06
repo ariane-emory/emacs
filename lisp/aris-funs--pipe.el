@@ -277,7 +277,7 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args (eval `(pipe-args ,head ,@tail)))
+  (let* ( (args      (eval `(pipe-args ,head ,@tail)))
           (sym       (alist-get 'var  args))
           (init-form (alist-get 'init-form args))
           (var       (alist-get 'var  args))
@@ -302,9 +302,7 @@
                            `(lambda (sym)
                               (cl-flet ((return (,sym) (throw 'return ,sym)))
                                 ;;(pipe--print "Eval: %S" ',expr)
-                                (let ((result ,expr))
-                                  ;;(pipe--print "Next: %S" result)
-                                  result)))))
+                                ,expr))))
                  (cond
                    ((eq expr '->)
                      (setq ,var last)
