@@ -250,14 +250,6 @@
                                    (setq ,var result)
                                    (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)))
                                (setq flag nil)))
-                           ((eq flag :MAYBE-NOT)
-                             (progn
-                               (if result
-                                 (progn
-                                   (setq ,var result)
-                                   (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag))
-                                 (pipe--print "%S: Ignoring %S and unsetting %S the flag." flag flag result))
-                               (setq flag nil)))
                            ((eq flag :IGNORE)
                              (progn 
                                (pipe--print "Ignoring %S and unsetting ignore flag." result)

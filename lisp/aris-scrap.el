@@ -267,9 +267,7 @@
 
 
 
-
 (|> 5 (+ _ 7) double (+ _ 3)  neg)
-
 (|> 5 (+ _ 7) (+ _ 3) (return 99) neg)
 (|> 5 (+ _ 7) double (+ _ 3) (return 99) neg)
 
