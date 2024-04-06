@@ -257,7 +257,9 @@
 (pipe-args ((z)) 5 (* z z) (+ z 8))
 (pipe-args ((z 5)) (* z z) (+ z 8))
 
+(defun neg (x)
+  (* -1 x))
 
-(|> 5 double (lambda (x) (+ 3 x)))
+(|> 5 (+ _ 7) double (+ _ 3) neg)
 
 
