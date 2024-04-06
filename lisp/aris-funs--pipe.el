@@ -75,34 +75,35 @@
   :(message \"A message! it = %s\" it)
   (* 2 it)
   (- it 1))"
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (sym (if head-is-spec (caar head) *pipe--default-var-sym*))
+  (let* ( (head-is-spec
+            (and
+              (consp head)
+              (consp (car head))
+              (length> (car head) 0)
+              (length< (car head) 3)))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
     body
-    `(let ( (,sym ,init-form)
+    `(let ( (,var ,init-form)
             (ignore-flag nil))
        (mapr ',body
          (lambda (expr)
            (cond
-             ((eq : expr) (setq ignore-flag t))
+             ((eq : expr)
+               (setq ignore-flag t))
              (ignore-flag
                (eval expr)
                (setq ignore-flag nil))
              (t
-               (setq ,sym (eval expr))
+               (setq ,var (eval expr))
                (setq ignore-flag nil)))))
-       ,sym)))
+       ,var)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe-args (head &rest tail)
+(defmacro --pipe-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (consp-head (consp head))
           (car-head (when consp-head (car head)))
@@ -139,7 +140,7 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args      (eval `(pipe-args ,head ,@tail)))
+  (let* ( (args      (eval `(--pipe-args ,head ,@tail)))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
     `(let ( (,var nil)
