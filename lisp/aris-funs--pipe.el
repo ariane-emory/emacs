@@ -4,7 +4,6 @@
 (require 'aris-funs--aliases)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
-(require 'aris-funs--alists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -77,8 +76,8 @@
   (- it 1))"
   (let* ( (head-is-spec
             (and
-              (consp head)
-              (consp (car head))
+              (cons? head)
+              (cons? (car head))
               (length> (car head) 0)
               (length< (car head) 3)))
           (var (if head-is-spec (caar head) *pipe--default-var-sym*))
@@ -107,7 +106,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (head-is-cons (cons? head))
           (car-head (when head-is-cons (car head)))
-          (car-head-is-cons (when head-is-cons (consp car-head)))
+          (car-head-is-cons (when head-is-cons (cons? car-head)))
           (car-head-length (when car-head-is-cons (length car-head)))
           (head-is-spec
             (and
