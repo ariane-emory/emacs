@@ -138,7 +138,7 @@
 (defvar *--pipe--arity-1-commands*
   '(
      :?
-     :ignore
+     :no-set
      :maybe
      :return
      )
@@ -159,15 +159,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *--pipe--commands-to-flags*
   '(
-     (: . :IGNORE)
+     (: . :NO-SET)
      (:? . :MAYBE)
-     (:ignore . :IGNORE)
+     (:no-set . :NO-SET)
      (:maybe . :MAYBE)
      (:return . :RETURN)
      (:unless . :UNLESS)
      (:when . :WHEN)
      )
   "An alist mapping commands to flags. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *--pipe-flags*
+  '(
+     :IGNORE ;; this is the only flag not set by a command.
+     :MAYBE
+     :NO-SET
+     :RETURN
+     :UNLESS
+     :WHEN
+     )
+  "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -203,18 +217,6 @@
                    (pipe--print "Do nothing for %S because %S." expr flag))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
                    (set-flag (alist-get expr *--pipe--commands-to-flags*)))
-                 ;; ((eq expr :)
-                 ;;   (set-flag :IGNORE))
-                 ;; ((eq expr :return)
-                 ;;   (set-flag :RETURN))
-                 ;; ((eq expr :?)
-                 ;;   (set-flag :MAYBE))
-                 ;; ((eq expr :maybe)
-                 ;;   (set-flag :MAYBE))
-                 ;; ((eq expr :when)
-                 ;;   (set-flag :WHEN))
-                 ;; ((eq expr :unless)
-                 ;;   (set-flag :UNLESS))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -238,12 +240,6 @@
                                (pipe--print "Next command will be ignored.")
                                (setq flag nil)
                                (set-flag :IGNORE))))
-                         ((eq flag :MAYBE)
-                           (if (not result)
-                             (pipe--print "%S: Ignoring %S and unsetting the %S flag." flag result flag)
-                             (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
-                             (setq ,var result))
-                           (setq flag nil))
                          ((eq flag :UNLESS)
                            (if result
                              (progn
@@ -253,8 +249,14 @@
                              (progn
                                (pipe--print "Next command will be processed.")
                                (setq flag nil))))
+                         ((eq flag :NO-SET)
+                           (if (not result)
+                             (pipe--print "%S: Not setting %S and unsetting the %S flag." flag result flag)
+                             (pipe--print "%S: Updating var to %S and unsetting the %S flag." flag ,var flag)
+                             (setq ,var result))
+                           (setq flag nil))
                          ((eq flag :IGNORE)
-                           (pipe--print "Ignoring %S and unsetting ignore flag." result)
+                           (pipe--print "Not setting %S and unsetting %S flag." result flag)
                            (setq flag nil))
                          (t 
                            (setq ,var result)
