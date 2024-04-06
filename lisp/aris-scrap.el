@@ -5,6 +5,8 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--error-when-and-error-unless)
+(require 'aris-funs--lists)
+(require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
