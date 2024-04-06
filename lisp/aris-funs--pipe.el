@@ -141,8 +141,9 @@
      :ignore
      :maybe
      :return
-     ))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     )
+  "Commands that take one argument. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,8 +151,9 @@
   '(
      :unless
      :when
-     ))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     )
+  "Commands that take two arguments. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -164,9 +166,15 @@
      (:return . :RETURN)
      (:unless . :UNLESS)
      (:when . :WHEN)
-     ))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     )
+  "An alist mapping commands to flags. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(assoc : *--pipe--commands-to-flags*)
+(rassoc :IGNORE *--pipe--commands-to-flags*)
+(assoc-default : *--pipe--commands-to-flags*)
+(alist-get : *--pipe--commands-to-flags*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
@@ -183,7 +191,8 @@
        (catch 'return
          (cl-flet ((set-flag (new-flag)
                      (when flag 
-                       (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
+                       (error "Cannot set flag to %S when flag is already set to %S."
+                         new-flag flag))
                      (pipe--print "Setting flag to %S." new-flag)
                      (setq flag new-flag)))
            (mapcr ',body
@@ -197,18 +206,20 @@
                    (error "Ignoring the %S command because %S is not yet supported." expr flag))
                  ((and (eq flag :IGNORE) (memq expr *--pipe--arity-1-commands*))
                    (pipe--print "Do nothing for %S because %S." expr flag))
-                 ((eq expr :)
-                   (set-flag :IGNORE))
-                 ((eq expr :return)
-                   (set-flag :RETURN))
-                 ((eq expr :?)
-                   (set-flag :MAYBE))
-                 ((eq expr :maybe)
-                   (set-flag :MAYBE))
-                 ((eq expr :when)
-                   (set-flag :WHEN))
-                 ((eq expr :unless)
-                   (set-flag :UNLESS))
+                 ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
+                   (set-flag (alist-get expr *--pipe--commands-to-flags*)))
+                 ;; ((eq expr :)
+                 ;;   (set-flag :IGNORE))
+                 ;; ((eq expr :return)
+                 ;;   (set-flag :RETURN))
+                 ;; ((eq expr :?)
+                 ;;   (set-flag :MAYBE))
+                 ;; ((eq expr :maybe)
+                 ;;   (set-flag :MAYBE))
+                 ;; ((eq expr :when)
+                 ;;   (set-flag :WHEN))
+                 ;; ((eq expr :unless)
+                 ;;   (set-flag :UNLESS))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)

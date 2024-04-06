@@ -17,6 +17,7 @@
 (defalias 'fun?            'functionp)
 (defalias 'function?       'functionp)
 (defalias 'integer?        'integerp)
+(defalias 'keyword?        'keywordp)
 (defalias 'list?           'listp)
 (defalias 'nil?            'null)
 (defalias 'number?         'numberp)
