@@ -235,8 +235,14 @@
                    ((fun? expr)
                      (pipe--print "Hit function %S" expr)
                      (let ((expr (list expr ,var)))
-                       (pipe--print "Concocted %S" expr)
-                       (pipe--print "Concocted evaled to %S" (eval expr))))
+                       (let ((result (expr-fun ,var expr)))
+                         (if ignore-flag
+                           (progn
+                             (pipe--print "Ignoring %S and unsetting ignore flag." result)
+                             (setq ignore-flag nil))
+                           (setq ,var result)
+                           (pipe--print "Updating var to %S and last to %S." ,var result)
+                           ))))
                    (t
                      (let ((result (expr-fun ,var expr)))
                        (if ignore-flag
