@@ -23,15 +23,15 @@ may be applied before or after to get your desired result."
     (dolist (pair alist)
       (if (not (eq (car pair) key))
         (push pair result)
-        (push (cons key (list value)) result)
+        (push (cons key value) result)
         (setq key-found t)))
     (unless key-found
-      (push (cons key (list value)) result))
+      (push (cons key value) result))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3)))
-;; (alist-set alist 'b 4)
-;; (alist-set alist 'd 5)
+;; (setq alist '((a . 1) (b . 2) (c . 3)))
+;; (alist-set 'b alist 4)
+;; (alist-set 'd alist 5)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -42,7 +42,7 @@ may be applied before or after to get your desired result."
 place, adding a new key/value pair if it wasn't already present."
   `(setf ,alist (alist-set ,key ,alist ,value)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
+;; (setq alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5))))
 ;; (alist-set! 'b alist 20)
 ;; (alist-get 'd alist)
 ;; (alist-set! 'e (alist-get 'd alist) 40)
@@ -63,7 +63,7 @@ which KEY is not present, doing nothing if it was not already present."
         (push pair result)))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3)))
+;; (setq alist '((a . 1) (b . 2) (c . 3)))
 ;; (alist-remove 'b alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -75,7 +75,8 @@ which KEY is not present, doing nothing if it was not already present."
 place."
   `(setf ,alist (alist-remove ,key ,alist)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
+;; (setq alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))) (alist-get 'd alist)
+;; (setq alist '((a . 1) (b . 2) (c . 3) (d . ((e . 4) (f . 5))))) (alist-get 'd alist)
 ;; (alist-remove! 'b alist)
 ;; (alist-get 'd alist)
 ;; (alist-remove! 'e (alist-get 'd alist))
