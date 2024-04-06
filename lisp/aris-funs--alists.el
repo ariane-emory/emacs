@@ -9,6 +9,48 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun alist-set (key alist value)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively set a KEY in ALIST to VALUE by building a new alist in
+which KEY is set to VALUE, adding a new key/value pair if it wasn't already present.
+
+This is meant for non-dotted ALISTs and might produce unexpexted results if
+applied to dotted ALISTs. As usual, `add-dots-to-alist'/`remove-dots-from-alist'
+may be applied before or after to get your desired result."
+  (unless (proper-list-p alist)
+    (error "ALIST must be a proper list, not %S!" alist))
+  (let (result key-found)
+    (dolist (pair alist)
+      (if (not (eq (car pair) key))
+        (push pair result)
+        (push (cons key (list value)) result)
+        (setq key-found t)))
+    (unless key-found
+      (push (cons key (list value)) result))
+    (nreverse result)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c 3)))
+;; (alist-set alist 'b 4)
+;; (alist-set alist 'd 5)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro alist-set! (key alist value)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively set a KEY in ALIST to VALUE by modifying the alist in
+place, adding a new key/value pair if it wasn't already present."
+  `(setf ,alist (alist-set ,key ,alist ,value)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
+;; (alist-set! 'b alist 20)
+;; (alist-get 'd alist)
+;; (alist-set! 'e (alist-get 'd alist) 40)
+;; alist  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun alist-remove (key alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively remove a KEY from ALIST to VALUE by building a new alist in
@@ -65,48 +107,6 @@ in which they are not present."
 ;; (alist-remove! 'e (alist-get 'd alist))
 ;; (alist-remove! 'f (alist-get 'd alist))
 ;; (alist-remove-empty! alist)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun alist-set (key alist value)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively set a KEY in ALIST to VALUE by building a new alist in
-which KEY is set to VALUE, adding a new key/value pair if it wasn't already present.
-
-This is meant for non-dotted ALISTs and might produce unexpexted results if
-applied to dotted ALISTs. As usual, `add-dots-to-alist'/`remove-dots-from-alist'
-may be applied before or after to get your desired result."
-  (unless (proper-list-p alist)
-    (error "ALIST must be a proper list, not %S!" alist))
-  (let (result key-found)
-    (dolist (pair alist)
-      (if (not (eq (car pair) key))
-        (push pair result)
-        (push (cons key (list value)) result)
-        (setq key-found t)))
-    (unless key-found
-      (push (cons key (list value)) result))
-    (nreverse result)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3)))
-;; (alist-set alist 'b 4)
-;; (alist-set alist 'd 5)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro alist-set! (key alist value)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively set a KEY in ALIST to VALUE by modifying the alist in
-place, adding a new key/value pair if it wasn't already present."
-  `(setf ,alist (alist-set ,key ,alist ,value)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
-;; (alist-set! 'b alist 20)
-;; (alist-get 'd alist)
-;; (alist-set! 'e (alist-get 'd alist) 40)
-;; alist  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
