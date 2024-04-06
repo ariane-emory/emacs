@@ -268,6 +268,7 @@ Examples:
                     (|> ((it match-result))
                       :(print "USING NEW PIPE.")
                       (nreverse it)
+                      ;; nreverse
                       (if (not *mp--merge-duplicate-alist-keys*)
 		                    it
 		                    (let ((merged (merge-duplicate-alist-keys it)))
