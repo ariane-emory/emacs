@@ -239,14 +239,16 @@
                                       (eval expr)))))
                        (let* ( (expr (if (fun? expr) (list expr ,var) expr))
                                (result (expr-fun expr ,var)))
-                         (if (eq flag :IGNORE)
-                           (progn
-                             (pipe--print "Ignoring %S and unsetting ignore flag." result)
-                             (setq flag nil))
-                           (progn
-                             (setq ,var result)
-                             (pipe--print "Updating var to %S and last to %S." ,var result)
-                             ))))))))
+                         (cond
+                           ((eq flag :IGNORE)
+                             (progn 
+                               (pipe--print "Ignoring %S and unsetting ignore flag." result)
+                               (setq flag nil)))
+                           (t 
+                             (progn
+                               (setq ,var result)
+                               (pipe--print "Updating var to %S and last to %S." ,var result)
+                               )))))))))
              (throw 'return
                (progn
                  (pipe--print (make-string 80 ?\=))
