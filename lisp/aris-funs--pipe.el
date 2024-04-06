@@ -238,10 +238,10 @@
                                  `(lambda (expr ,sym)
                                     (cl-flet ((return (,sym) (throw 'return ,sym)))
                                       (pipe--print "Evaluated expr %S." expr)
-                                      ;;(eval expr) ;; funs
                                       ,expr))))
-                       (let* ( (expr (if (fun? expr) (list expr ,var) expr))
-                               (result (expr-fun expr ,var)))
+                       (let* ( (is-fun (fun? expr))
+                               (expr (if is-fun (list expr ,var) expr))
+                               (result(if is-fun (eval expr)  (expr-fun expr ,var))))
                          (cond
                            ((eq flag :MAYBE)
                              (progn
