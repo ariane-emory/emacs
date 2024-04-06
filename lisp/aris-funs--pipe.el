@@ -289,25 +289,20 @@
               (> car-head-length 0)
               (< car-head-length 3)))
           (head-is-spec-with-init-form (eql car-head-length 2))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (init-form
             (cond
               (head-is-spec-with-init-form
                 (message "Chose case 1")
                 (cadr car-head))
-              (head-is-spec
-                (message "Chose case 2")
-                (car tail))
-              (t
-                (message "Chose case 3")
-                head)))
+              ))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (body
             (cond
               (head-is-spec-with-init-form
                 (cons inject-sym tail))
               (head-is-spec
-                (cdr tail))
-              (t tail)))
+                tail)
+              (t (cons head tail))))
           (alist
             `'( (consp-head . ,consp-head)
                 (car-head . ,car-head)
