@@ -220,9 +220,9 @@
                    (pipe--print "Do nothing for %S because %S." expr flag))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
                    (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
-                     (pipe--print "Setting flag from %S to %S by alist entry for %S."
-                       flag new-flag expr)))
-
+                     ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
+                     ;;   flag new-flag expr)
+                     (set-flag new-flag nil)))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -260,10 +260,10 @@
                              (setq ,var result))
                            (set-flag nil nil))
                          ((eq flag :NO-SET)
-                           (pipe--print "%S: Not setting %S because %S and unsetting the flag." flag result flag)
+                           (pipe--print "Not setting %S because %S and unsetting the flag." result flag)
                            (set-flag nil nil))
                          ((eq flag :IGNORE)
-                           (pipe--print "%S: Not setting %S because %S and unsetting the flag." flag result flag)
+                           (pipe--print "Ignoring %S because %S and unsetting the flag." result flag)
                            (set-flag nil nil))
                          (t 
                            (setq ,var result)
