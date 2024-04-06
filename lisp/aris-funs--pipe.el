@@ -120,7 +120,6 @@
               (head-is-spec-with-init-form (cons (cadr car-head) tail))
               (head-is-spec tail)
               (t (cons head tail))))
-          ;;(body (append body '(->)))
           (alist
             `'( (head-is-cons . ,head-is-cons)
                 (car-head . ,car-head)
