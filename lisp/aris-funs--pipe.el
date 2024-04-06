@@ -240,8 +240,7 @@
                                       (pipe--print "Evaluated expr %S." expr)
                                       ,expr))))
                        (let* ( (is-fun (fun? expr))
-                               (expr (if is-fun (list expr ,var) expr))
-                               (result(if is-fun (eval expr)  (expr-fun expr ,var))))
+                               (result(if is-fun (eval (list expr ,var)) (expr-fun expr ,var))))
                          (cond
                            ((eq flag :MAYBE)
                              (progn
