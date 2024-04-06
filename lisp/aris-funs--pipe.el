@@ -135,17 +135,37 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar pipe--keywords
+(defvar *--pipe--arity-1-commands*
   '(
      :?
      :ignore
      :maybe
      :return
+     ))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *--pipe--arity-2-commands*
+  '(
      :unless
      :when
      ))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *--pipe--commands-to-flags*
+  '(
+     (: . :IGNORE)
+     (:? . :MAYBE)
+     (:ignore . :IGNORE)
+     (:maybe . :MAYBE)
+     (:return . :RETURN)
+     (:unless . :UNLESS)
+     (:when . :WHEN)
+     ))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -173,10 +193,12 @@
                (pipe--print "Var:            %S" ,var)
                (pipe--print "Flag:           %S" flag)
                (cond
+                 ((and (eq flag :IGNORE) (memq expr *--pipe--arity-2-commands*))
+                   (error "Ignoring the %S command because %S is not yet supported." expr flag))
+                 ((and (eq flag :IGNORE) (memq expr *--pipe--arity-1-commands*))
+                   (pipe--print "Do nothing for %S because %S." expr flag))
                  ((eq expr :)
                    (set-flag :IGNORE))
-                 ((and (eq flag :IGNORE) (memq expr pipe--keywords))
-                   (pipe--print "Do nothing for %S because %S." expr flag))
                  ((eq expr :return)
                    (set-flag :RETURN))
                  ((eq expr :?)
@@ -184,9 +206,9 @@
                  ((eq expr :maybe)
                    (set-flag :MAYBE))
                  ((eq expr :when)
-                   (set-flag :WHEN-CMD))
+                   (set-flag :WHEN))
                  ((eq expr :unless)
-                   (set-flag :UNLESS-CMD))
+                   (set-flag :UNLESS))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -201,7 +223,7 @@
                            (pipe--print "Returning: %S" result)
                            (throw 'return result)
                            (setq flag nil))
-                         ((eq flag :WHEN-CMD)
+                         ((eq flag :WHEN)
                            (if result
                              (progn
                                (pipe--print "Next command will be processed.")
@@ -216,7 +238,7 @@
                              (pipe--print "%s: Updating var to %S and unsetting the %S flag." flag ,var flag)
                              (setq ,var result))
                            (setq flag nil))
-                         ((eq flag :UNLESS-CMD)
+                         ((eq flag :UNLESS)
                            (if result
                              (progn
                                (pipe--print "Next command will be ignored.")
