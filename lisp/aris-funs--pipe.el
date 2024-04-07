@@ -241,7 +241,7 @@
                             (set-flag! :IGNORE t)))))
            (dostack (expr body)
              (pipe--print (make-string 80 ?\=))
-             (pipe--print "Body:           %S" body)
+             (pipe--print "Remaining:      %S" stack)
              (pipe--print "Expr:           %S" expr)
              (pipe--print "Var:            %S" ,var)
              (pipe--print "Flag:           %S" flag)
@@ -257,8 +257,6 @@
                  (unset-flag!))
                ((and (keyword? expr) (assoc expr *--pipe--commands-to-flags*))
                  (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
-                   ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
-                   ;;   flag new-flag expr)
                    (set-flag! new-flag nil)))
                (t
                  (cl-flet ((expr-fun
@@ -266,9 +264,9 @@
                                 (cl-flet ((return (value) (throw 'return value)))
                                   (pipe--print "Evaluated expr: %S." expr)
                                   ,expr))))
-                   (let* ((result (if (fun? expr)
-                                    (eval (list expr ',var)) ;; unsure about this quote.
-                                    (expr-fun expr ,var))))
+                   (let ((result (if (fun? expr)
+                                   (eval (list expr ',var)) ;; unsure about this quote.
+                                   (expr-fun expr ,var))))
                      (cond
                        ((flag-is? :RETURN)
                          (pipe--print "Returning due to command: %S" result)
