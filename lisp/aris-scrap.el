@@ -307,7 +307,7 @@
   (|> ((x 5)) (+ x 7) :(prn "hello") (+ x 3) (return 99) neg :when negative? neg :when (> x 20) (return 11) 1)
   (|> ((x 5)) (+ x 7) double :(prn "hello") (+ x 3) (return 99) neg :when negative? neg :when (> x 20) (return 11) 1)
 
-  ;;;;;;;;;;;
+  ;;;;;;;;;;;k
   (|> 5 :when odd? :return 100)
   (|> 6 :when odd? :return 100)
   (|> 5 6 7)
@@ -330,5 +330,20 @@
 (confirm that (|> :return 1 2 3) returns 1)
 (confirm that (|> 1 :return 2 3) returns 2)
 (confirm that (|> 1 2 :return 3) returns 3)
+(confirm that (|> (return 1) 2 3) returns 1)
+(confirm that (|> 1 (return 2) 3) returns 2)
+(confirm that (|> 1 2 (return 3)) returns 3)
 
-(confirm that 1 returns 2)
+(confirm that (|> 1 :when odd? 100) returns 100)
+(confirm that (|> 2 :when odd? 100) returns 2)
+(confirm that (|> 1 :when odd? :return 100) returns 100)
+(confirm that (|> 2 :when odd? :return 100) returns 2)
+(confirm that (|> 1 :when odd? (return 100)) returns 100)
+(confirm that (|> 2 :when odd? (return 100)) returns 2)
+
+(confirm that (|> 1) returns 1)
+(confirm that (|> 1) returns 1)
+(confirm that (|> 1) returns 1)
+(confirm that (|> 1) returns 1)
+
+
