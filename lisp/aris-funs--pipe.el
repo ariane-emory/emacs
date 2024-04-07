@@ -233,7 +233,7 @@
                               (unset-flag! ()
                                 (set-flag! nil nil)))
                    (dostack (expr body)
-                     (cl-labels ((ignore-next (bool)
+                     (cl-labels ((ignore-next-and-set-flag! (bool)
                                    (if bool
                                      (let ((next (pop!)))
                                        (pipe--print "Popped 1st %S from %S." next body)
@@ -244,8 +244,7 @@
                                          ;; pop the unary command's argument:
                                          (pipe--print "Popped 1st %S from %S." (pop!) body)) 
                                        (unset-flag!))
-                                     (progn
-                                       (pipe--print "Next command will be processed.")))
+                                     (pipe--print "Next command will be processed."))
                                    (unset-flag!)))
                        (pipe--print (make-string 80 ?\=))
                        (pipe--print "Remaining:      %S" stack)
@@ -279,9 +278,9 @@
                                    (pipe--print "Returning due to command: %S" result)
                                    (throw 'return result))
                                  ((flag-is? :UNLESS)
-                                   (ignore-next result))
+                                   (ignore-next-and-set-flag! result))
                                  ((flag-is? :WHEN)
-                                   (ignore-next (not result)))
+                                   (ignore-next-and-set-flag! (not result)))
                                  ((and (flag-is? :MAYBE) result)
                                    (pipe--print
                                      "%s: Updating var to %S and unsetting the %S flag."
