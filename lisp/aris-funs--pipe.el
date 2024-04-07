@@ -204,8 +204,8 @@
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (args      (eval `(--pipe-args ,head ,@tail)))
           (var       (alist-get 'var  args))
-          (body      (alist-get 'body args)))
-    `(let ( (body ',body)
+          (body      `',(alist-get 'body args)))
+    `(let ( (body ,body)
             (,var nil)
             (flag nil))
        (pipe--print (make-string 80 ?\=))
@@ -239,63 +239,62 @@
                           (progn
                             (pipe--print "Next command will be ignored.")
                             (set-flag! :IGNORE t)))))
-           (stackmaprc ',body
-             (lambda (expr)
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Body:           %S" body)
-               (pipe--print "Expr:           %S" expr)
-               (pipe--print "Var:            %S" ,var)
-               (pipe--print "Flag:           %S" flag)
-               (cond
-                 ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-2-commands*))
-                   (error "Ignoring the %S command because %S is not yet supported."
-                     expr flag))
-                 ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-1-commands*))
-                   (pipe--print "Do nothing for expr %S because %S." expr flag))
-                 ((flag-is? :IGNORE)
-                   (pipe--print "Ignoring expr %S because %S and unsetting the flag."
-                     expr flag)
-                   (unset-flag!))
-                 ((and (keyword? expr) (assoc expr *--pipe--commands-to-flags*))
-                   (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
-                     ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
-                     ;;   flag new-flag expr)
-                     (set-flag! new-flag nil)))
-                 (t
-                   (cl-flet ((expr-fun
-                               `(lambda (expr ,',var)
-                                  (cl-flet ((return (value) (throw 'return value)))
-                                    (pipe--print "Evaluated expr: %S." expr)
-                                    ,expr))))
-                     (let* ((result (if (fun? expr)
-                                      (eval (list expr ',var)) ;; unsure about this quote.
-                                      (expr-fun expr ,var))))
-                       (cond
-                         ((flag-is? :RETURN)
-                           (pipe--print "Returning due to command: %S" result)
-                           (throw 'return result))
-                         ((flag-is? :UNLESS)
-                           (ignore-next result))
-                         ((flag-is? :WHEN)
-                           (ignore-next (not result)))
-                         ((and (flag-is? :MAYBE) result)
-                           (pipe--print
-                             "%s: Updating var to %S and unsetting the %S flag."
-                             flag ,var flag)
-                           (store! result)
-                           (unset-flag!))
-                         ((and (flag-is? :MAYBE) (not result))
-                           (pipe--print "%S: Ignoring %S and unsetting the %S flag."
-                             flag result flag)
-                           (unset-flag!))
-                         ((flag-is? :NO-SET)
-                           (pipe--print "Not setting %S because %S and unsetting the flag."
-                             result flag)
-                           (unset-flag!))
-                         (t 
-                           (store! result)
-                           (pipe--print "Updating var to %S." ,var)
-                           ))))))))
+           (dostack (expr body)
+             (pipe--print (make-string 80 ?\=))
+             (pipe--print "Body:           %S" body)
+             (pipe--print "Expr:           %S" expr)
+             (pipe--print "Var:            %S" ,var)
+             (pipe--print "Flag:           %S" flag)
+             (cond
+               ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-2-commands*))
+                 (error "Ignoring the %S command because %S is not yet supported."
+                   expr flag))
+               ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-1-commands*))
+                 (pipe--print "Do nothing for expr %S because %S." expr flag))
+               ((flag-is? :IGNORE)
+                 (pipe--print "Ignoring expr %S because %S and unsetting the flag."
+                   expr flag)
+                 (unset-flag!))
+               ((and (keyword? expr) (assoc expr *--pipe--commands-to-flags*))
+                 (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
+                   ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
+                   ;;   flag new-flag expr)
+                   (set-flag! new-flag nil)))
+               (t
+                 (cl-flet ((expr-fun
+                             `(lambda (expr ,',var)
+                                (cl-flet ((return (value) (throw 'return value)))
+                                  (pipe--print "Evaluated expr: %S." expr)
+                                  ,expr))))
+                   (let* ((result (if (fun? expr)
+                                    (eval (list expr ',var)) ;; unsure about this quote.
+                                    (expr-fun expr ,var))))
+                     (cond
+                       ((flag-is? :RETURN)
+                         (pipe--print "Returning due to command: %S" result)
+                         (throw 'return result))
+                       ((flag-is? :UNLESS)
+                         (ignore-next result))
+                       ((flag-is? :WHEN)
+                         (ignore-next (not result)))
+                       ((and (flag-is? :MAYBE) result)
+                         (pipe--print
+                           "%s: Updating var to %S and unsetting the %S flag."
+                           flag ,var flag)
+                         (store! result)
+                         (unset-flag!))
+                       ((and (flag-is? :MAYBE) (not result))
+                         (pipe--print "%S: Ignoring %S and unsetting the %S flag."
+                           flag result flag)
+                         (unset-flag!))
+                       ((flag-is? :NO-SET)
+                         (pipe--print "Not setting %S because %S and unsetting the flag."
+                           result flag)
+                         (unset-flag!))
+                       (t 
+                         (store! result)
+                         (pipe--print "Updating var to %S." ,var)
+                         )))))))
            (throw 'return
              (progn
                (pipe--print (make-string 80 ?\=))
