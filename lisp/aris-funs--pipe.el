@@ -238,7 +238,7 @@
                           (progn
                             (pipe--print "Next command will be ignored.")
                             (set-flag! :IGNORE t)))))
-           (maprc ',body
+           (stackmaprc ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Body:           %S" body)
