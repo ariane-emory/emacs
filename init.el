@@ -879,7 +879,7 @@
            aris-funs--pipe
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
-           aris-funs--warnings
+           aris-funs--confirm
            aris-funs--error-when-and-error-unless
            aris-configure--key-bindings
            aris-configure--tetris-keymap

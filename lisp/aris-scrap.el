@@ -323,26 +323,7 @@
   )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(warn-unless-equal (|> 1 2 3) 3)
-(warn-unless-equal (|> :return 1 2 3) 1)
-(warn-unless-equal (|> 1 :return 2 3) 2)
-(warn-unless-equal (|> 1 2 :return 3) 3)
-
-(warn-unless-equal (|> 1 :when odd? :return 100) 100)
-(warn-unless-equal (|> 2 :when odd? :return 100) 2)
 
 
-(defmacro warn-unless-equal (expr expected)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Warn unless EXPR eexpecteduates to EXPECTED"
-  `(let ((result ,expr))
-     (unless (equal result ,expected)
-       (warn "ARI's WARNING: %S != %S" ',expr ,expected))))
 
-
-(defmacro confirm (that expr returns expected)
- "Test whether EXPR evaluates to EXPECTED."
- (unless (eq? 'that   that)     (error "expected 'that as 2nd argument"))
- (unless (eq? 'returns returns) (error "expected 'returns as 4th argument"))
-
-
+(confirm that 1 returns 2)
