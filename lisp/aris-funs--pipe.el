@@ -234,7 +234,7 @@
                                 (set-flag! nil nil)))
                    (dostack (expr body)
                      (cl-labels ((ignore-next (bool)
-                                   (if (not bool)
+                                   (if bool
                                      (let ((next (pop!)))
                                        (pipe--print "Popped 1st %S from %S." next body)
                                        (when (memq next *--pipe--arity-2-commands*)
@@ -245,8 +245,8 @@
                                          (pipe--print "Popped 1st %S from %S." (pop!) body)) 
                                        (unset-flag!))
                                      (progn
-                                       (pipe--print "Next command will be processed.")
-                                       (unset-flag!)))))
+                                       (pipe--print "Next command will be processed.")))
+                                   (unset-flag!)))
                        (pipe--print (make-string 80 ?\=))
                        (pipe--print "Remaining:      %S" stack)
                        (pipe--print "Expr:           %S" expr)
