@@ -330,6 +330,12 @@
 (confirm that (|> :return 1 2 3) returns 1)
 (confirm that (|> 1 :return 2 3) returns 2)
 (confirm that (|> 1 2 :return 3) returns 3)
+
+(confirm that (|> : 1 2) returns 2)
+(confirm that (|> 1 : 2) returns 1)
+(confirm that (|> :ignore 1 2) returns 2)
+(confirm that (|> 1 :ignore 2) returns 1)
+
 (confirm that (|> (return 1) 2 3) returns 1)
 (confirm that (|> 1 (return 2) 3) returns 2)
 (confirm that (|> 1 2 (return 3)) returns 3)
@@ -348,9 +354,18 @@
 (confirm that (|> 2 :unless odd? (return 100)) returns 100)
 (confirm that (|> 1 :unless odd? (return 100)) returns 1)
 
-(confirm that (|> 1) returns 1)
-(confirm that (|> 1) returns 1)
-(confirm that (|> 1) returns 1)
-(confirm that (|> 1) returns 1)
+(confirm that (|> 1 (when (odd? _) 100)) returns 100)
+(confirm that (|> 2 (when (odd? _) 100)) returns nil)
+(confirm that (|> 1 :?(when (odd? _) 100)) returns 100)
+(confirm that (|> 2 :?(when (odd? _) 100)) returns 2)
+
+(confirm that (|> 1 :? t) returns t)
+(confirm that (|> 1 :? nil) returns 1)
+(confirm that (|> 1 :?(= _ 1)) returns t)
+(confirm that (|> 2 :?(= _ 1)) returns 2)
+(confirm that (|> 1 :maybe t) returns t)
+(confirm that (|> 1 :maybe nil) returns 1)
+(confirm that (|> 1 :maybe(= _ 1)) returns t)
+(confirm that (|> 2 :maybe(= _ 1)) returns 2)
 
 

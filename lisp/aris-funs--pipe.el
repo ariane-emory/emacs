@@ -37,9 +37,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *--pipe--commands*
   '(
-     (:       . (1 . :NO-SET))
+     (:       . (1 . :IGNORE))
      (:?      . (1 . :MAYBE))
-     (:no-set . (1 . :NO-SET))
+     (:ignore . (1 . :IGNORE))
      (:maybe  . (1 . :MAYBE))
      (:return . (1 . :RETURN))
      (:unless . (2 . :UNLESS))
@@ -203,7 +203,7 @@
                                (--pipe--print "%S: Ignoring %S and unsetting the %S flag."
                                  flag result flag)
                                (unset-flag!))
-                             ((flag-is? :NO-SET)
+                             ((flag-is? :IGNORE)
                                (--pipe--print "Not setting %S because %S and unsetting the flag."
                                  result flag)
                                (unset-flag!))
