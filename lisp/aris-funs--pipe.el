@@ -212,34 +212,34 @@
        (pipe--print "START")
        (pipe--print (make-string 80 ?\=))
        (catch 'return
-         (cl-labels ( (flag-is? (test-flag) 
-                        (eq flag (--valid-pipe-flag test-flag)))
-                      (store! (value)
-                        (setq ,var value))
-                      (set-flag! (new-flag force)
-                        (let ((new-flag (--valid-pipe-flag new-flag t)))
-                          (cond
-                            ((and flag new-flag (not force))
-                              (error "Cannot set flag to %S when flag is already set to %S."
-                                new-flag flag))
-                            (force
-                              (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
-                              (setq flag new-flag))
-                            (t
-                              (pipe--print "Setting flag from %S to %S%s." flag new-flag
-                                (if force " (forced)" ""))))
-                          (setq flag new-flag)))
-                      (unset-flag! ()
-                        (set-flag! nil nil))
-                      (ignore-next (bool)
-                        (if bool
-                          (progn
-                            (pipe--print "Next command will be processed.")
-                            (unset-flag!))
-                          (progn
-                            (pipe--print "Next command will be ignored.")
-                            (set-flag! :IGNORE t)))))
-           (dostack (expr body)
+         (dostack (expr body)
+           (cl-labels ( (flag-is? (test-flag) 
+                          (eq flag (--valid-pipe-flag test-flag)))
+                        (store! (value)
+                          (setq ,var value))
+                        (set-flag! (new-flag force)
+                          (let ((new-flag (--valid-pipe-flag new-flag t)))
+                            (cond
+                              ((and flag new-flag (not force))
+                                (error "Cannot set flag to %S when flag is already set to %S."
+                                  new-flag flag))
+                              (force
+                                (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                                (setq flag new-flag))
+                              (t
+                                (pipe--print "Setting flag from %S to %S%s." flag new-flag
+                                  (if force " (forced)" ""))))
+                            (setq flag new-flag)))
+                        (unset-flag! ()
+                          (set-flag! nil nil))
+                        (ignore-next (bool)
+                          (if bool
+                            (progn
+                              (pipe--print "Next command will be processed.")
+                              (unset-flag!))
+                            (progn
+                              (pipe--print "Next command will be ignored.")
+                              (set-flag! :IGNORE t)))))
              (pipe--print (make-string 80 ?\=))
              (pipe--print "Remaining:      %S" stack)
              (pipe--print "Expr:           %S" expr)
