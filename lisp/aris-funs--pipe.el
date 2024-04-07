@@ -281,5 +281,172 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun pipe--run-tests ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Run the unit tests for the `pipe' function."
+  ;; With no spec:
+  (confirm that (|> 1) returns 1)
+  (confirm that (|> 1 2) returns 2)
+  (confirm that (|> 1 2 3) returns 3)
+  (confirm that (|> :return 1 2 3) returns 1)
+  (confirm that (|> 1 :return 2 3) returns 2)
+  (confirm that (|> 1 2 :return 3) returns 3)
+
+  (confirm that (|> : 1 2) returns 2)
+  (confirm that (|> 1 : 2) returns 1)
+  (confirm that (|> :ignore 1 2) returns 2)
+  (confirm that (|> 1 :ignore 2) returns 1)
+
+  (confirm that (|> (return 1) 2 3) returns 1)
+  (confirm that (|> 1 (return 2) 3) returns 2)
+  (confirm that (|> 1 2 (return 3)) returns 3)
+
+  (confirm that (|> 1 :when odd? 100) returns 100)
+  (confirm that (|> 2 :when odd? 100) returns 2)
+  (confirm that (|> 1 :when odd? :return 100) returns 100)
+  (confirm that (|> 2 :when odd? :return 100) returns 2)
+  (confirm that (|> 1 :when odd? (return 100)) returns 100)
+  (confirm that (|> 2 :when odd? (return 100)) returns 2)
+
+  (confirm that (|> 2 :unless odd? 100) returns 100)
+  (confirm that (|> 1 :unless odd? 100) returns 1)
+  (confirm that (|> 2 :unless odd? :return 100) returns 100)
+  (confirm that (|> 1 :unless odd? :return 100) returns 1)
+  (confirm that (|> 2 :unless odd? (return 100)) returns 100)
+  (confirm that (|> 1 :unless odd? (return 100)) returns 1)
+
+  (confirm that (|> 1 (when (odd? _) 100)) returns 100)
+  (confirm that (|> 2 (when (odd? _) 100)) returns nil)
+  (confirm that (|> 1 :?(when (odd? _) 100)) returns 100)
+  (confirm that (|> 2 :?(when (odd? _) 100)) returns 2)
+
+  (confirm that (|> 1 :? t) returns t)
+  (confirm that (|> 1 :? nil) returns 1)
+  (confirm that (|> 1 :?(= _ 1)) returns t)
+  (confirm that (|> 2 :?(= _ 1)) returns 2)
+  (confirm that (|> 1 :maybe t) returns t)
+  (confirm that (|> 1 :maybe nil) returns 1)
+  (confirm that (|> 1 :maybe(= _ 1)) returns t)
+  (confirm that (|> 2 :maybe(= _ 1)) returns 2)
+
+  ;; With spec without value:
+  (confirm that (|> ((x)) 1) returns 1)
+  (confirm that (|> ((x)) 1 2) returns 2)
+  (confirm that (|> ((x)) 1 2 3) returns 3)
+  (confirm that (|> ((x)) :return 1 2 3) returns 1)
+  (confirm that (|> ((x)) 1 :return 2 3) returns 2)
+  (confirm that (|> ((x)) 1 2 :return 3) returns 3)
+
+  (confirm that (|> ((x)) : 1 2) returns 2)
+  (confirm that (|> ((x)) 1 : 2) returns 1)
+  (confirm that (|> ((x)) :ignore 1 2) returns 2)
+  (confirm that (|> ((x)) 1 :ignore 2) returns 1)
+
+  (confirm that (|> ((x)) (return 1) 2 3) returns 1)
+  (confirm that (|> ((x)) 1 (return 2) 3) returns 2)
+  (confirm that (|> ((x)) 1 2 (return 3)) returns 3)
+
+  (confirm that (|> ((x)) 1 :when odd? 100) returns 100)
+  (confirm that (|> ((x)) 2 :when odd? 100) returns 2)
+  (confirm that (|> ((x)) 1 :when odd? :return 100) returns 100)
+  (confirm that (|> ((x)) 2 :when odd? :return 100) returns 2)
+  (confirm that (|> ((x)) 1 :when odd? (return 100)) returns 100)
+  (confirm that (|> ((x)) 2 :when odd? (return 100)) returns 2)
+
+  (confirm that (|> ((x)) 2 :unless odd? 100) returns 100)
+  (confirm that (|> ((x)) 1 :unless odd? 100) returns 1)
+  (confirm that (|> ((x)) 2 :unless odd? :return 100) returns 100)
+  (confirm that (|> ((x)) 1 :unless odd? :return 100) returns 1)
+  (confirm that (|> ((x)) 2 :unless odd? (return 100)) returns 100)
+  (confirm that (|> ((x)) 1 :unless odd? (return 100)) returns 1)
+
+  (confirm that (|> ((x)) 1 (when (odd? x) 100)) returns 100)
+  (confirm that (|> ((x)) 2 (when (odd? x) 100)) returns nil)
+  (confirm that (|> ((x)) 1 :?(when (odd? x) 100)) returns 100)
+  (confirm that (|> ((x)) 2 :?(when (odd? x) 100)) returns 2)
+
+  (confirm that (|> ((x)) 1 :? t) returns t)
+  (confirm that (|> ((x)) 1 :? nil) returns 1)
+  (confirm that (|> ((x)) 1 :?(= x 1)) returns t)
+  (confirm that (|> ((x)) 2 :?(= x 1)) returns 2)
+  (confirm that (|> ((x)) 1 :maybe t) returns t)
+  (confirm that (|> ((x)) 1 :maybe nil) returns 1)
+  (confirm that (|> ((x)) 1 :maybe(= x 1)) returns t)
+  (confirm that (|> ((x)) 2 :maybe(= x 1)) returns 2)
+
+  ;; With spec including value:
+  (confirm that (|> ((x 1))) returns 1)
+  (confirm that (|> ((x 1)) 2) returns 2)
+  (confirm that (|> ((x 1)) 2 3) returns 3)
+  (confirm that (|> ((x :return)) 1 2 3) returns 1)
+  (confirm that (|> ((x 1)) :return 2 3) returns 2)
+  (confirm that (|> ((x 1)) 2 :return 3) returns 3)
+
+  (confirm that (|> ((x :)) 1 2) returns 2)
+  (confirm that (|> ((x 1)) : 2) returns 1)
+  (confirm that (|> ((x :ignore)) 1 2) returns 2)
+  (confirm that (|> ((x 1)) :ignore 2) returns 1)
+
+  (confirm that (|> ((x (return 1))) 2 3) returns 1)
+  (confirm that (|> ((x 1)) (return 2) 3) returns 2)
+  (confirm that (|> ((x 1)) 2 (return 3)) returns 3)
+
+  (confirm that (|> ((x 1)) :when odd? 100) returns 100)
+  (confirm that (|> ((x 2)) :when odd? 100) returns 2)
+  (confirm that (|> ((x 1)) :when odd? :return 100) returns 100)
+  (confirm that (|> ((x 2)) :when odd? :return 100) returns 2)
+  (confirm that (|> ((x 1)) :when odd? (return 100)) returns 100)
+  (confirm that (|> ((x 2)) :when odd? (return 100)) returns 2)
+
+  (confirm that (|> ((x 2)) :unless odd? 100) returns 100)
+  (confirm that (|> ((x 1)) :unless odd? 100) returns 1)
+  (confirm that (|> ((x 2)) :unless odd? :return 100) returns 100)
+  (confirm that (|> ((x 1)) :unless odd? :return 100) returns 1)
+  (confirm that (|> ((x 2)) :unless odd? (return 100)) returns 100)
+  (confirm that (|> ((x 1)) :unless odd? (return 100)) returns 1)
+
+  (confirm that (|> ((x 1)) (when (odd? x) 100)) returns 100)
+  (confirm that (|> ((x 2)) (when (odd? x) 100)) returns nil)
+  (confirm that (|> ((x 1)) :?(when (odd? x) 100)) returns 100)
+  (confirm that (|> ((x 2)) :?(when (odd? x) 100)) returns 2)
+
+  (confirm that (|> ((x 1)) :? t) returns t)
+  (confirm that (|> ((x 1)) :? nil) returns 1)
+  (confirm that (|> ((x 1)) :?(= x 1)) returns t)
+  (confirm that (|> ((x 2)) :?(= x 1)) returns 2)
+  (confirm that (|> ((x 1)) :maybe t) returns t)
+  (confirm that (|> ((x 1)) :maybe nil) returns 1)
+  (confirm that (|> ((x 1)) :maybe(= x 1)) returns t)
+  (confirm that (|> ((x 2)) :maybe(= x 1)) returns 2)
+
+  (confirm that (|> 7 :(when (eql _ 8) (return (* 7 6)))) returns 7)
+  (confirm that (|> 8 :(when (eql _ 8) (return (* 7 6)))) returns 42)
+
+  (confirm that (|> 8 :?(when (eql _ 8) (* 7 6))) returns 42)
+  (confirm that (|> 8 :?(when (eql _ 7) (* 7 6))) returns 8)
+  (confirm that (|> 7 :?(when (eql _ 8) (* 7 6))) returns 7)
+  (confirm that (|> 7 :?(when (eql _ 7) (* 7 6))) returns 42)
+
+  (confirm that (|> 5 (* _ _) (+ _ 8)) returns 33)
+  (confirm that (|> ((z)) 5 (* z z) (+ z 8)) returns 33)
+  (confirm that (|> ((z 5)) (* z z) (+ z 8)) returns 33)
+
+  (confirm that (|> ((e)) 5 (+ e 7) double (+ e 3) neg) returns -27)
+
+  (confirm that
+    (let ((y 20))
+      (|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :(when (< e 40) 1) (+ y e)))
+    returns -61)
+
+  (confirm that (|> (+ 3 4) (* _ 3)) returns 21)
+  (confirm that (|> ((e)) (+ 3 4) (* e 3)) returns 21)
+  (confirm that (|> ((e (+ 3 4))) (* e 3)) returns 21)
+  )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(pipe--run-tests)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--pipe)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
