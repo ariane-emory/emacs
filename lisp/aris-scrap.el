@@ -120,10 +120,27 @@ meant for use in unit tests."
 
 (mini-forth '(1 2 :over 3)) ;; this should signal!
 
-(mini-forth '(:over 1 :rotl 2 3 4 :drop 100 5 :swap 9 :rotr 8 10 :dup twice))
-(mini-forth '(1 :dup 2))
-(mini-forth '(:over 3 2 1)) ;; this one is wrong...
+(mini-forth '(:drop 3 2 1))
+(mini-forth '(3 :drop 2 1))
+(mini-forth '(3 2 :drop 1))
 
+(mini-forth '(:dup 3 2 1))
+(mini-forth '(3 :dup 2 1))
+(mini-forth '(3 2 :dup 1))
+
+(mini-forth '(:over 3 2 1))
+(mini-forth '(:over 3 2 1 :over 5 4))
+
+(mini-forth '(:rotl 4 3 2 1))
+(mini-forth '(4 :rotl 3 2 1))
+
+(mini-forth '(:rotr 4 3 2 1))
+(mini-forth '(4 :rotr 3 2 1))
+
+(mini-forth '(:swap 3 2 1))
+(mini-forth '(3 :swap 2 1))
+
+(mini-forth '(:over 1 :rotl 2 3 4 :drop 100 5 :swap 9 :rotr 8 10 :dup twice))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
