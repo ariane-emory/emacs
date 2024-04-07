@@ -4,6 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
 (require 'aris-funs--aliases)
+(require 'aris-funs--with-messages)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -55,9 +56,12 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                         (push! top)
                         (push! next))))
          (while ,stack-sym
-           (let* ( (stack ,stack-sym)
-                   (,val-sym (pop ,stack-sym)))
-             ,@body))))))
+           (let* ( (,val-sym (pop ,stack-sym))
+                   (stack ,stack-sym))
+             (prn "PROCESS %s" ,val-sym)
+             ,@body))
+         (prn "FINAL %s" ,stack-sym)
+         ))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
