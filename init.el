@@ -866,6 +866,7 @@
         '( aris-funs--aliases
            aris-funs--basic-preds
            aris-funs--unsorted
+           aris-funs--confirm
            aris-funs--interactive
            aris-funs--lists
            aris-funs--stacks
@@ -879,7 +880,6 @@
            aris-funs--pipe
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
-           aris-funs--confirm
            aris-funs--error-when-and-error-unless
            aris-configure--key-bindings
            aris-configure--tetris-keymap

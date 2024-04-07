@@ -110,7 +110,7 @@
 (defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe--commands*)))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
 
-(defvar *--pipe--commands-to-flags* (mapr *--pipe--commands* (lambda (x) (cons (car x) (cddr x))))
+(defvar *--pipe-commands-to-flags* (mapr *--pipe--commands* (lambda (x) (cons (car x) (cddr x))))
   "An alist mapping commands to flags. This is not meant to be customized.")
 
 (defvar *--pipe--arity-1-commands*
@@ -177,7 +177,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --is-pipe-command? (kw) 
-  (and (keyword? expr) (assoc expr *--pipe--commands-to-flags*)))
+  (and (keyword? expr) (assoc expr *--pipe-commands-to-flags*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -222,7 +222,7 @@
                      (--pipe--print "Var:                 %S" ,var)
                      (--pipe--print "Flag:                %S" flag)
                      (if (--is-pipe-command? expr)
-                       (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
+                       (let ((new-flag (alist-get expr *--pipe-commands-to-flags*)))
                          (set-flag! new-flag nil))
                        (cl-flet ( (ignore-next-and-unset-flag! (bool)
                                     (if bool

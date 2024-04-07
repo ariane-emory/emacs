@@ -94,58 +94,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq mystack '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-
-(dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
-  (prn x))
-
-(defun mini-forth (stack)
-  "A dumb little Forth-like stack machine without enough operations to be very useful,
-meant for use in unit tests."
-  (let (out)
-    (dostack (x stack)
-      ;;(prn (make-string 80 ?\=))
-      ;;(prn "Processing command: %S" x)
-      ;;(prn "Items remaining:    %S" (stack-len))
-      ;;(prn "Stack remaining:    %S" stack)
-      (cond
-        ((eq :drop x) (pop!))
-        ((eq :dup x)  (dup!))
-        ((eq :over x) (over!))
-        ((eq :rotl x) (rotl!))
-        ((eq :rotr x) (rotr!))
-        ((eq :swap x) (swap!))
-        (t (setq out (cons x out)))))
-    ;; (prn "Out: %S" out)
-    ))
-
 (mini-forth '(1 2 :over 3)) ;; this should signal!
 
-(mini-forth '(:drop 3 2 1))
-(mini-forth '(3 :drop 2 1))
-(mini-forth '(3 2 :drop 1))
-
-(mini-forth '(:dup 3 2 1))
-(mini-forth '(3 :dup 2 1))
-(mini-forth '(3 2 :dup 1))
-
-(mini-forth '(:over 3 2 1))
-(mini-forth '(:over 3 2 1 :over 5 4))
-
-(mini-forth '(:rotl 4 3 2 1))
-(mini-forth '(4 :rotl 3 2 1))
-
-(mini-forth '(:rotr 4 3 2 1))
-(mini-forth '(4 :rotr 3 2 1))
-
-(mini-forth '(:swap 3 2 1))
-(mini-forth '(3 :swap 2 1))
-
-(mini-forth '(:over 1 :rotl 2 3 4 :drop 100 5 :swap 9 :rotr 8 10 :dup twice))
-
-(mini-forth '(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
