@@ -35,35 +35,30 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe--commands-to-flags*
+(defvar *--pipe--commands*
   '(
-     (: . :NO-SET)
-     (:? . :MAYBE)
-     (:no-set . :NO-SET)
-     (:maybe . :MAYBE)
-     (:return . :RETURN)
-     (:unless . :UNLESS)
-     (:when . :WHEN)
+     (:       . (1 . :NO-SET))
+     (:?      . (1 . :MAYBE))
+     (:no-set . (1 . :NO-SET))
+     (:maybe  . (1 . :MAYBE))
+     (:return . (1 . :RETURN))
+     (:unless . (2 . :UNLESS))
+     (:when   . (2 . :WHEN))
      )
-  "An alist mapping commands to flags. This is not meant to be customized.")
+  "An alist mapping commands to their flags and arities. This is not meant to be customized.")
 
-(defvar *--pipe-flags* (cl-remove-duplicates (alist-values *--pipe--commands-to-flags*))
+(defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe--commands*)))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
 
+(defvar *--pipe--commands-to-flags* (mapr *--pipe--commands* (lambda (x) (cons (car x) (cddr x))))
+  "An alist mapping commands to flags. This is not meant to be customized.")
+
 (defvar *--pipe--arity-1-commands*
-  '(
-     :?
-     :no-set
-     :maybe
-     :return
-     )
+  (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe--commands*) #'car)
   "Commands that take one argument. This is not meant to be customized.")
 
 (defvar *--pipe--arity-2-commands*
-  '(
-     :unless
-     :when
-     )
+  (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe--commands*) #'car)
   "Commands that take two arguments. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -114,8 +109,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --valid-pipe-flag-or-nil (kw &optional or-nil)
-  (prn "TESTING %S" kw)
-
   (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
     (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
   kw)
@@ -124,7 +117,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --is-pipe-command? (kw) 
-  (and (keyword? expr) (assoc expr *--pipe--commands-to-flags*)))
+  (and (keyword? expr) (assoc expr *--pipe--commands*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
