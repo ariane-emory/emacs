@@ -96,7 +96,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; BASIC CASES:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(--pipe-args 5 (* _ _) (+ _ 8) (when (odd? _) (return (* _ 2))))
+(--pipe--make-args 5 (* _ _) (+ _ 8) (when (odd? _) (return (* _ 2))))
 
 '( (consp-head)
    (car-head)
@@ -116,7 +116,7 @@
          (* _ 2)))))
 
 ;; Named binding:
-(--pipe-args ((z)) 5 (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
+(--pipe--make-args ((z)) 5 (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
    (car-head z)
@@ -137,7 +137,7 @@
          (* z 2)))))
 
 ;; Named binding with value:
-(--pipe-args ((z 5)) (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
+(--pipe--make-args ((z 5)) (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
 
 '( (consp-head . t)
    (car-head z 5)
@@ -160,7 +160,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; EMPTY BODY CASES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(--pipe-args ((z 5))) ;; nothing entered in pipe?
+(--pipe--make-args ((z 5))) ;; nothing entered in pipe?
 
 '( (consp-head . t)
    (car-head z 5)
@@ -174,7 +174,7 @@
    (init-form . 5)
    (body))
 
-(--pipe-args ((z))) ;; nothing entered in pipe
+(--pipe--make-args ((z))) ;; nothing entered in pipe
 
 '( (consp-head . t)
    (car-head z)
@@ -188,12 +188,12 @@
    (init-form)
    (body))
 
-;; (--pipe-args);; nothing entered in pipe ;; ILLEGAL EXPANSION!
+;; (--pipe--make-args);; nothing entered in pipe ;; ILLEGAL EXPANSION!
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; ONE ARG CASES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(--pipe-args ((z 5))) ;; nothing entered in pipe?
+(--pipe--make-args ((z 5))) ;; nothing entered in pipe?
 
 '( (consp-head . t)
    (car-head z 5)
@@ -207,7 +207,7 @@
    (init-form . 5)
    (body))
 
-(--pipe-args ((z))) ;; nothing entered in pipe
+(--pipe--make-args ((z))) ;; nothing entered in pipe
 
 '( (consp-head . t)
    (car-head z)
@@ -221,7 +221,7 @@
    (init-form)
    (body))
 
-(--pipe-args 5);; nothing entered in pipe
+(--pipe--make-args 5);; nothing entered in pipe
 
 '( (consp-head)
    (car-head)
