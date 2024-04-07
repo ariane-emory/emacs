@@ -245,19 +245,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun stackmapc (fun stack)
-  "Map FUN over the elements of STACK, using a stack-based approach."
+  "Map FUN over the elements of STACK using a stack-based approach, discarding the
+rresults."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (stackmaprc stack fun))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun stackmaprc (stack fun)
-  "Map FUN over the elements of STACK, discarding the rresults, using a stack-based
-approach and a reversd parameter order."
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro stackmaprc (stack fun)
+  "Map FUN over the elements of STACK using a stack-based approach, discarding the
+rresults with a reversed parameter order compared to `stackmapc'."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (while stack
-    (funcall fun (pop stack))))
+  `(let ((stk ,stack))
+     (cl-flet ((pop! () (pop stk)))
+       (while stk
+         (funcall ,fun (pop!))))))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

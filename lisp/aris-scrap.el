@@ -337,12 +337,11 @@ approach and a reversd parameter order."
          (funcall ,fun (pop!))))))
 
 
-(defmacro stackmapc (fun stack)
-  (stackmaprc stack fun))
-
 (setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 (stackmaprc mystk #'prn)
-(stackmaprc mystk #'prn)
+(stackmapc #'prn mystk)
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
