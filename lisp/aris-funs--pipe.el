@@ -2,6 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
 (require 'aris-funs--aliases)
+(require 'aris-funs--confirm)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
 (require 'aris-funs--alists)

@@ -5,6 +5,8 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--error-when-and-error-unless)
 (require 'aris-funs--lists)
+(require 'aris-funs--match-pattern)
+(require 'aris-funs--match-pattern2)
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--stacks)
 (require 'aris-funs--unsorted)
@@ -60,9 +62,9 @@
       (pd--reset)
 
       ;; Define some simple functions:
-      (def (double n) (|> n (+ _ _)))
-      (def (square y) (|> y (* _ _)))
-      (def (double-square y) (double (square y)))
+      (def (doub n) (|> n (+ _ _)))
+      (def (sqr y) (|> y (* _ _)))
+      (def (doub-sqr y) (doub (sqr y)))
 
       ;; Define a fib:
       (def (fib 0) 0)
@@ -89,150 +91,6 @@
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       )))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PIPE ARG GEN:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; BASIC CASES:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(--pipe--make-args 5 (* _ _) (+ _ 8) (when (odd? _) (return (* _ 2))))
-
-'( (consp-head)
-   (car-head)
-   (consp-car-head)
-   (car-head-length)
-   (head-is-spec)
-   (head-is-spec-with-init-form)
-   (head . 5)
-   (var . _)
-   (init-form . 5)
-   (body 
-     (* _ _)
-     (+ _ 8)
-     (when
-       (odd? _)
-       (return
-         (* _ 2)))))
-
-;; Named binding:
-(--pipe--make-args ((z)) 5 (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
-
-'( (consp-head . t)
-   (car-head z)
-   (consp-car-head . t)
-   (car-head-length . 1)
-   (head-is-spec . t)
-   (head-is-spec-with-init-form)
-   (head
-     (z))
-   (var . z)
-   (init-form . 5)
-   (body 
-     (* z z)
-     (+ z 8)
-     (when
-       (odd? z)
-       (return
-         (* z 2)))))
-
-;; Named binding with value:
-(--pipe--make-args ((z 5)) (* z z) (+ z 8) (when (odd? z) (return (* z 2))))
-
-'( (consp-head . t)
-   (car-head z 5)
-   (consp-car-head . t)
-   (car-head-length . 2)
-   (head-is-spec . t)
-   (head-is-spec-with-init-form . t)
-   (head
-     (z 5))
-   (var . z)
-   (init-form . 5)
-   (body 
-     (* z z)
-     (+ z 8)
-     (when
-       (odd? z)
-       (return
-         (* z 2)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; EMPTY BODY CASES
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(--pipe--make-args ((z 5))) ;; nothing entered in pipe?
-
-'( (consp-head . t)
-   (car-head z 5)
-   (consp-car-head . t)
-   (car-head-length . 2)
-   (head-is-spec . t)
-   (head-is-spec-with-init-form . t)
-   (head
-     (z 5))
-   (var . z)
-   (init-form . 5)
-   (body))
-
-(--pipe--make-args ((z))) ;; nothing entered in pipe
-
-'( (consp-head . t)
-   (car-head z)
-   (consp-car-head . t)
-   (car-head-length . 1)
-   (head-is-spec . t)
-   (head-is-spec-with-init-form)
-   (head
-     (z))
-   (var . z)
-   (init-form)
-   (body))
-
-;; (--pipe--make-args);; nothing entered in pipe ;; ILLEGAL EXPANSION!
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; ONE ARG CASES
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(--pipe--make-args ((z 5))) ;; nothing entered in pipe?
-
-'( (consp-head . t)
-   (car-head z 5)
-   (consp-car-head . t)
-   (car-head-length . 2)
-   (head-is-spec . t)
-   (head-is-spec-with-init-form . t)
-   (head
-     (z 5))
-   (var . z)
-   (init-form . 5)
-   (body))
-
-(--pipe--make-args ((z))) ;; nothing entered in pipe
-
-'( (consp-head . t)
-   (car-head z)
-   (consp-car-head . t)
-   (car-head-length . 1)
-   (head-is-spec . t)
-   (head-is-spec-with-init-form)
-   (head
-     (z))
-   (var . z)
-   (init-form)
-   (body))
-
-(--pipe--make-args 5);; nothing entered in pipe
-
-'( (consp-head)
-   (car-head)
-   (consp-car-head)
-   (car-head-length)
-   (head-is-spec)
-   (head-is-spec-with-init-form)
-   (head . 5)
-   (var . _)
-   (init-form . 5)
-   (body))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
