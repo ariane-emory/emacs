@@ -188,7 +188,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --valid-pipe-flag-or-nil (kw &optional or-nil)
-  (prn "TESTING %S" test-flag)
+  (prn "TESTING %S" kw)
 
   (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
     (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
@@ -232,8 +232,6 @@
                               (setq ,var value))
                             (unset-flag! ()
                               (set-flag! nil nil)))
-
-                 (flag-is? :IGNORE)
                  (--pipe--print (make-string 80 ?\=))
                  (--pipe--print "START")
                  (--pipe--print (make-string 80 ?\=))
