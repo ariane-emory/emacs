@@ -293,7 +293,7 @@
                              result flag)
                            (unset-flag!))
                          (t 
-                           (setq ,var result)
+                           (store! result)
                            (pipe--print "Updating var to %S." ,var)
                            ))))))))
            (throw 'return
