@@ -233,7 +233,7 @@
                               (unset-flag! ()
                                 (set-flag! nil nil)))
                    (dostack (expr body)
-                     (cl-labels ((ignore-next-and-set-flag! (bool)
+                     (cl-labels ((ignore-next-and-unset-flag! (bool)
                                    (if bool
                                      (let ((next (pop!)))
                                        (pipe--print "Popped 1st %S from %S." next body)
@@ -278,9 +278,9 @@
                                    (pipe--print "Returning due to command: %S" result)
                                    (throw 'return result))
                                  ((flag-is? :UNLESS)
-                                   (ignore-next-and-set-flag! result))
+                                   (ignore-next-and-unset-flag! result))
                                  ((flag-is? :WHEN)
-                                   (ignore-next-and-set-flag! (not result)))
+                                   (ignore-next-and-unset-flag! (not result)))
                                  ((and (flag-is? :MAYBE) result)
                                    (pipe--print
                                      "%s: Updating var to %S and unsetting the %S flag."
