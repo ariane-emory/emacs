@@ -235,6 +235,26 @@
    (body))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq mystack '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+
+(dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
+  (prn x))
+
+(dostack (x '(:over 1 2 3 4 :drop 100 5 :swap 9 8 10 :dup twice))
+  (prn (make-string 80 ?\=))
+  (prn "Processing command: %S" x)
+  (prn "Items remaining:    %S" (stack-len))
+  (prn "Stack remaining:    %S" stack)
+  (cond
+    ((eq :drop x) (pop!))
+    ((eq :dup x)  (dup!))
+    ((eq :over x) (over!))
+    ((eq :rotl x) (rotl!))
+    ((eq :rotr x) (rotr!))
+    ((eq :swap x) (swap!))
+    (t (prn "Item: %s" x))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TEST ARG GEN VERSION:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -304,22 +324,3 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq mystack '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-
-(dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
-  (prn x))
-
-(dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
-  (prn "Processing command: %S" x)
-  (prn "Items remaining:    %S" (stack-len))
-  (prn "Stack remaining:    %S" stack)
-  (cond
-    ((eq :drop x) (pop!))
-    ((eq :dup x)  (dup!))
-    ((eq :over x) (over!))
-    ((eq :rotl x) (rotl!))
-    ((eq :rotr x) (rotr!))
-    ((eq :add x)  (push! 6))
-    ((eq :swap x) (swap!))
-    (t (prn x))))
