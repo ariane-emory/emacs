@@ -226,7 +226,9 @@
                             (t
                               (pipe--print "Setting flag from %S to %S%s." flag new-flag
                                 (if force " (forced)" ""))))
-                          (setq flag new-flag))))
+                          (setq flag new-flag)))
+                      (unset-flag! ()
+                        (set-flag! nil nil)))
            (maprc ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
@@ -242,7 +244,7 @@
                  ((flag-is? :IGNORE)
                    (pipe--print "Ignoring expr %S because %S and unsetting the flag."
                      expr flag)
-                   (set-flag! nil nil))
+                   (unset-flag!))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
                    (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
                      ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
@@ -261,12 +263,12 @@
                          ((flag-is? :RETURN)
                            (pipe--print "Returning: %S" result)
                            (throw 'return result)
-                           (set-flag! nil nil))
+                           (unset-flag!))
                          ((flag-is? :WHEN)
                            (if result
                              (progn
                                (pipe--print "Next command will be processed.")
-                               (set-flag! nil nil))
+                               (unset-flag!))
                              (pipe--print "Next command will be ignored.")
                              (set-flag! :IGNORE t)))
                          ((flag-is? :UNLESS)
@@ -275,7 +277,7 @@
                                (pipe--print "Next command will be ignored.")
                                (set-flag! :IGNORE t))
                              (pipe--print "Next command will be processed.")
-                             (set-flag! nil nil)))
+                             (unset-flag!)))
                          ((flag-is? :MAYBE)
                            (if (not result)
                              (pipe--print "%S: Ignoring %S and unsetting the %S flag."
@@ -283,15 +285,15 @@
                              (pipe--print "%s: Updating var to %S and unsetting the %S flag."
                                flag ,var flag)
                              (setq ,var result))
-                           (set-flag! nil nil))
+                           (unset-flag!))
                          ((flag-is? :NO-SET)
                            (pipe--print "Not setting %S because %S and unsetting the flag."
                              result flag)
-                           (set-flag! nil nil))
+                           (unset-flag!))
                          ;; ((flag-is? :IGNORE)
                          ;;   (pipe--print "Ignoring %S because %S and unsetting the flag."
                          ;;     result flag)
-                         ;;   (set-flag! nil nil))
+                         ;;   (unset-flag!))
                          (t 
                            (setq ,var result)
                            (pipe--print "Updating var to %S and last to %S." ,var result)
