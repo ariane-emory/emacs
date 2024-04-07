@@ -4,6 +4,7 @@
 (require 'aris-funs--aliases)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
+(require 'aris-funs--lists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
