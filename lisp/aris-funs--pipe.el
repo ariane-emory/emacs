@@ -229,7 +229,7 @@
                           (setq flag new-flag)))
                       (unset-flag! ()
                         (set-flag! nil nil))
-                      (ignore-next! (bool)
+                      (ignore-next (bool)
                         (if result
                           (progn
                             (pipe--print "Next command will be processed.")
