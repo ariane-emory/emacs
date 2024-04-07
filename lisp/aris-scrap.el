@@ -114,41 +114,6 @@
     (t (prn "Item: %s" x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TEST ARG GEN VERSION:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(progn
-  (|> 8 :(prn "Hello"))
-  
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
-  (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
-  (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
 
-  (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11) 1)
-  (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :when negative? neg :when (> _ 20) (return 11) 1)
-  (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) (return 99) neg :when negative? neg :when (> _ 20) (return 11) 1)
-
-  ;;;;;;;;;;;
-  (|> ((x)) 5 (+ x 7) double :(prn "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-  (|> ((x)) 5 (+ x 7) :(prn "hello") (+ x 3) (return 99) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-  (|> ((x)) 5 (+ x 7) double :(prn "hello") (+ x 3) (return 99) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-
-  (|> ((x)) 5 (+ x 7) double :(prn "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11) 1)
-  (|> ((x)) 5 (+ x 7) :(prn "hello") (+ x 3) (return 99) neg :when negative? neg :when (> x 20) (return 11) 1)
-  (|> ((x)) 5 (+ x 7) double :(prn "hello") (+ x 3) (return 99) neg :when negative? neg :when (> x 20) (return 11) 1)
-
-  ;;;;;;;;;;;
-  (|> ((x 5)) (+ x 7) double :(prn "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-  (|> ((x 5)) (+ x 7) :(prn "hello") (+ x 3) (return 99) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-  (|> ((x 5)) (+ x 7) double :(prn "hello") (+ x 3) (return 99) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-
-  (|> ((x 5)) (+ x 7) double :(prn "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11) 1)
-  (|> ((x 5)) (+ x 7) :(prn "hello") (+ x 3) (return 99) neg :when negative? neg :when (> x 20) (return 11) 1)
-  (|> ((x 5)) (+ x 7) double :(prn "hello") (+ x 3) (return 99) neg :when negative? neg :when (> x 20) (return 11) 1)
-
-  (prn "Ran all test cases.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  )
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
