@@ -306,10 +306,11 @@
     (signal 'wrong-type-argument (list 'consp spec)))
   (unless (= 2 (length spec))
     (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
-  (let ((sym (car spec)))
-    `(let ((stack ,(nth 1 spec)))
-       (cl-labels ( (pop! () (pop stack))
-                    (push! (val) (push val stack))
+  (let ( (val-sym (car spec))
+         (stack-sym (gensym "stack-")))
+    `(let ((,stack-sym ,(nth 1 spec)))
+       (cl-labels ( (pop! () (pop ,stack-sym))
+                    (push! (val) (push val ,stack-sym))
                     (swap! ()
                       (let* ( (top (pop!))
                               (next (pop!)))
@@ -339,11 +340,9 @@
                         (push! next)
                         (push! top)
                         (push! next))))
-         (while stack
-           (let ((,sym (pop stack)))
-             ,@body
-             ;; (setq stack (cdr stack))
-             ))))))
+         (while ,stack-sym
+           (let ((,val-sym (pop ,stack-sym)))
+             ,@body))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mystack '(1 2 3 4 :drop 100 5 6 7 8 9 10))
@@ -352,6 +351,7 @@
   (prn x))
 
 (dostack (x '(:over 1 2 3 ))
+  (prn "Process %S" x)
   (cond
     ((eq :drop x) (pop!))
     ((eq :dup x)  (dup!))
@@ -361,9 +361,6 @@
     ((eq :add x)  (push! 6))
     ((eq :swap x) (swap!))
     (t (prn x))))
-
-
-
 
 
 
