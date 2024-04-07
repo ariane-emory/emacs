@@ -298,7 +298,9 @@
                (pipe--print (make-string 80 ?\=))
                (pipe--print "Returning:      %S" ,var)
                (pipe--print (make-string 80 ?\=))
-               ,var)))))))
+               ,var)))
+         (prn "LEFT CATCH")
+         ))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
