@@ -309,6 +309,7 @@
 (dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
   (prn "Processing command: %S" x)
   (prn "Items remaining:    %S" (stack-len))
+  (prn "Stack remaining:    %S" stack)
   (cond
     ((eq :drop x) (pop!))
     ((eq :dup x)  (dup!))
@@ -318,4 +319,3 @@
     ((eq :add x)  (push! 6))
     ((eq :swap x) (swap!))
     (t (prn x))))
-
