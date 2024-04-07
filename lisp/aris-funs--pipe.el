@@ -86,7 +86,7 @@
     body
     `(let ( (,var ,init-form)
             (ignore-flag nil))
-       (mapr ',body
+       (maprc ',body
          (lambda (expr)
            (cond
              ((eq : expr)
