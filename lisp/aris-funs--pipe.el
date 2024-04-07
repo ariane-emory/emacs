@@ -31,7 +31,38 @@
   "The default symbol to use for the pipe operator."
   :group 'pipe
   :type 'symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar *--pipe--commands-to-flags*
+  '(
+     (: . :NO-SET)
+     (:? . :MAYBE)
+     (:no-set . :NO-SET)
+     (:maybe . :MAYBE)
+     (:return . :RETURN)
+     (:unless . :UNLESS)
+     (:when . :WHEN)
+     )
+  "An alist mapping commands to flags. This is not meant to be customized.")
+
+(defvar *--pipe-flags* (cl-remove-duplicates (alist-values *--pipe--commands-to-flags*))
+  "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
+
+(defvar *--pipe--arity-1-commands*
+  '(
+     :?
+     :no-set
+     :maybe
+     :return
+     )
+  "Commands that take one argument. This is not meant to be customized.")
+
+(defvar *--pipe--arity-2-commands*
+  '(
+     :unless
+     :when
+     )
+  "Commands that take two arguments. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,65 +74,6 @@
        (funcall *pipe--print-fun* ,first ,@rest)
        nil)))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro pipe (initial &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Older, simple version of `pipe'."
-;;   `(let ((_ ,initial))
-;;      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
-;;      _))
-;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro pipe (init &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Codex's unattractive `pipe'."
-;;   `(let ((_ ,init))
-;;      (dolist (expr ',body)
-;;        (let ((fun `(lambda (_) ,expr)))
-;;          (setq _ (funcall fun _))))
-;;      _))
-;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming.
-(pipe 
-  8
-  (+ 3 it)
-  :(message \"A message! it = %s\" it)
-  (* 2 it)
-  (- it 1))"
-  (let* ( (head-is-spec
-            (and
-              (cons? head)
-              (cons? (car head))
-              (length> (car head) 0)
-              (length< (car head) 3)))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
-          (init-form (when head-is-spec (cadar head)))
-          (body (if head-is-spec tail (cons head tail))))
-    body
-    `(let ( (,var ,init-form)
-            (ignore-flag nil))
-       (maprc ',body
-         (lambda (expr)
-           (cond
-             ((eq : expr)
-               (setq ignore-flag t))
-             (ignore-flag
-               (eval expr)
-               (setq ignore-flag nil))
-             (t
-               (setq ,var (eval expr))
-               (setq ignore-flag nil)))))
-       ,var)))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -135,49 +107,6 @@
                 (body . ,body))))
     alist))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe--arity-1-commands*
-  '(
-     :?
-     :no-set
-     :maybe
-     :return
-     )
-  "Commands that take one argument. This is not meant to be customized.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe--arity-2-commands*
-  '(
-     :unless
-     :when
-     )
-  "Commands that take two arguments. This is not meant to be customized.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe--commands-to-flags*
-  '(
-     (: . :NO-SET)
-     (:? . :MAYBE)
-     (:no-set . :NO-SET)
-     (:maybe . :MAYBE)
-     (:return . :RETURN)
-     (:unless . :UNLESS)
-     (:when . :WHEN)
-     )
-  "An alist mapping commands to flags. This is not meant to be customized.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe-flags* (cl-remove-duplicates (alist-values *--pipe--commands-to-flags*))
-  "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -294,6 +223,66 @@
                        ,var)))))))
        (--pipe--print "Pipe's final return: %S" final)
        final)))
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe (initial &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Older, simple version of `pipe'."
+;;   `(let ((_ ,initial))
+;;      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
+;;      _))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe (init &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Codex's unattractive `pipe'."
+;;   `(let ((_ ,init))
+;;      (dolist (expr ',body)
+;;        (let ((fun `(lambda (_) ,expr)))
+;;          (setq _ (funcall fun _))))
+;;      _))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming.
+(pipe 
+  8
+  (+ 3 it)
+  :(message \"A message! it = %s\" it)
+  (* 2 it)
+  (- it 1))"
+  (let* ( (head-is-spec
+            (and
+              (cons? head)
+              (cons? (car head))
+              (length> (car head) 0)
+              (length< (car head) 3)))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    body
+    `(let ( (,var ,init-form)
+            (ignore-flag nil))
+       (maprc ',body
+         (lambda (expr)
+           (cond
+             ((eq : expr)
+               (setq ignore-flag t))
+             (ignore-flag
+               (eval expr)
+               (setq ignore-flag nil))
+             (t
+               (setq ,var (eval expr))
+               (setq ignore-flag nil)))))
+       ,var)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--pipe)
