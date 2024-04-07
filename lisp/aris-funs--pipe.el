@@ -204,7 +204,8 @@
   (let* ( (args      (eval `(--pipe-args ,head ,@tail)))
           (var       (alist-get 'var  args))
           (body      (alist-get 'body args)))
-    `(let ( (,var nil)
+    `(let ( (body ',body)
+            (,var nil)
             (flag nil))
        (pipe--print (make-string 80 ?\=))
        (pipe--print "START")
@@ -273,20 +274,9 @@
                            (pipe--print "Returning due to command: %S" result)
                            (throw 'return result))
                          ((flag-is? :WHEN)
-                           (if result
-                             (progn
-                               (pipe--print "Next command will be processed.")
-                               (unset-flag!))
-                             (progn
-                               (pipe--print "Next command will be ignored.")
-                               (set-flag! :IGNORE t))))
+                           (ignore-next t))
                          ((flag-is? :UNLESS)
-                           (if result
-                             (progn
-                               (pipe--print "Next command will be ignored.")
-                               (set-flag! :IGNORE t))
-                             (progn (pipe--print "Next command will be processed.")
-                               (unset-flag!))))
+                           (ignore-next nil))
                          ((and (flag-is? :MAYBE) result)
                            (pipe--print
                              "%s: Updating var to %S and unsetting the %S flag."
