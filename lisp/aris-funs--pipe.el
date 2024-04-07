@@ -439,9 +439,9 @@
       (|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) :(when (< e 40) 1) (+ y e)))
     returns -61)
 
-  (confirm that (|> (+ 3 4) (* _ 3)) returns 21)
-  (confirm that (|> ((e)) (+ 3 4) (* e 3)) returns 21)
-  (confirm that (|> ((e (+ 3 4))) (* e 3)) returns 21)
+  (confirm that (|> (+ 3 4) (* _ 5)) returns 35)
+  (confirm that (|> ((e)) (+ 3 4) (* e 5)) returns 35)
+  (confirm that (|> ((e (+ 3 4))) (* e 5)) returns 35)
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pipe--run-tests)
