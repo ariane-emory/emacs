@@ -304,7 +304,10 @@
   `(let ((stk ,stack))
      (cl-flet ( (pop! () (pop stk))
                 (push! (val) (push val stk))
-                )
+                (dup! ()
+                  (let ((val (pop stk)))
+                    (push val stk)
+                    (push val stk))))
        (while stk
          (funcall ,fun (pop!))))))
 
@@ -313,11 +316,14 @@
 (setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
 ;; again
-(stackmaprc '(1 2 3 4 :drop 100 5 6 7 8 9 10)
+(stackmaprc '(1 2 3 4 :drop 100 5 :add :dup 7 :rot 9 8 10)
   (lambda (x)
-    (if (eq :drop x)
-      (pop!)
-      (prn x))))
+    (cond
+      ((eq :drop x) (pop!))
+      ((eq :dup x) (dup!))
+      ((eq :add x) (push! 6))
+      (t (prn x)))))
+
 
 
 
