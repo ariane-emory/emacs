@@ -324,6 +324,11 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
+(confirm that (|> 1) returns 1)
+(confirm that (|> 1 2) returns 2)
+(confirm that (|> 1 2 3) returns 3)
+(confirm that (|> :return 1 2 3) returns 1)
+(confirm that (|> 1 :return 2 3) returns 2)
+(confirm that (|> 1 2 :return 3) returns 3)
 
 (confirm that 1 returns 2)
