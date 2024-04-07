@@ -242,67 +242,55 @@
                      (--pipe--print "Remaining:           %S" stack)
                      (--pipe--print "Var:                 %S" ,var)
                      (--pipe--print "Flag:                %S" flag)
-                     (cond
-                       ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-2-commands*))
-                         (error
-                           "Ignoring the arity-2 commands like %S because %S is not yet supported."
-                           expr flag))
-                       ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-1-commands*))
-                         (--pipe--print "Do nothing for expr %S because %S." expr flag))
-                       ((flag-is? :IGNORE)
-                         (--pipe--print "Ignoring expr %S because %S and unsetting the flag."
-                           expr flag)
-                         (unset-flag!))
-                       ((--is-pipe-command? expr)
-                         (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
-                           (set-flag! new-flag nil)))
-                       (t
-                         (cl-flet ( (ignore-next-and-unset-flag! (bool)
-                                      (if bool
-                                        (let ((next (pop!)))
-                                          (--pipe--print "Popped 1st %S from %S." next body)
-                                          (when (memq next *--pipe--arity-2-commands*)
-                                            (error
-                                              "Ignoring the %S command is not yet supported." next))
-                                          (when (memq next *--pipe--arity-1-commands*)
-                                            ;; pop the unary command's argument:
-                                            (--pipe--print "Popped 1st %S from %S." (pop!) body)) 
-                                          (unset-flag!))
-                                        (--pipe--print "Next command will be processed."))
-                                      (unset-flag!))
-                                    (expr-fun
-                                      `(lambda (expr ,',var)
-                                         (cl-flet ((return (value) (throw 'return value)))
-                                           (--pipe--print "Evaluating expr:     %S." expr)
-                                           ,expr))))
-                           (let ((result (if (fun? expr)
-                                           (eval (list expr ',var)) ;; unsure about this quote.
-                                           (expr-fun expr ,var))))
-                             (--pipe--print "Expr result:         %S" result)
-                             (cond
-                               ((flag-is? :RETURN)
-                                 (--pipe--print "Returning due to command: %S" result)
-                                 (throw 'return result))
-                               ((flag-is? :UNLESS)
-                                 (ignore-next-and-unset-flag! result))
-                               ((flag-is? :WHEN)
-                                 (ignore-next-and-unset-flag! (not result)))
-                               ((and (flag-is? :MAYBE) result)
-                                 (--pipe--print "%s: Updating var to %S and unsetting the %S flag."
-                                   flag ,var flag)
-                                 (store! result)
-                                 (unset-flag!))
-                               ((and (flag-is? :MAYBE) (not result))
-                                 (--pipe--print "%S: Ignoring %S and unsetting the %S flag."
-                                   flag result flag)
-                                 (unset-flag!))
-                               ((flag-is? :NO-SET)
-                                 (--pipe--print "Not setting %S because %S and unsetting the flag."
-                                   result flag)
-                                 (unset-flag!))
-                               (t 
-                                 (store! result)
-                                 (--pipe--print "Updating var to %S." ,var))))))))
+                     (if (--is-pipe-command? expr)
+                       (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
+                         (set-flag! new-flag nil))
+                       (cl-flet ( (ignore-next-and-unset-flag! (bool)
+                                    (if bool
+                                      (let ((next (pop!)))
+                                        (--pipe--print "Popped 1st %S from %S." next body)
+                                        (when (memq next *--pipe--arity-2-commands*)
+                                          (error
+                                            "Ignoring the %S command is not yet supported." next))
+                                        (when (memq next *--pipe--arity-1-commands*)
+                                          ;; pop the unary command's argument:
+                                          (--pipe--print "Popped 1st %S from %S." (pop!) body)) 
+                                        (unset-flag!))
+                                      (--pipe--print "Next command will be processed."))
+                                    (unset-flag!))
+                                  (expr-fun
+                                    `(lambda (expr ,',var)
+                                       (cl-flet ((return (value) (throw 'return value)))
+                                         (--pipe--print "Evaluating expr:     %S." expr)
+                                         ,expr))))
+                         (let ((result (if (fun? expr)
+                                         (eval (list expr ',var)) ;; unsure about this quote.
+                                         (expr-fun expr ,var))))
+                           (--pipe--print "Expr result:         %S" result)
+                           (cond
+                             ((flag-is? :RETURN)
+                               (--pipe--print "Returning due to command: %S" result)
+                               (throw 'return result))
+                             ((flag-is? :UNLESS)
+                               (ignore-next-and-unset-flag! result))
+                             ((flag-is? :WHEN)
+                               (ignore-next-and-unset-flag! (not result)))
+                             ((and (flag-is? :MAYBE) result)
+                               (--pipe--print "%s: Updating var to %S and unsetting the %S flag."
+                                 flag ,var flag)
+                               (store! result)
+                               (unset-flag!))
+                             ((and (flag-is? :MAYBE) (not result))
+                               (--pipe--print "%S: Ignoring %S and unsetting the %S flag."
+                                 flag result flag)
+                               (unset-flag!))
+                             ((flag-is? :NO-SET)
+                               (--pipe--print "Not setting %S because %S and unsetting the flag."
+                                 result flag)
+                               (unset-flag!))
+                             (t 
+                               (store! result)
+                               (--pipe--print "Updating var to %S." ,var)))))))
                    ;; For clarity, explicitly throw the return value if we run out of stack items:
                    (throw 'return
                      (progn
