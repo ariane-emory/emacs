@@ -282,8 +282,7 @@
                                  ((flag-is? :WHEN)
                                    (ignore-next-and-unset-flag! (not result)))
                                  ((and (flag-is? :MAYBE) result)
-                                   (pipe--print
-                                     "%s: Updating var to %S and unsetting the %S flag."
+                                   (pipe--print "%s: Updating var to %S and unsetting the %S flag."
                                      flag ,var flag)
                                    (store! result)
                                    (unset-flag!))
