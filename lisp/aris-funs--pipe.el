@@ -261,9 +261,8 @@
                                       (expr-fun expr ,var))))
                        (cond
                          ((flag-is? :RETURN)
-                           (pipe--print "Returning: %S" result)
-                           (throw 'return result)
-                           (unset-flag!))
+                           (pipe--print "Returning due to command: %S" result)
+                           (throw 'return result))
                          ((flag-is? :WHEN)
                            (if result
                              (progn
