@@ -300,55 +300,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun stackmaprc (stack fun)
-  "Map FUN over the elements of STACK, discarding the rresults, using a stack-based
-approach and a reversd parameter order."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (while stack
-    (funcall fun (pop stack))))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; yes
-(progn
-  (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-  (stackmaprc stk
-    (lambda (x)
-      (if (eq :drop x)
-        (pop stack)
-        (prn x)))))
-
-;; no
-(progn
-  (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-  (stackmaprc stk
-    (lambda (x)
-      (if (eq :drop x)
-        (pop stk)
-        (prn x)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defmacro stackmaprc (stack fun)
   `(let ((stk ,stack))
-     (cl-flet ((pop! () (pop stk)))
+     (cl-flet ( (pop! () (pop stk))
+                (push! (val) (push val stk))
+                )
        (while stk
          (funcall ,fun (pop!))))))
 
 
-(setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-(stackmaprc mystk #'prn)
-(stackmapc #'prn mystk)
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; print 1 through 10
-(stackmaprc mystk
-  (lambda (x)
-    (if (eq :drop x)
-      (pop!)
-      (prn x))))
+(setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
 ;; again
 (stackmaprc '(1 2 3 4 :drop 100 5 6 7 8 9 10)
@@ -356,4 +318,6 @@ approach and a reversd parameter order."
     (if (eq :drop x)
       (pop!)
       (prn x))))
+
+
 
