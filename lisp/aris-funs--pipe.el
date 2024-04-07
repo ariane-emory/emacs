@@ -5,6 +5,7 @@
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
 (require 'aris-funs--lists)
+(require 'aris-funs--stacks)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

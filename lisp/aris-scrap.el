@@ -6,6 +6,7 @@
 (require 'aris-funs--error-when-and-error-unless)
 (require 'aris-funs--lists)
 (require 'aris-funs--pattern-dispatch)
+(require 'aris-funs--stacks)
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -299,59 +300,15 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dostack (spec &rest body)
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (= 2 (length spec))
-    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
-  (let ( (val-sym (car spec))
-         (stack-sym (gensym "stack-")))
-    `(let ((,stack-sym ,(nth 1 spec)))
-       (cl-labels ( (pop! () (pop ,stack-sym))
-                    (push! (val) (push val ,stack-sym))
-                    (swap! ()
-                      (let* ( (top (pop!))
-                              (next (pop!)))
-                        (push! top)
-                        (push! next)))
-                    (dup! ()
-                      (let ((val (pop!)))
-                        (push! val)
-                        (push! val)))
-                    (rotl! ()
-                      (let* ( (top  (pop!))
-                              (next (pop!))
-                              (far  (pop!)))
-                        (push! top)
-                        (push! far)
-                        (push! next)))
-                    (rotr! ()
-                      (let* ( (top  (pop!))
-                              (next (pop!))
-                              (far  (pop!)))
-                        (push! next)
-                        (push! top)
-                        (push! far)))
-                    (over! ()
-                      (let* ( (top  (pop!))
-                              (next (pop!)))
-                        (push! next)
-                        (push! top)
-                        (push! next))))
-         (while ,stack-sym
-           (let ((,val-sym (pop ,stack-sym)))
-             ,@body))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mystack '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
 (dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
   (prn x))
 
-(dostack (x '(:over 1 2 3 ))
-  (prn "Process %S" x)
+(dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
+  (prn "Processing command: %S" x)
+  (prn "Items remaining:    %S" (stack-len))
   (cond
     ((eq :drop x) (pop!))
     ((eq :dup x)  (dup!))
@@ -361,6 +318,4 @@
     ((eq :add x)  (push! 6))
     ((eq :swap x) (swap!))
     (t (prn x))))
-
-
 

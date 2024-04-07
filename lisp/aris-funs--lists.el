@@ -244,62 +244,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun stackmapc (fun stack)
-  "Map FUN over the elements of STACK using a stack-based approach, discarding the
-rresults."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (stackmaprc stack fun))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro stackmaprc (stack fun)
-  "Map FUN over the elements of STACK using a stack-based approach, discarding the
-rresults with a reversed parameter order compared to `stackmapc'."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let ((stk ,stack))
-     (cl-labels ( (pop! () (pop stk))
-                  (push! (val) (push val stk))
-                  (swap! ()
-                    (let* ( (top (pop!))
-                            (next (pop!)))
-                      (push! top)
-                      (push! next)))
-                  (dup! ()
-                    (let ((val (pop!)))
-                      (push! val)
-                      (push! val)))
-                  (rotl! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!))
-                            (far  (pop!)))
-                      (push! top)
-                      (push! far)
-                      (push! next)))
-                  (rotr! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!))
-                            (far  (pop!)))
-                      (push! next)
-                      (push! top)
-                      (push! far)))
-                  (over! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!)))
-                      (push! next)
-                      (push! top)
-                      (push! next))))
-       (while stk
-         (funcall ,fun (pop!)))))
-  ;; `(let ((stk ,stack))
-  ;;    (cl-flet ((pop! () (pop stk)))
-  ;;      (while stk
-  ;;        (funcall ,fun (pop!)))))
-  )
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Old functions using dash. These are a bit stale, some of them should probably be
 ;; renamed, updated or discarded:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
