@@ -228,10 +228,19 @@
                                 (if force " (forced)" ""))))
                           (setq flag new-flag)))
                       (unset-flag! ()
-                        (set-flag! nil nil)))
+                        (set-flag! nil nil))
+                      (ignore-next! (bool)
+                        (if result
+                          (progn
+                            (pipe--print "Next command will be processed.")
+                            (unset-flag!))
+                          (progn
+                            (pipe--print "Next command will be ignored.")
+                            (set-flag! :IGNORE t)))))
            (maprc ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
+               (pipe--print "Body:           %S" body)
                (pipe--print "Expr:           %S" expr)
                (pipe--print "Var:            %S" ,var)
                (pipe--print "Flag:           %S" flag)
@@ -268,15 +277,16 @@
                              (progn
                                (pipe--print "Next command will be processed.")
                                (unset-flag!))
-                             (pipe--print "Next command will be ignored.")
-                             (set-flag! :IGNORE t)))
+                             (progn
+                               (pipe--print "Next command will be ignored.")
+                               (set-flag! :IGNORE t))))
                          ((flag-is? :UNLESS)
                            (if result
                              (progn
                                (pipe--print "Next command will be ignored.")
                                (set-flag! :IGNORE t))
-                             (pipe--print "Next command will be processed.")
-                             (unset-flag!)))
+                             (progn (pipe--print "Next command will be processed.")
+                               (unset-flag!))))
                          ((and (flag-is? :MAYBE) result)
                            (pipe--print
                              "%s: Updating var to %S and unsetting the %S flag."
