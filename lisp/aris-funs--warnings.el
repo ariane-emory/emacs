@@ -5,9 +5,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro warn-unless-equal (expr val &optional msg)
+(defmacro warn-unless-equal-to (val expr &optional msg)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Warn unless EXPR is equal to VAL"
+  "Warn unless EXPR evaluates to VAL"
   `(let ((result ,expr))
      (unless (equal result ,val)
        (if ,msg

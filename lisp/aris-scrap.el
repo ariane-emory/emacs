@@ -323,12 +323,11 @@
   )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(warn-unless-equal-to 5 (+ 2 3))
+(warn-unless-equal-to 7 (+ 2 3))
 
-(warn-unless-equal (+ 2 3) 5)
-(warn-unless-equal (+ 2 3) 7)
-
-(warn-unless-equal (+ 2 3) 5 "math is broken")
-(warn-unless-equal (+ 2 3) 7 "math is broken")
+(warn-unless-equal-to 5 (+ 2 3) "math is broken")
+(warn-unless-equal-to 7 (+ 2 3) "math is broken")
 
 (warn-unless t)
 (warn-unless (or nil nil))
