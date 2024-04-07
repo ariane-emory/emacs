@@ -311,11 +311,33 @@ approach and a reversd parameter order."
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+(progn
+  (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+  (stackmaprc stk
+    (lambda (x)
+      (if (eq :drop x)
+        (pop stack)
+        (prn x)))))
 
-(stackmaprc stk
-  (lambda (x)
-    (if (eq :drop x)
-      (pop stack)
-      (prn x))))
 
+(progn
+  (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+  (stackmaprc stk
+    (lambda (x)
+      (if (eq :drop x)
+        (pop stk)
+        (prn x)))))
+
+(progn
+  (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+  (let ((stk stk))
+    (cl-labels
+      ((drop-next nil
+         (pop stack)))
+      (stackmaprc stk
+        (lambda
+          (x)
+          (if
+            (eq :drop x)
+            (drop-next)
+            (prn x)))))))
