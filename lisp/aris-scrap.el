@@ -104,10 +104,10 @@
 meant for use in unit tests."
   (let (out)
     (dostack (x stack)
-      (prn (make-string 80 ?\=))
-      (prn "Processing command: %S" x)
-      (prn "Items remaining:    %S" (stack-len))
-      (prn "Stack remaining:    %S" stack)
+      ;;(prn (make-string 80 ?\=))
+      ;;(prn "Processing command: %S" x)
+      ;;(prn "Items remaining:    %S" (stack-len))
+      ;;(prn "Stack remaining:    %S" stack)
       (cond
         ((eq :drop x) (pop!))
         ((eq :dup x)  (dup!))
@@ -116,7 +116,8 @@ meant for use in unit tests."
         ((eq :rotr x) (rotr!))
         ((eq :swap x) (swap!))
         (t (setq out (cons x out)))))
-    (prn "Out: %S" out)))
+    ;; (prn "Out: %S" out)
+    ))
 
 (mini-forth '(1 2 :over 3)) ;; this should signal!
 
@@ -141,6 +142,8 @@ meant for use in unit tests."
 (mini-forth '(3 :swap 2 1))
 
 (mini-forth '(:over 1 :rotl 2 3 4 :drop 100 5 :swap 9 :rotr 8 10 :dup twice))
+
+(mini-forth '(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
