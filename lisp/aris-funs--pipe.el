@@ -210,14 +210,23 @@
        (pipe--print "START")
        (pipe--print (make-string 80 ?\=))
        (catch 'return
-         (cl-flet ((set-flag (new-flag force)
-                     (when (and flag new-flag (not force))
-                       (error "Cannot set flag to %S when flag is already set to %S."
-                         new-flag flag))
-                     (if force
-                       (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
-                       (pipe--print "Setting flag from %S to %S%s." flag new-flag (if force " (forced)" "")))
-                     (setq flag new-flag)))
+         (cl-labels ( (flag-is? (test-flag) 
+                        (eq flag (--valid-pipe-flag test-flag)))
+                      (store! (value)
+                        (setq ,var value))
+                      (set-flag! (new-flag force)
+                        (let ((new-flag (--valid-pipe-flag new-flag t)))
+                          (cond
+                            ((and flag new-flag (not force))
+                              (error "Cannot set flag to %S when flag is already set to %S."
+                                new-flag flag))
+                            (force
+                              (pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                              (setq flag new-flag))
+                            (t
+                              (pipe--print "Setting flag from %S to %S%s." flag new-flag
+                                (if force " (forced)" ""))))
+                          (setq flag new-flag))))
            (maprc ',body
              (lambda (expr)
                (pipe--print (make-string 80 ?\=))
@@ -225,20 +234,20 @@
                (pipe--print "Var:            %S" ,var)
                (pipe--print "Flag:           %S" flag)
                (cond
-                 ((and (eq flag :IGNORE) (memq expr *--pipe--arity-2-commands*))
+                 ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-2-commands*))
                    (error "Ignoring the %S command because %S is not yet supported."
                      expr flag))
-                 ((and (eq flag :IGNORE) (memq expr *--pipe--arity-1-commands*))
+                 ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-1-commands*))
                    (pipe--print "Do nothing for expr %S because %S." expr flag))
-                 ((eq flag :IGNORE)
+                 ((flag-is? :IGNORE)
                    (pipe--print "Ignoring expr %S because %S and unsetting the flag."
                      expr flag)
-                   (set-flag nil nil))
+                   (set-flag! nil nil))
                  ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
                    (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
                      ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
                      ;;   flag new-flag expr)
-                     (set-flag new-flag nil)))
+                     (set-flag! new-flag nil)))
                  (t
                    (cl-flet ((expr-fun
                                `(lambda (expr ,',var)
@@ -249,40 +258,40 @@
                                       (eval (list expr ',var)) ;; unsure about this quote.
                                       (expr-fun expr ,var))))
                        (cond
-                         ((eq flag :RETURN)
+                         ((flag-is? :RETURN)
                            (pipe--print "Returning: %S" result)
                            (throw 'return result)
-                           (set-flag nil nil))
-                         ((eq flag :WHEN)
+                           (set-flag! nil nil))
+                         ((flag-is? :WHEN)
                            (if result
                              (progn
                                (pipe--print "Next command will be processed.")
-                               (set-flag nil nil))
+                               (set-flag! nil nil))
                              (pipe--print "Next command will be ignored.")
-                             (set-flag :IGNORE t)))
-                         ((eq flag :UNLESS)
+                             (set-flag! :IGNORE t)))
+                         ((flag-is? :UNLESS)
                            (if result
                              (progn
                                (pipe--print "Next command will be ignored.")
-                               (set-flag :IGNORE t))
+                               (set-flag! :IGNORE t))
                              (pipe--print "Next command will be processed.")
-                             (set-flag nil nil)))
-                         ((eq flag :MAYBE)
+                             (set-flag! nil nil)))
+                         ((flag-is? :MAYBE)
                            (if (not result)
                              (pipe--print "%S: Ignoring %S and unsetting the %S flag."
                                flag result flag)
                              (pipe--print "%s: Updating var to %S and unsetting the %S flag."
                                flag ,var flag)
                              (setq ,var result))
-                           (set-flag nil nil))
-                         ((eq flag :NO-SET)
+                           (set-flag! nil nil))
+                         ((flag-is? :NO-SET)
                            (pipe--print "Not setting %S because %S and unsetting the flag."
                              result flag)
-                           (set-flag nil nil))
-                         ;; ((eq flag :IGNORE)
+                           (set-flag! nil nil))
+                         ;; ((flag-is? :IGNORE)
                          ;;   (pipe--print "Ignoring %S because %S and unsetting the flag."
                          ;;     result flag)
-                         ;;   (set-flag nil nil))
+                         ;;   (set-flag! nil nil))
                          (t 
                            (setq ,var result)
                            (pipe--print "Updating var to %S and last to %S." ,var result)
