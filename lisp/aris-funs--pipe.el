@@ -10,6 +10,65 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe (initial &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Older, simple version of `pipe'."
+;;   `(let ((_ ,initial))
+;;      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
+;;      _))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro pipe (init &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Codex's unattractive `pipe'."
+;;   `(let ((_ ,init))
+;;      (dolist (expr ',body)
+;;        (let ((fun `(lambda (_) ,expr)))
+;;          (setq _ (funcall fun _))))
+;;      _))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro pipe (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming.
+(pipe 
+  8
+  (+ 3 it)
+  :(message \"A message! it = %s\" it)
+  (* 2 it)
+  (- it 1))"
+  (let* ( (head-is-spec
+            (and
+              (cons? head)
+              (cons? (car head))
+              (length> (car head) 0)
+              (length< (car head) 3)))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
+          (init-form (when head-is-spec (cadar head)))
+          (body (if head-is-spec tail (cons head tail))))
+    body
+    `(let ( (,var ,init-form)
+            (ignore-flag nil))
+       (maprc ',body
+         (lambda (expr)
+           (cond
+             ((eq : expr)
+               (setq ignore-flag t))
+             (ignore-flag
+               (eval expr)
+               (setq ignore-flag nil))
+             (t
+               (setq ,var (eval expr))
+               (setq ignore-flag nil)))))
+       ,var)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup pipe nil
   "Elixir-style pipe operator.")
@@ -219,65 +278,6 @@
                        ,var)))))))
        (--pipe--print "Pipe's final return: %S" final)
        final)))
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro pipe (initial &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Older, simple version of `pipe'."
-;;   `(let ((_ ,initial))
-;;      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
-;;      _))
-;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro pipe (init &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Codex's unattractive `pipe'."
-;;   `(let ((_ ,init))
-;;      (dolist (expr ',body)
-;;        (let ((fun `(lambda (_) ,expr)))
-;;          (setq _ (funcall fun _))))
-;;      _))
-;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming.
-(pipe 
-  8
-  (+ 3 it)
-  :(message \"A message! it = %s\" it)
-  (* 2 it)
-  (- it 1))"
-  (let* ( (head-is-spec
-            (and
-              (cons? head)
-              (cons? (car head))
-              (length> (car head) 0)
-              (length< (car head) 3)))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
-          (init-form (when head-is-spec (cadar head)))
-          (body (if head-is-spec tail (cons head tail))))
-    body
-    `(let ( (,var ,init-form)
-            (ignore-flag nil))
-       (maprc ',body
-         (lambda (expr)
-           (cond
-             ((eq : expr)
-               (setq ignore-flag t))
-             (ignore-flag
-               (eval expr)
-               (setq ignore-flag nil))
-             (t
-               (setq ,var (eval expr))
-               (setq ignore-flag nil)))))
-       ,var)))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
