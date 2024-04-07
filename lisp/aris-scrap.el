@@ -341,6 +341,13 @@
 (confirm that (|> 1 :when odd? (return 100)) returns 100)
 (confirm that (|> 2 :when odd? (return 100)) returns 2)
 
+(confirm that (|> 2 :unless odd? 100) returns 100)
+(confirm that (|> 1 :unless odd? 100) returns 1)
+(confirm that (|> 2 :unless odd? :return 100) returns 100)
+(confirm that (|> 1 :unless odd? :return 100) returns 1)
+(confirm that (|> 2 :unless odd? (return 100)) returns 100)
+(confirm that (|> 1 :unless odd? (return 100)) returns 1)
+
 (confirm that (|> 1) returns 1)
 (confirm that (|> 1) returns 1)
 (confirm that (|> 1) returns 1)
