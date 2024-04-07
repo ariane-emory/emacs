@@ -310,7 +310,7 @@ approach and a reversd parameter order."
     (funcall fun (pop stack))))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;; yes
 (progn
   (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
   (stackmaprc stk
@@ -319,7 +319,7 @@ approach and a reversd parameter order."
         (pop stack)
         (prn x)))))
 
-
+;; no
 (progn
   (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
   (stackmaprc stk
@@ -328,16 +328,44 @@ approach and a reversd parameter order."
         (pop stk)
         (prn x)))))
 
-(progn
-  (setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-  (let ((stk stk))
-    (cl-labels
-      ((drop-next nil
-         (pop stack)))
-      (stackmaprc stk
-        (lambda
-          (x)
-          (if
-            (eq :drop x)
-            (drop-next)
-            (prn x)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+
+(defmacro stackmaprc (stack fun)
+  `(let ((,stack ,stack))
+     (while ,stack
+       (funcall ,fun (pop ,stack)))))
+
+(stackmaprc stk
+  (lambda (x)
+    (if (eq :drop x)
+      (pop stk)
+      (prn x))))
+
+(stackmaprc '(1 2 3 4 :drop 100 5 6 7 8 9 10)
+  (lambda (x)
+    (if (eq :drop x)
+      (pop stk)
+      (prn x))))
+
+(let
+  (('(1 2 3 4 :drop 100 5 6 7 8 9 10)
+     '(1 2 3 4 :drop 100 5 6 7 8 9 10)))
+  (while
+    '(1 2 3 4 :drop 100 5 6 7 8 9 10)
+    (funcall
+      (lambda
+        (x)
+        (if
+          (eq :drop x)
+          (pop stk)
+          (prn x)))
+      (pop
+        '(1 2 3 4 :drop 100 5 6 7 8 9 10)))))
+
+
+
+
+
+
