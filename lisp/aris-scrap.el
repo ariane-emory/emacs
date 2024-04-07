@@ -326,8 +326,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro warn-unless-eq (expr val &optional msg)
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro warn-unless-equal (expr val &optional msg)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Warn unless EXPR is equal to VAL"
   `(let ((result ,expr))
      (unless (equal result ,val)
@@ -336,8 +336,22 @@
          (warn "ARI's WARNING: %S != %S" ,expr ,val)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(warn-unless-eq (+ 2 3) 5)
-(warn-unless-eq (+ 2 3) 7)
+(warn-unless-equal (+ 2 3) 5)
+(warn-unless-equal (+ 2 3) 7)
 
-(warn-unless-eq (+ 2 3) 5 "math is broken")
-(warn-unless-eq (+ 2 3) 7 "math is broken")
+(warn-unless-equal (+ 2 3) 5 "math is broken")
+(warn-unless-equal (+ 2 3) 7 "math is broken")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro warn-unless (expr &optional msg)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Warn unless EXPR evaluates to a non-nil value."
+  `(unless ,expr
+     (if ,msg
+       (warn "ARI's WARNING, %s: %S is nil" ',expr ,msg)
+       (warn "ARI's WARNING: %S is nil" ',expr))))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(warn-unless t)
+(warn-unless (or nil nil))
