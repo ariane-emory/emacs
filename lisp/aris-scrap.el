@@ -332,15 +332,9 @@
   `(let ((result ,expr))
      (unless (equal result ,val)
        (if ,msg
-         (warn "ARI'S WARNING, %s: %S != %S" ,msg ,expr ,val)
-         (warn "ARI's WARNING: %S != %S" ,expr ,val)))))
+         (warn "ARI'S WARNING: %s, %S != %S" ,msg ',expr ,val)
+         (warn "ARI's WARNING: %S != %S" ',expr ,val)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(warn-unless-equal (+ 2 3) 5)
-(warn-unless-equal (+ 2 3) 7)
-
-(warn-unless-equal (+ 2 3) 5 "math is broken")
-(warn-unless-equal (+ 2 3) 7 "math is broken")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -349,9 +343,15 @@
   "Warn unless EXPR evaluates to a non-nil value."
   `(unless ,expr
      (if ,msg
-       (warn "ARI's WARNING, %s: %S is nil" ',expr ,msg)
+       (warn "ARI's WARNING: %s, %S is nil" ',expr ,msg)
        (warn "ARI's WARNING: %S is nil" ',expr))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(warn-unless-equal (+ 2 3) 5)
+(warn-unless-equal (+ 2 3) 7)
+
+(warn-unless-equal (+ 2 3) 5 "math is broken")
+(warn-unless-equal (+ 2 3) 7 "math is broken")
 
 (warn-unless t)
 (warn-unless (or nil nil))
