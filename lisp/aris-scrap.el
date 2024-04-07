@@ -299,45 +299,6 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro stackmaprc (stack fun)
-  `(let ((stk ,stack))
-     (cl-labels ( (pop! () (pop stk))
-                  (push! (val) (push val stk))
-                  (swap! ()
-                    (let* ( (top (pop!))
-                            (next (pop!)))
-                      (push! top)
-                      (push! next)))
-                  (dup! ()
-                    (let ((val (pop!)))
-                      (push! val)
-                      (push! val)))
-                  (rotl! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!))
-                            (far  (pop!)))
-                      (push! top)
-                      (push! far)
-                      (push! next)))
-                  (rotr! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!))
-                            (far  (pop!)))
-                      (push! next)
-                      (push! top)
-                      (push! far)))
-                  (over! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!)))
-                      (push! next)
-                      (push! top)
-                      (push! next))))
-       (while stk
-         (funcall ,fun (pop!))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dostack (spec &rest body)
