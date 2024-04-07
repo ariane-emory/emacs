@@ -176,9 +176,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *--pipe-flags*
   '(
-     ;; :IGNORE is the only flag thas is not explicitly set by a command (it may be set as
-     ;; a consequence of :when and :unless commands instead) and that is handled outside
-     ;; the t case of the outer cond.
      :MAYBE
      :NO-SET
      :RETURN
@@ -191,9 +188,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --valid-pipe-flag-or-nil (kw &optional or-nil)
+  (prn "TESTING %S" test-flag)
+
   (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
     (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
   kw)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --is-pipe-command? (kw) 
+  (and (keyword? expr) (assoc expr *--pipe--commands-to-flags*)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -208,8 +213,8 @@
              (let ( (body ,body)
                     (,var nil)
                     (flag nil))
-               (cl-labels ((flag-is? (test-flag) 
-                             (eq flag (--valid-pipe-flag-or-nil test-flag)))
+               (cl-labels ( (flag-is? (test-flag)
+                              (eq flag (--valid-pipe-flag-or-nil test-flag)))
                             (set-flag! (new-flag force)
                               (let ((new-flag (--valid-pipe-flag-or-nil new-flag t)))
                                 (cond
@@ -227,6 +232,8 @@
                               (setq ,var value))
                             (unset-flag! ()
                               (set-flag! nil nil)))
+
+                 (flag-is? :IGNORE)
                  (--pipe--print (make-string 80 ?\=))
                  (--pipe--print "START")
                  (--pipe--print (make-string 80 ?\=))
@@ -248,7 +255,7 @@
                          (--pipe--print "Ignoring expr %S because %S and unsetting the flag."
                            expr flag)
                          (unset-flag!))
-                       ((and (keyword? expr) (assoc expr *--pipe--commands-to-flags*))
+                       ((--is-pipe-command? expr)
                          (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
                            (set-flag! new-flag nil)))
                        (t
