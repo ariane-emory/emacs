@@ -296,7 +296,7 @@
                          ;;   (unset-flag!))
                          (t 
                            (setq ,var result)
-                           (pipe--print "Updating var to %S and last to %S." ,var result)
+                           (pipe--print "Updating var to %S." ,var)
                            ))))))))
            (throw 'return
              (progn
