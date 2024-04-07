@@ -336,32 +336,39 @@
        (while stk
          (funcall ,fun (pop!))))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dostack (spec &rest body)
+  (unless (consp spec)
+    (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (<= 2 (length spec) 3)
+    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
+  ;; (let ((tail 'tail))
+  `(let ((tail ,(nth 1 spec)))
+     (while tail
+       (let ((,(car spec) (car tail)))
+         ,@body
+         (setq tail (cdr tail))))
+     ,@(cdr (cdr spec)))) ;; )
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
-(stackmaprc '(:over 1 2 3) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
-  (lambda (x)
-    (cond
-      ((eq :drop x) (pop!))
-      ((eq :dup x)  (dup!))
-      ((eq :over x) (over!))
-      ((eq :rotl x) (rotl!))
-      ((eq :rotr x) (rotr!))
-      ((eq :add x)  (push! 6))
-      ((eq :swap x) (swap!))
-      (t (prn x)))))
+(dostack (x '(:over 1 2 3)) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
+  (cond
+    ;; ((eq :drop x) (pop!))
+    ;; ((eq :dup x)  (dup!))
+    ;; ((eq :over x) (over!))
+    ;; ((eq :rotl x) (rotl!))
+    ;; ((eq :rotr x) (rotr!))
+    ;; ((eq :add x)  (push! 6))
+    ;; ((eq :swap x) (swap!))
+    (t (prn x))))
 
-;; (stackmaprc '(:rotl 1 2 3) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
-;;   (lambda (x)
-;;     (cond
-;;       ((eq :drop x) (pop!))
-;;       ((eq :dup x)  (dup!))
-;;       ((eq :over x) (over!))
-;;       ((eq :rotl x) (rotl!))
-;;       ((eq :rotr x) (rotr!))
-;;       ((eq :add x)  (push! 6))
-;;       ((eq :swap x) (swap!))
-;;       (t (prn x)))))
+
+
+
 
 
 
