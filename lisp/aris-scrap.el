@@ -62,7 +62,7 @@
       (def (double n) (|> n (+ _ _)))
       (def (square y) (|> y (* _ _)))
       (def (double-square y) (double (square y)))
-      
+
       ;; Define a fib:
       (def (fib 0) 0)
       (def (fib 1) 1)
@@ -187,9 +187,7 @@
    (init-form)
    (body))
 
-(--pipe-args);; nothing entered in pipe
-
-'() ;; ILLEGAL EXPANSION
+;; (--pipe-args);; nothing entered in pipe ;; ILLEGAL EXPANSION!
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; ONE ARG CASES
@@ -263,7 +261,7 @@
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
   (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
-  
+
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11) 1)
   (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :when negative? neg :when (> _ 20) (return 11) 1)
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) (return 99) neg :when negative? neg :when (> _ 20) (return 11) 1)
