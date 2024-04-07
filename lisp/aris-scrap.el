@@ -255,9 +255,10 @@
   (setq y 10)
 
   (|> ((e)) 5 (+ e 7) double (+ e 3) neg)
-  (|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) (return 999) :(when (< e 40) 1) :(prn "Done!") (+ y e))
+  (|> ((e 5)) (+ e 7) double (+ e 3) neg (lambda (x) (* x 3)) (return (* 3 333)) :(when (< e 40) 1) :(prn "Done!") (+ y e))
   (|> 2  :(prn "hello") (+ 2 _) :?(when t 99))
 
+  (|> (+ 3 4))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (|> 5 (+ _ 7) double :(prn "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
   (|> 5 (+ _ 7) :(prn  "hello") (+ _ 3) (return 99) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)

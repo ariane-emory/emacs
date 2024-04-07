@@ -233,10 +233,10 @@
                  (catch 'return
                    (dostack (expr body)
                      (--pipe--print (make-string 80 ?\=))
-                     (--pipe--print "Remaining:      %S" stack)
-                     (--pipe--print "Var:            %S" ,var)
-                     (--pipe--print "Flag:           %S" flag)
-                     (--pipe--print "Expr:           %S" expr)
+                     (--pipe--print "Current:             %S" expr)
+                     (--pipe--print "Remaining:           %S" stack)
+                     (--pipe--print "Var:                 %S" ,var)
+                     (--pipe--print "Flag:                %S" flag)
                      (cond
                        ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-2-commands*))
                          (error
@@ -268,12 +268,12 @@
                                     (expr-fun
                                       `(lambda (expr ,',var)
                                          (cl-flet ((return (value) (throw 'return value)))
-                                           (--pipe--print "Evaluated expr: %S." expr)
+                                           (--pipe--print "Evaluating expr:     %S." expr)
                                            ,expr))))
                            (let ((result (if (fun? expr)
                                            (eval (list expr ',var)) ;; unsure about this quote.
                                            (expr-fun expr ,var))))
-                             (--pipe--print "Result:         %S" result)
+                             (--pipe--print "Expr result:         %S" result)
                              (cond
                                ((flag-is? :RETURN)
                                  (--pipe--print "Returning due to command: %S" result)

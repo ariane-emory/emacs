@@ -58,11 +58,11 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
          (while ,stack-sym
            (let* ( (,val-sym (pop ,stack-sym))
                    (stack ,stack-sym))
-             (prn "PROCESS %s" ,val-sym)
+             ;;(prn "PROCESS %s" ,val-sym)
              ,@body))
-         (prn "FINAL   %s" ,stack-sym)
+         ;;(prn "FINAL   %s" ,stack-sym)
          ))))
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
