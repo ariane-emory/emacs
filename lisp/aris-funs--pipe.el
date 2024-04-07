@@ -242,14 +242,12 @@
                                            (error
                                              "Ignoring the %S command is not yet supported." next))
                                          (when (memq next *--pipe--arity-1-commands*)
-                                           (pipe--print "Popped 1st %S from %S." (pop!) body)) ;; pop the argument
+                                           ;; pop the unary command's argument:
+                                           (pipe--print "Popped 1st %S from %S." (pop!) body)) 
                                          (unset-flag!)))
                                      (progn
                                        (pipe--print "Next command will be processed.")
-                                       (unset-flag!))
-                                     (progn
-                                       (pipe--print "Next command will be ignored.")
-                                       (set-flag! :IGNORE t)))))
+                                       (unset-flag!)))))
                        (pipe--print (make-string 80 ?\=))
                        (pipe--print "Remaining:      %S" stack)
                        (pipe--print "Expr:           %S" expr)
