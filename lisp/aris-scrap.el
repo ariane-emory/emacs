@@ -330,31 +330,33 @@ approach and a reversd parameter order."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
-
 (defmacro stackmaprc (stack fun)
   `(let ((stk ,stack))
      (cl-flet ((pop! () (pop stk)))
        (while stk
          (funcall ,fun (pop!))))))
 
+
+(defmacro stackmapc (fun stack)
+  (stackmaprc stack fun))
+
+(setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+(stackmaprc mystk #'prn)
+(stackmaprc mystk #'prn)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; print 1 through 10
 (stackmaprc mystk
   (lambda (x)
     (if (eq :drop x)
       (pop!)
       (prn x))))
 
+;; again
 (stackmaprc '(1 2 3 4 :drop 100 5 6 7 8 9 10)
   (lambda (x)
     (if (eq :drop x)
       (pop!)
       (prn x))))
-
-
-
-
-
-
-
-
 
