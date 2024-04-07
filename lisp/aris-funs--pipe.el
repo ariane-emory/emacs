@@ -274,9 +274,9 @@
                            (pipe--print "Returning due to command: %S" result)
                            (throw 'return result))
                          ((flag-is? :UNLESS)
-                           (ignore-next nil))
+                           (ignore-next result))
                          ((flag-is? :WHEN)
-                           (ignore-next t))
+                           (ignore-next (not result)))
                          ((and (flag-is? :MAYBE) result)
                            (pipe--print
                              "%s: Updating var to %S and unsetting the %S flag."
