@@ -302,12 +302,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro stackmaprc (stack fun)
   `(let ((stk ,stack))
-     (cl-flet ( (pop! () (pop stk))
-                (push! (val) (push val stk))
-                (dup! ()
-                  (let ((val (pop stk)))
-                    (push val stk)
-                    (push val stk))))
+     (cl-labels ( (pop! () (pop stk))
+                  (push! (val) (push val stk))
+                  (rot! ()
+                    (let ((val (pop stk)))
+                      (push! val) (push! val)))
+                  (dup! ()
+                    (let ((val (pop stk)))
+                      (push val stk)
+                      (push val stk))))
        (while stk
          (funcall ,fun (pop!))))))
 
@@ -322,6 +325,7 @@
       ((eq :drop x) (pop!))
       ((eq :dup x) (dup!))
       ((eq :add x) (push! 6))
+      ((eq :rot x) (rot!))
       (t (prn x)))))
 
 
