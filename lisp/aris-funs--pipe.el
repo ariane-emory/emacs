@@ -290,10 +290,6 @@
                            (pipe--print "Not setting %S because %S and unsetting the flag."
                              result flag)
                            (unset-flag!))
-                         ;; ((flag-is? :IGNORE)
-                         ;;   (pipe--print "Ignoring %S because %S and unsetting the flag."
-                         ;;     result flag)
-                         ;;   (unset-flag!))
                          (t 
                            (setq ,var result)
                            (pipe--print "Updating var to %S." ,var)
