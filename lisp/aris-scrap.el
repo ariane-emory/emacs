@@ -347,8 +347,8 @@
     (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
   (let ((sym (car spec)))
     `(let ((stack ,(nth 1 spec)))
-       (cl-labels ( (pop! () (pop stk))
-                    (push! (val) (push val stk))
+       (cl-labels ( (pop! () (pop stack))
+                    (push! (val) (push val stack))
                     (swap! ()
                       (let* ( (top (pop!))
                               (next (pop!)))
@@ -385,13 +385,21 @@
              ))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+(setq mystack '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
 (dostack (x '(:over 1 2 3 4 :drop 100 5 :add :swap 9 8 10 :dup twice))
   (prn x))
 
 (dostack (x '(:over 1 2 3 ))
-  (prn x))
+  (cond
+    ((eq :drop x) (pop!))
+    ((eq :dup x)  (dup!))
+    ((eq :over x) (over!))
+    ((eq :rotl x) (rotl!))
+    ((eq :rotr x) (rotr!))
+    ((eq :add x)  (push! 6))
+    ((eq :swap x) (swap!))
+    (t (prn x))))
 
 
 
