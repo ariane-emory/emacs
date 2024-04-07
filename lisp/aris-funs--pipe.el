@@ -232,7 +232,7 @@
                       (unset-flag! ()
                         (set-flag! nil nil))
                       (ignore-next (bool)
-                        (if result
+                        (if bool
                           (progn
                             (pipe--print "Next command will be processed.")
                             (unset-flag!))
