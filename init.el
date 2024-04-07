@@ -868,6 +868,7 @@
            aris-funs--unsorted
            aris-funs--interactive
            aris-funs--lists
+           aris-funs--stacks
            aris-funs--alists
            aris-funs--plists
            aris-funs--fixmath

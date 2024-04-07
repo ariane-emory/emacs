@@ -1,21 +1,23 @@
-;; -*- lexical-binding: nil; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; -*- lexical-binding: nil; fill-column: 100;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
-(require 'aris-funs--pattern-dispatch)
+(require 'aris-funs--aliases)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
-(require 'aris-funs--plists)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'aris-funs--alists)
+(require 'aris-funs--lists)
+(require 'aris-funs--stacks)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup pipe nil
   "Elixir-style pipe operator.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* nil
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defcustom *pipe--verbose* t
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
@@ -29,36 +31,221 @@
   "The default symbol to use for the pipe operator."
   :group 'pipe
   :type 'symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *--pipe--commands*
+  '(
+     (:       . (1 . :NO-SET))
+     (:?      . (1 . :MAYBE))
+     (:no-set . (1 . :NO-SET))
+     (:maybe  . (1 . :MAYBE))
+     (:return . (1 . :RETURN))
+     (:unless . (2 . :UNLESS))
+     (:when   . (2 . :WHEN))
+     )
+  "An alist mapping commands to their flags and arities. This is not meant to be customized.")
+
+(defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe--commands*)))
+  "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
+
+(defvar *--pipe--commands-to-flags* (mapr *--pipe--commands* (lambda (x) (cons (car x) (cddr x))))
+  "An alist mapping commands to flags. This is not meant to be customized.")
+
+(defvar *--pipe--arity-1-commands*
+  (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe--commands*) #'car)
+  "Commands that take one argument. This is not meant to be customized.")
+
+(defvar *--pipe--arity-2-commands*
+  (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe--commands*) #'car)
+  "Commands that take two arguments. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro --pipe--print (first &rest rest)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Wrap *pipe--print-fun*"
+  (when *pipe--verbose*
+    `(progn
+       (funcall *pipe--print-fun* ,first ,@rest)
+       nil)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro --pipe--make-args (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (head-is-cons (cons? head))
+          (car-head (when head-is-cons (car head)))
+          (car-head-is-cons (when head-is-cons (cons? car-head)))
+          (car-head-length (when car-head-is-cons (length car-head)))
+          (head-is-spec
+            (and
+              car-head-is-cons
+              (> car-head-length 0)
+              (< car-head-length 3)))
+          (head-is-spec-with-init-form (eql car-head-length 2))
+          (var (if head-is-spec (car car-head) *pipe--default-var-sym*))
+          (body
+            (cond
+              (head-is-spec-with-init-form (cons (cadr car-head) tail))
+              (head-is-spec tail)
+              (t (cons head tail))))
+          (alist
+            `'( (head-is-cons . ,head-is-cons)
+                (car-head . ,car-head)
+                (car-head-is-cons . ,car-head-is-cons)
+                (car-head-length . ,car-head-length)
+                (head-is-spec . ,head-is-spec)
+                (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
+                (head . ,head)
+                (var . ,var)
+                (body . ,body))))
+    alist))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --valid-pipe-flag-or-nil (kw &optional or-nil)
+  (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
+    (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
+  kw)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --is-pipe-command? (kw) 
+  (and (keyword? expr) (assoc expr *--pipe--commands-to-flags*)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro |> (head &rest tail)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "`pipe' with optional let-like binding/symbol naming."
+  (let* ( (args (eval `(--pipe--make-args ,head ,@tail)))
+          (var  (alist-get 'var  args))
+          (body `',(alist-get 'body args)))
+    `(let ((final
+             (let ( (body ,body)
+                    (,var nil)
+                    (flag nil))
+               (cl-labels ( (flag-is? (test-flag)
+                              (eq flag (--valid-pipe-flag-or-nil test-flag)))
+                            (set-flag! (new-flag force)
+                              (let ((new-flag (--valid-pipe-flag-or-nil new-flag t)))
+                                (cond
+                                  ((and flag new-flag (not force))
+                                    (error "Cannot set flag to %S when flag is already set to %S."
+                                      new-flag flag))
+                                  (force
+                                    (--pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                                    (setq flag new-flag))
+                                  (t
+                                    (--pipe--print "Setting flag from %S to %S%s." flag new-flag
+                                      (if force " (forced)" ""))))
+                                (setq flag new-flag)))
+                            (store! (value)
+                              (setq ,var value))
+                            (unset-flag! ()
+                              (set-flag! nil nil)))
+                 (--pipe--print (make-string 80 ?\=))
+                 (--pipe--print "START")
+                 (--pipe--print (make-string 80 ?\=))
+                 (catch 'return
+                   (dostack (expr body)
+                     (--pipe--print (make-string 80 ?\=))
+                     (--pipe--print "Current:             %S" expr)
+                     (--pipe--print "Remaining:           %S" stack)
+                     (--pipe--print "Var:                 %S" ,var)
+                     (--pipe--print "Flag:                %S" flag)
+                     (if (--is-pipe-command? expr)
+                       (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
+                         (set-flag! new-flag nil))
+                       (cl-flet ( (ignore-next-and-unset-flag! (bool)
+                                    (if bool
+                                      (let ((next (pop!)))
+                                        (--pipe--print "Popped 1st %S from %S." next body)
+                                        (when (memq next *--pipe--arity-2-commands*)
+                                          (error
+                                            "Ignoring the %S command is not yet supported." next))
+                                        (when (memq next *--pipe--arity-1-commands*)
+                                          ;; pop the unary command's argument:
+                                          (--pipe--print "Popped 1st %S from %S." (pop!) body)) 
+                                        (unset-flag!))
+                                      (--pipe--print "Next command will be processed."))
+                                    (unset-flag!))
+                                  (expr-fun
+                                    `(lambda (expr ,',var)
+                                       (cl-flet ((return (value) (throw 'return value)))
+                                         (--pipe--print "Evaluating expr:     %S." expr)
+                                         ,expr))))
+                         (let ((result (if (fun? expr)
+                                         (eval (list expr ',var)) ;; unsure about this quote.
+                                         (expr-fun expr ,var))))
+                           (--pipe--print "Expr result:         %S" result)
+                           (cond
+                             ((flag-is? :RETURN)
+                               (--pipe--print "Returning due to command: %S" result)
+                               (throw 'return result))
+                             ((flag-is? :UNLESS)
+                               (ignore-next-and-unset-flag! result))
+                             ((flag-is? :WHEN)
+                               (ignore-next-and-unset-flag! (not result)))
+                             ((and (flag-is? :MAYBE) result)
+                               (--pipe--print "%s: Updating var to %S and unsetting the %S flag."
+                                 flag ,var flag)
+                               (store! result)
+                               (unset-flag!))
+                             ((and (flag-is? :MAYBE) (not result))
+                               (--pipe--print "%S: Ignoring %S and unsetting the %S flag."
+                                 flag result flag)
+                               (unset-flag!))
+                             ((flag-is? :NO-SET)
+                               (--pipe--print "Not setting %S because %S and unsetting the flag."
+                                 result flag)
+                               (unset-flag!))
+                             (t 
+                               (store! result)
+                               (--pipe--print "Updating var to %S." ,var)))))))
+                   ;; For clarity, explicitly throw the return value if we run out of stack items:
+                   (throw 'return
+                     (progn
+                       (--pipe--print (make-string 80 ?\=))
+                       (--pipe--print "Because empty stack: %S" ,var)
+                       (--pipe--print (make-string 80 ?\=))
+                       ,var)))))))
+       (--pipe--print "Pipe's final return: %S" final)
+       final)))
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defmacro pipe (initial &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Older, simple version of `pipe'."
 ;;   `(let ((_ ,initial))
 ;;      (mapc (lambda (expr) (setq _ (eval expr))) ',body)
 ;;      _))
-;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defmacro pipe (init &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Codex's unattractive `pipe'."
 ;;   `(let ((_ ,init))
 ;;      (dolist (expr ',body)
 ;;        (let ((fun `(lambda (_) ,expr)))
 ;;          (setq _ (funcall fun _))))
 ;;      _))
-;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming.
 (pipe 
   8
@@ -66,163 +253,33 @@
   :(message \"A message! it = %s\" it)
   (* 2 it)
   (- it 1))"
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (sym (if head-is-spec (caar head) *pipe--default-var-sym*))
+  (let* ( (head-is-spec
+            (and
+              (cons? head)
+              (cons? (car head))
+              (length> (car head) 0)
+              (length< (car head) 3)))
+          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
-    ;;(debug)
-    ;; (message "head: %s" head)
-    ;; (message "head-is-spec: %s" head-is-spec)
-    ;; (message "sym: %s" sym)
-    ;; (message "init-form: %s" init-form)
-    ;; (message "body: %s" body)
     body
-    `(let ( (,sym ,init-form)
+    `(let ( (,var ,init-form)
             (ignore-flag nil))
-       (mapr ',body
+       (maprc ',body
          (lambda (expr)
            (cond
-             ((eq : expr) (setq ignore-flag t))
+             ((eq : expr)
+               (setq ignore-flag t))
              (ignore-flag
                (eval expr)
                (setq ignore-flag nil))
              (t
-               (setq ,sym (eval expr))
+               (setq ,var (eval expr))
                (setq ignore-flag nil)))))
-       ,sym)))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ,var)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pipe--print (first &rest rest)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *pipe--print-fun*"
-  (when *pipe--verbose*
-    `(progn
-       (funcall *pipe--print-fun* ,first ,@rest)
-       nil)))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro |> (head &rest tail)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming."
-  (let* ((head-is-spec
-           (and
-             (consp head)
-             (consp (car head))
-             (length> (car head) 0)
-             (length< (car head) 3)))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
-          (init-form (if head-is-spec (cadar head) head))
-          (body tail))
-
-    (pipe--print (make-string 80 ?\=))
-    (pipe--print "PIPE CALLED")
-    (pipe--print (make-string 80 ?\=))
-    (pipe--print "head: %s" head)
-    (pipe--print "head-is-spec: %s" head-is-spec)
-    (pipe--print "var: %s" var)
-    (pipe--print "init-form: %s" init-form)
-    (pipe--print "body: %s" body)
-
-    `(progn
-       (pipe--print (make-string 80 ?\=))
-       (let ( (last ,init-form)
-              (sym ',var)
-              (,var nil))
-         (catch 'return
-           (mapcr ',body
-             (lambda (expr)
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Expr: %S" expr)
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
-
-               (cl-flet ((expr-fun
-                           `(lambda (sym)
-                              (cl-flet ((return (,sym) (throw 'return ,sym)))
-                                ;;(pipe--print "Eval: %S" ',expr)
-                                (let ((result ,expr))
-                                  ;;(pipe--print "Next: %S" result)
-                                  result)))))
-                 (cond
-                   ((eq expr '->)
-                     (setq ,var last)
-                     (setq last nil)
-                     (pipe--print "Updated by arrow! Var is %S, last is %S" ,var last)
-                     )
-                   (t (setq last (expr-fun ,var))
-                     (pipe--print "Updated by call! Var is %S, last is %S" ,var last))))))
-           (throw 'return
-             (progn
-               (pipe--print (make-string 80 ?\=))
-               (pipe--print "Returning: %S" (or last ,var))
-               (pipe--print (make-string 80 ?\=))
-               ;;(pipe--print "Expr: %S" expr)
-               (pipe--print "Var:  %S" ,var)
-               (pipe--print "Last: %S" last)
-               (or last ,var))))))))
-               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(let ((*pipe--verbose* nil))
-  (progn
-    (message "One")
-    (pipe--print "pipe!")
-    (message "Two")
-    (message "Three")
-    ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(while nil
-  (progn 
-    (let ( (*pipe--verbose* t)
-           (*wm--depth-indicator-enable* nil))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; Do some simple arithmetic with a pipe:
-      (|> 2 -> (+ _ 1) -> (* 3 _)) ;; ⇒ 9
-
-      ;; Reset the pattern-call dispatcher's alist:
-      (pd--reset) 
-
-      ;; Define some simple functions:
-      (def (double n) (|> n -> (+ _ _)))
-      (def (square y) (|> y -> (* _ _)))
-      (def (double-square y) (double (square y)))
-
-      ;; Define a fib:
-      (def (fib 0) 0)
-      (def (fib 1) 1)
-      (def (fib n)
-        (|> (pipe--print "Calculating (fib %d) using a pipe-based fib..." n)
-          (|> n -> (- _ 1) -> (fib _)) ->
-          (+ _ (|> n -> (- _ 2) -> (fib _) ->
-                 (pipe--print "Calculated (fib %d) = %d" n _) _))))
-
-      ;; Call it with some output commenting on the proceedings:
-      (|>
-        3 -> (pipe--print "Starting out with %d" _) (+ _ (|> 2 -> (+ _ 5))) ->
-        (pipe--print "Getting the result of (fib %d)" _) (fib _) ->
-        "I'm just a harmless string sitting in the pipe doing doing nothing."
-        (pipe--print "Result =  %d" _) _) ;; ⇒ 55
-
-      (|> 5 -> (square _) -> (when (odd? _) (return (double _)) _))
-      (|> 6 -> (square _) -> (when (odd? _) (return (double _)) _))
-      
-
-      (|> 3)
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      )))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--pipe)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

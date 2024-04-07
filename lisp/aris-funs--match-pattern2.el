@@ -7,9 +7,18 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--with-messages)
 (require 'aris-funs--unsorted)
+(require 'aris-funs--pipe)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq lexical-binding nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defcustom *mp--use-new-pipe-macro* t
+  "Whether to use the new pipe macro or the old one."
+  :group 'match-pattern
+  :type 'boolean)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,30 +263,32 @@ Examples:
                     (print "Just returning t.")
 		                t)
 		              (print "Extracted match result %s." match-result)
-                  ;; (let* ( (match-result
-                  ;;           (nreverse match-result))
-                  ;;         (match-result
-                  ;;           (if (not *mp--merge-duplicate-alist-keys*)
-			            ;;             match-result                              
-			            ;;             (let ((merged (merge-duplicate-alist-keys match-result)))
-                  ;;               (print "Post-merge match result %s." merged)
-                  ;;               merged)))
-                  ;;         (match-result
-                  ;;           (if *mp--use-dotted-pairs-in-result*
-		              ;;             (add-dots-to-alist match-result)
-		              ;;             match-result)))
-                  ;;   match-result)
-                  (pipe ((it))
-                    (nreverse match-result)
-                    (if (not *mp--merge-duplicate-alist-keys*)
-		                  it
-		                  (let ((merged (merge-duplicate-alist-keys it)))
-                        (print "Post-merge match result %s." merged)
-                        merged))
-                    (if *mp--use-dotted-pairs-in-result*
-		                  (add-dots-to-alist it)
-		                  it)))))))))))
-                      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                  ;; Temporarily accomodate use of both pipe macros:
+                  (if *mp--use-new-pipe-macro*
+                    (|> ((it match-result))
+                      :(print "USING NEW PIPE.")
+                      ;;(nreverse it)
+                      nreverse
+                      :?(when *mp--merge-duplicate-alist-keys*
+		                      (|> ((it it))
+                            ;;(merge-duplicate-alist-keys it)
+                            merge-duplicate-alist-keys
+                            :(print "Post-merge match result %s." it)))
+                      :?(when *mp--use-dotted-pairs-in-result*
+		                      (add-dots-to-alist it)))
+                    (pipe ((it match-result))
+                      :(print "USING OLD PIPE.")
+                      (nreverse it)
+                      (if (not *mp--merge-duplicate-alist-keys*)
+		                    it
+		                    (let ((merged (merge-duplicate-alist-keys it)))
+                          (print "Post-merge match result %s." merged)
+                          merged))
+                      (if *mp--use-dotted-pairs-in-result*
+		                    (add-dots-to-alist it)
+		                    it)))
+                  )))))))))
+                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
