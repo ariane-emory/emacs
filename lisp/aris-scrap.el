@@ -305,12 +305,14 @@
      (cl-labels ( (pop! () (pop stk))
                   (push! (val) (push val stk))
                   (rot! ()
-                    (let ((val (pop stk)))
-                      (push! val) (push! val)))
+                    (let* ( (val1 (pop!))
+                            (val2 (pop!)))
+                      (push! val1)
+                      (push! val2)))
                   (dup! ()
-                    (let ((val (pop stk)))
-                      (push val stk)
-                      (push val stk))))
+                    (let ((val (pop!)))
+                      (push! val)
+                      (push! val))))
        (while stk
          (funcall ,fun (pop!))))))
 
@@ -319,7 +321,7 @@
 (setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
 ;; again
-(stackmaprc '(1 2 3 4 :drop 100 5 :add :dup 7 :rot 9 8 10)
+(stackmaprc '(1 2 3 4 :drop 100 5 :add :rot 9 8 10 :dup twice)
   (lambda (x)
     (cond
       ((eq :drop x) (pop!))
