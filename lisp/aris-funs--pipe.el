@@ -233,8 +233,17 @@
                               (unset-flag! ()
                                 (set-flag! nil nil)))
                    (dostack (expr body)
-                     (cl-labels ((ignore-next (bool)                                   
+                     (cl-labels ((ignore-next (bool)
                                    (if bool
+                                     (progn (pipe--print "Next command will be ignored.")
+                                       (let ((next (pop!)))
+                                         (pipe--print "Popped 1st %S from %S." next body)
+                                         (when (memq next *--pipe--arity-2-commands*)
+                                           (error
+                                             "Ignoring the %S command is not yet supported." next))
+                                         (when (memq next *--pipe--arity-1-commands*)
+                                           (pipe--print "Popped 1st %S from %S." (pop!) body)) ;; pop the argument
+                                         (unset-flag!)))
                                      (progn
                                        (pipe--print "Next command will be processed.")
                                        (unset-flag!))
@@ -300,7 +309,7 @@
                      (pipe--print "Because empty stack: %S" ,var)
                      (pipe--print (make-string 80 ?\=))
                      ,var)))  ))
-         (prn " PIPE'sFINAL RETURN = %S" final)
+         (prn "PIPE'sFINAL RETURN = %S" final)
          final))))
 
 
