@@ -341,21 +341,18 @@
 (defmacro dostack (spec &rest body)
   (unless (consp spec)
     (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 2 (length spec) 3)
-    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
-  ;; (let ((tail 'tail))
-  `(let ((tail ,(nth 1 spec)))
-     (while tail
-       (let ((,(car spec) (car tail)))
+  (unless (= 2 (length spec))
+    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
+  `(let ((stack ,(nth 1 spec)))
+     (while stack
+       (let ((,(car spec) (car stack)))
          ,@body
-         (setq tail (cdr tail))))
-     ,@(cdr (cdr spec)))) ;; )
-
+         (setq stack (cdr stack))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
-(dostack (x '(:over 1 2 3)) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
+(dostack (x '(:over 1 2 3  4 :drop 100 5 :add :swap 9 8 10 :dup twice))
   (cond
     ;; ((eq :drop x) (pop!))
     ;; ((eq :dup x)  (dup!))
@@ -365,11 +362,4 @@
     ;; ((eq :add x)  (push! 6))
     ;; ((eq :swap x) (swap!))
     (t (prn x))))
-
-
-
-
-
-
-
 
