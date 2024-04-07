@@ -255,7 +255,7 @@
                    (pipe--print "Ignoring expr %S because %S and unsetting the flag."
                      expr flag)
                    (unset-flag!))
-                 ((and (keywordp expr) (assoc expr *--pipe--commands-to-flags*))
+                 ((and (keyword? expr) (assoc expr *--pipe--commands-to-flags*))
                    (let ((new-flag (alist-get expr *--pipe--commands-to-flags*)))
                      ;; (pipe--print "Setting flag from %S to %S by alist entry for %S."
                      ;;   flag new-flag expr)
