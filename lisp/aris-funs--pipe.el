@@ -278,13 +278,15 @@
                                (set-flag! :IGNORE t))
                              (pipe--print "Next command will be processed.")
                              (unset-flag!)))
-                         ((flag-is? :MAYBE)
-                           (if (not result)
-                             (pipe--print "%S: Ignoring %S and unsetting the %S flag."
-                               flag result flag)
-                             (pipe--print "%s: Updating var to %S and unsetting the %S flag."
-                               flag ,var flag)
-                             (setq ,var result))
+                         ((and (flag-is? :MAYBE) result)
+                           (pipe--print
+                             "%s: Updating var to %S and unsetting the %S flag."
+                             flag ,var flag)
+                           (store! result)
+                           (unset-flag!))
+                         ((and (flag-is? :MAYBE) (not result))
+                           (pipe--print "%S: Ignoring %S and unsetting the %S flag."
+                             flag result flag)
                            (unset-flag!))
                          ((flag-is? :NO-SET)
                            (pipe--print "Not setting %S because %S and unsetting the flag."
