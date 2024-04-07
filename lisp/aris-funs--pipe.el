@@ -191,6 +191,7 @@
     `(let ((final
              (let ( (body ,body)
                     (,var nil)
+                    (var-sym ',var)
                     (flag nil))
                (cl-labels ( (flag-is? (test-flag)
                               (eq flag (--valid-pipe-flag-or-nil test-flag)))
@@ -222,8 +223,7 @@
                      (--pipe--print "Var:                 %S" ,var)
                      (--pipe--print "Flag:                %S" flag)
                      (if (--is-pipe-command? expr)
-                       (let ((new-flag (alist-get expr *--pipe-commands-to-flags*)))
-                         (set-flag! new-flag nil))
+                       (set-flag! (alist-get expr *--pipe-commands-to-flags*) nil)
                        (cl-flet ( (ignore-next-and-unset-flag! (bool)
                                     (if bool
                                       (let ((next (pop!)))
@@ -238,7 +238,8 @@
                                       (--pipe--print "Next command will be processed."))
                                     (unset-flag!))
                                   (expr-fun
-                                    `(lambda (expr ,',var)
+                                    `(lambda (expr ,var-sym)
+                                       ;; `(lambda (expr ,',var)
                                        (cl-flet ((return (value) (throw 'return value)))
                                          (--pipe--print "Evaluating expr:     %S." expr)
                                          ,expr))))
