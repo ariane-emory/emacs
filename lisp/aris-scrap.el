@@ -300,6 +300,22 @@
   )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(stackmap #'prn '(1 2 3 4 5 6 7 8 9 10))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun stackmaprc (stack fun)
+  "Map FUN over the elements of STACK, discarding the rresults, using a stack-based
+approach and a reversd parameter order."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (while stack
+    (funcall fun (pop stack))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(setq stk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
+
+(stackmaprc stk
+  (lambda (x)
+    (if (eq :drop x)
+      (pop stack)
+      (prn x))))
 
