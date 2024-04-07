@@ -309,14 +309,6 @@
                             (val2 (pop!)))
                       (push! val1)
                       (push! val2)))
-                  (over! ()
-                    (let* ( (val1 (pop!))
-                            (val2 (pop!))
-                            (val3 (pop!))
-                            )
-                      (push! val2)
-                      (push! val3)
-                      (push! val1)))
                   (rotl! ()
                     (let* ( (val1 (pop!))
                             (val2 (pop!))
@@ -338,7 +330,16 @@
                   (dup! ()
                     (let ((val (pop!)))
                       (push! val)
-                      (push! val))))
+                      (push! val)))
+                  (over! ()
+                    (let* ( (val1 (pop!))
+                            (val2 (pop!))
+                            (val3 (pop!))
+                            )
+                      (push! val2)
+                      (push! val3)
+                      (push! val1)))
+                  )
        (while stk
          (funcall ,fun (pop!))))))
 
@@ -346,7 +347,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mystk '(1 2 3 4 :drop 100 5 6 7 8 9 10))
 
-(stackmaprc '(:rotl 1 2 3) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
+(stackmaprc '(:over 1 2 3) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
   (lambda (x)
     (cond
       ((eq :drop x) (pop!))
@@ -357,6 +358,18 @@
       ((eq :add x)  (push! 6))
       ((eq :swap x) (swap!))
       (t (prn x)))))
+
+;; (stackmaprc '(:rotl 1 2 3) ;;  4 :drop 100 5 :add :swap 9 8 10 :dup twice)
+;;   (lambda (x)
+;;     (cond
+;;       ((eq :drop x) (pop!))
+;;       ((eq :dup x)  (dup!))
+;;       ((eq :over x) (over!))
+;;       ((eq :rotl x) (rotl!))
+;;       ((eq :rotr x) (rotr!))
+;;       ((eq :add x)  (push! 6))
+;;       ((eq :swap x) (swap!))
+;;       (t (prn x)))))
 
 
 
