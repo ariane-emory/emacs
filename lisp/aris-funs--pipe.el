@@ -4,6 +4,7 @@
 (require 'aris-funs--aliases)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--with-messages)
+(require 'aris-funs--alists)
 (require 'aris-funs--lists)
 (require 'aris-funs--stacks)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -172,16 +173,8 @@
   "An alist mapping commands to flags. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe-flags*
-  '(
-     :MAYBE
-     :NO-SET
-     :RETURN
-     :UNLESS
-     :WHEN
-     )
+(defvar *--pipe-flags* (cl-remove-duplicates (alist-values *--pipe--commands-to-flags*))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
