@@ -201,45 +201,46 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args      (eval `(--pipe--make-args ,head ,@tail)))
-          (var       (alist-get 'var  args))
-          (body      `',(alist-get 'body args)))
+  (let* ( (args (eval `(--pipe--make-args ,head ,@tail)))
+          (var  (alist-get 'var  args))
+          (body `',(alist-get 'body args)))
     `(let ((final
              (let ( (body ,body)
                     (,var nil)
                     (flag nil))
-               (catch 'return
-                 (cl-labels ((flag-is? (test-flag) 
-                               (eq flag (--valid-pipe-flag-or-nil test-flag)))
-                              (set-flag! (new-flag force)
-                                (let ((new-flag (--valid-pipe-flag-or-nil new-flag t)))
-                                  (cond
-                                    ((and flag new-flag (not force))
-                                      (error "Cannot set flag to %S when flag is already set to %S."
-                                        new-flag flag))
-                                    (force
-                                      (--pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
-                                      (setq flag new-flag))
-                                    (t
-                                      (--pipe--print "Setting flag from %S to %S%s." flag new-flag
-                                        (if force " (forced)" ""))))
-                                  (setq flag new-flag)))
-                              (store! (value)
-                                (setq ,var value))
-                              (unset-flag! ()
-                                (set-flag! nil nil)))
-                   (--pipe--print (make-string 80 ?\=))
-                   (--pipe--print "START")
-                   (--pipe--print (make-string 80 ?\=))
+               (cl-labels ((flag-is? (test-flag) 
+                             (eq flag (--valid-pipe-flag-or-nil test-flag)))
+                            (set-flag! (new-flag force)
+                              (let ((new-flag (--valid-pipe-flag-or-nil new-flag t)))
+                                (cond
+                                  ((and flag new-flag (not force))
+                                    (error "Cannot set flag to %S when flag is already set to %S."
+                                      new-flag flag))
+                                  (force
+                                    (--pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                                    (setq flag new-flag))
+                                  (t
+                                    (--pipe--print "Setting flag from %S to %S%s." flag new-flag
+                                      (if force " (forced)" ""))))
+                                (setq flag new-flag)))
+                            (store! (value)
+                              (setq ,var value))
+                            (unset-flag! ()
+                              (set-flag! nil nil)))
+                 (--pipe--print (make-string 80 ?\=))
+                 (--pipe--print "START")
+                 (--pipe--print (make-string 80 ?\=))
+                 (catch 'return
                    (dostack (expr body)
                      (--pipe--print (make-string 80 ?\=))
                      (--pipe--print "Remaining:      %S" stack)
-                     (--pipe--print "Expr:           %S" expr)
                      (--pipe--print "Var:            %S" ,var)
                      (--pipe--print "Flag:           %S" flag)
+                     (--pipe--print "Expr:           %S" expr)
                      (cond
                        ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-2-commands*))
-                         (error "Ignoring the %S command because %S is not yet supported."
+                         (error
+                           "Ignoring the arity-2 commands like %S because %S is not yet supported."
                            expr flag))
                        ((and (flag-is? :IGNORE) (memq expr *--pipe--arity-1-commands*))
                          (--pipe--print "Do nothing for expr %S because %S." expr flag))
@@ -272,6 +273,7 @@
                            (let ((result (if (fun? expr)
                                            (eval (list expr ',var)) ;; unsure about this quote.
                                            (expr-fun expr ,var))))
+                             (--pipe--print "Result:         %S" result)
                              (cond
                                ((flag-is? :RETURN)
                                  (--pipe--print "Returning due to command: %S" result)
@@ -295,15 +297,15 @@
                                  (unset-flag!))
                                (t 
                                  (store! result)
-                                 (--pipe--print "Updating var to %S." ,var)))))))))
-                 ;; For clarity, explicitly throw the return value if we run out of stack items:
-                 (throw 'return
-                   (progn
-                     (--pipe--print (make-string 80 ?\=))
-                     (--pipe--print "Because empty stack: %S" ,var)
-                     (--pipe--print (make-string 80 ?\=))
-                     ,var))))))
-       (--pipe--print "PIPE'sFINAL RETURN = %S" final)
+                                 (--pipe--print "Updating var to %S." ,var))))))))
+                   ;; For clarity, explicitly throw the return value if we run out of stack items:
+                   (throw 'return
+                     (progn
+                       (--pipe--print (make-string 80 ?\=))
+                       (--pipe--print "Because empty stack: %S" ,var)
+                       (--pipe--print (make-string 80 ?\=))
+                       ,var)))))))
+       (--pipe--print "Pipe's final return: %S" final)
        final)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
