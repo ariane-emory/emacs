@@ -186,7 +186,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
   (let* ( (args (eval `(--pipe--make-args ,head ,@tail)))
-          (return-symbol `',(gensym "return-"))
+          (return-label `',(gensym "return-"))
           (var  (alist-get 'var  args))
           (body `',(alist-get 'body args)))
     `(let ((final
@@ -198,7 +198,7 @@
                  (print-separator)
                  (--pipe-print "START")
                  (print-separator)
-                 (catch ,return-symbol
+                 (catch ,return-label
                    (cl-labels ( (flag-is? (test-flag)
                                   (eq flag (--valid-pipe-flag test-flag)))
                                 (set-flag! (new-flag &optional force)
@@ -238,9 +238,9 @@
                          (set-flag! (alist-get expr *--pipe-commands-to-flags*))
                          (let ((result (eval (if (fun? expr)
                                                (list expr var-sym)
-                                               (let ((return-symbol ',return-symbol))
+                                               (let ((return-label ',return-label))
                                                  `(cl-flet ((return (value)
-                                                              (throw ,return-symbol value)))
+                                                              (throw ,return-label value)))
                                                     ,expr))))))
                            (labeled-print "Expr result" result)
                            (cl-flet ((drop-next! () 
@@ -262,7 +262,7 @@
                                  (when result (drop-next!)))
                                ((flag-is? :RETURN)
                                  (--pipe-print "Returning due to command: %S" result)
-                                 (throw ,return-symbol result))
+                                 (throw ,return-label result))
                                ((and (flag-is? :MAYBE) result)
                                  (store! result))
                                ((and (flag-is? :MAYBE) (not result))
@@ -270,7 +270,7 @@
                                (t (store! result)))
                              (unset-flag!)))))
                      ;; For clarity, explicitly throw the return value if we run out of stack items:
-                     (throw ,return-symbol
+                     (throw ,return-label
                        (progn
                          (print-separator)
                          (--pipe-print "Returning this because stack is empty: %S" ,var)
