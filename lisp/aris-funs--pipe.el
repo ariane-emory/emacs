@@ -124,7 +124,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --pipe--print (first &rest rest)
+(defmacro --pipe-print (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-fun*"
   (when *pipe--verbose*
@@ -193,9 +193,9 @@
                     (,var nil)
                     (var-sym ',var)
                     (flag nil))
-               (--pipe--print (make-string 80 ?\=))
-               (--pipe--print "START")
-               (--pipe--print (make-string 80 ?\=))
+               (--pipe-print (make-string 80 ?\=))
+               (--pipe-print "START")
+               (--pipe-print (make-string 80 ?\=))
                (catch 'return
                  (cl-labels ( (flag-is? (test-flag)
                                 (eq flag (--valid-pipe-flag test-flag)))
@@ -206,71 +206,69 @@
                                       (error "Cannot set flag to %S when flag is already set to %S."
                                         new-flag flag))
                                     (force
-                                      (--pipe--print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                                      (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
                                       (setq flag new-flag))
                                     (t
-                                      (--pipe--print "Setting flag from %S to %S%s." flag new-flag
+                                      (--pipe-print "Setting flag from %S to %S%s." flag new-flag
                                         (if force " (forced)" ""))))
                                   (setq flag new-flag)))
                               (store! (value)
-                                (prog1 (setq ,var value)
-                                  (--pipe--print "Updated %S to %S." var-sym ,var)))
+                                (prog1
+                                  (setq ,var value)
+                                  (--pipe-print "Updated %S to %S." var-sym ,var)))
                               (unset-flag! ()
-                                (set-flag! nil nil)))
+                                (when flag
+                                  (--pipe-print "Unsetting flag %S." flag)
+                                  (set-flag! nil nil))))
                    (dostack (expr body)
-                     (--pipe--print (make-string 80 ?\=))
-                     (--pipe--print "Current:             %S" expr)
-                     (--pipe--print "Remaining:           %S" stack)
-                     (--pipe--print "Var:                 %S" ,var)
-                     (--pipe--print "Flag:                %S" flag)
+                     (--pipe-print (make-string 80 ?\=))
+                     (--pipe-print "Current:             %S" expr)
+                     (--pipe-print "Remaining:           %S" stack)
+                     (--pipe-print "Var:                 %S" ,var)
+                     (--pipe-print "Flag:                %S" flag)
                      (if (--is-pipe-command? expr)
                        (set-flag! (alist-get expr *--pipe-commands-to-flags*) nil)
                        (let ((result (eval (if (fun? expr)
-                                             (list expr ,var) ;; not sure if this needed the quote?
+                                             (list expr var-sym)
                                              `(cl-flet ((return (value) (throw 'return value)))
                                                 ,expr)))))
-                         (--pipe--print "Expr result:         %S" result)
-                         (cl-flet ( (drop-next-if-result-truthiness-is! (bool)
-                                      (if bool
-                                        (let ((next (pop!)))
-                                          (--pipe--print "Popped 1st %S from %S." next body)
-                                          (when (memq next *--pipe--arity-2-commands*)
-                                            (error
-                                              "Ignoring the %S command is not yet supported." next))
-                                          (when (memq next *--pipe--arity-1-commands*)
-                                            ;; pop the unary command's argument:
-                                            (--pipe--print "Popped 1st %S from %S." (pop!) body)) 
-                                          (unset-flag!))
-                                        (--pipe--print "Next command will be processed."))))
+                         (--pipe-print "Expr result:         %S" result)
+                         (cl-flet ((drop-next-if-result-truthiness-is! (bool)
+                                     (if bool
+                                       (let ((next (pop!)))
+                                         (--pipe-print "Popped 1st %S from %S." next body)
+                                         (when (memq next *--pipe--arity-2-commands*)
+                                           (error
+                                             "Ignoring the %S command is not yet supported." next))
+                                         (when (memq next *--pipe--arity-1-commands*)
+                                           ;; pop the unary command's argument:
+                                           (--pipe-print "Popped 1st %S from %S." (pop!) body)) 
+                                         (unset-flag!))
+                                       (--pipe-print "Next command will be processed."))))
                            (cond
                              ((flag-is? :RETURN)
-                               (--pipe--print "Returning due to command: %S" result)
+                               (--pipe-print "Returning due to command: %S" result)
                                (throw 'return result))
                              ((flag-is? :UNLESS)
                                (drop-next-if-result-truthiness-is! result))
                              ((flag-is? :WHEN)
                                (drop-next-if-result-truthiness-is! (not result)))
                              ((and (flag-is? :MAYBE) result)
-                               (--pipe--print "Updating var to %S and unsetting the %S flag."
-                                 ,var flag)
                                (store! result))
                              ((and (flag-is? :MAYBE) (not result))
-                               (--pipe--print "Ignoring %S and unsetting the %S flag."
-                                 result flag))
+                               (--pipe-print "Ignoring %S." result))
                              ((flag-is? :IGNORE)
-                               (--pipe--print "Not setting %S because %S and unsetting the flag."
-                                 result flag))
-                             (t 
-                               (store! result)))
+                               (--pipe-print "Not setting %S because %S." result flag))
+                             (t (store! result)))
                            (unset-flag!)))))
                    ;; For clarity, explicitly throw the return value if we run out of stack items:
                    (throw 'return
                      (progn
-                       (--pipe--print (make-string 80 ?\=))
-                       (--pipe--print "Because empty stack: %S" ,var)
-                       (--pipe--print (make-string 80 ?\=))
+                       (--pipe-print (make-string 80 ?\=))
+                       (--pipe-print "Returning this Because stack is empty: %S" ,var)
+                       (--pipe-print (make-string 80 ?\=))
                        ,var)))))))
-       (--pipe--print "Pipe's final return: %S" final)
+       (--pipe-print "Pipe's final return: %S" final)
        final)))
 
 
