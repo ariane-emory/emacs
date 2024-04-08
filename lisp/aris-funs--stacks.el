@@ -25,10 +25,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
           ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
           (return-label `',(gensym "return-"))
           )
-    `(let ( ;;(return-symbol (gensym "return-")) 
-            (,stack-sym ,stack))
-       (cl-labels (
-                    (--dostack-require-len>= (len)
+    `(let ( (,stack-sym ,stack))
+       (cl-labels ( (--dostack-require-len>= (len)
                       (unless (length> ,stack-sym (1- len))
                         (signal 'stack-underflow (list ',stack-sym))))
                     (--dostack-update-binding ()
