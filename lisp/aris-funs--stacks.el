@@ -34,6 +34,10 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                       (setq stack ,stack-sym)
                       nil)
                     (len () (length ,stack-sym))
+                    (abort ()
+                      (throw 'stack-abort nil))
+                    (return (value)
+                      (throw 'stack-return value))
                     (dup! ()
                       (--dostack-require-len>= 1)
                       (let ((val (pop!)))
@@ -80,19 +84,21 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                         (push! top)
                         (push! next)
                         (--dostack-update-binding))))
-         (while ,stack-sym
-           (let* ( (,val-sym (pop ,stack-sym))
-                   (stack ,stack-sym))
-             ;;(prn "PROCESS %s" ,val-sym)
-             ,@body))
-         ;;(prn "FINAL   %s" ,stack-sym)
-         ))))
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+         (catch 'stack-return
+           (catch 'stack-abort
+             (while ,stack-sym
+               (let* ( (,val-sym (pop ,stack-sym))
+                       (stack ,stack-sym))
+                 ;;(prn "PROCESS %s" ,val-sym)
+                 ,@body))
+             ;;(prn "FINAL   %s" ,stack-sym)
+             ))))))
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --dostack-mini-forth (stack)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A dumb little Forth-like stack machine without enough operations to be very useful,
 meant mainly for use in unit tests."
   (let (out)
