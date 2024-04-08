@@ -128,11 +128,15 @@
       )
     out))
 
-(defmacro dostk (spec &rest body)
+
+(defun --dosk-validate-spec (spec)
   (unless (cons? spec)
     (signal 'wrong-type-argument (list 'cons? spec)))
   (unless (= 2 (length spec))
-    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
+    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec)))))
+
+(defmacro dostk (spec &rest body)
+  (--dosk-validate-spec (spec))
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
           (stack-sym (gensym "stack-"))
@@ -145,15 +149,15 @@
                     ;; (stop! ()
                     ;;   (throw ,return-label nil))
                     ;; (swap! ()
-                    ;;   (--dostack-require-len>= 2)
+                    ;;   (--sostk-require-len>= 2)
                     ;;   (let* ( (top  (pop!)) (next (pop!)))
                     ;;     (push! top)
                     ;;     (push! next)
-                    ;;     (--dostack-update-binding)))
-                    (--dostack-require-len>= (len)
+                    ;;     (--sostk-update-binding)))
+                    (--sostk-require-len>= (len)
                       (unless (length> ,stack-sym (1- len))
                         (signal 'stack-underflow (list ',stack-sym))))
-                    (--dostack-update-binding ()
+                    (--sostk-update-binding ()
                       (setq stack ,stack-sym)
                       nil)
                     (pop! ()
@@ -171,4 +175,5 @@
            )))))
 
 
-
+(dostk (x '(1 2 3 4 5 6 7 8))
+  (prn "Val: %S" x))
