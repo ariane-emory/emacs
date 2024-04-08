@@ -93,27 +93,25 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(|> ((x 2)) (+ 3 x))
-(|> ((e)) 5 double (lambda (n) (+ e 2)) (return e) (* e 2))
+;; STACKS:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (setq body '(:drop 3 2 1))
 
-(let (out)
-  (dostack (x body)
-    ;;(prn (make-string 80 ?\=))
-    ;;(prn "Processing command: %S" x)
-    ;;(prn "Items remaining:    %S" (stack-len))
-    ;;(prn "Stack remaining:    %S" stack)
-    (cond
-      ((eq :drop x) (pop!))
-      ((eq :dup x)  (dup!))
-      ((eq :over x) (over!))
-      ((eq :rotl x) (rotl!))
-      ((eq :rotr x) (rotr!))
-      ((eq :swap x) (swap!))
-      (t (setq out (cons x out)))))
-  out)
+;; (let (out)
+;;   (dostack (x body)
+;;     ;;(prn (make-string 80 ?\=))
+;;     ;;(prn "Processing command: %S" x)
+;;     ;;(prn "Items remaining:    %S" (stack-len))
+;;     ;;(prn "Stack remaining:    %S" stack)
+;;     (cond
+;;       ((eq :drop x) (pop!))
+;;       ((eq :dup x)  (dup!))
+;;       ((eq :over x) (over!))
+;;       ((eq :rotl x) (rotl!))
+;;       ((eq :rotr x) (rotr!))
+;;       ((eq :swap x) (swap!))
+;;       (t (setq out (cons x out)))))
+;;   out)
 
 (dostack (x body)
   (prn "Item:      %S" x)
@@ -123,10 +121,7 @@
   (dostack (x '(1 2 3 4 5 6 7 8 9))
     (prn "Item:      %S" x)
     (prn "Remaining: %S" stack)
-    ;;(when (eql x 5) (push! 77))
     (when (eql x 4) (push! 22))
-    ;;(when (eql x 5) (stop!))
-    ;;(when (eql x 6) (return!))
     (when (eql x 7) (return! 99))
     (setq out (cons x out))
     )
