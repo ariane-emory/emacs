@@ -23,6 +23,7 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
           (stack-sym (gensym "stack-"))
+          (return-label `',(gensym "return-"))
           ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
           )
     `(let ( ;;(return-symbol (gensym "return-")) 
@@ -36,9 +37,9 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                       nil)
                     (len () (length ,stack-sym))
                     (abort ()
-                      (throw 'stack-return nil))
+                      (throw ,return-label nil))
                     (return (&optional val)
-                      (throw 'stack-return (or val ,val-sym)))
+                      (throw ,return-label (or val ,val-sym)))
                     (dup! ()
                       (--dostack-require-len>= 1)
                       (let ((val (pop!)))
@@ -85,7 +86,7 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                         (push! top)
                         (push! next)
                         (--dostack-update-binding))))
-         (catch 'stack-return
+         (catch ,return-label
            (while ,stack-sym
              (let* ( (,val-sym (pop ,stack-sym))
                      (stack ,stack-sym))
