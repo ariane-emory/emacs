@@ -240,7 +240,7 @@
                                                (list expr var-sym)
                                                (let ((return-label ,return-label))
                                                  `(cl-flet ((return (value)
-                                                              (throw ,return-label value)))
+                                                              (throw ',return-label value)))
                                                     ,expr))))))
                            (labeled-print "Expr result" result)
                            (cl-flet ((drop-next! () 
