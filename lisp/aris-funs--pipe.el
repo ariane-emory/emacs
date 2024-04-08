@@ -213,7 +213,8 @@
                                         (if force " (forced)" ""))))
                                   (setq flag new-flag)))
                               (store! (value)
-                                (setq ,var value))
+                                (prog1 (setq ,var value)
+                                  (--pipe--print "Updated %S to %S." var-sym ,var)))
                               (unset-flag! ()
                                 (set-flag! nil nil)))
                    (dostack (expr body)
@@ -260,8 +261,7 @@
                                (--pipe--print "Not setting %S because %S and unsetting the flag."
                                  result flag))
                              (t 
-                               (store! result)
-                               (--pipe--print "Updated %S to %S." var-sym ,var)))
+                               (store! result)))
                            (unset-flag!)))))
                    ;; For clarity, explicitly throw the return value if we run out of stack items:
                    (throw 'return
