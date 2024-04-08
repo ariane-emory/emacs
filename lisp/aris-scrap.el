@@ -128,6 +128,44 @@
   out)
 
 
-
-
-
+(defmacro dostk (spec &rest body)
+  (unless (cons? spec)
+    (signal 'wrong-type-argument (list 'cons? spec)))
+  (unless (= 2 (length spec))
+    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
+  (let* ( (val-sym (car spec))
+          (stack (nth 1 spec))
+          (stack-sym (gensym "stack-"))
+          ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
+          (return-label `',(gensym "return-"))
+          )
+    `(let ( (,stack-sym ,stack))
+       (cl-labels ( (--dostack-require-len>= (len)
+                      (unless (length> ,stack-sym (1- len))
+                        (signal 'stack-underflow (list ',stack-sym))))
+                    (--dostack-update-binding ()
+                      (setq stack ,stack-sym)
+                      nil)
+                    ;; (len ()
+                    ;;   (length ,stack-sym))
+                    (pop! ()
+                      (prog1
+                        (pop ,stack-sym)
+                        (--dostack-update-binding)))
+                    (return! (&optional val)
+                      (throw ,return-label (or val ,val-sym)))
+                    (stop! ()
+                      (throw ,return-label nil))
+                    (swap! ()
+                      (--dostack-require-len>= 2)
+                      (let* ( (top  (pop!)) (next (pop!)))
+                        (push! top)
+                        (push! next)
+                        (--dostack-update-binding))))
+         (catch ,return-label
+           (while ,stack-sym
+             (let* ( (,val-sym (pop ,stack-sym))
+                     (stack ,stack-sym))
+               ,@body))
+           ;;(prn "DOSTK RETURN   %s" ,stack-sym)
+           )))))
