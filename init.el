@@ -532,7 +532,8 @@
       
       (use-package-with-message lsp-mode :ensure t
         :bind
-        ( ("C-x C-<next>" . lsp-inlay-hints-mode)
+        (:map lsp-mode-map
+          ("C-x C-<next>" . lsp-inlay-hints-mode)
           ("C-x RET" . lsp-inlay-hints-mode)
           ("C-x C-h" . lsp-inlay-hints-mode))
         :init
