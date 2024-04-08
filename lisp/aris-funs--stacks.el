@@ -56,8 +56,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                       (prog1
                         (pop ,stack-sym)
                         (--dostack-update-binding)))
-                    (push! (val)
-                      (push val ,stack-sym)
+                    (push! (&optional val)
+                      (push (or val ,val-sym) ,stack-sym)
                       (--dostack-update-binding))
                     (rotl! ()
                       (--dostack-require-len>= 3)

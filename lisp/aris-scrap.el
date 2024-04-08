@@ -132,6 +132,7 @@
   (prn "Item:      %S" x)
   (prn "Remaining: %S" stack)
   ;;(when (eql x 5) (push! 77))
+  (when (eql x 6) (push! 22))
   (when (eql x 8) (return))
   )
 
