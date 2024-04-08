@@ -238,7 +238,7 @@
                          (set-flag! (alist-get expr *--pipe-commands-to-flags*))
                          (let ((result (eval (if (fun? expr)
                                                (list expr var-sym)
-                                               (let ((return-label ',return-label))
+                                               (let ((return-label ,return-label))
                                                  `(cl-flet ((return (value)
                                                               (throw ,return-label value)))
                                                     ,expr))))))
