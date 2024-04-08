@@ -177,3 +177,8 @@
 
 (dostk (x '(1 2 3 4 5 6 7 8))
   (prn "Val: %S" x))
+
+(setq stk '(1 2 3 4 5 6 7 8))
+
+(dostk (x stk)
+  (prn "Val: %S" x))
