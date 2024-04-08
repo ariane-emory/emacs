@@ -105,7 +105,6 @@
 
 (|> ((e)) 5 double (lambda (n) (+ e 2)) (return e) (* e 2))
 
-(setq body '(:drop 3 2 1))
 (let (out)
   (dostack (x body)
     ;;(prn (make-string 80 ?\=))
@@ -122,10 +121,22 @@
       (t (setq out (cons x out)))))
   out)
 
+(setq body '(:drop 3 2 1))
 
 (dostack (x body)
   (prn "Item:      %S" x)
-  (prn "Remaining: %S" body))
+  (prn "Body:      %S" body)
+  (prn "Remaining: %S" stack))
+
+(dostack (x '(:drop 3 2 1))
+  (prn "Item:      %S" x)
+  (prn "Remaining: %S" stack))
+
+
+
+
+
+
 
 
 
