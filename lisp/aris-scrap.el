@@ -128,16 +128,12 @@
   (prn "Body:      %S" body)
   (prn "Remaining: %S" stack))
 
-(dostack (x '(:drop 3 2 1))
+(dostack (x '(1 2 3 4 5 6 7 8 9))
   (prn "Item:      %S" x)
-  (prn "Remaining: %S" stack))
-
-
-
-
-
-
-
+  (prn "Remaining: %S" stack)
+  ;;(when (eql x 5) (push! 77))
+  (when (eql x 8) (return))
+  )
 
 
 
