@@ -23,28 +23,37 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
           (stack-sym (gensym "stack-"))
-          ;; (stack-sym (if (symbolp stack) stack (gensym "stack-")))
+          ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
           )
     `(let ((,stack-sym ,stack))
        (cl-labels (
+                    (update-binding ()
+                      (setq stack ,stack-sym)
+                      nil)
                     (stack-len () (length ,stack-sym))
-                    (push! (val) (push val ,stack-sym))
+                    (push! (val)
+                      (push val ,stack-sym)
+                      (update-binding))
                     (--dostack-require-len>= (len)
                       (unless (length> ,stack-sym (1- len))
                         (signal 'stack-underflow (list ',stack-sym))))
                     (pop! ()
-                      (pop ,stack-sym))
+                      (prog1
+                        (pop ,stack-sym)
+                        (update-binding)))
                     (swap! ()
                       (--dostack-require-len>= 2)
                       (let* ( (top  (pop!))
                               (next (pop!)))
                         (push! top)
-                        (push! next)))
+                        (push! next)
+                        (update-binding)))
                     (dup! ()
                       (--dostack-require-len>= 1)
                       (let ((val (pop!)))
                         (push! val)
-                        (push! val)))
+                        (push! val)
+                        (update-binding)))
                     (rotl! ()
                       (--dostack-require-len>= 3)
                       (let* ( (top  (pop!))
@@ -52,7 +61,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                               (far  (pop!)))
                         (push! top)
                         (push! far)
-                        (push! next)))
+                        (push! next)
+                        (update-binding)))
                     (rotr! ()
                       (--dostack-require-len>= 3)
                       (let* ( (top  (pop!))
@@ -60,14 +70,16 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                               (far  (pop!)))
                         (push! next)
                         (push! top)
-                        (push! far)))
+                        (push! far)
+                        (update-binding)))
                     (over! ()
                       (--dostack-require-len>= 2)
                       (let* ( (top  (pop!))
                               (next (pop!)))
                         (push! next)
                         (push! top)
-                        (push! next))))
+                        (push! next)
+                        (update-binding))))
          (while ,stack-sym
            (let* ( (,val-sym (pop ,stack-sym))
                    (stack ,stack-sym))
@@ -130,7 +142,7 @@ meant mainly for use in unit tests."
     (--dostack-mini-forth '(:over 1 :rotl 2 3 4 :drop 100 5 :swap 9 :rotr 8 10 :dup twice))
     returns (twice twice 8 9 10 5 4 2 3 1))
 
-  (confirm that (--dostack-mini-forth'(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))
+  (confirm that (--dostack-mini-forth '(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))
     returns (1 3 4 2 5 6 8 8 9))
 
   (prn "Ran all dostack test cases.")
@@ -140,60 +152,60 @@ meant mainly for use in unit tests."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun stackmapc (fun stack)
-  "Map FUN over the elements of STACK using a stack-based approach, discarding the
-rresults."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
-  (stackmaprc stack fun))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun stackmapc (fun stack)
+;;   "Map FUN over the elements of STACK using a stack-based approach, discarding the
+;; rresults."
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+;;   (stackmaprc stack fun))
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro stackmaprc (stack fun)
-  "Map FUN over the elements of STACK using a stack-based approach, discarding the
-rresults with a reversed parameter order compared to `stackmapc'."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let ((stk ,stack))
-     (cl-labels ( (pop! () (pop stk))
-                  (push! (val) (push val stk))
-                  (swap! ()
-                    (let* ( (top (pop!))
-                            (next (pop!)))
-                      (push! top)
-                      (push! next)))
-                  (dup! ()
-                    (let ((val (pop!)))
-                      (push! val)
-                      (push! val)))
-                  (rotl! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!))
-                            (far  (pop!)))
-                      (push! top)
-                      (push! far)
-                      (push! next)))
-                  (rotr! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!))
-                            (far  (pop!)))
-                      (push! next)
-                      (push! top)
-                      (push! far)))
-                  (over! ()
-                    (let* ( (top  (pop!))
-                            (next (pop!)))
-                      (push! next)
-                      (push! top)
-                      (push! next))))
-       (while stk
-         (funcall ,fun (pop!)))))
-  ;; `(let ((stk ,stack))
-  ;;    (cl-flet ((pop! () (pop stk)))
-  ;;      (while stk
-  ;;        (funcall ,fun (pop!)))))
-  )
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro stackmaprc (stack fun)
+;;   "Map FUN over the elements of STACK using a stack-based approach, discarding the
+;; rresults with a reversed parameter order compared to `stackmapc'."
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   `(let ((stk ,stack))
+;;      (cl-labels ( (pop! () (pop stk))
+;;                   (push! (val) (push val stk))
+;;                   (swap! ()
+;;                     (let* ( (top (pop!))
+;;                             (next (pop!)))
+;;                       (push! top)
+;;                       (push! next)))
+;;                   (dup! ()
+;;                     (let ((val (pop!)))
+;;                       (push! val)
+;;                       (push! val)))
+;;                   (rotl! ()
+;;                     (let* ( (top  (pop!))
+;;                             (next (pop!))
+;;                             (far  (pop!)))
+;;                       (push! top)
+;;                       (push! far)
+;;                       (push! next)))
+;;                   (rotr! ()
+;;                     (let* ( (top  (pop!))
+;;                             (next (pop!))
+;;                             (far  (pop!)))
+;;                       (push! next)
+;;                       (push! top)
+;;                       (push! far)))
+;;                   (over! ()
+;;                     (let* ( (top  (pop!))
+;;                             (next (pop!)))
+;;                       (push! next)
+;;                       (push! top)
+;;                       (push! next))))
+;;        (while stk
+;;          (funcall ,fun (pop!)))))
+;;   ;; `(let ((stk ,stack))
+;;   ;;    (cl-flet ((pop! () (pop stk)))
+;;   ;;      (while stk
+;;   ;;        (funcall ,fun (pop!)))))
+;;   )
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
