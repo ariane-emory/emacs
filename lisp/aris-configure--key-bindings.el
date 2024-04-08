@@ -191,14 +191,16 @@
   ("S-<delete>" . ignore)
   ("M-<down-mouse-1>" . ignore)
 
-  ;; Describe:
+  ;; describe things:
   ("C-c C-f" . describe-function)
   ("M-s-f" . describe-function)
+  ("C-c C-v" . describe-mode)
+  ("M-s-v" . describe-variable)
   ("C-c C-k" . describe-key)
   ("M-s-k" . describe-key)
   ("C-c RET" . describe-mode)
   ("M-s-m" . describe-mode)
-  ;;("C-c C-c" . describe-char)
+  ("C-c C-c" . describe-char)
   ("M-s-c" . describe-char)
 
   ;; Cycle position:
@@ -216,7 +218,7 @@
   ;; eval buffer:
   ("C-x C-z" . aris-eval-buffer)
   ("C-x C-n" . aris-eval-buffer)
-  
+
   ;; Copy without unselecting:
   ("s-c" . aris-ns-copy-including-secondary-keep-selection)
 
@@ -257,7 +259,7 @@
 
   ;; My delete-line:
   ("M-k" . aris-delete-line)
-  
+
   ;; C-h → backspace to match Cocoa text system defaults
   ;; (clobbering some default describe- bindings as a result):
   ("C-h" . aris-delete-backwards-char)
