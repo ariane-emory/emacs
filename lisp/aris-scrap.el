@@ -154,7 +154,7 @@
                                   (unset-flag!))
                                 (--pipe--print "Next command will be processed."))
                               (unset-flag!))
-                             ((return (value) (throw 'return value)))
+                             ;; ((return (value) (throw 'return value)))
                              ;; (expr-fun ;; HERE=============================================
                              ;;   `(lambda (expr ,var-sym)
                              ;;      (cl-flet ((return (value) (throw 'return value)))
@@ -166,7 +166,7 @@
                               (eval (list expr 'e))
                               (eval
                                 `(cl-flet ((return (value) (throw 'return value)))
-                                   ,expr))
+                                   ,expr ))
                               ))) ;; HERE=================================
                       (--pipe--print "Expr result:         %S" result)
                       (cond

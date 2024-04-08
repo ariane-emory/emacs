@@ -1,4 +1,4 @@
-;; -*- lexical-binding: nil; fill-column: 100;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'cl-lib)
 (require 'aris-funs--aliases)
@@ -224,29 +224,26 @@
                      (--pipe--print "Flag:                %S" flag)
                      (if (--is-pipe-command? expr)
                        (set-flag! (alist-get expr *--pipe-commands-to-flags*) nil)
-                       (cl-flet ( (ignore-next-and-unset-flag! (bool)
-                                    (if bool
-                                      (let ((next (pop!)))
-                                        (--pipe--print "Popped 1st %S from %S." next body)
-                                        (when (memq next *--pipe--arity-2-commands*)
-                                          (error
-                                            "Ignoring the %S command is not yet supported." next))
-                                        (when (memq next *--pipe--arity-1-commands*)
-                                          ;; pop the unary command's argument:
-                                          (--pipe--print "Popped 1st %S from %S." (pop!) body)) 
-                                        (unset-flag!))
-                                      (--pipe--print "Next command will be processed."))
-                                    (unset-flag!))
-                                  (expr-fun
-                                    `(lambda (expr ,var-sym)
-                                       ;; `(lambda (expr ,',var)
-                                       (cl-flet ((return (value) (throw 'return value)))
-                                         (--pipe--print "Evaluating expr:     %S." expr)
-                                         ,expr))))
-                         (let ((result (if (fun? expr)
-                                         (eval (list expr ',var)) ;; unsure about this quote.
-                                         (expr-fun expr ,var))))
-                           (--pipe--print "Expr result:         %S" result)
+                       (let ((result
+                               (if (fun? expr)
+                                 (eval (list expr ',var)) ;; unsure about this quote.
+                                 (eval
+                                   `(cl-flet ((return (value) (throw 'return value)))
+                                      ,expr)))))
+                         (--pipe--print "Expr result:         %S" result)
+                         (cl-flet ( (ignore-next-and-unset-flag! (bool)
+                                      (if bool
+                                        (let ((next (pop!)))
+                                          (--pipe--print "Popped 1st %S from %S." next body)
+                                          (when (memq next *--pipe--arity-2-commands*)
+                                            (error
+                                              "Ignoring the %S command is not yet supported." next))
+                                          (when (memq next *--pipe--arity-1-commands*)
+                                            ;; pop the unary command's argument:
+                                            (--pipe--print "Popped 1st %S from %S." (pop!) body)) 
+                                          (unset-flag!))
+                                        (--pipe--print "Next command will be processed."))
+                                      (unset-flag!)))
                            (cond
                              ((flag-is? :RETURN)
                                (--pipe--print "Returning due to command: %S" result)
