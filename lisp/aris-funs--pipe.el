@@ -135,7 +135,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --pipe--make-args (head &rest tail)
+(defmacro --pipe-make-args (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (head-is-cons (cons? head))
           (car-head (when head-is-cons (car head)))
@@ -185,7 +185,7 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args (eval `(--pipe--make-args ,head ,@tail)))
+  (let* ( (args (eval `(--pipe-make-args ,head ,@tail)))
           (return-label `',(gensym "return-"))
           (var  (alist-get 'var  args))
           (body `',(alist-get 'body args)))
