@@ -136,7 +136,7 @@
     (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec)))))
 
 (defmacro dostk (spec &rest body)
-  (--dosk-validate-spec (spec))
+  (--dosk-validate-spec spec)
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
           (stack-sym (gensym "stack-"))
@@ -144,26 +144,18 @@
           (return-label `',(gensym "return-"))
           )
     `(let ( (,stack-sym ,stack))
-       (cl-labels ( ;; (len ()
-                    ;;   (length ,stack-sym))
-                    ;; (stop! ()
-                    ;;   (throw ,return-label nil))
-                    ;; (swap! ()
-                    ;;   (--sostk-require-len>= 2)
-                    ;;   (let* ( (top  (pop!)) (next (pop!)))
-                    ;;     (push! top)
-                    ;;     (push! next)
-                    ;;     (--sostk-update-binding)))
-                    (--sostk-require-len>= (len)
+       (cl-labels ( (require-len>= (len)
                       (unless (length> ,stack-sym (1- len))
                         (signal 'stack-underflow (list ',stack-sym))))
-                    (--sostk-update-binding ()
+                    (update-binding ()
                       (setq stack ,stack-sym)
                       nil)
                     (pop! ()
-                      (prog1
-                        (pop ,stack-sym)
-                        (--dostack-update-binding)))
+                      ;; (prog2
+                      ;; (require-len>= 1)
+                      (pop ,stack-sym)
+                      ;; (--dostack-update-binding)
+                      );;)
                     (return! (&optional val)
                       (throw ,return-label (or val ,val-sym))))
          (catch ,return-label
@@ -175,10 +167,11 @@
            )))))
 
 
+(setq stk '(1 2 3 4 5 6 7 8))
+
 (dostk (x '(1 2 3 4 5 6 7 8))
   (prn "Val: %S" x))
 
-(setq stk '(1 2 3 4 5 6 7 8))
-
 (dostk (x stk)
   (prn "Val: %S" x))
+
