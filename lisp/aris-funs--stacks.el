@@ -35,7 +35,7 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                       nil)
                     (len () (length ,stack-sym))
                     (abort ()
-                      (throw 'stack-abort nil))
+                      (throw 'stack-return nil))
                     (return (&optional val)
                       (throw 'stack-return (or val ,val-sym)))
                     (dup! ()
@@ -85,14 +85,13 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                         (push! next)
                         (--dostack-update-binding))))
          (catch 'stack-return
-           (catch 'stack-abort
-             (while ,stack-sym
-               (let* ( (,val-sym (pop ,stack-sym))
-                       (stack ,stack-sym))
-                 ;;(prn "PROCESS %s" ,val-sym)
-                 ,@body))
-             ;;(prn "FINAL   %s" ,stack-sym)
-             ))))))
+           (while ,stack-sym
+             (let* ( (,val-sym (pop ,stack-sym))
+                     (stack ,stack-sym))
+               ;;(prn "PROCESS %s" ,val-sym)
+               ,@body))
+           ;;(prn "FINAL   %s" ,stack-sym)
+           )))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
