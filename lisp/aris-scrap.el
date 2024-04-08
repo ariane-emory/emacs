@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: nil; fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
-(require 'cl-lib)
+;;(require 'cl-lib)
 (require 'aris-funs--alists)
 (require 'aris-funs--error-when-and-error-unless)
 (require 'aris-funs--lists)

@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'cl-lib)
+;; (require 'cl-lib)
 (require 'aris-funs--aliases)
 (require 'aris-funs--confirm)
 (require 'aris-funs--unsorted)
