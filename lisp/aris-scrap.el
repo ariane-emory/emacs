@@ -115,12 +115,8 @@
       (t (setq out (cons x out)))))
   out)
 
-
-(|> 5)
-
 (dostack (x body)
   (prn "Item:      %S" x)
-  (prn "Body:      %S" body)
   (prn "Remaining: %S" stack))
 
 (let (out)

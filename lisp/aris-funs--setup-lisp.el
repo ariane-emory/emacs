@@ -14,7 +14,7 @@
   (aris-prettify-symbols-lisp)
   (aggressive-indent-mode 1)
   (eldoc-mode 1)
-  (variable-pitch-mode 1)
+  ;; (variable-pitch-mode 1)
   (face-remap-add-relative 'font-lock-function-name-face
     '(:box (:line-width (1 . 1) :color "#ec0" :style pressed-button)))
   ;; (font-lock-add-keywords 'emacs-lisp-mode
