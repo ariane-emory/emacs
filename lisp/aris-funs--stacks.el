@@ -21,8 +21,9 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
   (unless (= 2 (length spec))
     (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
   (let ( (val-sym (car spec))
+         (stack (nth 1 spec))
          (stack-sym (gensym "stack-")))
-    `(let ((,stack-sym ,(nth 1 spec)))
+    `(let ((,stack-sym ,stack))
        (cl-labels (
                     (stack-len () (length ,stack-sym))
                     (push! (val) (push val ,stack-sym))
