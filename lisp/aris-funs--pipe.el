@@ -185,11 +185,13 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args (eval `(--pipe--make-args ,head ,@tail)))
+  (let* ( (return-symbol (gensym "return-"))
+          (args (eval `(--pipe--make-args ,head ,@tail)))
           (var  (alist-get 'var  args))
           (body `',(alist-get 'body args)))
     `(let ((final
-             (let ( (body ,body)
+             (let ( (return-symbol ',return-symbol)
+                    (body ,body)
                     (,var nil)
                     (var-sym ',var)
                     (flag nil))
@@ -197,7 +199,7 @@
                  (print-separator)
                  (--pipe-print "START")
                  (print-separator)
-                 (catch 'return
+                 (catch return-symbol
                    (cl-labels ( (flag-is? (test-flag)
                                   (eq flag (--valid-pipe-flag test-flag)))
                                 (set-flag! (new-flag &optional force)
@@ -237,7 +239,7 @@
                          (set-flag! (alist-get expr *--pipe-commands-to-flags*))
                          (let ((result (eval (if (fun? expr)
                                                (list expr var-sym)
-                                               `(cl-flet ((return (value) (throw 'return value)))
+                                               `(cl-flet ((return (value) (throw return-symbol value)))
                                                   ,expr)))))
                            (labeled-print "Expr result" result)
                            (cl-flet ((drop-next! () 
@@ -259,7 +261,7 @@
                                  (when result (drop-next!)))
                                ((flag-is? :RETURN)
                                  (--pipe-print "Returning due to command: %S" result)
-                                 (throw 'return result))
+                                 (throw return-symbol result))
                                ((and (flag-is? :MAYBE) result)
                                  (store! result))
                                ((and (flag-is? :MAYBE) (not result))
@@ -267,7 +269,7 @@
                                (t (store! result)))
                              (unset-flag!)))))
                      ;; For clarity, explicitly throw the return value if we run out of stack items:
-                     (throw 'return
+                     (throw return-symbol
                        (progn
                          (print-separator)
                          (--pipe-print "Returning this because stack is empty: %S" ,var)
@@ -284,7 +286,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Run the unit tests for the `pipe' function."
   ;; With no spec:
-  (confirm that (|> 1) returns 1)
+  (confirm that (|> 1)
+
+    returns 1)
   (confirm that (|> 1 2) returns 2)
   (confirm that (|> 1 2 3) returns 3)
   (confirm that (|> :return 1 2 3) returns 1)
