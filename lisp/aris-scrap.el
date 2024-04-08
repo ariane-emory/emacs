@@ -106,7 +106,7 @@
 (|> ((e)) 5 double (lambda (n) (+ e 2)) (* e 2))
 
 (let ((final
-        (let ( (body '(5 double (lambda (n) (+ e 2)) (* e 2)))
+        (let ( (body '(5 double (lambda (n) (+ e 2)) (return e) (* e 2)))
                (e nil)
                (var-sym 'e)
                (flag nil))
@@ -154,15 +154,20 @@
                                   (unset-flag!))
                                 (--pipe--print "Next command will be processed."))
                               (unset-flag!))
-                             (expr-fun ;; HERE=============================================
-                               `(lambda (expr ,var-sym)
-                                  (cl-flet ((return (value) (throw 'return value)))
-                                    (--pipe--print "Evaluating expr:     %S." expr)
-                                    ,expr))))
+                             ((return (value) (throw 'return value)))
+                             ;; (expr-fun ;; HERE=============================================
+                             ;;   `(lambda (expr ,var-sym)
+                             ;;      (cl-flet ((return (value) (throw 'return value)))
+                             ;;        (--pipe--print "Evaluating expr:     %S." expr)
+                             ;;        ,expr)))
+                             )
                     (let ((result
                             (if (fun? expr)
                               (eval (list expr 'e))
-                              (expr-fun expr e)))) ;; HERE=================================
+                              (eval
+                                `(cl-flet ((return (value) (throw 'return value)))
+                                   ,expr))
+                              ))) ;; HERE=================================
                       (--pipe--print "Expr result:         %S" result)
                       (cond
                         ((flag-is? :RETURN)
