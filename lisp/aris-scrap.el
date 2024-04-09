@@ -128,7 +128,6 @@
       )
     out))
 
-
 (defun --dosk-validate-spec (spec)
   (unless (cons? spec)
     (signal 'wrong-type-argument (list 'cons? spec)))
@@ -139,10 +138,11 @@
   (--dosk-validate-spec spec)
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
-          (stack-sym (gensym "stack-"))
-          ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
+          ;;(stack-sym (gensym "stack-"))
+          (stack-sym (if (symbolp stack) stack (gensym "stack-")))
           )
-    `(let ( (,stack-sym ,stack))
+    `(let ( (stack-is-sym ,(symbolp stack))
+            (,stack-sym ,stack))
        (cl-labels ( (pop! ()
                       (pop ,stack-sym)))
          (while ,stack-sym
@@ -150,11 +150,46 @@
                   (stack ,stack-sym))
              ,@body))))))
 
-(setq stk '(1 2 3 4 5 6 7 8))
 
-(dostk (x '(1 2 3 4 5 6 7 8))
-  (prn "Val: %S" x))
+(setq stk '(1 2 3 4 5 6 7 8))
 
 (dostk (x stk)
   (prn "Val: %S" x))
+
+(let
+  ((stack-is-sym t)
+    (stk stk))
+  (cl-labels
+    ((pop! nil
+       (pop stk)))
+    (while stk
+      (let
+        ((x
+           (pop!))
+          (stack stk))
+        (prn "Val: %S" x)))))
+
+(dostk (x '(1 2 3 4 5 6 7 8))
+  (prn "Val: %S" x))
+(let
+  ((stack-is-sym nil)
+    (stack-1050
+      '(1 2 3 4 5 6 7 8)))
+  (cl-labels
+    ((pop! nil
+       (pop stack-1050)))
+    (while stack-1050
+      (let
+        ((x
+           (pop!))
+          (stack stack-1050))
+        (prn "Val: %S" x)))))
+
+
+
+
+
+
+
+
 
