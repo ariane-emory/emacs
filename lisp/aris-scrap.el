@@ -122,19 +122,8 @@
   (prn "Val: %S" x)
   (when (eql? x 5) (stop!)))
 
-
-(doforth (x '(1 2 :swap 3 4 5 6 7 8)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-(doforth (x '(1 2 :swap 3 4 5 6 7 8)))
-;; Expands to: 
-;; returns (8 7 6 5 3 4 2 1)
-
-(doforth (x '(1 2 :swap 3 4 5 6 7 8)) (prn "%s" x))
-;; Expands to:
-;;; prints several things and returns nil.
-
-
-(doforth (_ '(:drop 1 2 3)))
+(doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
+  (when (eql? 8 x) (stop!)))

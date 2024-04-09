@@ -190,8 +190,7 @@
           (var  (alist-get 'var  args))
           (body `',(alist-get 'body args)))
     `(let ((final
-             (let ( (body ,body)
-                    (,var nil)
+             (let ( (,var nil)
                     (var-sym ',var)
                     (flag nil))
                (cl-labels ( (print-separator ()(--pipe-print (make-string 80 ?\=)))
@@ -227,7 +226,7 @@
                  (--pipe-print "START")
                  (print-separator)
                  (catch ,return-label
-                   (dostack (expr body)
+                   (dostack (expr ,body)
                      (print-separator)
                      (labeled-print "Current" expr)
                      (labeled-print "Remaining" stack)
