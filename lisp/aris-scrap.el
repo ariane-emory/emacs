@@ -124,8 +124,9 @@
 
 
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro --dostack-mini-forth (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -134,10 +135,13 @@ meant mainly for use in unit tests."
   ;; (let (out)
   (--dostack-validate-spec spec)
   (let* ( (out-sym (unless body (gensym "out-")))
-          (body
-            (or body
-              (list (list 'setq out-sym (list 'cons (car spec) out-sym))))))
-    `(let (,out-sym)
+          (body (or body
+                  `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
+          ;; (body
+          ;;   (or body
+          ;;     (list (list 'setq out-sym (list 'cons (car spec) out-sym)))))
+          )
+    `(let (,@(when out-sym (list out-sym)))
        (dostack ,spec
          (cond
            ((eq :dup x)    (dup!))
@@ -149,14 +153,70 @@ meant mainly for use in unit tests."
            ((eq :swap x)   (swap!))
            ((eq :stop x)   (stop!))
            (t ,@body)))
-       ,out-sym)))
+       (reverse ,out-sym))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
 
-(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8))
-  (prn "%s" x))
+;; Expands to: 
+(let
+  (out-794)
+  (dostack
+    (x
+      '(1 2 :swap 3 4 5 6 7 8))
+    (cond
+      ((eq :dup x)
+        (dup!))
+      ((eq :drop x)
+        (pop!))
+      ((eq :over x)
+        (over!))
+      ((eq :return x)
+        (return!))
+      ((eq :rotl x)
+        (rotl!))
+      ((eq :rotr x)
+        (rotr!))
+      ((eq :swap x)
+        (swap!))
+      ((eq :stop x)
+        (stop!))
+      (t
+        (setq out-794
+          (cons x out-794)))))
+  out-794)
+;; returns (8 7 6 5 3 4 2 1)
+
+(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)) (prn "%s" x))
+
+;; Expands to:
+(let nil
+  (dostack
+    (x
+      '(1 2 :swap 3 4 5 6 7 8))
+    (cond
+      ((eq :dup x)
+        (dup!))
+      ((eq :drop x)
+        (pop!))
+      ((eq :over x)
+        (over!))
+      ((eq :return x)
+        (return!))
+      ((eq :rotl x)
+        (rotl!))
+      ((eq :rotr x)
+        (rotr!))
+      ((eq :swap x)
+        (swap!))
+      ((eq :stop x)
+        (stop!))
+      (t
+        (prn "%s" x))))
+  nil)
+;;; prints several things and returns nil.
+
+
 
 
 
