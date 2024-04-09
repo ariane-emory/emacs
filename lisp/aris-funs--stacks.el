@@ -22,8 +22,8 @@
 (defmacro dostack (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Iterate through a stack, executing the body of code for each element in the
-stack in a scope where STACK is bound to the remaining stack items and the following
-stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
+stack in a scope where STACK is bound to the remaining stack items and the
+followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 `over!', `stack-len'."
   (--dostack-validate-spec spec)
   (let* ( (val-sym (car spec))
@@ -31,10 +31,10 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
           (return-label `',(gensym "return-"))
           (stack-is-sym (symbolp stack))
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
-          (stack-let-binding (unless stack-is-sym
-                               (list (list stack-sym stack)))))
+          (varlist (unless stack-is-sym
+                     (list (list stack-sym stack)))))
     `(catch ,return-label
-       (let (,@stack-let-binding)
+       (let (,@varlist)
          (cl-labels ( (--require-len>= (len)
                         (unless (length> ,stack-sym (1- len))
                           (signal 'stack-underflow (list ',stack-sym))))
