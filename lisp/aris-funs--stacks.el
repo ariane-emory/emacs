@@ -145,6 +145,7 @@ meant mainly for use in dostack's unit tests."
            ((eq? :swap   ,val-sym) (swap!))
            ((eq? :stop   ,val-sym) (stop!))
            (t ,@body)))
+       ;; ,@tail-expr
        (reverse ,out-sym))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
