@@ -228,21 +228,23 @@
                       ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
                       (cl-flet ((drop-next! () 
                                   (let ((next (pop!)))
-                                    (--pipe-print "Popped 1st %S from %S." next (stack))
+                                    ;; (--pipe-print "Popped 1st %S from %S." next (stack))
                                     (when (memq next *--pipe--arity-1-commands*)
-                                      (--pipe-print "Popped command's argument %S from %S."
-                                        (pop!) (stack)))
+                                      (let ((popped (pop!)))
+                                        (--pipe-print "Popped command's argument %S from %S."
+                                          popped (stack))))
                                     (when (memq next *--pipe--arity-2-commands*)
                                       (error "Ignoring the %S command is not yet supported." next)))))
                         (cond
                           ((flag-is? :IGNORE)
-                            (--pipe-print "Not setting %S because %S." result flag))
+                            ;; (--pipe-print "Not setting %S because %S." result flag)
+                            )
                           ((flag-is? :WHEN)
                             (when (not result) (drop-next!)))
                           ((flag-is? :UNLESS)
                             (when result (drop-next!)))
                           ((flag-is? :RETURN)
-                            (--pipe-print "Returning due to command: %S" result)
+                            ;; (--pipe-print "Returning due to command: %S" result)
                             (throw ,return-label result))
                           ((and (flag-is? :MAYBE) result)
                             (store! result))
@@ -257,10 +259,10 @@
                 (throw ,return-label
                   (progn
                     ;; (prndiv)
-                    (--pipe-print "Returning this because stack is empty: %S" ,var)
+                    ;; (--pipe-print "Returning this because stack is empty: %S" ,var)
                     ;; (prndiv)
                     ,var)))))))
-       (--pipe-print "Pipe's final return: %S" final)
+       ;; (--pipe-print "Pipe's final return: %S" final)
        final)))
 
 
@@ -511,7 +513,7 @@
     (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 15)
   
-  ;;(--pipe-print "Ran all pipe test cases.")
+  ;;;; (--pipe-print "Ran all pipe test cases.")
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pipe--run-tests)
