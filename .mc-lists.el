@@ -4,6 +4,8 @@
 (setq mc/cmds-to-run-for-all
       '(
          eldoc-mode
+         kill-rectangle
+         kill-region
          lsp
          mc/mark-previous-lines
          ))
