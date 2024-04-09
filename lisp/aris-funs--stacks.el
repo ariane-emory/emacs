@@ -105,29 +105,28 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --dostack-mini-forth (stack)
+(defmacro --dostack-mini-forth (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A dumb little Forth-like stack machine without enough operations to be very useful,
 meant mainly for use in unit tests."
-  (let (out)
-    (dostack (x stack)
-      ;;(prn (make-string 80 ?\=))
-      ;;(prn "Processing command: %S" x)
-      ;;(prn "Items remaining:    %S" (len))
-      ;;(prn "Stack remaining:    %S" stack)
-      (cond
-        ((eq :dup x)    (dup!))
-        ((eq :drop x)   (pop!))
-        ((eq :over x)   (over!))
-        ((eq :return x) (return!))
-        ((eq :rotl x)   (rotl!))
-        ((eq :rotr x)   (rotr!))
-        ((eq :swap x)   (swap!))
-        ((eq :stop x)   (stop!))
-        (t (setq out (cons x out)))))
-    ;; (prn "Out: %S" out)
-    out))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; (let (out)
+  (--dostack-validate-spec spec)
+  (let ((body (unless body (list (list 'setq 'out (list 'cons (car spec) 'out))))))
+    `(let (out)
+       (dostack ,spec
+         (cond
+           ((eq :dup x)    (dup!))
+           ((eq :drop x)   (pop!))
+           ((eq :over x)   (over!))
+           ((eq :return x) (return!))
+           ((eq :rotl x)   (rotl!))
+           ((eq :rotr x)   (rotr!))
+           ((eq :swap x)   (swap!))
+           ((eq :stop x)   (stop!))
+           (t ,@body)))
+       ,(unless body 'out)
+       )))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
