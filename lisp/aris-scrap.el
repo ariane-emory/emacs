@@ -137,8 +137,8 @@
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
           (stack-let-binding (unless stack-is-sym
                                (list (list stack-sym stack)))))
-    `(catch ,return-label
-       (let (,@stack-let-binding)
+    `(let (,@stack-let-binding)
+       (catch ,return-label         
          (cl-labels ( (--require-len>= (len)
                         (unless (length> ,stack-sym (1- len))
                           (signal 'stack-underflow (list ',stack-sym))))
@@ -201,7 +201,8 @@
              (let ((,val-sym (pop!)))
                ,@body))
            ;; Return whatever part of the stack remains;
-           ,stack-sym)))))
+           (prn "Remaining: %S" ,stack-sym)))
+       ,stack-sym)))
 
 (setq stk '(1 2 3 4 5 6 7 8))
 
@@ -209,6 +210,12 @@
   (prn "Val: %S" x))
 
 (dostk (x '(1 2 3 4 5 6 7 8))
+  (prn "Val: %S" x)
+  (when (eql? x 5) (stop!))
+  )
+
+(dostk (x (append '(1 2 3 4 5) '(6 7 8)))
   (prn "Val: %S" x))
+
 
 
