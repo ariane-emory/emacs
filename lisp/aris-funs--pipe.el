@@ -245,7 +245,7 @@
                           ((and (flag-is? :MAYBE) result)
                             (store! result))
                           ((and (flag-is? :MAYBE) (not result))
-                            )
+                            (--pipe-print "Ignoring %S." result))
                           (t (store! result)))
                         (unset-flag!)))))
                 ;; END OF DOSTACK-LITE BODY ARGUMENT
@@ -254,11 +254,11 @@
                 ;; For clarity, explicitly throw the return value if we run out of stack items:
                 (throw ,return-label
                   (progn
-                    ;; (prndiv)
-                    ;; (--pipe-print "Returning this because stack is empty: %S" ,var)
-                    ;; (prndiv)
+                    (prndiv)
+                    (--pipe-print "Returning this because stack is empty: %S" ,var)
+                    (prndiv)
                     ,var)))))))
-       ;; (--pipe-print "Pipe's final return: %S" final)
+       (--pipe-print "Pipe's final return: %S" final)
        final)))
 
 
@@ -509,7 +509,7 @@
     (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 15)
   
-  ;;;; (--pipe-print "Ran all pipe test cases.")
+  (--pipe-print "Ran all pipe test cases.")
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pipe--run-tests)
