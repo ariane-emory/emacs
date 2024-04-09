@@ -19,6 +19,88 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dostack-lite (spec &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Iterate through a stack, executing the body of code for each element in the
+stack in a scope where STACK is bound to the remaining stack items and the
+followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
+`rotr!', `over!', `stack-len'."
+  (--dostack-validate-spec spec)
+  (let* ( (val-sym (car spec))
+          (stack (nth 1 spec))
+          (return-label `',(gensym "return-"))
+          (stack-is-sym (symbolp stack))
+          (stack-sym (if stack-is-sym stack (gensym "stack-")))
+          (varlist (list (unless stack-is-sym `((,stack-sym ,stack))))))
+    `(catch ,return-label
+       (let ,@varlist
+         (cl-labels ( (require-len>= (len)
+                        (unless (length> ,stack-sym (1- len))
+                          (signal 'stack-underflow (list ',stack-sym))))
+                      ;; (dup! ()
+                      ;;   (require-len>= 1)
+                      ;;   (let ((val (pop!)))
+                      ;;     (push! val)
+                      ;;     (push! val)))
+                      ;; (over! ()
+                      ;;   (require-len>= 2)
+                      ;;   (let* ( (top  (pop!))
+                      ;;           (next (pop!)))
+                      ;;     (push! next)
+                      ;;     (push! top)
+                      ;;     (push! next)))
+                      ;; (len ()
+                      ;;   (length ,stack-sym))
+                      (pop! ()
+                        (pop ,stack-sym))
+                      ;; (push! (&optional val)
+                      ;;   (push (or val ,val-sym) ,stack-sym))
+                      (return! (&optional val)
+                        (throw ,return-label (or val ,val-sym)))
+                      ;; (stop! ()
+                      ;;   (throw ,return-label ,stack-sym))
+                      ;; (rotl! ()
+                      ;;   (require-len>= 3)
+                      ;;   (let* ( (top  (pop!))
+                      ;;           (next (pop!))
+                      ;;           (far  (pop!)))
+                      ;;     (push! top)
+                      ;;     (push! far)
+                      ;;     (push! next)))
+                      ;; (rotr! ()
+                      ;;   (require-len>= 3)
+                      ;;   (let* ( (top  (pop!))
+                      ;;           (next (pop!))
+                      ;;           (far  (pop!)))
+                      ;;     (push! next)
+                      ;;     (push! top)
+                      ;;     (push! far)))
+                      (stack ()
+                        ,stack-sym)
+                      (set-stack! (new-stack)
+                        (setq ,stack-sym new-stack))
+                      ;; (push-back! (value)
+                      ;;   (set-stack! (nconc ,stack-sym (list value))))
+                      ;; (swap! ()
+                      ;;   (require-len>= 2)
+                      ;;   (let* ( (top  (pop!))
+                      ;;           (next (pop!)))
+                      ;;     (push! top)
+                      ;;     (push! next)))
+                      )
+           (while ,stack-sym
+             (let ((,val-sym (pop!)))
+               (prndiv)
+               (prn "dostack: %S" ,val-sym)
+               ,@body)))
+         ;; Return whatever part of the stack remains;
+         ;; (prn "Remaining: %S" ,stack-sym)
+         ;; (nreverse ,stack-sym)
+         ))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dostack (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Iterate through a stack, executing the body of code for each element in the

@@ -193,7 +193,8 @@
              (let ( (,var nil)
                     (var-sym ',var)
                     (flag nil))
-               (cl-labels ( (print-separator ()(--pipe-print (make-string 80 ?\=)))
+               (cl-labels ( (print-separator ()
+                              (--pipe-print (make-string 80 ?\=)))
                             (flag-is? (test-flag)
                               (eq flag (--valid-pipe-flag test-flag)))
                             (set-flag! (new-flag &optional force)
@@ -226,7 +227,7 @@
                  (--pipe-print "START")
                  (print-separator)
                  (catch ,return-label
-                   (dostack (expr ,body)
+                   (dostack-lite (expr ,body)
                      (print-separator)
                      (labeled-print "Current" expr)
                      (labeled-print "Remaining" (stack))
