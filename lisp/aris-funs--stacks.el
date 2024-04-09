@@ -118,11 +118,11 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
 meant mainly for use in dostack's unit tests."
   ;; (let (out)
   (--dostack-validate-spec spec)
-  (let* ( (val-sym (car spec))
-          (out-sym (unless body (gensym "out-")))
-          (body (or body `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
-          (tail-expr (and out-sym `((reverse ,out-sym))))
-          (varlist (when out-sym (list out-sym))))
+  (let* ( (val-sym   (car spec))
+          (out-sym   (unless body      (gensym "out-")))
+          (body      (or     body     `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
+          (tail-expr (and    out-sym  `((reverse ,out-sym))))
+          (varlist   (when   out-sym  `(,out-sym))))
     `(let (,@varlist) 
        (dostack ,spec
          (cond
