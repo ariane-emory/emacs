@@ -107,6 +107,8 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
                           )))
            (while ,stack-sym
              (let ((,val-sym (pop!)))
+               (prndiv)
+               (prn "dostack: %S" ,val-sym)
                ,@body)))
          ;; Return whatever part of the stack remains;
          ;; (prn "Remaining: %S" ,stack-sym)
