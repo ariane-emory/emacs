@@ -229,7 +229,7 @@
                    (dostack (expr ,body)
                      (print-separator)
                      (labeled-print "Current" expr)
-                     (labeled-print "Remaining" stack)
+                     (labeled-print "Remaining" (stack))
                      (labeled-print var-sym ,var)
                      (labeled-print "Flag" flag)
                      (if (--is-pipe-command? expr)
@@ -245,10 +245,10 @@
                          ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
                          (cl-flet ((drop-next! () 
                                      (let ((next (pop!)))
-                                       (--pipe-print "Popped 1st %S from %S." next stack)
+                                       (--pipe-print "Popped 1st %S from %S." next (stack))
                                        (when (memq next *--pipe--arity-1-commands*)
                                          (--pipe-print "Popped command's argument %S from %S."
-                                           (pop!) stack))
+                                           (pop!) (stack)))
                                        (when (memq next *--pipe--arity-2-commands*)
                                          (error
                                            "Ignoring the %S command is not yet supported."

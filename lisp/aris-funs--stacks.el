@@ -125,12 +125,8 @@ meant mainly for use in dostack's unit tests."
   (--dostack-validate-spec spec)
   (let* ( (val-sym   (car spec))
           (out-sym   (gensym "out-"))
-          ;;(out-sym   (unless body      (gensym "out-")))
           (body      (or     body     `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
-          ;;(body      (append body `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
-          ;;(tail-expr (and    out-sym  `((reverse ,out-sym))))
-          ;;(tail-expr                  `((reverse ,out-sym)))
-          ;; (varlist   (when   out-sym  `(,out-sym)))
+          (tail-expr (and    out-sym  `((reverse ,out-sym))))
           )
     `(let (,out-sym) ;; (,@varlist)
        (dostack ,spec
