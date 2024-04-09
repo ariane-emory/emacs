@@ -141,31 +141,14 @@
           (stack (nth 1 spec))
           (stack-sym (gensym "stack-"))
           ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
-          (return-label `',(gensym "return-"))
           )
     `(let ( (,stack-sym ,stack))
-       (cl-labels ( (require-len>= (len)
-                      (unless (length> ,stack-sym (1- len))
-                        (signal 'stack-underflow (list ',stack-sym))))
-                    (update-binding ()
-                      (setq stack ,stack-sym)
-                      nil)
-                    (pop! ()
-                      ;; (prog2
-                      ;; (require-len>= 1)
-                      (pop ,stack-sym)
-                      ;; (--dostack-update-binding)
-                      );;)
-                    (return! (&optional val)
-                      (throw ,return-label (or val ,val-sym))))
-         (catch ,return-label
-           (while ,stack-sym
-             (let* ( (,val-sym (pop ,stack-sym))
-                     (stack ,stack-sym))
-               ,@body))
-           ;;(prn "DOSTK RETURN %s" ,stack-sym)
-           )))))
-
+       (cl-labels ( (pop! ()
+                      (pop ,stack-sym)))
+         (while ,stack-sym
+           (let ( (,val-sym (pop!))
+                  (stack ,stack-sym))
+             ,@body))))))
 
 (setq stk '(1 2 3 4 5 6 7 8))
 
