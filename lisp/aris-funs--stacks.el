@@ -132,7 +132,7 @@ meant mainly for use in dostack's unit tests."
           ;;(tail-expr                  `((reverse ,out-sym)))
           ;; (varlist   (when   out-sym  `(,out-sym)))
           )
-    `(let (,out-sym)
+    `(let (,out-sym) ;; (,@varlist)
        (dostack ,spec
          (prn "doforth: %S with %S ahead." ,val-sym (stack))
          (cond
