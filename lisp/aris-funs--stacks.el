@@ -123,7 +123,7 @@ meant mainly for use in dostack's unit tests."
                         (throw ,return-label
                           (cons (nreverse ,out-sym) (list (stack))))))
              (prn "doforth: %S with %S ahead." ,val-sym (stack))
-             (cond
+             (cond 
                ((eq? :dup    ,val-sym) (dup!))
                ((eq? :drop   ,val-sym) (pop!))
                ((eq? :over   ,val-sym) (over!))
@@ -200,7 +200,7 @@ meant mainly for use in dostack's unit tests."
   (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
                   (when (odd? x) (push-out! x))
                   (when (eql? 8 x) (stop!)))
-    returns (1 3 5))
+    returns ((1 3 5) (9)))
   (prn "Ran all dostack test cases."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack--run-tests)
