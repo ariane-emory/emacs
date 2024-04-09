@@ -81,7 +81,8 @@
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
-
+(setq *pipe--verbose* nil)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *pipe--print-fun* 'indented-message
   "The function to use to print messages."
   :group 'pipe
@@ -127,10 +128,10 @@
 (defmacro --pipe-print (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-fun*"
-  (when *pipe--verbose*
+  ;;(when *pipe--verbose*
     `(progn
        (funcall *pipe--print-fun* ,first ,@rest)
-       nil)))
+       nil));;)
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

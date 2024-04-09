@@ -232,7 +232,7 @@
   final)
 
 (let ((ctr 0))
-  (dostack (x '(1 2 3 4 5 6 7 8 9))
+  (doforthy (x '(1 2 3 4 5 6 7 8 9))
     (cl-incf ctr)
     (prn "ctr:     %S" ctr)
     (prn "current: %S" x)

@@ -169,20 +169,20 @@ meant mainly for use in dostack's unit tests."
   (confirm that stk returns nil)
   
   (setq stk '(1 2 3 4 5 6 7 8))
-  (confirm that (doforthy (x stk) (when (eql? x 5) (stop!))) returns (nil 5 (6 7 8)) )
-  (confirm that stk returns (6 7 8))
-  (confirm that (doforthy (x stk) (when (eql? x 5) (stop!))) returns nil)
-  (confirm that stk returns nil)
-  
-  (setq stk '(1 2 3 4 5 6 7 8))
   (confirm that (dostack (x stk) (when (eql? x 5) (return!))) returns 5)
   (confirm that stk returns (6 7 8))
   (confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns nil)
   (confirm that stk returns nil)
   
-  ;;; (confirm that (doforthy (x '(1 2 3 4 5 6 7 8)) (when (eql? x 5) (stop!))) returns (6 7 8))
+  (confirm that (doforthy (x '(1 2 3 4 5 6 7 8)) (when (eql? x 5) (stop!))) returns (nil 5 (6 7 8)))
   (confirm that (dostack  (x '(1 2 3 4 5 6 7 8))) returns nil)
 
+  (setq stk '(1 2 3 4 5 6 7 8))
+  (confirm that (doforthy (x stk) (when (eql? x 5) (stop!))) returns (nil 5 (6 7 8)) )
+  (confirm that stk returns (6 7 8))
+  (confirm that (doforthy (x stk) (when (eql? x 5) (stop!))) returns nil)
+  (confirm that stk returns nil)
+  
   (confirm that (doforthy (_ '(:drop 3 2 1))) returns (2 1))
   (confirm that (doforthy (_ '(3 :drop 2 1))) returns (3 1))
   (confirm that (doforthy (_ '(3 2 :drop 1))) returns (3 2))
