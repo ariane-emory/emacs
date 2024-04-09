@@ -126,6 +126,7 @@
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro --dostack-mini-forth (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A dumb little Forth-like stack machine without enough operations to be very useful,
@@ -151,59 +152,3 @@ meant mainly for use in unit tests."
        ,(unless body out-sym))))
 
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
-
-;; Expands to:
-(let
-  (out226)
-  (dostack
-    (x
-      '(1 2 :swap 3 4 5 6 7 8))
-    (cond
-      ((eq :dup x)
-        (dup!))
-      ((eq :drop x)
-        (pop!))
-      ((eq :over x)
-        (over!))
-      ((eq :return x)
-        (return!))
-      ((eq :rotl x)
-        (rotl!))
-      ((eq :rotr x)
-        (rotr!))
-      ((eq :swap x)
-        (swap!))
-      ((eq :stop x)
-        (stop!))
-      (t
-        (setq out226
-          (cons x out226)))))
-  nil)
-
-;; But I need it to expand to:
-(let
-  (out226)
-  (dostack
-    (x
-      '(1 2 :swap 3 4 5 6 7 8))
-    (cond
-      ((eq :dup x)
-        (dup!))
-      ((eq :drop x)
-        (pop!))
-      ((eq :over x)
-        (over!))
-      ((eq :return x)
-        (return!))
-      ((eq :rotl x)
-        (rotl!))
-      ((eq :rotr x)
-        (rotr!))
-      ((eq :swap x)
-        (swap!))
-      ((eq :stop x)
-        (stop!))
-      (t
-        (setq out226
-          (cons x out226)))))
-  out226)
