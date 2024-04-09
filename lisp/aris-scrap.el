@@ -108,35 +108,34 @@
      (let ( (e        nil)
             (var-sym 'e)
             (flag     nil))
-       (cl-labels
-         ((flag-is? (test-flag)
-            (eq flag (--valid-pipe-flag test-flag)))
-           (set-flag! (new-flag &optional force)
-             (let ((new-flag (--valid-pipe-flag new-flag t)))
-               (cond
-                 ((and flag new-flag (not force))
-                   (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
-                 (force
-                   (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
-                   (setq flag new-flag))
-                 (t
-                   (--pipe-print "Setting flag from %S to %S%s." flag new-flag
-                     (if force " (forced)" ""))))
-               (setq flag new-flag)))
-           (unset-flag! nil
-             (when flag
-               (--pipe-print "Unsetting flag %S." flag)
-               (set-flag! nil)))
-           (store! (value)
-             (prog1
-               (setq e value)
-               (--pipe-print "Updated %S to %S." var-sym e)))
-           (labeled-print (label value)
-             (let*
-               ((label   (format "%s:" label))
-                 (whites (make-string (- 21 (length label)) 32))
-                 (label  (concat label whites)))
-               (--pipe-print "%s%S" label value))))
+       (cl-labels ((flag-is? (test-flag)
+                     (eq flag (--valid-pipe-flag test-flag)))
+                    (set-flag! (new-flag &optional force)
+                      (let ((new-flag (--valid-pipe-flag new-flag t)))
+                        (cond
+                          ((and flag new-flag (not force))
+                            (error "Cannot set flag to %S when flag is already set to %S."
+                              new-flag flag))
+                          (force
+                            (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                            (setq flag new-flag))
+                          (t
+                            (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+                              (if force " (forced)" ""))))
+                        (setq flag new-flag)))
+                    (unset-flag! nil
+                      (when flag
+                        (--pipe-print "Unsetting flag %S." flag)
+                        (set-flag! nil)))
+                    (store! (value)
+                      (prog1
+                        (setq e value)
+                        (--pipe-print "Updated %S to %S." var-sym e)))
+                    (labeled-print (label value)
+                      (let* ((label   (format "%s:" label))
+                              (whites (make-string (- 21 (length label)) 32))
+                              (label  (concat label whites)))
+                        (--pipe-print "%s%S" label value))))
          (prndiv)
          (--pipe-print "START")
          (prndiv)
@@ -153,19 +152,18 @@
                        (eval (if (fun? expr)
                                (list expr var-sym)
                                (let ((return-label 'return-3260))
-                                 `(cl-flet ((return! (value) (throw ',return-label value)))
+                                 `(cl-flet ((return! (value)
+                                              (throw ',return-label value)))
                                     ,expr))))))
                  (labeled-print "Expr result" result)
-                 (cl-flet
-                   ((drop-next! nil
-                      (let ((next (pop!)))
-                        (--pipe-print "Popped 1st %S from %S." next (stack))
-                        (when (memq next *--pipe--arity-1-commands*)
-                          (--pipe-print "Popped command's argument %S from %S."
-                            (pop!)
-                            (stack)))
-                        (when (memq next *--pipe--arity-2-commands*)
-                          (error "Ignoring the %S command is not yet supported." next)))))
+                 (cl-flet ((drop-next! nil
+                             (let ((next (pop!)))
+                               (--pipe-print "Popped 1st %S from %S." next (stack))
+                               (when (memq next *--pipe--arity-1-commands*)
+                                 (--pipe-print "Popped command's argument %S from %S."
+                                   (pop!) (stack)))
+                               (when (memq next *--pipe--arity-2-commands*)
+                                 (error "Ignoring the %S command is not yet supported." next)))))
                    (cond
                      ((flag-is? :IGNORE)
                        (--pipe-print "Not setting %S because %S." result flag))
