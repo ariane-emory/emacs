@@ -115,13 +115,13 @@ meant mainly for use in dostack's unit tests."
     `(catch ,return-label
        (let (,out-sym)
          (dostack ,spec
-           (cl-flet ( (push-out! (val)
+           (cl-flet ( (out ()
+                        (reverse ,out-sym))
+                      (push-out! (val)
                         (push val ,out-sym))
                       ;; Shadow dostack's throw and stop so that we catch the result:
                       (return! (&optional val) (prn "Throw %s" val)
                         (throw ,return-label (or val ,val-sym)))
-                      ((out ()
-                         ,out-sym))
                       (stop! ()
                         (throw ,return-label
                           (cons (nreverse ,out-sym) (list (stack))))))

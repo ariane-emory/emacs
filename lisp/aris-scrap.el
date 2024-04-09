@@ -102,7 +102,7 @@
 
 (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
   (when (odd? x) (push-out! x))
-  (when (eql? 10 x) (return! (list ((out!) x (stack))))))
+  (when (eql? 10 x) (return! (list (out) x (stack)))))
 
 (catch 'return-15553
   (let
