@@ -202,6 +202,8 @@ meant mainly for use in dostack's unit tests."
                   (when (odd? x) (push-out! x)))
     returns (1 3 5 9))
 
+  (confirm that (doforth (x '(1 2 3 :stop 4 5 6 7 8))) returns ((1 2 3) :stop (4 5 6 7 8)))
+
   (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
                   (when (odd? x) (push-out! x))
                   (when (eql? 8 x) (stop!)))
