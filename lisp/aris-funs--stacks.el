@@ -131,14 +131,14 @@ meant mainly for use in dostack's unit tests."
     `(let ,varlist
        (dostack ,spec
          (cond
-           ((eq :dup    ,val-sym) (dup!))
-           ((eq :drop   ,val-sym) (pop!))
-           ((eq :over   ,val-sym) (over!))
-           ((eq :return ,val-sym) (return!))
-           ((eq :rotl   ,val-sym) (rotl!))
-           ((eq :rotr   ,val-sym) (rotr!))
-           ((eq :swap   ,val-sym) (swap!))
-           ((eq :stop   ,val-sym) (stop!))
+           ((eq? :dup    ,val-sym) (dup!))
+           ((eq? :drop   ,val-sym) (pop!))
+           ((eq? :over   ,val-sym) (over!))
+           ((eq? :return ,val-sym) (return!))
+           ((eq? :rotl   ,val-sym) (rotl!))
+           ((eq? :rotr   ,val-sym) (rotr!))
+           ((eq? :swap   ,val-sym) (swap!))
+           ((eq? :stop   ,val-sym) (stop!))
            (t ,@body)))
        ,@tail-expr)))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
