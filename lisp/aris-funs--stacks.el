@@ -137,6 +137,7 @@ meant mainly for use in dostack's unit tests."
                               (push! next)
                               (push! top)
                               (push! far)))
+                          ;; Shadow dostack's return and stop so that we catch the result:
                           (return! (&optional val) (prn "THROW %s" val)
                             (throw ,return-label (or val ,val-sym)))
                           (stop! ()
