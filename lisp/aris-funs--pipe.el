@@ -199,15 +199,15 @@
                                    (whites (make-string (- 21 (length label)) ?\ ))
                                    (label (concat label whites)))
                              (--pipe-print "%s%S" label value))))
-              (prndiv)
+              ;; (prndiv)
               (--pipe-print "START")
-              (prndiv)
+              ;; (prndiv)
               (catch ,return-label
 
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
                 (dostack (expr ,body)
-                  (prndiv)
+                  ;; (prndiv)
                   (labeled-print "Current" expr)
                   (labeled-print "Remaining" (stack))
                   (labeled-print var-sym ,var)
@@ -253,9 +253,9 @@
                 ;; For clarity, explicitly throw the return value if we run out of stack items:
                 (throw ,return-label
                   (progn
-                    (prndiv)
+                    ;; (prndiv)
                     (--pipe-print "Returning this because stack is empty: %S" ,var)
-                    (prndiv)
+                    ;; (prndiv)
                     ,var)))))))
        (--pipe-print "Pipe's final return: %S" final)
        final)))
@@ -508,7 +508,7 @@
     (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 15)
   
-  (prn "Ran all pipe test cases.")
+  ;;(--pipe-print "Ran all pipe test cases.")
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pipe--run-tests)
