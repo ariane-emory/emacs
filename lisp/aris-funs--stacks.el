@@ -114,10 +114,12 @@ meant mainly for use in dostack's unit tests."
           )
     `(catch ,return-label
        (let (,out-sym)
-         (cl-flet ((out () (reverse ,out-sym)))
+         (cl-flet ( (out ()
+                      (reverse ,out-sym))
+                    (push-out! (val)
+                      (push val ,out-sym)))
            (dostack ,spec
-             (cl-flet ( (push-out! (val)
-                          (push val ,out-sym))
+             (cl-flet ( 
                         ;; Shadow dostack's throw and stop so that we catch the result:
                         (return! (&optional val) (prn "Throw %s" val)
                           (throw ,return-label (or val ,val-sym)))
@@ -136,7 +138,7 @@ meant mainly for use in dostack's unit tests."
                  ((eq? :stop   ,val-sym) (stop!))
                  (t ,@body))
                (prn "after: %S" (stack))))
-           (nreverse ,out-sym))))))
+           (out))))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
