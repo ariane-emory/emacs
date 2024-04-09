@@ -150,9 +150,14 @@ meant mainly for use in unit tests."
            ((eq :stop x)   (stop!))
            (t ,@body)))
        ,out-sym)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
 
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8))
   (prn "%s" x))
+
+
+
 
