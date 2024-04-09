@@ -31,10 +31,9 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
           (return-label `',(gensym "return-"))
           (stack-is-sym (symbolp stack))
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
-          (varlist (unless stack-is-sym
-                     (list (list stack-sym stack)))))
+          (varlist (unless stack-is-sym `(((,stack-sym ,stack))))))
     `(catch ,return-label
-       (let (,@varlist)
+       (let ,@varlist
          (cl-labels ( (--require-len>= (len)
                         (unless (length> ,stack-sym (1- len))
                           (signal 'stack-underflow (list ',stack-sym))))
@@ -122,8 +121,8 @@ meant mainly for use in dostack's unit tests."
           (out-sym   (unless body      (gensym "out-")))
           (body      (or     body     `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
           (tail-expr (and    out-sym  `((reverse ,out-sym))))
-          (varlist   (when   out-sym  `(,out-sym))))
-    `(let (,@varlist) 
+          (varlist   (when   out-sym  `((,out-sym)))))
+    `(let ,@varlist
        (dostack ,spec
          (cond
            ((eq :dup    ,val-sym) (dup!))
