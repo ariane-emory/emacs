@@ -180,20 +180,22 @@
                                  (error "Cannot set flag to %S when flag is already set to %S."
                                    new-flag flag))
                                (force
-                                 (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                                 ;; (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
                                  (setq flag new-flag))
                                (t
-                                 (--pipe-print "Setting flag from %S to %S%s." flag new-flag
-                                   (if force " (forced)" ""))))
+                                 ;; (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+                                 ;;   (if force " (forced)" ""))
+                                 ))
                              (setq flag new-flag)))
                          (unset-flag! ()
                            (when flag
-                             (--pipe-print "Unsetting flag %S." flag)
+                             ;; (--pipe-print "Unsetting flag %S." flag)
                              (set-flag! nil)))
                          (store! (value)
                            (prog1
                              (setq ,var value)
-                             (--pipe-print "Updated %S to %S." var-sym ,var)))
+                             ;; (--pipe-print "Updated %S to %S." var-sym ,var)
+                             ))
                          (labeled-print (label value)
                            (let* ( (label (format "%s:" label))
                                    (whites (make-string (- 21 (length label)) ?\ ))
