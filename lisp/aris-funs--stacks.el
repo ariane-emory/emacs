@@ -144,7 +144,8 @@ meant mainly for use in dostack's unit tests."
            ((eq? :rotr   ,val-sym) (rotr!))
            ((eq? :swap   ,val-sym) (swap!))
            ((eq? :stop   ,val-sym) (stop!))
-           (t ,@body)))
+           (t ,@body))
+         (prn "after: %S" (stack)))
        ;; ,@tail-expr
        (reverse ,out-sym))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
