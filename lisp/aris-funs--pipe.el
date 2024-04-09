@@ -230,7 +230,7 @@
 
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
-                (dostack-lite (expr ,body)
+                (dostack (expr ,body)
                   (prndiv)
                   (labeled-print "Current" expr)
                   (labeled-print "Remaining" (stack))

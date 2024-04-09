@@ -18,35 +18,35 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dostack-lite (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Iterate through a stack, executing the body of code for each element in the
-stack."
-  (--dostack-validate-spec spec)
-  (let* ( (val-sym         (car spec))
-          (stack           (nth 1 spec))
-          (return-label `',(gensym "return-"))
-          (stack-is-sym    (symbolp stack))
-          (stack-sym       (if stack-is-sym stack (gensym "stack-")))
-          (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
-    `(let ,@varlist
-       (cl-labels ( (len           ()          (length ,stack-sym))
-                    (stack         ()          ,stack-sym)
-                    (set-stack!    (new-stack) (setq ,stack-sym new-stack))
-                    (push!         (val)       (push val ,stack-sym))
-                    (require-len>= (len)
-                      (unless (length> ,stack-sym (1- len))
-                        (signal 'stack-underflow (list ',stack-sym))))
-                    (pop! ()
-                      (require-len>= 1)
-                      (pop ,stack-sym)))
-         (while ,stack-sym
-           (let ((,val-sym (pop!)))
-             (prndiv)
-             (prn "dostack: %S" ,val-sym)
-             ,@body))))))
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dostack-lite (spec &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Iterate through a stack, executing the body of code for each element in the
+;; stack."
+;;   (--dostack-validate-spec spec)
+;;   (let* ( (val-sym         (car spec))
+;;           (stack           (nth 1 spec))
+;;           (return-label `',(gensym "return-"))
+;;           (stack-is-sym    (symbolp stack))
+;;           (stack-sym       (if stack-is-sym stack (gensym "stack-")))
+;;           (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
+;;     `(let ,@varlist
+;;        (cl-labels ( (len           ()          (length ,stack-sym))
+;;                     (stack         ()          ,stack-sym)
+;;                     (set-stack!    (new-stack) (setq ,stack-sym new-stack))
+;;                     (push!         (val)       (push val ,stack-sym))
+;;                     (require-len>= (len)
+;;                       (unless (length> ,stack-sym (1- len))
+;;                         (signal 'stack-underflow (list ',stack-sym))))
+;;                     (pop! ()
+;;                       (require-len>= 1)
+;;                       (pop ,stack-sym)))
+;;          (while ,stack-sym
+;;            (let ((,val-sym (pop!)))
+;;              (prndiv)
+;;              (prn "dostack: %S" ,val-sym)
+;;              ,@body))))))
+;;              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -76,17 +76,11 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
                         (require-len>= 1)
                         (pop ,stack-sym))
                       (return! (&optional val)
-                        (throw ,return-label (or val ,val-sym)))
-                      (swap! ()
-                        (require-len>= 2)
-                        (let* ( (top  (pop!))
-                                (next (pop!)))
-                          (push! top)
-                          (push! next))))
+                        (throw ,return-label (or val ,val-sym))))
            (while ,stack-sym
              (let ((,val-sym (pop!)))
-               (prndiv)
-               (prn "dostack: %S" ,val-sym)
+               ;; (prndiv)
+               ;; (prn "dostack: %S" ,val-sym)
                ,@body)))))))
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -137,12 +131,19 @@ meant mainly for use in dostack's unit tests."
                               (push! next)
                               (push! top)
                               (push! far)))
-                          ;; Shadow dostack's return and stop so that we catch the result:
-                          (return! (&optional val) (prn "THROW %s" val)
-                            (throw ,return-label (or val ,val-sym)))
+                          (swap! ()
+                            (require-len>= 2)
+                            (let* ( (top  (pop!))
+                                    (next (pop!)))
+                              (push! top)
+                              (push! next)))
                           (stop! ()
-                            (return! (list (out) ,val-sym (stack)))))
-               (prn "doforthy: %S with %S ahead." ,val-sym (stack))
+                            (return! (list (out) ,val-sym (stack))))
+                          ;; Shadow dostack's return so that we catch the result:
+                          (return! (&optional val)
+                            ;; (prn "THROW %s" val)
+                            (throw ,return-label (or val ,val-sym))))
+               ;; (prn "doforthy: %S with %S ahead." ,val-sym (stack))
                (cond 
                  ((eq? :dup    ,val-sym) (dup!))
                  ((eq? :drop   ,val-sym) (pop!))
@@ -153,7 +154,8 @@ meant mainly for use in dostack's unit tests."
                  ((eq? :swap   ,val-sym) (swap!))
                  ((eq? :stop   ,val-sym) (stop!))
                  (t ,@body))
-               (prn "after: %S" (stack))))
+               ;; (prn "after: %S" (stack))
+               ))
            (out)))))) ;; change this?
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -174,8 +176,8 @@ meant mainly for use in dostack's unit tests."
   (confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns nil)
   (confirm that stk returns nil)
   
-  (confirm that (doforthy (x '(1 2 3 4 5 6 7 8)) (when (eql? x 5) (stop!))) returns (nil 5 (6 7 8)))
   (confirm that (dostack  (x '(1 2 3 4 5 6 7 8))) returns nil)
+  (confirm that (doforthy (x '(1 2 3 4 5 6 7 8)) (when (eql? x 5) (stop!))) returns (nil 5 (6 7 8)))
 
   (setq stk '(1 2 3 4 5 6 7 8))
   (confirm that (doforthy (x stk) (when (eql? x 5) (stop!))) returns (nil 5 (6 7 8)) )
