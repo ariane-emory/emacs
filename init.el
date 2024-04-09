@@ -275,7 +275,9 @@
       
       (use-package-with-message elisp-mode
         :bind
-        ("C-c ." . (lambda () (interactive) (pp-macroexpand-last-sexp t)))
+        ( ("C-c ." . (lambda () (interactive) (pp-macroexpand-last-sexp t)))
+          ("C-x RET" . aris-eval-buffer)
+          )
         :hook
         (emacs-lisp-mode .
           (lambda ()
