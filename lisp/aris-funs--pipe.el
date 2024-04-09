@@ -128,12 +128,13 @@
 (defmacro --pipe-print (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-fun*"
-  ;;(when *pipe--verbose*
-  `(progn
-     (funcall *pipe--print-fun* ,first ,@rest)
-     nil));;)
+  (when *pipe--verbose*
+    `(progn
+       (funcall *pipe--print-fun* ,first ,@rest)
+       nil)))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(--pipe-print "hello %s" 123)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro --pipe-make-args (head &rest tail)
