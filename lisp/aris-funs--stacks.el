@@ -22,9 +22,7 @@
 (defmacro dostack-lite (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Iterate through a stack, executing the body of code for each element in the
-stack in a scope where STACK is bound to the remaining stack items and the
-followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
-`rotr!', `over!', `stack-len'."
+stack."
   (--dostack-validate-spec spec)
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
@@ -32,23 +30,22 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
           (stack-is-sym (symbolp stack))
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
           (varlist (list (unless stack-is-sym `((,stack-sym ,stack))))))
-    `(catch ,return-label
-       (let ,@varlist
-         (cl-labels ( (require-len>= (len)
-                        (unless (length> ,stack-sym (1- len))
-                          (signal 'stack-underflow (list ',stack-sym))))
-                      (len ()                  (length ,stack-sym))
-                      (stack ()                ,stack-sym)
-                      (set-stack! (new-stack)  (setq ,stack-sym new-stack))
-                      (push! (val)             (push val ,stack-sym))
-                      (pop! ()
-                        (require-len>= 1)
-                        (pop ,stack-sym)))
-           (while ,stack-sym
-             (let ((,val-sym (pop!)))
-               (prndiv)
-               (prn "dostack: %S" ,val-sym)
-               ,@body)))))))
+    `(let ,@varlist
+       (cl-labels ( (require-len>= (len)
+                      (unless (length> ,stack-sym (1- len))
+                        (signal 'stack-underflow (list ',stack-sym))))
+                    (len ()                  (length ,stack-sym))
+                    (stack ()                ,stack-sym)
+                    (set-stack! (new-stack)  (setq ,stack-sym new-stack))
+                    (push! (val)             (push val ,stack-sym))
+                    (pop! ()
+                      (require-len>= 1)
+                      (pop ,stack-sym)))
+         (while ,stack-sym
+           (let ((,val-sym (pop!)))
+             (prndiv)
+             (prn "dostack: %S" ,val-sym)
+             ,@body))))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

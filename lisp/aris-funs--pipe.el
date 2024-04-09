@@ -193,9 +193,7 @@
              (let ( (,var nil)
                     (var-sym ',var)
                     (flag nil))
-               (cl-labels ( (print-separator ()
-                              (--pipe-print (make-string 80 ?\=)))
-                            (flag-is? (test-flag)
+               (cl-labels ( (flag-is? (test-flag)
                               (eq flag (--valid-pipe-flag test-flag)))
                             (set-flag! (new-flag &optional force)
                               (let ((new-flag (--valid-pipe-flag new-flag t)))
@@ -223,12 +221,12 @@
                                       (whites (make-string (- 21 (length label)) ?\ ))
                                       (label (concat label whites)))
                                 (--pipe-print "%s%S" label value))))
-                 (print-separator)
+                 (prndiv)
                  (--pipe-print "START")
-                 (print-separator)
+                 (prndiv)
                  (catch ,return-label
                    (dostack-lite (expr ,body)
-                     (print-separator)
+                     (prndiv)
                      (labeled-print "Current" expr)
                      (labeled-print "Remaining" (stack))
                      (labeled-print var-sym ,var)
@@ -273,9 +271,9 @@
                    ;; For clarity, explicitly throw the return value if we run out of stack items:
                    (throw ,return-label
                      (progn
-                       (print-separator)
+                       (prndiv)
                        (--pipe-print "Returning this because stack is empty: %S" ,var)
-                       (print-separator)
+                       (prndiv)
                        ,var)))))))
        (--pipe-print "Pipe's final return: %S" final)
        final)))

@@ -109,7 +109,8 @@ last expression in `body'."
 (defun indented-message (fmt &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a message with the current indentation level."
-  (apply 'message (format "%s%s" (indent-string) fmt) rest))
+  (apply 'message (format "%s%s" (indent-string) fmt) rest)
+  nil)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
