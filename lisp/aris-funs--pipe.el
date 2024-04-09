@@ -81,7 +81,7 @@
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
-(setq *pipe--verbose* nil)
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *pipe--print-fun* 'indented-message
   "The function to use to print messages."
@@ -129,9 +129,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-fun*"
   ;;(when *pipe--verbose*
-    `(progn
-       (funcall *pipe--print-fun* ,first ,@rest)
-       nil));;)
+  `(progn
+     (funcall *pipe--print-fun* ,first ,@rest)
+     nil));;)
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -300,23 +300,23 @@
   (confirm that (|> :return 1 2 3) returns 1)
   (confirm that (|> 1 :return 2 3) returns 2)
   (confirm that (|> 1 2 :return 3) returns 3)
-
+  
   (confirm that (|> : 1 2) returns 2)
   (confirm that (|> 1 : 2) returns 1)
   (confirm that (|> :ignore 1 2) returns 2)
   (confirm that (|> 1 :ignore 2) returns 1)
-
+  
   (confirm that (|> (return! 1) 2 3) returns 1)
   (confirm that (|> 1 (return! 2) 3) returns 2)
   (confirm that (|> 1 2 (return! 3)) returns 3)
-
+  
   (confirm that (|> 1 :when odd? 100) returns 100)
   (confirm that (|> 2 :when odd? 100) returns 2)
   (confirm that (|> 1 :when odd? :return 100) returns 100)
   (confirm that (|> 2 :when odd? :return 100) returns 2)
   (confirm that (|> 1 :when odd? (return! 100)) returns 100)
   (confirm that (|> 2 :when odd? (return! 100)) returns 2)
-
+  
   (confirm that (|> 2 :unless odd? 100) returns 100)
   (confirm that (|> 1 :unless odd? 100) returns 1)
   (confirm that (|> 2 :unless odd? :return 100) returns 100)
