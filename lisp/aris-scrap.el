@@ -98,22 +98,18 @@
 
 (setq stk '(1 2 3 4 5 6 7 8))
 
-(dostack (x stk)
-  (prn "Val: %S" x)
-  (when (eql? x 5) (stop!)))
+(confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns (6 7 8))
+(confirm that stk returns (6 7 8))
+(confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns nil)
 
-(dostack (x stk)
-  (prn "Val: %S" x)
-  (when (eql? x 5) (return!)))
+(setq stk '(1 2 3 4 5 6 7 8))
 
-(dostack (x stk)
-  (prn "Val: %S" x)
-  (when (eql? x 5) (return! 99)))
+(confirm that (dostack (x stk) (when (eql? x 5) (return!))) returns 5)
 
-(dostack (x '(1 2 3 4 5 6 7 8))
-  (prn "Val: %S" x)
-  (when (eql? x 5) (stop!)))
 
+
+
+stk
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9)))
