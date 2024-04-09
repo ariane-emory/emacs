@@ -132,11 +132,11 @@
   (--dostack-validate-spec spec)
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
+          (return-label `',(gensym "return-"))
           (stack-is-sym (symbolp stack))
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
           (stack-let-binding (unless stack-is-sym
-                               (list (list stack-sym stack))))
-          (return-label `',(gensym "return-")))
+                               (list (list stack-sym stack)))))
     `(catch ,return-label
        (let (,@stack-let-binding)
          (cl-labels ( (--require-len>= (len)

@@ -28,8 +28,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
   (--dostack-validate-spec spec)
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
-          (stack-sym (gensym "stack-"))
-          (return-label `',(gensym "return-")))
+          (return-label `',(gensym "return-"))
+          (stack-sym (gensym "stack-")))
     `(catch ,return-label
        (let ( (,stack-sym ,stack))
          (cl-labels ( (--require-len>= (len)

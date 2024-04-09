@@ -13,6 +13,7 @@
 (defalias 'bound?          'boundp)
 (defalias 'bound-and-true? 'bound-and-true-p)
 (defalias 'cons?           'consp)
+(defalias 'copy-list       'cl-copy-list)
 (defalias 'equal?          'equal)
 (defalias 'eq?             'eq)
 (defalias 'eql?            'eql)
