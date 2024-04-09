@@ -242,7 +242,7 @@
                                                       (throw ',return-label value)))
                                             ,expr))))))
                          (labeled-print "Expr result" result)
-                         ;; because this calls pop!, it has to be inside of the distack!
+                         ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
                          (cl-flet ((drop-next! () 
                                      (let ((next (pop!)))
                                        (--pipe-print "Popped 1st %S from %S." next stack)

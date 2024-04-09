@@ -115,7 +115,7 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
 (defmacro doforth (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A dumb little Forth-like stack machine without enough operations to be very useful,
-meant mainly for use in unit tests."
+meant mainly for use in dostack's unit tests."
   ;; (let (out)
   (--dostack-validate-spec spec)
   (let* ( (val-sym (car spec))
