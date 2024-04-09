@@ -200,9 +200,10 @@
                            (let* ( (label (format "%s:" label))
                                    (whites (make-string (- 21 (length label)) ?\ ))
                                    (label (concat label whites)))
-                             (--pipe-print "%s%S" label value))))
+                             ;; (--pipe-print "%s%S" label value)
+                             )))
               ;; (prndiv)
-              (--pipe-print "START")
+              ;; (--pipe-print "START")
               ;; (prndiv)
               (catch ,return-label
 
