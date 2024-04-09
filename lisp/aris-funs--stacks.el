@@ -109,8 +109,7 @@ meant mainly for use in dostack's unit tests."
   (let* ( (return-label `',(gensym "return-"))
           (val-sym   (car spec))
           (out-sym   (gensym "out-"))
-          (body      (or body `((push-out! ,val-sym))))
-          )
+          (body      (or body `((push-out! ,val-sym)))))
     `(catch ,return-label
        (let (,out-sym)
          (cl-flet ( (out ()
@@ -198,16 +197,16 @@ meant mainly for use in dostack's unit tests."
                   (when (odd? x) (push-out! x)))
     returns (1 3 5 9))
 
-  (confirm that (doforthy (x '(1 2 3 :stop 4 5 6 7 8))) returns ((1 2 3) :stop (4 5 6 7 8)))
+  (confirm that (doforthy (x '(1 2 3 :stop 4 5 6 7))) returns ((1 2 3) :stop (4 5 6 7)))
   (confirm that (doforthy (x '(1 2 3 :return 4 5 6 7 8))) returns :return)
 
   (confirm that (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
-                  (when (odd? x) (push-out! x))
+                  (when (odd? x)   (push-out! x))
                   (when (eql? 8 x) (stop!)))
     returns ((1 3 5) 8 (9)))
 
   (confirm that (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
-                  (when (odd? x) (push-out! x))
+                  (when (odd? x)    (push-out! x))
                   (when (eql? 10 x) (stop!))) 
     returns ((1 3 5 9) 10 (11 12)))
   
