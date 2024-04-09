@@ -52,8 +52,7 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
                       (len ()
                         (length ,stack-sym))
                       (pop! ()
-                        (prog1
-                          (pop ,stack-sym)))
+                        (pop ,stack-sym))
                       (push! (&optional val)
                         (push (or val ,val-sym) ,stack-sym))
                       (return! (&optional val)

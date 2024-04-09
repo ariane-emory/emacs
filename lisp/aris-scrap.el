@@ -97,6 +97,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
-  (when (odd? x) (push-out! x))
-  (when (eql? 3 x) (return! (* x x))))
+  (cond
+    ((eql? 3 x) (push-out! (* x 100)))
+    ((odd? x) (push-out! x))))
+
 
