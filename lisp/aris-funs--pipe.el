@@ -185,14 +185,14 @@
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming."
-  (let* ( (args (eval `(--pipe-make-args ,head ,@tail)))
+  (let* ( (args            (eval `(--pipe-make-args ,head ,@tail)))
           (return-label `',(gensym "return-"))
-          (var  (alist-get 'var  args))
-          (body `',(alist-get 'body args)))
+          (var             (alist-get 'var  args))
+          (body         `',(alist-get 'body args)))
     `(let ((final
-             (let ( (,var nil)
+             (let ( (,var      nil)
                     (var-sym ',var)
-                    (flag nil))
+                    (flag      nil))
                (cl-labels ( (flag-is? (test-flag)
                               (eq flag (--valid-pipe-flag test-flag)))
                             (set-flag! (new-flag &optional force)
