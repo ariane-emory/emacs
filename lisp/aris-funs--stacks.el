@@ -18,88 +18,6 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dostack (spec &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Iterate through a stack, executing the body of code for each element in the
-;; stack in a scope where STACK is bound to the remaining stack items and the following
-;; stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
-;; `over!', `stack-len'."
-;;   (--dostack-validate-spec spec)
-;;   (let* ( (val-sym (car spec))
-;;           (stack (nth 1 spec))
-;;           (return-label `',(gensym "return-"))
-;;           (stack-sym (gensym "stack-")))
-;;     `(catch ,return-label
-;;        (let ( (,stack-sym ,stack))
-;;          (cl-labels ( (--require-len>= (len)
-;;                         (unless (length> ,stack-sym (1- len))
-;;                           (signal 'stack-underflow (list ',stack-sym))))
-;;                       (--update-binding ()
-;;                         (setq stack ,stack-sym)
-;;                         nil)
-;;                       (dup! ()
-;;                         (--require-len>= 1)
-;;                         (let ((val (pop!)))
-;;                           (push! val)
-;;                           (push! val)
-;;                           (--update-binding)))
-;;                       (over! ()
-;;                         (--require-len>= 2)
-;;                         (let* ( (top  (pop!))
-;;                                 (next (pop!)))
-;;                           (push! next)
-;;                           (push! top)
-;;                           (push! next)
-;;                           (--update-binding)))
-;;                       (len ()
-;;                         (length ,stack-sym))
-;;                       (pop! ()
-;;                         (prog1
-;;                           (pop ,stack-sym)
-;;                           (--update-binding)))
-;;                       (push! (&optional val)
-;;                         (push (or val ,val-sym) ,stack-sym)
-;;                         (--update-binding))
-;;                       (return! (&optional val)
-;;                         (throw ,return-label (or val ,val-sym)))
-;;                       (rotl! ()
-;;                         (--require-len>= 3)
-;;                         (let* ( (top  (pop!))
-;;                                 (next (pop!))
-;;                                 (far  (pop!)))
-;;                           (push! top)
-;;                           (push! far)
-;;                           (push! next)
-;;                           (--update-binding)))
-;;                       (rotr! ()
-;;                         (--require-len>= 3)
-;;                         (let* ( (top  (pop!))
-;;                                 (next (pop!))
-;;                                 (far  (pop!)))
-;;                           (push! next)
-;;                           (push! top)
-;;                           (push! far)
-;;                           (--update-binding)))
-;;                       (stop! ()
-;;                         (throw ,return-label nil))
-;;                       (swap! ()
-;;                         (--require-len>= 2)
-;;                         (let* ( (top  (pop!))
-;;                                 (next (pop!)))
-;;                           (push! top)
-;;                           (push! next)
-;;                           (--update-binding))))
-;;            (while ,stack-sym
-;;              (let* ( (,val-sym (pop ,stack-sym))
-;;                      (stack ,stack-sym))
-;;                ;;(prn "PROCESS %s" ,val-sym)
-;;                ,@body))
-;;            ;;(prn "FINAL   %s" ,stack-sym)
-;;            )))))
-;;            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dostack (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,8 +33,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
           (stack-let-binding (unless stack-is-sym
                                (list (list stack-sym stack)))))
-    `(let (,@stack-let-binding)
-       (catch ,return-label         
+    `(catch ,return-label
+       (let (,@stack-let-binding)
          (cl-labels ( (--require-len>= (len)
                         (unless (length> ,stack-sym (1- len))
                           (signal 'stack-underflow (list ',stack-sym))))
@@ -148,6 +66,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                         (--update-binding))
                       (return! (&optional val)
                         (throw ,return-label (or val ,val-sym)))
+                      (stop! ()
+                        (throw ,return-label ,stack-sym))
                       (rotl! ()
                         (--require-len>= 3)
                         (let* ( (top  (pop!))
@@ -166,8 +86,8 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                           (push! top)
                           (push! far)
                           (--update-binding)))
-                      (stop! ()
-                        (throw ,return-label nil))
+                      (stack ()
+                        ,stack-sym)
                       (swap! ()
                         (--require-len>= 2)
                         (let* ( (top  (pop!))
@@ -177,12 +97,12 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
                           (--update-binding))))
            (while ,stack-sym
              (let ((,val-sym (pop!)))
-               ,@body))
-           ;; (prn "Remaining: %S" ,stack-sym)
-           ))
-       ;; Return whatever part of the stack remains;
-       ,stack-sym)))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ,@body)))
+         ;; Return whatever part of the stack remains;
+         ;; (prn "Remaining: %S" ,stack-sym)
+         ,stack-sym))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --dostack-mini-forth (stack)

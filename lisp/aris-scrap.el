@@ -95,124 +95,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; STACKS:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq body '(:drop 3 2 1))
-
-;; (let (out)
-;;   (dostack (x body)
-;;     ;;(prn (make-string 80 ?\=))
-;;     ;;(prn "Processing command: %S" x)
-;;     ;;(prn "Items remaining:    %S" (stack-len))
-;;     ;;(prn "Stack remaining:    %S" stack)
-;;     (cond
-;;       ((eq :drop x) (pop!))
-;;       ((eq :dup x)  (dup!))
-;;       ((eq :over x) (over!))
-;;       ((eq :rotl x) (rotl!))
-;;       ((eq :rotr x) (rotr!))
-;;       ((eq :swap x) (swap!))
-;;       (t (setq out (cons x out)))))
-;;   out)
-
-(when nil
-  (dostack (x body)
-    (prn "Item:      %S" x)
-    (prn "Remaining: %S" stack))
-
-  (let (out)
-    (dostack (x '(1 2 3 4 5 6 7 8 9))
-      (prn "Item:      %S" x)
-      (prn "Remaining: %S" stack)
-      (when (eql x 4) (push! 22))
-      (when (eql x 7) (return! 99))
-      (setq out (cons x out))
-      )
-    out))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dostack (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Iterate through a stack, executing the body of code for each element in the
-stack in a scope where STACK is bound to the remaining stack items and the following
-stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
-`over!', `stack-len'."
-  (--dostack-validate-spec spec)
-  (let* ( (val-sym (car spec))
-          (stack (nth 1 spec))
-          (return-label `',(gensym "return-"))
-          (stop-label `',(gensym "stop-"))
-          (stack-is-sym (symbolp stack))
-          (stack-sym (if stack-is-sym stack (gensym "stack-")))
-          (stack-let-binding (unless stack-is-sym
-                               (list (list stack-sym stack)))))
-    `(catch ,return-label
-       (let (,@stack-let-binding)
-         (catch ,stop-label         
-           (cl-labels ( (--require-len>= (len)
-                          (unless (length> ,stack-sym (1- len))
-                            (signal 'stack-underflow (list ',stack-sym))))
-                        (--update-binding ()
-                          (setq stack ,stack-sym)
-                          nil)
-                        (dup! ()
-                          (--require-len>= 1)
-                          (let ((val (pop!)))
-                            (push! val)
-                            (push! val)
-                            (--update-binding)))
-                        (over! ()
-                          (--require-len>= 2)
-                          (let* ( (top  (pop!))
-                                  (next (pop!)))
-                            (push! next)
-                            (push! top)
-                            (push! next)
-                            (--update-binding)))
-                        (len ()
-                          (length ,stack-sym))
-                        (pop! ()
-                          (prog1
-                            (pop ,stack-sym)
-                            (--update-binding)))
-                        (push! (&optional val)
-                          (push (or val ,val-sym) ,stack-sym)
-                          (--update-binding))
-                        (return! (&optional val)
-                          (throw ,return-label (or val ,val-sym)))
-                        (stop! ()
-                          (throw ,stop-label nil))
-                        (rotl! ()
-                          (--require-len>= 3)
-                          (let* ( (top  (pop!))
-                                  (next (pop!))
-                                  (far  (pop!)))
-                            (push! top)
-                            (push! far)
-                            (push! next)
-                            (--update-binding)))
-                        (rotr! ()
-                          (--require-len>= 3)
-                          (let* ( (top  (pop!))
-                                  (next (pop!))
-                                  (far  (pop!)))
-                            (push! next)
-                            (push! top)
-                            (push! far)
-                            (--update-binding)))
-                        (swap! ()
-                          (--require-len>= 2)
-                          (let* ( (top  (pop!))
-                                  (next (pop!)))
-                            (push! top)
-                            (push! next)
-                            (--update-binding))))
-             (while ,stack-sym
-               (let ((,val-sym (pop!)))
-                 ,@body))))
-         ;; Return whatever part of the stack remains;
-         (prn "Remaining: %S" ,stack-sym)
-         ,stack-sym))))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq stk '(1 2 3 4 5 6 7 8))
 
@@ -224,11 +106,19 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
   (prn "Val: %S" x)
   (when (eql? x 5) (return!)))
 
+(dostack (x stk)
+  (prn "Val: %S" x)
+  (when (eql? x 5) (return! 99)))
+
 (dostack (x '(1 2 3 4 5 6 7 8))
   (prn "Val: %S" x)
   (when (eql? x 5) (stop!)))
 
 (dostack (x '(1 2 3 4 5 6 7 8))
   (prn "Val: %S" x)
-  (when (eql? x 5) (return!)))
+  (when (eql? x 5) (return! (cons x . (stack)))))
+
+(dostack (x '(1 2 3 4 5 6 7 8))
+  (prn "Val: %S" x)
+  (when (eql? x 5) (return! 99)))
 
