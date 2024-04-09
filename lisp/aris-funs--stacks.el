@@ -31,7 +31,7 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
           (return-label `',(gensym "return-"))
           (stack-is-sym (symbolp stack))
           (stack-sym (if stack-is-sym stack (gensym "stack-")))
-          (varlist (unless stack-is-sym `(((,stack-sym ,stack))))))
+          (varlist (list (unless stack-is-sym `((,stack-sym ,stack))))))
     `(catch ,return-label
        (let ,@varlist
          (cl-labels ( (--require-len>= (len)
