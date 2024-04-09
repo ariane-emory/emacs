@@ -55,14 +55,18 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* t
+(defcustom *pipe--verbose* nil
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *pipe--print-fun* 'indented-message
   "The function to use to print messages."
+  :group 'pipe
+  :type 'function)
+
+(defcustom *pipe--print-divider-fun* 'prndiv
+  "The function to use to print dividers."
   :group 'pipe
   :type 'function)
 
@@ -108,6 +112,15 @@
   "Wrap *pipe--print-fun*"
   (when *pipe--verbose*
     `(ignore (funcall *pipe--print-fun* ,first ,@rest))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro --pipe-prndiv ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Wrap *pipe--print-fun*"
+  (when *pipe--verbose*
+    `(ignore (funcall *pipe--print-divider-fun*))))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -199,15 +212,15 @@
                                    (whites (make-string (- 21 (length label)) ?\ ))
                                    (label (concat label whites)))
                              (--pipe-print "%s%S" label value))))
-              (prndiv)
+              (--pipe-prndiv)
               (--pipe-print "START")
-              (prndiv)
+              (--pipe-prndiv)
               (catch ,return-label
 
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
                 (dostack (expr ,body)
-                  (prndiv)
+                  (--pipe-prndiv)
                   (labeled-print "Current" expr)
                   (labeled-print "Remaining" (stack))
                   (labeled-print var-sym ,var)
@@ -254,9 +267,9 @@
                 ;; For clarity, explicitly throw the return value if we run out of stack items:
                 (throw ,return-label
                   (progn
-                    (prndiv)
+                    (--pipe-prndiv)
                     (--pipe-print "Returning this because stack is empty: %S" ,var)
-                    (prndiv)
+                    (--pipe-prndiv)
                     ,var)))))))
        (--pipe-print "Pipe's final return: %S" final)
        final)))
