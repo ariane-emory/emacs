@@ -127,9 +127,10 @@ meant mainly for use in dostack's unit tests."
           (out-sym   (gensym "out-"))
           ;;(out-sym   (unless body      (gensym "out-")))
           (body      (or     body     `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
-          (tail-expr (and    out-sym  `((reverse ,out-sym))))
-          (varlist   (when   out-sym  `((,out-sym)))))
-    `(let ,varlist
+          ;; (tail-expr (and    out-sym  `((reverse ,out-sym))))
+          ;; (varlist   (when   out-sym  `((,out-sym))))
+          )
+    `(let (,out-sym)
        (dostack ,spec
          (prn "doforth: %S with %S ahead." ,val-sym (stack))
          (cond
