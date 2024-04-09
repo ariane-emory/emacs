@@ -77,8 +77,6 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
                         (pop ,stack-sym))
                       (return! (&optional val)
                         (throw ,return-label (or val ,val-sym)))
-                      ;; (stop! ()
-                      ;;   (throw ,return-label ,stack-sym))
                       (swap! ()
                         (require-len>= 2)
                         (let* ( (top  (pop!))
@@ -89,12 +87,8 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
              (let ((,val-sym (pop!)))
                (prndiv)
                (prn "dostack: %S" ,val-sym)
-               ,@body)))
-         ;; Return whatever part of the stack remains;
-         ;; (prn "Remaining: %S" ,stack-sym)
-         ;; (nreverse ,stack-sym)
-         ))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ,@body)))))))
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,10 +104,8 @@ meant mainly for use in dostack's unit tests."
           (body      (or body `((push-out! ,val-sym)))))
     `(catch ,return-label
        (let (,out-sym)
-         (cl-flet ( (out ()
-                      (reverse ,out-sym))
-                    (push-out! (&optional val)
-                      (push (or val ,val-sym) ,out-sym)))
+         (cl-flet ( (out       ()              (reverse ,out-sym))
+                    (push-out! (&optional val) (push (or val ,val-sym) ,out-sym)))
            (dostack ,spec
              (cl-labels ( (push-back! (value)
                             (set-stack! (nconc (stack) (list value))))
@@ -145,7 +137,6 @@ meant mainly for use in dostack's unit tests."
                               (push! next)
                               (push! top)
                               (push! far)))
-                          ;; Shadow dostack's return and stop so that we catch the result:
                           (return! (&optional val) (prn "THROW %s" val)
                             (throw ,return-label (or val ,val-sym)))
                           (stop! ()
