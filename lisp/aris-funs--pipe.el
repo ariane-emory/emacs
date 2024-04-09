@@ -226,6 +226,9 @@
               (--pipe-print "START")
               (prndiv)
               (catch ,return-label
+
+                
+                ;; BEGINNING OF DOSTACK INVOCATION:
                 (dostack-lite (expr ,body)
                   (prndiv)
                   (labeled-print "Current" expr)
@@ -267,6 +270,9 @@
                             )
                           (t (store! result)))
                         (unset-flag!)))))
+                ;; END OF DOSTACK-LITE BODY ARGUMENT
+
+                
                 ;; For clarity, explicitly throw the return value if we run out of stack items:
                 (throw ,return-label
                   (progn

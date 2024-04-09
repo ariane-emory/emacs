@@ -24,12 +24,12 @@
   "Iterate through a stack, executing the body of code for each element in the
 stack."
   (--dostack-validate-spec spec)
-  (let* ( (val-sym (car spec))
-          (stack (nth 1 spec))
+  (let* ( (val-sym         (car spec))
+          (stack           (nth 1 spec))
           (return-label `',(gensym "return-"))
-          (stack-is-sym (symbolp stack))
-          (stack-sym (if stack-is-sym stack (gensym "stack-")))
-          (varlist (list (unless stack-is-sym `((,stack-sym ,stack))))))
+          (stack-is-sym    (symbolp stack))
+          (stack-sym       (if stack-is-sym stack (gensym "stack-")))
+          (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
     `(let ,@varlist
        (cl-labels ( (len           ()          (length ,stack-sym))
                     (stack         ()          ,stack-sym)
@@ -46,7 +46,7 @@ stack."
              (prndiv)
              (prn "dostack: %S" ,val-sym)
              ,@body))))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,12 +57,12 @@ stack in a scope where STACK is bound to the remaining stack items and the
 followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 `rotr!', `over!', `stack-len'."
   (--dostack-validate-spec spec)
-  (let* ( (val-sym (car spec))
-          (stack (nth 1 spec))
+  (let* ( (val-sym         (car spec))
+          (stack           (nth 1 spec))
           (return-label `',(gensym "return-"))
-          (stack-is-sym (symbolp stack))
-          (stack-sym (if stack-is-sym stack (gensym "stack-")))
-          (varlist (list (unless stack-is-sym `((,stack-sym ,stack))))))
+          (stack-is-sym    (symbolp stack))
+          (stack-sym       (if stack-is-sym stack (gensym "stack-")))
+          (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
     `(catch ,return-label
        (let ,@varlist
          (cl-labels ( (require-len>= (len)

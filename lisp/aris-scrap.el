@@ -103,13 +103,17 @@
 
 (|> ((e)) 5 (+ e 7) double (+ e 3) neg (lambda (n) (* 3 n)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; full expansion of dostack-lite/pipe:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let
   ((final
      (let ( (e        nil)
             (var-sym 'e)
             (flag     nil))
-       (cl-labels ((flag-is? (test-flag)
-                     (eq flag (--valid-pipe-flag test-flag)))
+       (cl-labels ( (flag-is? (test-flag)
+                      (eq flag (--valid-pipe-flag test-flag)))
                     (set-flag! (new-flag &optional force)
                       (let ((new-flag (--valid-pipe-flag new-flag t)))
                         (cond
@@ -140,48 +144,79 @@
          (--pipe-print "START")
          (prndiv)
          (catch 'return-3260
-           (dostack-lite (expr '(5 (+ e 7) double (+ e 3) neg (lambda (n) (* 3 n))))
-             (prndiv)
-             (labeled-print "Current" expr)
-             (labeled-print "Remaining" (stack))
-             (labeled-print var-sym e)
-             (labeled-print "Flag" flag)
-             (if (--is-pipe-command? expr)
-               (set-flag! (alist-get expr *--pipe-commands-to-flags*))
-               (let ((result
-                       (eval (if (fun? expr)
-                               (list expr var-sym)
-                               (let ((return-label 'return-3260))
-                                 `(cl-flet ((return! (value)
-                                              (throw ',return-label value)))
-                                    ,expr))))))
-                 (labeled-print "Expr result" result)
-                 (cl-flet ((drop-next! nil
-                             (let ((next (pop!)))
-                               (--pipe-print "Popped 1st %S from %S." next (stack))
-                               (when (memq next *--pipe--arity-1-commands*)
-                                 (--pipe-print "Popped command's argument %S from %S."
-                                   (pop!) (stack)))
-                               (when (memq next *--pipe--arity-2-commands*)
-                                 (error "Ignoring the %S command is not yet supported." next)))))
-                   (cond
-                     ((flag-is? :IGNORE)
-                       (--pipe-print "Not setting %S because %S." result flag))
-                     ((flag-is? :WHEN)
-                       (when (not result)
-                         (drop-next!)))
-                     ((flag-is? :UNLESS)
-                       (when result
-                         (drop-next!)))
-                     ((flag-is? :RETURN)
-                       (--pipe-print "Returning due to command: %S" result)
-                       (throw 'return-3260 result))
-                     ((and (flag-is? :MAYBE) result)
-                       (store! result))
-                     ((and (flag-is? :MAYBE) (not result))
-                       (--pipe-print "Ignoring %S." result))
-                     (t (store! result)))
-                   (unset-flag!)))))
+
+
+           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+           (let ((stack-4156 '(5 (+ e 7) double (+ e 3) neg (lambda (n) (* 3 n)))))
+             (cl-labels
+               ((len nil
+                  (length stack-4156))
+                 (stack nil
+                   stack-4156)
+                 (set-stack!
+                   (new-stack)
+                   (setq stack-4156 new-stack))
+                 (push!
+                   (val)
+                   (push val stack-4156))
+                 (require-len>=
+                   (len)
+                   (unless (length> stack-4156 (1- len))
+                     (signal 'stack-underflow (list 'stack-4156))))
+                 (pop! nil
+                   (require-len>= 1)
+                   (pop stack-4156)))
+               (while stack-4156
+                 (let ((expr (pop!)))
+                   (prndiv)
+                   (prn "dostack: %S" expr)
+                   (prndiv)
+                   (labeled-print "Current" expr)
+                   (labeled-print "Remaining" (stack))
+                   (labeled-print var-sym e)
+                   (labeled-print "Flag" flag)
+                   (if (--is-pipe-command? expr)
+                     (set-flag! (alist-get expr *--pipe-commands-to-flags*))
+                     (let ((result (eval (if (fun? expr)
+                                           (list expr var-sym)
+                                           (let ((return-label 'return-3260))
+                                             `(cl-flet ((return! (value)
+                                                          (throw ',return-label value)))
+                                                ,expr))))))
+                       (labeled-print "Expr result" result)
+                       (cl-flet ((drop-next! nil
+                                   (let ((next (pop!)))
+                                     (--pipe-print "Popped 1st %S from %S." next
+                                       (stack))
+                                     (when
+                                       (memq next *--pipe--arity-1-commands*)
+                                       (--pipe-print "Popped command's argument %S from %S."
+                                         (pop!)
+                                         (stack)))
+                                     (when (memq next *--pipe--arity-2-commands*)
+                                       (error "Ignoring the %S command is not yet supported." next)))))
+                         (cond
+                           ((flag-is? :IGNORE)
+                             (--pipe-print "Not setting %S because %S." result flag))
+                           ((flag-is? :WHEN)
+                             (when (not result)
+                               (drop-next!)))
+                           ((flag-is? :UNLESS)
+                             (when result
+                               (drop-next!)))
+                           ((flag-is? :RETURN)
+                             (--pipe-print "Returning due to command: %S" result)
+                             (throw 'return-3260 result))
+                           ((and (flag-is? :MAYBE) result)
+                             (store! result))
+                           ((and (flag-is? :MAYBE) (not result))
+                             (--pipe-print "Ignoring %S." result))
+                           (t
+                             (store! result)))
+                         (unset-flag!))))))))
+                         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+           
            (throw 'return-3260
              (progn
                (prndiv)
