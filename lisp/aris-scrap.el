@@ -243,3 +243,29 @@
       ((even? x)  (push-back! x)))
     (prn "after:   %S" (stack))
     ))
+
+
+(defvar *toggle-print* nil)
+
+(defmacro toggled-print (first &rest rest)
+  (when *toggle-print*
+    `((prn ,first ,@rest))))
+
+
+(defmacro use-toggled-print (&rest body)
+  `(progn
+     (prn "before")
+     ,@'(1 2 3)
+     ,@(toggled-print ,@body)
+     ,@'(4 5 )
+     (prn "after")))
+
+(use-toggled-print "Hello %s %s" "World" "!")
+
+(progn
+  (prn "before")
+  1 2 3 1 2 3
+  (prn "after"))
+
+
+
