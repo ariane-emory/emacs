@@ -130,6 +130,7 @@ meant mainly for use in dostack's unit tests."
           (varlist   (when   out-sym  `((,out-sym)))))
     `(let ,varlist
        (dostack ,spec
+         (prn "doforth: %S with %S ahead." ,val-sym (stack))
          (cond
            ((eq? :dup    ,val-sym) (dup!))
            ((eq? :drop   ,val-sym) (pop!))
