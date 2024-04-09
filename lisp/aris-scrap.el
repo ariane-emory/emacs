@@ -170,6 +170,11 @@
                  (let ((expr (pop!)))
                    (prndiv)
                    (prn "dostack: %S" expr)
+
+
+                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                   ;; Conent of the pipe macro's dostack body:
+                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                    (prndiv)
                    (labeled-print "Current" expr)
                    (labeled-print "Remaining" (stack))
@@ -226,3 +231,14 @@
   (--pipe-print "Pipe's final return: %S" final)
   final)
 
+(let ((ctr 0))
+  (dostack (x '(1 2 3 4 5 6 7 8 9))
+    (cl-incf ctr)
+    (prn "ctr:     %S" ctr)
+    (prn "current: %S" x)
+    (prn "ahead:   %S" (stack))
+    (when (eql? ctr 50) (return! 111))
+    (cond
+      ((even? x)  (push-back! x)))
+    (prn "after:   %S" (stack))
+    ))
