@@ -120,7 +120,8 @@ meant mainly for use in dostack's unit tests."
                       (return! (&optional val) (prn "Throw %s" val)
                         (throw ,return-label (or val ,val-sym)))
                       (stop! ()
-                        (throw ,return-label ,out-sym)))
+                        (throw ,return-label
+                          (cons (nreverse ,out-sym) (list (stack))))))
              (prn "doforth: %S with %S ahead." ,val-sym (stack))
              (cond
                ((eq? :dup    ,val-sym) (dup!))
@@ -200,7 +201,6 @@ meant mainly for use in dostack's unit tests."
                   (when (odd? x) (push-out! x))
                   (when (eql? 8 x) (stop!)))
     returns (1 3 5))
-
   (prn "Ran all dostack test cases."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack--run-tests)
