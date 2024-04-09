@@ -118,51 +118,23 @@
   (prn "Val: %S" x)
   (when (eql? x 5) (return! (x . (list (stack))))))
 
-(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8))
+(doforth (x '(1 2 :swap 3 4 5 6 7 8))
   (prn "Val: %S" x)
   (when (eql? x 5) (stop!)))
 
 
-(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
+(doforth (x '(1 2 :swap 3 4 5 6 7 8)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --dostack-mini-forth (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A dumb little Forth-like stack machine without enough operations to be very useful,
-meant mainly for use in unit tests."
-  ;; (let (out)
-  (--dostack-validate-spec spec)
-  (let* ( (out-sym (unless body (gensym "out-")))
-          (body (or body `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
-          (tail-expr (and out-sym `((reverse ,out-sym))))
-          (varlist (when out-sym (list out-sym))))
-    `(let (,@varlist) 
-       (dostack ,spec
-         (cond
-           ((eq :dup x)    (dup!))
-           ((eq :drop x)   (pop!))
-           ((eq :over x)   (over!))
-           ((eq :return x) (return!))
-           ((eq :rotl x)   (rotl!))
-           ((eq :rotr x)   (rotr!))
-           ((eq :swap x)   (swap!))
-           ((eq :stop x)   (stop!))
-           (t ,@body)))
-       ,@tail-expr)))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
+(doforth (x '(1 2 :swap 3 4 5 6 7 8)))
 ;; Expands to: 
 ;; returns (8 7 6 5 3 4 2 1)
 
-(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)) (prn "%s" x))
+(doforth (x '(1 2 :swap 3 4 5 6 7 8)) (prn "%s" x))
 ;; Expands to:
 ;;; prints several things and returns nil.
 
 
-
-
-
-
+(doforth (_ '(:drop 1 2 3)))
