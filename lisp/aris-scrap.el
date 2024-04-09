@@ -100,65 +100,9 @@
   (when (odd? x) (push-out! x))
   (when (eql? 3 x) (return! (* x x))))
 
-(doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
-  (when (odd? x) (push-out! x))
-  (when (eql? 10 x) (return! (list (out) x (stack)))))
 
-(catch 'return-15553
-  (let
-    (out-15554)
-    (dostack
-      (x
-        '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
-      (cl-flet
-        ((push-out!
-           (val)
-           (push val out-15554))
-          (return!
-            (&optional val)
-            (prn "Throw %s" val)
-            (throw 'return-15553
-              (or val x)))
-          (out nil out-15554)
-          (stop! nil
-            (throw 'return-15553
-              (cons
-                (nreverse out-15554)
-                (list
-                  (stack))))))
-        (prn "doforth: %S with %S ahead." x
-          (stack))
-        (cond
-          ((eq? :dup x)
-            (dup!))
-          ((eq? :drop x)
-            (pop!))
-          ((eq? :over x)
-            (over!))
-          ((eq? :return x)
-            (return!))
-          ((eq? :rotl x)
-            (rotl!))
-          ((eq? :rotr x)
-            (rotr!))
-          ((eq? :swap x)
-            (swap!))
-          ((eq? :stop x)
-            (stop!))
-          (t
-            (when
-              (odd? x)
-              (push-out! x))
-            (when
-              (eql? 10 x)
-              (return!
-                (list
-                  (out)
-                  x
-                  (stack))))))
-        (prn "after: %S"
-          (stack))))
-    (nreverse out-15554)))
+
+
 
 
 

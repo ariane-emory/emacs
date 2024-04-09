@@ -114,30 +114,29 @@ meant mainly for use in dostack's unit tests."
           )
     `(catch ,return-label
        (let (,out-sym)
-         (dostack ,spec
-           (cl-flet ( (out ()
-                        (reverse ,out-sym))
-                      (push-out! (val)
-                        (push val ,out-sym))
-                      ;; Shadow dostack's throw and stop so that we catch the result:
-                      (return! (&optional val) (prn "Throw %s" val)
-                        (throw ,return-label (or val ,val-sym)))
-                      (stop! ()
-                        (throw ,return-label
-                          (cons (nreverse ,out-sym) (list (stack))))))
-             (prn "doforth: %S with %S ahead." ,val-sym (stack))
-             (cond 
-               ((eq? :dup    ,val-sym) (dup!))
-               ((eq? :drop   ,val-sym) (pop!))
-               ((eq? :over   ,val-sym) (over!))
-               ((eq? :return ,val-sym) (return!))
-               ((eq? :rotl   ,val-sym) (rotl!))
-               ((eq? :rotr   ,val-sym) (rotr!))
-               ((eq? :swap   ,val-sym) (swap!))
-               ((eq? :stop   ,val-sym) (stop!))
-               (t ,@body))
-             (prn "after: %S" (stack))))
-         (nreverse ,out-sym)))))
+         (cl-flet ((out () (reverse ,out-sym)))
+           (dostack ,spec
+             (cl-flet ( (push-out! (val)
+                          (push val ,out-sym))
+                        ;; Shadow dostack's throw and stop so that we catch the result:
+                        (return! (&optional val) (prn "Throw %s" val)
+                          (throw ,return-label (or val ,val-sym)))
+                        (stop! ()
+                          (throw ,return-label
+                            (cons (nreverse ,out-sym) (list (stack))))))
+               (prn "doforth: %S with %S ahead." ,val-sym (stack))
+               (cond 
+                 ((eq? :dup    ,val-sym) (dup!))
+                 ((eq? :drop   ,val-sym) (pop!))
+                 ((eq? :over   ,val-sym) (over!))
+                 ((eq? :return ,val-sym) (return!))
+                 ((eq? :rotl   ,val-sym) (rotl!))
+                 ((eq? :rotr   ,val-sym) (rotr!))
+                 ((eq? :swap   ,val-sym) (swap!))
+                 ((eq? :stop   ,val-sym) (stop!))
+                 (t ,@body))
+               (prn "after: %S" (stack))))
+           (nreverse ,out-sym))))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -204,6 +203,12 @@ meant mainly for use in dostack's unit tests."
                   (when (odd? x) (push-out! x))
                   (when (eql? 8 x) (stop!)))
     returns ((1 3 5) (9)))
+
+  (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
+                  (when (odd? x) (push-out! x))
+                  (when (eql? 10 x) (return! (list (out) x (stack)))))    
+    returns ((1 3 5 9) 10 (11 12)))
+  
   (prn "Ran all dostack test cases."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack--run-tests)
