@@ -29,9 +29,7 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
           (stack-sym (gensym "stack-"))
-          ;;(stack-sym (if (symbolp stack) stack (gensym "stack-")))
-          (return-label `',(gensym "return-"))
-          )
+          (return-label `',(gensym "return-")))
     `(catch ,return-label
        (let ( (,stack-sym ,stack))
          (cl-labels ( (--require-len>= (len)
