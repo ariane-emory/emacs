@@ -102,3 +102,4 @@
     ((odd? x) (push-out! x))))
 
 
+(|> ((e)) 5 (+ e 7) double (+ e 3) neg)
