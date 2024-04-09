@@ -99,7 +99,7 @@
 (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
   (cond
     ((eql? 3 x) (push-out! (* x 100)))
-    ((odd? x) (push-out! x))))
+    ((odd? x)   (push-out! x))))
 
 
 (|> ((e)) 5 (+ e 7) double (+ e 3) neg (lambda (n) (* 3 n)))
