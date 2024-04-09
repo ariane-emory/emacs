@@ -180,37 +180,34 @@
                                  (error "Cannot set flag to %S when flag is already set to %S."
                                    new-flag flag))
                                (force
-                                 ;; (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                                 (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
                                  (setq flag new-flag))
                                (t
-                                 ;; (--pipe-print "Setting flag from %S to %S%s." flag new-flag
-                                 ;;   (if force " (forced)" ""))
-                                 ))
+                                 (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+                                   (if force " (forced)" ""))))
                              (setq flag new-flag)))
                          (unset-flag! ()
                            (when flag
-                             ;; (--pipe-print "Unsetting flag %S." flag)
+                             (--pipe-print "Unsetting flag %S." flag)
                              (set-flag! nil)))
                          (store! (value)
                            (prog1
                              (setq ,var value)
-                             ;; (--pipe-print "Updated %S to %S." var-sym ,var)
-                             ))
+                             (--pipe-print "Updated %S to %S." var-sym ,var)))
                          (labeled-print (label value)
                            (let* ( (label (format "%s:" label))
                                    (whites (make-string (- 21 (length label)) ?\ ))
                                    (label (concat label whites)))
-                             ;; (--pipe-print "%s%S" label value)
-                             )))
-              ;; (prndiv)
-              ;; (--pipe-print "START")
-              ;; (prndiv)
+                             (--pipe-print "%s%S" label value))))
+              (prndiv)
+              (--pipe-print "START")
+              (prndiv)
               (catch ,return-label
 
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
                 (dostack (expr ,body)
-                  ;; (prndiv)
+                  (prndiv)
                   (labeled-print "Current" expr)
                   (labeled-print "Remaining" (stack))
                   (labeled-print var-sym ,var)
@@ -228,7 +225,7 @@
                       ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
                       (cl-flet ((drop-next! () 
                                   (let ((next (pop!)))
-                                    ;; (--pipe-print "Popped 1st %S from %S." next (stack))
+                                    (--pipe-print "Popped 1st %S from %S." next (stack))
                                     (when (memq next *--pipe--arity-1-commands*)
                                       (let ((popped (pop!)))
                                         (--pipe-print "Popped command's argument %S from %S."
@@ -237,14 +234,13 @@
                                       (error "Ignoring the %S command is not yet supported." next)))))
                         (cond
                           ((flag-is? :IGNORE)
-                            ;; (--pipe-print "Not setting %S because %S." result flag)
-                            )
+                            (--pipe-print "Not setting %S because %S." result flag))
                           ((flag-is? :WHEN)
                             (when (not result) (drop-next!)))
                           ((flag-is? :UNLESS)
                             (when result (drop-next!)))
                           ((flag-is? :RETURN)
-                            ;; (--pipe-print "Returning due to command: %S" result)
+                            (--pipe-print "Returning due to command: %S" result)
                             (throw ,return-label result))
                           ((and (flag-is? :MAYBE) result)
                             (store! result))
