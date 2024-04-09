@@ -234,6 +234,7 @@
 (let ((ctr 0))
   (doforthy (x '(1 2 3 4 5 6 7 8 9))
     (cl-incf ctr)
+    (prndiv)
     (prn "ctr:     %S" ctr)
     (prn "current: %S" x)
     (prn "ahead:   %S" (stack))
