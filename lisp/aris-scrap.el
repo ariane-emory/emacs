@@ -244,28 +244,43 @@
     (prn "after:   %S" (stack))
     ))
 
+(toggled-print "hello %s" "world")
 
 (defvar *toggle-print* nil)
+(defvar *toggle-print* t)
 
 (defmacro toggled-print (first &rest rest)
   (when *toggle-print*
-    `((prn ,first ,@rest))))
-
+    `'((((((((prn ,first ,@res))))))))))
 
 (defmacro use-toggled-print (&rest body)
-  `(progn
-     (prn "before")
-     ,@'(1 2 3)
-     ,@(toggled-print ,@body)
-     ,@'(4 5 )
-     (prn "after")))
+  (let ((expr `(toggled-print ,@body)))
+    (prn "expr: %S" expr)
+    `(progn
+       (prn "before")
+       ,@'(1 2 3)
+       ,@expr
+       ,@'(4 5 6)
+       (prn "after"))))
 
-(use-toggled-print "Hello %s %s" "World" "!")
+(macroexpand-all '(use-toggled-print "hello %s" "world"))
 
-(progn
-  (prn "before")
-  1 2 3 1 2 3
-  (prn "after"))
+(use-toggled-print "hello %s" "world")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
