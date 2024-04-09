@@ -111,21 +111,21 @@ meant mainly for use in dostack's unit tests."
           (body      (or body `((push-out! ,val-sym))))
           )
     `(let (,out-sym)
-       (or (dostack ,spec
-             (cl-flet ((push-out! (val) (push val ,out-sym)))
-               (prn "doforth: %S with %S ahead." ,val-sym (stack))
-               (cond
-                 ((eq? :dup    ,val-sym) (dup!))
-                 ((eq? :drop   ,val-sym) (pop!))
-                 ((eq? :over   ,val-sym) (over!))
-                 ((eq? :return ,val-sym) (return!))
-                 ((eq? :rotl   ,val-sym) (rotl!))
-                 ((eq? :rotr   ,val-sym) (rotr!))
-                 ((eq? :swap   ,val-sym) (swap!))
-                 ((eq? :stop   ,val-sym) (stop!))
-                 (t ,@body))
-               (prn "after: %S" (stack))))
-         (nreverse ,out-sym)))))
+       (dostack ,spec
+         (cl-flet ((push-out! (val) (push val ,out-sym)))
+           (prn "doforth: %S with %S ahead." ,val-sym (stack))
+           (cond
+             ((eq? :dup    ,val-sym) (dup!))
+             ((eq? :drop   ,val-sym) (pop!))
+             ((eq? :over   ,val-sym) (over!))
+             ((eq? :return ,val-sym) (return!))
+             ((eq? :rotl   ,val-sym) (rotl!))
+             ((eq? :rotr   ,val-sym) (rotr!))
+             ((eq? :swap   ,val-sym) (swap!))
+             ((eq? :stop   ,val-sym) (stop!))
+             (t ,@body))
+           (prn "after: %S" (stack))))
+       (nreverse ,out-sym))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
