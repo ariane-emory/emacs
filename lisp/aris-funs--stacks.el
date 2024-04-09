@@ -119,12 +119,14 @@ meant mainly for use in dostack's unit tests."
                     (push-out! (&optional val)
                       (push (or val ,val-sym) ,out-sym)))
            (dostack ,spec
-             (cl-flet ( ;; Shadow dostack's throw and stop so that we catch the result:
-                        (return! (&optional val) (prn "THROW %s" val)
-                          (throw ,return-label (or val ,val-sym)))
-                        (stop! ()
-                          (throw ,return-label
-                            (cons (nreverse ,out-sym) (list (stack))))))
+             (cl-labels ( ;; Shadow dostack's throw and stop so that we catch the result:
+                          (return! (&optional val) (prn "THROW %s" val)
+                            (throw ,return-label (or val ,val-sym)))
+                          (stop! ()
+                            (throw ,return-label
+                              (return! (list (out) x (stack)))
+                              ;;(cons (nreverse ,out-sym) (list (stack)))
+                              )))
                (prn "doforth: %S with %S ahead." ,val-sym (stack))
                (cond 
                  ((eq? :dup    ,val-sym) (dup!))
@@ -203,11 +205,11 @@ meant mainly for use in dostack's unit tests."
   (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
                   (when (odd? x) (push-out! x))
                   (when (eql? 8 x) (stop!)))
-    returns ((1 3 5) (9)))
+    returns ((1 3 5) 8 (9)))
 
   (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
                   (when (odd? x) (push-out! x))
-                  (when (eql? 10 x) (return! (list (out) x (stack)))))    
+                  (when (eql? 10 x) (stop!))) 
     returns ((1 3 5 9) 10 (11 12)))
   
   (prn "Ran all dostack test cases."))

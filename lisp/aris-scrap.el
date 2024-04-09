@@ -100,11 +100,3 @@
   (when (odd? x) (push-out! x))
   (when (eql? 3 x) (return! (* x x))))
 
-
-
-
-
-
-
-
-
