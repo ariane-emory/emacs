@@ -95,7 +95,8 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
                ,@body)))
          ;; Return whatever part of the stack remains;
          ;; (prn "Remaining: %S" ,stack-sym)
-         (nreverse ,stack-sym)))))
+         ;; (nreverse ,stack-sym)
+         ))))
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -119,6 +120,8 @@ meant mainly for use in dostack's unit tests."
                       ;; Shadow dostack's throw and stop so that we catch the result:
                       (return! (&optional val) (prn "Throw %s" val)
                         (throw ,return-label (or val ,val-sym)))
+                      ((out ()
+                         ,out-sym))
                       (stop! ()
                         (throw ,return-label
                           (cons (nreverse ,out-sym) (list (stack))))))
