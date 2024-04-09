@@ -123,10 +123,7 @@ meant mainly for use in dostack's unit tests."
                           (return! (&optional val) (prn "THROW %s" val)
                             (throw ,return-label (or val ,val-sym)))
                           (stop! ()
-                            (throw ,return-label
-                              (return! (list (out) x (stack)))
-                              ;;(cons (nreverse ,out-sym) (list (stack)))
-                              )))
+                            (return! (list (out) ,val-sym (stack)))))
                (prn "doforth: %S with %S ahead." ,val-sym (stack))
                (cond 
                  ((eq? :dup    ,val-sym) (dup!))
@@ -139,7 +136,7 @@ meant mainly for use in dostack's unit tests."
                  ((eq? :stop   ,val-sym) (stop!))
                  (t ,@body))
                (prn "after: %S" (stack))))
-           (out))))))
+           (out)))))) ;; change this?
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -203,6 +200,7 @@ meant mainly for use in dostack's unit tests."
     returns (1 3 5 9))
 
   (confirm that (doforth (x '(1 2 3 :stop 4 5 6 7 8))) returns ((1 2 3) :stop (4 5 6 7 8)))
+  (confirm that (doforth (x '(1 2 3 :return 4 5 6 7 8))) returns :return)
 
   (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
                   (when (odd? x) (push-out! x))
