@@ -111,21 +111,21 @@ meant mainly for use in dostack's unit tests."
           (body      (or body `((push-out! ,val-sym))))
           )
     `(let (,out-sym)
-       (dostack ,spec
-         (cl-flet ((push-out! (val) (push val ,out-sym)))
-           (prn "doforth: %S with %S ahead." ,val-sym (stack))
-           (cond
-             ((eq? :dup    ,val-sym) (dup!))
-             ((eq? :drop   ,val-sym) (pop!))
-             ((eq? :over   ,val-sym) (over!))
-             ((eq? :return ,val-sym) (return!))
-             ((eq? :rotl   ,val-sym) (rotl!))
-             ((eq? :rotr   ,val-sym) (rotr!))
-             ((eq? :swap   ,val-sym) (swap!))
-             ((eq? :stop   ,val-sym) (stop!))
-             (t ,@body))
-           (prn "after: %S" (stack))))
-       (nreverse ,out-sym))))
+       (or (dostack ,spec
+             (cl-flet ((push-out! (val) (push val ,out-sym)))
+               (prn "doforth: %S with %S ahead." ,val-sym (stack))
+               (cond
+                 ((eq? :dup    ,val-sym) (dup!))
+                 ((eq? :drop   ,val-sym) (pop!))
+                 ((eq? :over   ,val-sym) (over!))
+                 ((eq? :return ,val-sym) (return!))
+                 ((eq? :rotl   ,val-sym) (rotl!))
+                 ((eq? :rotr   ,val-sym) (rotr!))
+                 ((eq? :swap   ,val-sym) (swap!))
+                 ((eq? :stop   ,val-sym) (stop!))
+                 (t ,@body))
+               (prn "after: %S" (stack))))
+         (nreverse ,out-sym)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -181,8 +181,19 @@ meant mainly for use in dostack's unit tests."
   (confirm that (doforth (_ '(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))) 
     returns (9 8 8 6 5 2 4 3 1))
 
-  (prn "Ran all dostack test cases.")
-  )
+  (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9)) (push-out! x))
+    returns (1 2 4 3 5 6 8 9))
+
+  (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
+                  (when (odd? x) (push-out! x)))
+    returns (1 3 5 9))
+
+  (confirm that (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
+                  (when (odd? x) (push-out! x))
+                  (when (eql? 8 x) (stop!)))
+    returns (1 3 5))
+
+  (prn "Ran all dostack test cases."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack--run-tests)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

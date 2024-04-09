@@ -96,27 +96,10 @@
 ;; STACKS:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq stk '(1 2 3 4 5 6 7 8))
-
-(confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns (6 7 8))
-(confirm that stk returns (6 7 8))
-(confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns nil)
-
-(setq stk '(1 2 3 4 5 6 7 8))
-
-(confirm that (dostack (x stk) (when (eql? x 5) (return!))) returns 5)
-
-
-
-
-stk
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9)))
-
+;;  bad return:
 (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
-  (prn "item: %S" x)
-  (push-out! x))
+  (when (odd? x) (push-out! x))
+  (when (eql? 3 x) (return! (* x x))))
 
 ;; (let ( (*wm--divider-width* 50)
 ;;        (count 0))
