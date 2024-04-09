@@ -127,7 +127,8 @@ meant mainly for use in dostack's unit tests."
           (out-sym   (gensym "out-"))
           ;;(out-sym   (unless body      (gensym "out-")))
           (body      (or     body     `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
-          ;; (tail-expr (and    out-sym  `((reverse ,out-sym))))
+          ;;(body      (append body `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
+          ;;(tail-expr (and    out-sym  `((reverse ,out-sym))))
           ;; (varlist   (when   out-sym  `((,out-sym))))
           )
     `(let (,out-sym)
@@ -143,7 +144,7 @@ meant mainly for use in dostack's unit tests."
            ((eq? :swap   ,val-sym) (swap!))
            ((eq? :stop   ,val-sym) (stop!))
            (t ,@body)))
-       ,@tail-expr)))
+       (reverse ,out-sym))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
