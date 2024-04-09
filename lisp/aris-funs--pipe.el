@@ -238,7 +238,7 @@
                                (eval (if (fun? expr)
                                        (list expr var-sym)
                                        (let ((return-label ,return-label))
-                                         `(cl-flet ((return (value)
+                                         `(cl-flet ((return! (value)
                                                       (throw ',return-label value)))
                                             ,expr))))))
                          (labeled-print "Expr result" result)
@@ -301,23 +301,23 @@
   (confirm that (|> :ignore 1 2) returns 2)
   (confirm that (|> 1 :ignore 2) returns 1)
 
-  (confirm that (|> (return 1) 2 3) returns 1)
-  (confirm that (|> 1 (return 2) 3) returns 2)
-  (confirm that (|> 1 2 (return 3)) returns 3)
+  (confirm that (|> (return! 1) 2 3) returns 1)
+  (confirm that (|> 1 (return! 2) 3) returns 2)
+  (confirm that (|> 1 2 (return! 3)) returns 3)
 
   (confirm that (|> 1 :when odd? 100) returns 100)
   (confirm that (|> 2 :when odd? 100) returns 2)
   (confirm that (|> 1 :when odd? :return 100) returns 100)
   (confirm that (|> 2 :when odd? :return 100) returns 2)
-  (confirm that (|> 1 :when odd? (return 100)) returns 100)
-  (confirm that (|> 2 :when odd? (return 100)) returns 2)
+  (confirm that (|> 1 :when odd? (return! 100)) returns 100)
+  (confirm that (|> 2 :when odd? (return! 100)) returns 2)
 
   (confirm that (|> 2 :unless odd? 100) returns 100)
   (confirm that (|> 1 :unless odd? 100) returns 1)
   (confirm that (|> 2 :unless odd? :return 100) returns 100)
   (confirm that (|> 1 :unless odd? :return 100) returns 1)
-  (confirm that (|> 2 :unless odd? (return 100)) returns 100)
-  (confirm that (|> 1 :unless odd? (return 100)) returns 1)
+  (confirm that (|> 2 :unless odd? (return! 100)) returns 100)
+  (confirm that (|> 1 :unless odd? (return! 100)) returns 1)
 
   (confirm that (|> 1 (when (odd? _) 100)) returns 100)
   (confirm that (|> 2 (when (odd? _) 100)) returns nil)
@@ -346,23 +346,23 @@
   (confirm that (|> ((x)) :ignore 1 2) returns 2)
   (confirm that (|> ((x)) 1 :ignore 2) returns 1)
 
-  (confirm that (|> ((x)) (return 1) 2 3) returns 1)
-  (confirm that (|> ((x)) 1 (return 2) 3) returns 2)
-  (confirm that (|> ((x)) 1 2 (return 3)) returns 3)
+  (confirm that (|> ((x)) (return! 1) 2 3) returns 1)
+  (confirm that (|> ((x)) 1 (return! 2) 3) returns 2)
+  (confirm that (|> ((x)) 1 2 (return! 3)) returns 3)
 
   (confirm that (|> ((x)) 1 :when odd? 100) returns 100)
   (confirm that (|> ((x)) 2 :when odd? 100) returns 2)
   (confirm that (|> ((x)) 1 :when odd? :return 100) returns 100)
   (confirm that (|> ((x)) 2 :when odd? :return 100) returns 2)
-  (confirm that (|> ((x)) 1 :when odd? (return 100)) returns 100)
-  (confirm that (|> ((x)) 2 :when odd? (return 100)) returns 2)
+  (confirm that (|> ((x)) 1 :when odd? (return! 100)) returns 100)
+  (confirm that (|> ((x)) 2 :when odd? (return! 100)) returns 2)
 
   (confirm that (|> ((x)) 2 :unless odd? 100) returns 100)
   (confirm that (|> ((x)) 1 :unless odd? 100) returns 1)
   (confirm that (|> ((x)) 2 :unless odd? :return 100) returns 100)
   (confirm that (|> ((x)) 1 :unless odd? :return 100) returns 1)
-  (confirm that (|> ((x)) 2 :unless odd? (return 100)) returns 100)
-  (confirm that (|> ((x)) 1 :unless odd? (return 100)) returns 1)
+  (confirm that (|> ((x)) 2 :unless odd? (return! 100)) returns 100)
+  (confirm that (|> ((x)) 1 :unless odd? (return! 100)) returns 1)
 
   (confirm that (|> ((x)) 1 (when (odd? x) 100)) returns 100)
   (confirm that (|> ((x)) 2 (when (odd? x) 100)) returns nil)
@@ -391,23 +391,23 @@
   (confirm that (|> ((x :ignore)) 1 2) returns 2)
   (confirm that (|> ((x 1)) :ignore 2) returns 1)
 
-  (confirm that (|> ((x (return 1))) 2 3) returns 1)
-  (confirm that (|> ((x 1)) (return 2) 3) returns 2)
-  (confirm that (|> ((x 1)) 2 (return 3)) returns 3)
+  (confirm that (|> ((x (return! 1))) 2 3) returns 1)
+  (confirm that (|> ((x 1)) (return! 2) 3) returns 2)
+  (confirm that (|> ((x 1)) 2 (return! 3)) returns 3)
 
   (confirm that (|> ((x 1)) :when odd? 100) returns 100)
   (confirm that (|> ((x 2)) :when odd? 100) returns 2)
   (confirm that (|> ((x 1)) :when odd? :return 100) returns 100)
   (confirm that (|> ((x 2)) :when odd? :return 100) returns 2)
-  (confirm that (|> ((x 1)) :when odd? (return 100)) returns 100)
-  (confirm that (|> ((x 2)) :when odd? (return 100)) returns 2)
+  (confirm that (|> ((x 1)) :when odd? (return! 100)) returns 100)
+  (confirm that (|> ((x 2)) :when odd? (return! 100)) returns 2)
 
   (confirm that (|> ((x 2)) :unless odd? 100) returns 100)
   (confirm that (|> ((x 1)) :unless odd? 100) returns 1)
   (confirm that (|> ((x 2)) :unless odd? :return 100) returns 100)
   (confirm that (|> ((x 1)) :unless odd? :return 100) returns 1)
-  (confirm that (|> ((x 2)) :unless odd? (return 100)) returns 100)
-  (confirm that (|> ((x 1)) :unless odd? (return 100)) returns 1)
+  (confirm that (|> ((x 2)) :unless odd? (return! 100)) returns 100)
+  (confirm that (|> ((x 1)) :unless odd? (return! 100)) returns 1)
 
   (confirm that (|> ((x 1)) (when (odd? x) 100)) returns 100)
   (confirm that (|> ((x 2)) (when (odd? x) 100)) returns nil)
@@ -423,8 +423,8 @@
   (confirm that (|> ((x 1)) :maybe(= x 1)) returns t)
   (confirm that (|> ((x 2)) :maybe(= x 1)) returns 2)
 
-  (confirm that (|> 7 :(when (eql _ 8) (return (* 7 6)))) returns 7)
-  (confirm that (|> 8 :(when (eql _ 8) (return (* 7 6)))) returns 42)
+  (confirm that (|> 7 :(when (eql _ 8) (return! (* 7 6)))) returns 7)
+  (confirm that (|> 8 :(when (eql _ 8) (return! (* 7 6)))) returns 42)
 
   (confirm that (|> 8 :?(when (eql _ 8) (* 7 6))) returns 42)
   (confirm that (|> 8 :?(when (eql _ 7) (* 7 6))) returns 8)
@@ -448,83 +448,83 @@
 
   ;;;;;;;;;;;
   (confirm that
-    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
+    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return! 11)) 1)
     returns 11)
   (confirm that
-    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)))
+    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return! 11)))
     returns 11)
   (confirm that
-    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)) 1)
+    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return! 11)) 1)
     returns 1)
   (confirm that
-    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return 11)))
+    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :?(when (negative? _) (neg _)) :(when (> _ 20) (return! 11)))
     returns 15)
 
   (confirm that
-    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11) 1)
+    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return! 11) 1)
     returns 11)
   (confirm that
-    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11) 1)
+    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return! 11) 1)
     returns 1)
   (confirm that
-    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11))
+    (|> 5 (+ _ 7) double :(ignore "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return! 11))
     returns 11)
   (confirm that
-    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return 11))
-    returns 15)
-
-  ;;;;;;;;;;;
-  (confirm that
-    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-    returns 11)
-  (confirm that
-    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
-    returns 1)
-  (confirm that
-    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)))
-    returns 11)
-  (confirm that
-    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)))
-    returns 15)
-
-  (confirm that
-    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11) 1)
-    returns 11)
-  (confirm that
-    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11) 1)
-    returns 1)
-  (confirm that
-    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11))
-    returns 11)
-  (confirm that
-    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11))
+    (|> 5 (+ _ 7) :(ignore  "hello") (+ _ 3) neg :when negative? neg :when (> _ 20) (return! 11))
     returns 15)
 
   ;;;;;;;;;;;
   (confirm that
-    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
+    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)) 1)
     returns 11)
   (confirm that
-    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)) 1)
+    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)) 1)
     returns 1)
   (confirm that
-    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)))
+    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)))
     returns 11)
   (confirm that
-    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return 11)))
+    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)))
     returns 15)
 
   (confirm that
-    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11) 1)
+    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11) 1)
     returns 11)
   (confirm that
-    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11) 1)
+    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11) 1)
     returns 1)
   (confirm that
-    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11))
+    (|> ((x)) 5 (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 11)
   (confirm that
-    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return 11))
+    (|> ((x)) 5 (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
+    returns 15)
+
+  ;;;;;;;;;;;
+  (confirm that
+    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)) 1)
+    returns 11)
+  (confirm that
+    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)) 1)
+    returns 1)
+  (confirm that
+    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)))
+    returns 11)
+  (confirm that
+    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :?(when (negative? x) (neg x)) :(when (> x 20) (return! 11)))
+    returns 15)
+
+  (confirm that
+    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11) 1)
+    returns 11)
+  (confirm that
+    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11) 1)
+    returns 1)
+  (confirm that
+    (|> ((x 5)) (+ x 7) double :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
+    returns 11)
+  (confirm that
+    (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 15)
   
   (prn "Ran all pipe test cases.")

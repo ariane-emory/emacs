@@ -116,12 +116,11 @@ meant mainly for use in dostack's unit tests."
        (let (,out-sym)
          (cl-flet ( (out ()
                       (reverse ,out-sym))
-                    (push-out! (val)
-                      (push val ,out-sym)))
+                    (push-out! (&optional val)
+                      (push (or val ,val-sym) ,out-sym)))
            (dostack ,spec
-             (cl-flet ( 
-                        ;; Shadow dostack's throw and stop so that we catch the result:
-                        (return! (&optional val) (prn "Throw %s" val)
+             (cl-flet ( ;; Shadow dostack's throw and stop so that we catch the result:
+                        (return! (&optional val) (prn "THROW %s" val)
                           (throw ,return-label (or val ,val-sym)))
                         (stop! ()
                           (throw ,return-label
