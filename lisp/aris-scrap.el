@@ -96,36 +96,10 @@
 ;; STACKS:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;  bad return:
 (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
   (when (odd? x) (push-out! x))
   (when (eql? 3 x) (return! (* x x))))
 
-;; (let ( (*wm--divider-width* 50)
-;;        (count 0))
-;;   (doforth (x '(:dup 7 :mul 3 )) ;; (:plus 1 2 :over 3 :plus 4 5 6))
-;;     (cond
-;;       ;; ((eql? x 9) (stop!))
-;;       ((eq? x :plus)
-;;         (let* ( (left   (pop!))
-;;                 (right  (pop!))
-;;                 (result (+ left right)))
-;;           ;; (push! result)
-;;           (nconc (stack) (list result))
-;;           (prn "added %d and %d to get %d" left right result)))
-;;       ((eq? x :mul)
-;;         (let* ( (left   (pop!))
-;;                 (right  (pop!))
-;;                 (result (* left right)))
-;;           ;; (push! result)
-;;           (prn "stack before concing %S: %S" (list result) (stack))
-;;           (push-back! result)
-;;           (prn "stack afte concing %S: %S" (list result) (stack))
-;;           (prn "added %d and %d to get %d" left right result)))
-;;       (t
-;;         (push-back! x)
-;;         (cl-incf count)
-;;         (when (eql 10 count)
-;;           (prn "STOP!")
-;;           (stop!))))))
-
+(doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
+  (when (odd? x) (push-out! x))
+  (when (eql? 10 x) (stop!)))

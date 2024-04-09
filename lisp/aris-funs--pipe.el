@@ -340,7 +340,7 @@
   (confirm that (|> ((x)) :return 1 2 3) returns 1)
   (confirm that (|> ((x)) 1 :return 2 3) returns 2)
   (confirm that (|> ((x)) 1 2 :return 3) returns 3)
-
+  
   (confirm that (|> ((x)) : 1 2) returns 2)
   (confirm that (|> ((x)) 1 : 2) returns 1)
   (confirm that (|> ((x)) :ignore 1 2) returns 2)
