@@ -133,9 +133,9 @@
 meant mainly for use in unit tests."
   ;; (let (out)
   (--dostack-validate-spec spec)
-  (let* ( (out-sym (unless body (gensym "out")))
+  (let* ( (out-sym (unless body (gensym "out-")))
           (body
-            (unless body
+            (or body
               (list (list 'setq out-sym (list 'cons (car spec) out-sym))))))
     `(let (,out-sym)
        (dostack ,spec
@@ -149,6 +149,10 @@ meant mainly for use in unit tests."
            ((eq :swap x)   (swap!))
            ((eq :stop x)   (stop!))
            (t ,@body)))
-       ,(unless body out-sym))))
+       ,out-sym)))
 
 (--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8)))
+
+(--dostack-mini-forth (x '(1 2 :swap 3 4 5 6 7 8))
+  (prn "%s" x))
+

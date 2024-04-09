@@ -111,7 +111,7 @@ stack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!', `rotr!',
 meant mainly for use in unit tests."
   ;; (let (out)
   (--dostack-validate-spec spec)
-  (let ((body (unless body (list (list 'setq 'out (list 'cons (car spec) 'out))))))
+  (let ((body (if body body (list (list 'setq 'out (list 'cons (car spec) 'out))))))
     `(let (out)
        (dostack ,spec
          (cond
