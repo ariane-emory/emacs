@@ -24,7 +24,7 @@
   "Iterate through a stack, executing the body of code for each element in the
 stack in a scope where STACK is bound to the remaining stack items and the
 followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
-`over!', `stack-len'."
+`rotr!', `over!', `stack-len'."
   (--dostack-validate-spec spec)
   (let* ( (val-sym (car spec))
           (stack (nth 1 spec))
@@ -126,7 +126,7 @@ meant mainly for use in dostack's unit tests."
           (body      (or     body     `((setq ,out-sym (cons ,(car spec) ,out-sym)))))
           (tail-expr (and    out-sym  `((reverse ,out-sym))))
           (varlist   (when   out-sym  `((,out-sym)))))
-    `(let ,@varlist
+    `(let ,varlist
        (dostack ,spec
          (cond
            ((eq :dup    ,val-sym) (dup!))
