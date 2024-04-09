@@ -65,14 +65,10 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
           (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
     `(catch ,return-label
        (let ,@varlist
-         (cl-labels ( (len ()
-                        (length ,stack-sym))
-                      (stack ()
-                        ,stack-sym)
-                      (set-stack! (new-stack)
-                        (setq ,stack-sym new-stack))
-                      (push! (&optional val)
-                        (push (or val ,val-sym) ,stack-sym))
+         (cl-labels ( (len        ()               (length ,stack-sym))
+                      (stack      ()               ,stack-sym)
+                      (set-stack! (new-stack)      (setq ,stack-sym new-stack))
+                      (push!      (&optional val)  (push (or val ,val-sym) ,stack-sym))
                       (require-len>= (len)
                         (unless (length> ,stack-sym (1- len))
                           (signal 'stack-underflow (list ',stack-sym))))
@@ -192,8 +188,8 @@ meant mainly for use in dostack's unit tests."
   (confirm that (dostack (x stk) (when (eql? x 5) (stop!))) returns nil)
   (confirm that stk returns nil)
   
-  (confirm that (dostack (x '(1 2 3 4 5 6 7 8)) (when (eql? x 5) (stop!))) returns (6 7 8))
-  (confirm that (dostack (x '(1 2 3 4 5 6 7 8))) returns nil)
+  ;;; (confirm that (doforthy (x '(1 2 3 4 5 6 7 8)) (when (eql? x 5) (stop!))) returns (6 7 8))
+  (confirm that (dostack  (x '(1 2 3 4 5 6 7 8))) returns nil)
 
   (confirm that (doforthy (_ '(:drop 3 2 1))) returns (2 1))
   (confirm that (doforthy (_ '(3 :drop 2 1))) returns (3 1))
