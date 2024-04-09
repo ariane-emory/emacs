@@ -114,10 +114,6 @@
   (prn "Val: %S" x)
   (when (eql? x 5) (stop!)))
 
-(dostack (x '(1 2 3 4 5 6 7 8))
-  (prn "Val: %S" x)
-  (when (eql? x 5) (return! (x . (list (stack))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (doforth (x '(1 2 :swap 3 4 5 6 :drop 7 8 9)))
@@ -125,4 +121,9 @@
 (doforth (x '(1 2 :swap 3 4 5 6 7 8))
   (prn "Val: %S" x)
   (when (eql? x 5) (stop!)))
+
+(doforth (x '(1 2 :dup 3 5 6 7 8))
+  (when (eql? x 6) (push-back! 9)))
+
+  
 
