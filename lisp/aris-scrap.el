@@ -249,3 +249,116 @@
 
 
 
+(defmacro when-let (bindings &rest body)
+  ;; (cl-destructuring-bind ((symbol value)) binding
+  ;;   `(let ((,symbol ,value))
+  ;;      (when ,symbol
+  ;;        ,@body)))
+  (let ((symbols (mapcar #'car bindings)))
+    `(let ,bindings
+       (when (and ,@symbols)
+         ,@body))))
+
+(defmacro if-let (bindings then &rest else)  
+  ;; (cl-destructuring-bind ((symbol value)) binding
+  ;;   `(let ((,symbol ,value))
+  ;;      (if ,symbol
+  ;;        ,then
+  ;;        ,@else)))
+  (let ((symbols (mapcar #'car bindings)))
+    `(let ,bindings
+       (if (and ,@symbols)
+         ,then
+         ,@else))))
+
+(when-let ((a 1))
+  (list a))
+
+(if-let ((a nil))
+  (* a a)
+  (prn "extra")
+  100)
+
+
+(cl-defmacro when-let* (bindings &body body)
+  "Bind `bindings` serially and execute `body`, short-circuiting on `nil`.
+
+  This macro combines `when` and `let*`.  It takes a list of bindings
+  and binds them like `let*` before executing `body`, but if any
+  binding's value evaluates to `nil` the process stops and `nil` is
+  immediately returned.
+
+  Examples:
+
+    (when-let* ((a (progn (print :a) 1))
+                (b (progn (print :b) (1+ a)))
+      (list a b)))
+    ; =>
+    :A
+    :B
+    (1 2)
+
+    (when-let* ((a (progn (print :a) nil))
+                (b (progn (print :b) (1+ a))))
+      (list a b))
+    ; =>
+    :A
+    NIL
+
+  "
+  (let ((block (gensym "block-")))
+    `(cl-block ,block
+       (let* ,(cl-loop for (symbol value) in bindings
+                collect `(,symbol (or ,value
+                                    (cl-return-from ,block nil))))
+         ,@body))))
+
+
+(when-let* ( (x 1)
+             (y 2)
+             (z (print "foo")))
+  (list x y z))
+
+
+(defmacro if-let* (bindings then &rest else)
+  "Bind `bindings` serially and execute `then` if all are true, or `else` otherwise.
+
+  This macro combines `if` and `let*`.  It takes a list of bindings and
+  binds them like `let*` before executing `then`, but if any binding's
+  value evaluates to `nil` the process stops and the `else` branch is
+  immediately executed (with no bindings in effect).
+
+  Examples:
+
+    (if-let* ((a (progn (print :a) 1))
+              (b (progn (print :b) (1+ a)))
+      (list a b)
+      'nope)
+    ; =>
+    :A
+    :B
+    (1 2)
+
+    (if-let* ((a (progn (print :a) nil))
+              (b (progn (print :b) (1+ a))))
+      (list a b)
+      'nope)
+    ; =>
+    :A
+    NOPE
+
+  "
+  (let ( (outer (gensym "outer-"))
+         (inner (gensym "inner-")))
+    `(cl-block ,outer
+       (cl-block ,inner
+         (let* ,(cl-loop for (symbol value) in bindings
+                  collect `(,symbol (or ,value
+                                      (cl-return-from ,inner nil))))
+           (cl-return-from ,outer ,then)))
+       ,@else)))
+
+(if-let* ( (a (progn (print :a) nil))
+           (b (progn (print :b) (1+ a))))
+  (list a b)
+  'nope)
