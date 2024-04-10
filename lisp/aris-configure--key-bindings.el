@@ -200,7 +200,7 @@
   ("M-s-k" . describe-key)
   ("C-c RET" . describe-mode)
   ("M-s-m" . describe-mode)
-  ("C-c C-c" . describe-char)
+  ;;("C-c C-c" . describe-char)
   ("M-s-c" . describe-char)
 
   ;; Cycle position:
