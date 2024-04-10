@@ -92,7 +92,7 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
   "A dumb little Forth-like stack machine without enough operations to be very useful,
 meant mainly for use in dostack's unit tests."
   ;; (let (out)
-  (--dostack-validate-spec spec 2)
+  (--dostack-validate-spec spec 3)
   (let* ( (return-label `',(gensym "return-"))
           (val-sym   (car spec))
           (out-sym   (gensym "out-"))
@@ -159,7 +159,8 @@ meant mainly for use in dostack's unit tests."
                  (t ,@body))
                ;; (prn "after: %S" (stack))
                ))
-           (out)))))) ;; change this?
+           (out) ;; change this? maybe to (out nil nil)?
+           ))))) 
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
