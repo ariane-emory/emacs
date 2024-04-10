@@ -243,5 +243,9 @@
       ((even? x)  (push-out! x)))
     (prn "after:   %S" (stack))
     (unless (stack) (stop!))
-    ))
+    )
+  )
+
+
+
 

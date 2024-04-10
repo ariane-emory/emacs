@@ -9,12 +9,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --dostack-validate-spec (spec)
+(defun --dostack-validate-spec (spec max-len)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (cons? spec)
     (signal 'wrong-type-argument (list 'cons? spec)))
   (unless (<= 2 (length spec) 3)
-    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec)))))
+    (signal 'wrong-number-of-arguments (list `(2 . ,max-len) (length spec)))))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -56,7 +56,7 @@
 stack in a scope where STACK is bound to the remaining stack items and the
 followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 `rotr!', `over!', `stack-len'."
-  (--dostack-validate-spec spec)
+  (--dostack-validate-spec spec 3)
   (let* ( (val-sym         (car spec))
           (stack           (nth 1 spec))
           (return-label `',(gensym "return-"))
@@ -92,7 +92,7 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
   "A dumb little Forth-like stack machine without enough operations to be very useful,
 meant mainly for use in dostack's unit tests."
   ;; (let (out)
-  (--dostack-validate-spec spec)
+  (--dostack-validate-spec spec 2)
   (let* ( (return-label `',(gensym "return-"))
           (val-sym   (car spec))
           (out-sym   (gensym "out-"))
@@ -138,8 +138,10 @@ meant mainly for use in dostack's unit tests."
                                     (next (pop!)))
                               (push! top)
                               (push! next)))
+                          (state ()
+                            (list (out) ,val-sym (stack)))
                           (stop! ()
-                            (return! (list (out) ,val-sym (stack))))
+                            (return! (state)))
                           ;; Shadow dostack's return so that we catch the result:
                           (return! (&optional val)
                             ;; (prn "THROW %s" val)
