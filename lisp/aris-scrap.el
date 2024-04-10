@@ -238,9 +238,10 @@
     (prn "ctr:     %S" ctr)
     (prn "current: %S" x)
     (prn "ahead:   %S" (stack))
-    (when (eql? ctr 50) (return! 111))
+    (when (eql? ctr 50) (stop!)) ;;(return! 111))
     (cond
-      ((even? x)  (push-back! x)))
+      ((even? x)  (push-out! x)))
     (prn "after:   %S" (stack))
+    (unless (stack) (stop!))
     ))
 

@@ -13,8 +13,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (cons? spec)
     (signal 'wrong-type-argument (list 'cons? spec)))
-  (unless (= 2 (length spec))
-    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec)))))
+  (unless (<= 2 (length spec) 3)
+    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec)))))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -81,8 +81,9 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
              (let ((,val-sym (pop!)))
                ;; (prndiv)
                ;; (prn "dostack: %S" ,val-sym)
-               ,@body)))))))
-               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ,@body))
+           ,@(cdr (cdr spec)))))))
+           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
