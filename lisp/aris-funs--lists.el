@@ -209,15 +209,33 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun nthcdr (index lst)
-  "Get the INDEXth cdr of LST."
-  (unless (and (integer? index) (positive? index)) (error "N must be a positive integer"))
-  (unless (list? lst)                              (error "LST must be a list"))
-  (unless (>= index 0)                              (error "INDEX must be non-negative"))
-  (until (zero? index)
-    (setq lst (cdr lst))
-    (decr index))
-  lst)
+;; list funs (retrieving by position):
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun first    (lst)                    (car lst))
+(defun second   (lst)                   (cadr lst))
+(defun third    (lst)                  (caddr lst))
+(defun fourth   (lst)                 (cadddr lst))
+(defun fifth    (lst)            (car (cddddr lst)))
+(defun sixth    (lst)           (cadr (cddddr lst)))
+(defun seventh  (lst)          (caddr (cddddr lst)))
+(defun eighth   (lst)         (cadddr (cddddr lst)))
+(defun ninth    (lst)    (car (cddddr (cddddr lst))))
+(defun tenth    (lst)   (cadr (cddddr (cddddr lst))))
+(defun eleventh (lst)  (caddr (cddddr (cddddr lst))))
+(defun twelfth  (lst) (cadddr (cddddr (cddddr lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun nthcdr (index lst)
+;;   "Get the INDEXth cdr of LST."
+;;   (unless (and (integer? index) (positive? index)) (error "N must be a positive integer"))
+;;   (unless (list? lst)                              (error "LST must be a list"))
+;;   (unless (>= index 0)                              (error "INDEX must be non-negative"))
+;;   (until (zero? index)
+;;     (setq lst (cdr lst))
+;;     (decr index))
+;;   lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (nthcdr 2 '(1 2 3 4 5))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

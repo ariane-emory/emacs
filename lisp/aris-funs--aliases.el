@@ -26,6 +26,7 @@
 (defalias 'map             'mapcar)
 (defalias 'nil?            'null)
 (defalias 'number?         'numberp)
+(defalias 'proper?         'proper-list-p)
 (defalias 'rplaca!         'rplaca)
 (defalias 'rplacd!         'rplacd)
 (defalias 'string?         'stringp)
