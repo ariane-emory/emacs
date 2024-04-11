@@ -334,15 +334,23 @@ STRING-DESIGNATOR). Bare symbols are equivalent to the pair (SYMBOL SYMBOL).
 Each pair (SYMBOL STRING-DESIGNATOR) specifies that the variable named by SYMBOL
 should be bound to a symbol constructed using GENSYM with the string designated
 by STRING-DESIGNATOR being its first argument."
-  `(let ,(mapcar (lambda (name)
-                   (cl-multiple-value-bind (symbol string)
-                     (cond
-                       ((symbolp name)
-                         (cl-values name (symbol-name name)))
-                       ((and (consp name) (symbolp (car name)) (stringp (cadr name)))
-                         (cl-values (car name) (cadr name)))
-                       (t
-                         (error "Invalid name: %S" name)))
-                     `(,symbol (gensym ,string))))
+  `(let ,(mapcar
+           (lambda (name)
+             (cl-multiple-value-bind (symbol string)
+               (cond
+                 ((symbolp name)
+                   (cl-values name (symbol-name name)))
+                 ((and (consp name) (symbolp (car name)) (stringp (cadr name)))
+                   (cl-values (car name) (cadr name)))
+                 (t (error "Invalid name: %S" name)))
+               `(,symbol (gensym ,string))))
            names)
      ,@forms))
+
+(with-gensyms (foo (bar "baz")) 1 2 3)
+
+
+(cl-defmacro with-catch (string-designator &body forms)
+  (with-gensyms (catch-tag)
+    `(catch ,catch-tag
+       ,@forms)))
