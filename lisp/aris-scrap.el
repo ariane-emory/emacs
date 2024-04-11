@@ -340,7 +340,11 @@ by STRING-DESIGNATOR being its first argument."
                (cond
                  ((symbolp name)
                    (cl-values name (symbol-name name)))
-                 ((and (consp name) (symbolp (car name)) (stringp (cadr name)))
+                 ((and
+                    (proper-list-p name)
+                    (length= name 2)
+                    (symbolp (car name))
+                    (stringp (cadr name)))
                    (cl-values (car name) (cadr name)))
                  (t (error "Invalid name: %S" name)))
                `(,symbol (gensym ,string))))
@@ -352,5 +356,10 @@ by STRING-DESIGNATOR being its first argument."
 
 (cl-defmacro with-catch (string-designator &body forms)
   (with-gensyms (catch-tag)
-    `(catch ,catch-tag
+    `(catch ',catch-tag
        ,@forms)))
+
+(with-catch 1 2 3)
+
+(catch 'catch-tag878 2 3)
+
