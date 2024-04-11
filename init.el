@@ -289,9 +289,10 @@
         :diminish (buffer-face-mode text-scale-mode))
 
       (use-package-with-message lisp-mode
-        :hook  j
+        :hook  
         (lisp-mode .
           (lambda ()
+            (aris-setup-lisp)
             (font-lock-add-keywords nil
 	            '( ;; AELisp's special forms are keywords.
                  ("(\\(apply\\_>\\)" . 1)
