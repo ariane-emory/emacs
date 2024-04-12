@@ -352,7 +352,7 @@
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
   (with-gensyms (block) 
     `(cl-block ,block
-       (let*,(cl-loop for (symbol value) in bindings
+       (let ,(cl-loop for (symbol value) in bindings
                collect `(,(if (and (consp symbol) (length= symbol 2))
                             (error "this case")
                             symbol)
