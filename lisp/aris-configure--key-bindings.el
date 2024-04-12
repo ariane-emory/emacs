@@ -189,7 +189,7 @@
   ("C-c C-e" . ignore)
   ("M-\\" . ignore)
   ("S-<delete>" . ignore)
-  ("M-<down-mouse-1>" . ignore)
+  ;; ("M-<down-mouse-1>" . ignore)
 
   ;; describe things:
   ("C-c C-f" . describe-function)

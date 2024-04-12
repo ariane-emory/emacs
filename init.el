@@ -116,9 +116,11 @@
       (setq display-buffer-alist
 	      '(("\\*Buffer List\\*" display-buffer-same-window
 	          (nil))
-	         ("\\*Backtrace\\*" display-buffer-same-window
-	           (nil))
+	         ;; ("\\*Backtrace\\*" display-buffer-same-window
+	         ;;   (nil))
 	         ("\\*Compile-Log\\*" display-buffer-same-window
+	           (nil))
+           ("\\*shell\\*" display-buffer-same-window
 	           (nil))
 	         (".*\\.el" display-buffer-same-window
 	           (nil))
@@ -809,7 +811,7 @@
             (setq-local lsp-semantic-tokens-enable t)
             (setq-local lsp-signature-auto-activate t)
             (setq-local lsp-signature-render-documentation t)
-            (aggressive-indent-mode 1)
+            (aggressive-indent-mode -1)
             (eldoc-mode 1)
             ;; (lsp)
             )))
@@ -885,6 +887,7 @@
            aris-funs--pipe
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
+           aris-funs--with-gensyms
            aris-funs--error-when-and-error-unless
            aris-configure--key-bindings
            aris-configure--tetris-keymap

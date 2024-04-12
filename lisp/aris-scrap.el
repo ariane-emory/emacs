@@ -272,76 +272,76 @@
 ;;          ,@else))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro with-gensyms (names &body forms)
-  "Binds a set of variables to gensyms and evaluates the implicit progn FORMS.
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (cl-defmacro with-gensyms (names &body forms)
+;;   "Binds a set of variables to gensyms and evaluates the implicit progn FORMS.
 
-Each element within NAMES is either a symbol SYMBOL or a pair (SYMBOL
-STRING-DESIGNATOR). Bare symbols are equivalent to the pair (SYMBOL SYMBOL).
+;; Each element within NAMES is either a symbol SYMBOL or a pair (SYMBOL
+;; STRING-DESIGNATOR). Bare symbols are equivalent to the pair (SYMBOL SYMBOL).
 
-Each pair (SYMBOL STRING-DESIGNATOR) specifies that the variable named by SYMBOL
-should be bound to a symbol constructed using GENSYM with the string designated
-by STRING-DESIGNATOR being its first argument."
-  `(let ,(mapcar
-           (lambda (name)
-             (cl-multiple-value-bind (symbol string)
-               (cond
-                 ((symbolp name)
-                   (cl-values name (symbol-name name)))
-                 ((and
-                    (proper-list-p name)
-                    (length= name 2)
-                    (symbolp (car name))
-                    (stringp (cadr name)))
-                   (cl-values (car name) (cadr name)))
-                 (t (error "Invalid name: %S" name)))
-               `(,symbol (gensym ,string))))
-           names)
-     ,@forms))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Each pair (SYMBOL STRING-DESIGNATOR) specifies that the variable named by SYMBOL
+;; should be bound to a symbol constructed using GENSYM with the string designated
+;; by STRING-DESIGNATOR being its first argument."
+;;   `(let ,(mapcar
+;;            (lambda (name)
+;;              (cl-multiple-value-bind (symbol string)
+;;                (cond
+;;                  ((symbolp name)
+;;                    (cl-values name (symbol-name name)))
+;;                  ((and
+;;                     (proper-list-p name)
+;;                     (length= name 2)
+;;                     (symbolp (car name))
+;;                     (stringp (cadr name)))
+;;                    (cl-values (car name) (cadr name)))
+;;                  (t (error "Invalid name: %S" name)))
+;;                `(,symbol (gensym ,string))))
+;;            names)
+;;      ,@forms))
+;;      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro when-let* (bindings &body body)
-  "Bind `bindings` serially and execute `body`, short-circuiting on `nil`.
-See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
-  (with-gensyms (block)
-    `(cl-block ,block
-       (let* ,(cl-loop for (symbol value) in bindings
-                collect `(,symbol (or ,value (cl-return-from ,block nil))))
-         ,@body))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (cl-defmacro when-let* (bindings &body body)
+;;   "Bind `bindings` serially and execute `body`, short-circuiting on `nil`.
+;; See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
+;;   (with-gensyms (block)
+;;     `(cl-block ,block
+;;        (let* ,(cl-loop for (symbol value) in bindings
+;;                 collect `(,symbol (or ,value (cl-return-from ,block nil))))
+;;          ,@body))))
 
-(cl-defmacro if-let* (bindings then &body else)
-  "Bind `bindings` serially and execute `then` if all are true, or `else` otherwise.
-See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
-  (with-gensyms (outer inner)
-    `(cl-block ,outer
-       (cl-block ,inner
-         (let* ,(cl-loop for (symbol value) in bindings
-                  collect `(,symbol (or ,value (cl-return-from ,inner nil))))
-           (cl-return-from ,outer ,then)))
-       ,@else)))
+;; (cl-defmacro if-let* (bindings then &body else)
+;;   "Bind `bindings` serially and execute `then` if all are true, or `else` otherwise.
+;; See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
+;;   (with-gensyms (outer inner)
+;;     `(cl-block ,outer
+;;        (cl-block ,inner
+;;          (let* ,(cl-loop for (symbol value) in bindings
+;;                   collect `(,symbol (or ,value (cl-return-from ,inner nil))))
+;;            (cl-return-from ,outer ,then)))
+;;        ,@else)))
 
-(cl-defmacro when-let (bindings &body body)
-  "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
-See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
-  (with-gensyms (block) 
-    `(cl-block ,block
-       (let* ,(cl-loop for (symbol value) in bindings
-                collect `(,symbol (or ,value (cl-return-from ,block nil))))
-         ,@body))))
+;; (cl-defmacro when-let (bindings &body body)
+;;   "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
+;; See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
+;;   (with-gensyms (block) 
+;;     `(cl-block ,block
+;;        (let* ,(cl-loop for (symbol value) in bindings
+;;                 collect `(,symbol (or ,value (cl-return-from ,block nil))))
+;;          ,@body))))
 
-(cl-defmacro if-let (bindings then &body else)
-  "Bind `bindings` in parrallel and execute `then` if all are true, or `else` otherwise.
-See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
-  (with-gensyms (outer inner) 
-    `(cl-block ,outer
-       (cl-block ,inner
-         (let ,(cl-loop for (symbol value) in bindings
-                 collect `(,symbol (or ,value (cl-return-from ,inner nil))))
-           (cl-return-from ,outer ,then)))
-       ,@else)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (cl-defmacro if-let (bindings then &body else)
+;;   "Bind `bindings` in parrallel and execute `then` if all are true, or `else` otherwise.
+;; See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
+;;   (with-gensyms (outer inner) 
+;;     `(cl-block ,outer
+;;        (cl-block ,inner
+;;          (let ,(cl-loop for (symbol value) in bindings
+;;                  collect `(,symbol (or ,value (cl-return-from ,inner nil))))
+;;            (cl-return-from ,outer ,then)))
+;;        ,@else)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (if-let ((a 1))
   (list a a a )
@@ -354,3 +354,6 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
 
 
 
+(if-let (((integer x) whatever))
+  (message "whatever is the integer %d" x)
+  (message "whatever is not an integer"))
