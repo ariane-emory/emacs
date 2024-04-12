@@ -811,7 +811,8 @@
             (setq-local lsp-signature-render-documentation t)
             (aggressive-indent-mode 1)
             (eldoc-mode 1)
-            (lsp))))
+            ;; (lsp)
+            )))
 
       (add-hook 'Custom-mode-hook
         (lambda () (face-remap-add-relative 'default
