@@ -33,8 +33,8 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
   (with-gensyms (block) 
     `(cl-block ,block
-       (let* ,(cl-loop for (symbol value) in bindings
-                collect `(,symbol (or ,value (cl-return-from ,block nil))))
+       (let ,(cl-loop for (symbol value) in bindings
+               collect `(,symbol (or ,value (cl-return-from ,block nil))))
          ,@body))))
 
 (cl-defmacro if-let (bindings then &body else)

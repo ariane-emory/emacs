@@ -343,15 +343,25 @@
 ;;        ,@else)))
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(if-let ((a 1))
-  (list a a a )
-  :foo)
+;; (if-let ((a 1))
+;;   (list a a a )
+;;   :foo)
+
+(cl-defmacro when-let (bindings &body body)
+  "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
+See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
+  (with-gensyms (block) 
+    `(cl-block ,block
+       (let* ,(cl-loop for (symbol value) in bindings
+                collect `(,symbol (or ,value (cl-return-from ,block nil))))
+         ,@body))))
+
 
 (when-let ((a 1))
   (list a a a ))
 
 
-
+(cl-typep 8 'integer)
 
 
 (if-let (((integer x) whatever))
