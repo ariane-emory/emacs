@@ -126,6 +126,11 @@
   ;; (stack)
   )
 
+(setq foo "asd")
+(if-let ((x (when (integerp foo) foo)))
+  (prn "yes: %S" x)
+  (prn "no!"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack (expr '(1 2 3 4 5 6 7 8 9 10))
   (when (oddp expr)
@@ -168,18 +173,6 @@
 (cl-flet ((foo () (message "foo!"))) (foo)) ;; Okay. 
 (cl-flet ((foo () (message "foo!"))) (eval '(foo))) ;; Signals (void-function foo).
 
-(let ((expr '(foo)))
-  (cl-flet ((foo () (message "foo!"))) 
-    (eval `,expr))
-  (let*
-    ((--cl-foo--
-       (cl-function
-         (lambda nil
-           (message "foo!")))))
-    (progn
-      (eval expr))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-
-
+(cl-flet ((foo () (prn "FOO!"))) (foo))
