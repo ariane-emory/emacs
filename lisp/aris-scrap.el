@@ -208,3 +208,23 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 (dostack (expr '((+ 3 4) (pop!) (* 5 6) (- 7 8)))
   (message "result: %s" (eval expr)))
 
+
+
+
+;; this works and calls pop! succesfully, resulting in only the
+;; odd numbers being printed:
+(dostack (expr '(1 2 3 4 5 6 7 8 9 10))
+  (when (oddp expr)
+    (pop!))
+  (message "expr: %S" expr))
+
+;; But this signals void-function pop!:
+(dostack (expr '(1 2 3 4 5 6 7 8 9 10))
+  (when (oddp expr)
+    (eval '(pop!) t)
+    ;;    (eval '(pop!))
+    (message "expr: %S" expr)))
+
+(cl-flet ((foo () (message "foo!"))) (foo)) ;; Okay. 
+(cl-flet ((foo () (message "foo!"))) (eval '(foo))) ;; Signals (void-function foo).
+
