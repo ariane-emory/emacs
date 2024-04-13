@@ -129,18 +129,173 @@
 ;;   (message "whatever is the integer %d" x)
 ;;   (message "whatever is not an integer"))
 
-(cl-defmacro when-let (bindings &body body)
-  "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
-See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
-  (with-gensyms (block) 
-    `(cl-block ,block
-       (let ,(cl-loop for (symbol value) in bindings
-               collect `(,(if (and (consp symbol) (length= symbol 2))
-                            (cadr symbol)
-                            symbol)
-                          (or ,value (cl-return-from ,block nil))))
-         ,@body))))
+(|>
+  (+ 3 4)
+  (return! 55)
+  (* _ 5)
+  ;; (stack)
+  )
 
-(when-let ((a 1))
-  (list a a a ))
+(let
+  ((final
+     (let
+       ((_ nil)
+         (var-sym '_)
+         (flag nil))
+       (cl-labels
+         ((flag-is?
+            (test-flag)
+            (eq flag
+              (--valid-pipe-flag test-flag)))
+           (set-flag!
+             (new-flag &optional force)
+             (let
+               ((new-flag
+                  (--valid-pipe-flag new-flag t)))
+               (cond
+                 ((and flag new-flag
+                    (not force))
+                   (error "Cannot set flag to %S when flag is already set to %S." new-flag flag))
+                 (force
+                   (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                   (setq flag new-flag))
+                 (t
+                   (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+                     (if force " (forced)" ""))))
+               (setq flag new-flag)))
+           (unset-flag! nil
+             (when flag
+               (--pipe-print "Unsetting flag %S." flag)
+               (set-flag! nil)))
+           (store!
+             (value)
+             (prog1
+               (setq _ value)
+               (--pipe-print "Updated %S to %S." var-sym _)))
+           (labeled-print
+             (label value)
+             (let*
+               ((label
+                  (format "%s:" label))
+                 (whites
+                   (make-string
+                     (- 21
+                       (length label))
+                     32))
+                 (label
+                   (concat label whites)))
+               (--pipe-print "%s%S" label value))))
+         (--pipe-prndiv)
+         (--pipe-print "START")
+         (--pipe-prndiv)
+         (catch 'return-5164
+           (catch 'return-5165
+             (let
+               ((stack-5166
+                  '((+ 3 4)
+                     (return! 55)
+                     (* _ 5))))
+               (cl-labels
+                 ((len nil
+                    (length stack-5166))
+                   (stack nil stack-5166)
+                   (set-stack!
+                     (new-stack)
+                     (setq stack-5166 new-stack))
+                   (push!
+                     (&optional val)
+                     (push
+                       (or val expr)
+                       stack-5166))
+                   (require-len>=
+                     (len)
+                     (unless
+                       (length> stack-5166
+                         (1- len))
+                       (signal 'stack-underflow
+                         (list 'stack-5166))))
+                   (pop! nil
+                     (require-len>= 1)
+                     (pop stack-5166))
+                   (return!
+                     (&optional val)
+                     (throw 'return-5165
+                       (or val expr))))
+                 (while stack-5166
+                   (let
+                     ((expr
+                        (pop!)))
+                     (--pipe-prndiv)
+                     (labeled-print "Current" expr)
+                     (labeled-print "Remaining"
+                       (stack))
+                     (labeled-print var-sym _)
+                     (labeled-print "Flag" flag)
+                     (if
+                       (--is-pipe-command? expr)
+                       (set-flag!
+                         (alist-get expr *--pipe-commands-to-flags*))
+                       (let
+                         ((result
+                            (eval expr)))
+                         (labeled-print "Expr result" result)
+                         (cl-flet
+                           ((drop-next! nil
+                              (let
+                                ((next
+                                   (pop!)))
+                                (--pipe-print "Popped 1st %S from %S." next
+                                  (stack))
+                                (when
+                                  (memq next *--pipe--arity-1-commands*)
+                                  (let
+                                    ((popped
+                                       (pop!)))
+                                    (--pipe-print "Popped command's argument %S from %S." popped
+                                      (stack))))
+                                (when
+                                  (memq next *--pipe--arity-2-commands*)
+                                  (error "Ignoring the %S command is not yet supported." next)))))
+                           (cond
+                             ((flag-is? :IGNORE)
+                               (--pipe-print "Not setting %S because %S." result flag))
+                             ((flag-is? :WHEN)
+                               (when
+                                 (not result)
+                                 (drop-next!)))
+                             ((flag-is? :UNLESS)
+                               (when result
+                                 (drop-next!)))
+                             ((flag-is? :RETURN)
+                               (--pipe-print "Returning due to command: %S" result)
+                               (throw 'return-5164 result))
+                             ((and
+                                (flag-is? :MAYBE)
+                                result)
+                               (store! result))
+                             ((and
+                                (flag-is? :MAYBE)
+                                (not result))
+                               (--pipe-print "Ignoring %S." result))
+                             (t
+                               (store! result)))
+                           (unset-flag!)))))))))
 
+
+
+           
+           (throw 'return-5164
+             (progn
+               (--pipe-prndiv)
+               (--pipe-print "Returning this because stack is empty: %S" _)
+               (--pipe-prndiv)
+               _)))))))
+  (--pipe-print "Pipe's final return: %S" final)
+  final)
+
+
+
+
+
+(dostack (expr '((+ 3 4) (pop!) (* 5 6) (- 7 8)))
+  (prn (eval expr)))
