@@ -216,7 +216,6 @@
               (--pipe-print "START")
               (--pipe-prndiv)
               (catch ,return-label
-
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
                 (dostack (expr ,body)
@@ -261,8 +260,7 @@
                             (--pipe-print "Ignoring %S." result))
                           (t (store! result)))
                         (unset-flag!)))))
-                ;; END OF DOSTACK-LITE BODY ARGUMENT
-
+                ;; END OF DOSTACK BODY ARGUMENT.
                 
                 ;; For clarity, explicitly throw the return value if we run out of stack items:
                 (throw ,return-label
