@@ -119,15 +119,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (when-let (((integer a) 1))
-;;   (list a a a ))
-
-;; (cl-typep 8 'integer)
-
-;; (if-let (((integer x) 8))
-;;   (message "whatever is the integer %d" x)
-;;   (message "whatever is not an integer"))
-
 (|>
   (+ 3 4)
   (return! 55)
@@ -135,55 +126,7 @@
   ;; (stack)
   )
 
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --dostack-validate-spec (spec max-len)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (unless (cons? spec)
-    (signal 'wrong-type-argument (list 'cons? spec)))
-  (unless (<= 2 (length spec) 3)
-    (signal 'wrong-number-of-arguments (list `(2 . ,max-len) (length spec)))))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dostack (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Iterate through a stack, executing the body of code for each element in the
-stack in a scope where STACK is bound to the remaining stack items and the
-followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
-`rotr!', `over!', `stack-len'."
-  (--dostack-validate-spec spec 3)
-  (let* ( (val-sym         (car spec))
-          (stack           (nth 1 spec))
-          (return-label `',(gensym "return-"))
-          (stack-is-sym    (symbolp stack))
-          (stack-sym       (if stack-is-sym stack (gensym "stack-")))
-          (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
-    `(catch ,return-label
-       (let ,@varlist
-         (cl-labels ( (len        ()               (length ,stack-sym))
-                      (stack      ()               ,stack-sym)
-                      (set-stack! (new-stack)      (setq ,stack-sym new-stack))
-                      (push!      (&optional val)  (push (or val ,val-sym) ,stack-sym))
-                      (require-len>= (len)
-                        (unless (length> ,stack-sym (1- len))
-                          (signal 'stack-underflow (list ',stack-sym))))
-                      (pop! ()
-                        (require-len>= 1)
-                        (pop ,stack-sym))
-                      (return! (&optional val)
-                        (throw ,return-label (or val ,val-sym))))
-           (while ,stack-sym
-             (let ((,val-sym (pop!)))
-               ;; (prndiv)
-               ;; (prn "dostack: %S" ,val-sym)
-               ,@body))
-           ,@(cdr (cdr spec)))))))
-
 (dostack (expr '(1 2 3 4 5 6 7 8 9 10))
   (when (oddp expr)
     (pop!))
@@ -208,9 +151,6 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 (dostack (expr '((+ 3 4) (pop!) (* 5 6) (- 7 8)))
   (message "result: %s" (eval expr)))
 
-
-
-
 ;; this works and calls pop! succesfully, resulting in only the
 ;; odd numbers being printed:
 (dostack (expr '(1 2 3 4 5 6 7 8 9 10))
@@ -227,4 +167,19 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 
 (cl-flet ((foo () (message "foo!"))) (foo)) ;; Okay. 
 (cl-flet ((foo () (message "foo!"))) (eval '(foo))) ;; Signals (void-function foo).
+
+(let ((expr '(foo)))
+  (cl-flet ((foo () (message "foo!"))) 
+    (eval `,expr))
+  (let*
+    ((--cl-foo--
+       (cl-function
+         (lambda nil
+           (message "foo!")))))
+    (progn
+      (eval expr))))
+
+
+
+
 
