@@ -889,6 +889,7 @@
            aris-funs--setup-lisp
            aris-funs--with-gensyms
            aris-funs--error-when-and-error-unless
+           steve-loshs-funs--if-let
            aris-configure--key-bindings
            aris-configure--tetris-keymap
            aris-configure--global-abbrevs-table 

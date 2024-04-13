@@ -8,7 +8,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro when-let* (bindings &body body)
+(cl-defmacro When-let* (bindings &body body)
   "Bind `bindings` serially and execute `body`, short-circuiting on `nil`.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
   (with-gensyms (block)
@@ -17,7 +17,7 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
                 collect `(,symbol (or ,value (cl-return-from ,block nil))))
          ,@body))))
 
-(cl-defmacro if-let* (bindings then &body else)
+(cl-defmacro If-let* (bindings then &body else)
   "Bind `bindings` serially and execute `then` if all are true, or `else` otherwise.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
   (with-gensyms (outer inner)
@@ -28,7 +28,7 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
            (cl-return-from ,outer ,then)))
        ,@else)))
 
-(cl-defmacro when-let (bindings &body body)
+(cl-defmacro When-let (bindings &body body)
   "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
   (with-gensyms (block) 
@@ -37,7 +37,7 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
                collect `(,symbol (or ,value (cl-return-from ,block nil))))
          ,@body))))
 
-(cl-defmacro if-let (bindings then &body else)
+(cl-defmacro If-let (bindings then &body else)
   "Bind `bindings` in parrallel and execute `then` if all are true, or `else` otherwise.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
   (with-gensyms (outer inner) 
