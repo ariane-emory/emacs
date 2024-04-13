@@ -82,7 +82,7 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
                ;; (prndiv)
                ;; (prn "dostack: %S" ,val-sym)
                ,@body))
-           ,@(cdr (cdr spec)))))))
+           ,@(cddr spec))))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
