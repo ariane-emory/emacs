@@ -118,7 +118,16 @@
     (unless (stack) (stop!))))
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (when-let (((integer a) 1))
+;;   (list a a a ))
+
+;; (cl-typep 8 'integer)
+
+;; (if-let (((integer x) 8))
+;;   (message "whatever is the integer %d" x)
+;;   (message "whatever is not an integer"))
 
 (cl-defmacro when-let (bindings &body body)
   "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
@@ -135,12 +144,3 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
 (when-let ((a 1))
   (list a a a ))
 
-(when-let (((integer a) 1))
-  (list a a a ))
-
-
-(cl-typep 8 'integer)
-
-(if-let (((integer x) 8))
-  (message "whatever is the integer %d" x)
-  (message "whatever is not an integer"))
