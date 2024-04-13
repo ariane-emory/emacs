@@ -141,7 +141,6 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
 
 (cl-typep 8 'integer)
 
-
-(if-let (((integer x) whatever))
+(if-let (((integer x) 8))
   (message "whatever is the integer %d" x)
   (message "whatever is not an integer"))
