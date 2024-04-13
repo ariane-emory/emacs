@@ -895,7 +895,8 @@
            aris-configure--rainbow-cursor
            aris-configure--xwidget-browse-menu
            aris-mode--local-caps-lock
-           xah-lees-configure--emoji-fix))
+           xah-lees-configure--emoji-fix
+           stallmans-funs--condstar))
 
       (when (file-directory-p aris-trav-dir) (use-package-with-messages trav)))
 
