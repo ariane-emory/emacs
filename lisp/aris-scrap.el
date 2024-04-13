@@ -126,8 +126,19 @@
   ;; (stack)
   )
 
+(defmacro maybe (pred val)
+  "Return VAL when (pred VAL), otherwise return nil."
+  `(if (funcall ,pred ,val) ,val nil))
+
 (setq foo "asd")
+
+(maybe integerp foo)
+
 (if-let ((x (when (integerp foo) foo)))
+  (prn "yes: %S" x)
+  (prn "no!"))
+
+(if-let ((x (maybe integerp foo)))
   (prn "yes: %S" x)
   (prn "no!"))
 
@@ -137,42 +148,6 @@
     (pop!))
   (message "expr: %S" expr))
 
-;; This works and prints:
-;; expr: 1
-;; expr: 3
-;; expr: 5
-;; expr: 7
-;; expr: 9
-
-(dostack (expr '((+ 3 4) (* 5 6) (- 7 8)))
-  (message "result: %s" (eval expr)))
-
-;; This works and prints:
-;; result: 7
-;; result: 30
-;; result: -1
-
-;; But this signals void-function pop!:
-(dostack (expr '((+ 3 4) (pop!) (* 5 6) (- 7 8)))
-  (message "result: %s" (eval expr)))
-
-;; this works and calls pop! succesfully, resulting in only the
-;; odd numbers being printed:
-(dostack (expr '(1 2 3 4 5 6 7 8 9 10))
-  (when (oddp expr)
-    (pop!))
-  (message "expr: %S" expr))
-
-;; But this signals void-function pop!:
-(dostack (expr '(1 2 3 4 5 6 7 8 9 10))
-  (when (oddp expr)
-    (eval '(pop!) t)
-    ;;    (eval '(pop!))
-    (message "expr: %S" expr)))
-
-(cl-flet ((foo () (message "foo!"))) (foo)) ;; Okay. 
-(cl-flet ((foo () (message "foo!"))) (eval '(foo))) ;; Signals (void-function foo).
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(cl-flet ((foo () (prn "FOO!"))) (foo))
+(|> ((e)) 5 (+ e 7) double (+ e 3) neg (lambda (n) (* 3 n)))
