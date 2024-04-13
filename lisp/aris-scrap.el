@@ -140,7 +140,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --dostack-validate-spec (spec max-len)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (cons? spec)
@@ -197,6 +196,15 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 ;; expr: 7
 ;; expr: 9
 
+(dostack (expr '((+ 3 4) (* 5 6) (- 7 8)))
+  (message "result: %s" (eval expr)))
+
+;; This works and prints:
+;; result: 7
+;; result: 30
+;; result: -1
+
 ;; But this signals void-function pop!:
 (dostack (expr '((+ 3 4) (pop!) (* 5 6) (- 7 8)))
-  (prn (eval expr)))
+  (message "result: %s" (eval expr)))
+
