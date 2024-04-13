@@ -126,19 +126,24 @@
   ;; (stack)
   )
 
-(defmacro maybe (pred val)
+(defmacro maybe (type val)
   "Return VAL when (pred VAL), otherwise return nil."
-  `(if (funcall ,pred ,val) ,val nil))
+  `(when (cl-typep ,val ,type) ,val))
 
-(setq foo "asd")
+(setq foo 7)
+(setq ty 'integer)
 
-(maybe integerp foo)
+(maybe ty foo)
+(maybe 'integer foo)
+(maybe integer foo)
+
+
 
 (if-let ((x (when (integerp foo) foo)))
   (prn "yes: %S" x)
   (prn "no!"))
 
-(if-let ((x (maybe integerp foo)))
+(if-let ((x (maybe 'integer foo)))
   (prn "yes: %S" x)
   (prn "no!"))
 

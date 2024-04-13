@@ -31,9 +31,9 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
           (return-label `',(gensym "return-"))
           (stack-is-sym    (symbolp stack))
           (stack-sym       (if stack-is-sym stack (gensym "stack-")))
-          (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
+          (bindings        (list (unless stack-is-sym `((,stack-sym ,stack))))))
     `(catch ,return-label
-       (let ,@varlist
+       (let ,@bindings
          (cl-labels ( (len        ()               (length ,stack-sym))
                       (stack      ()               ,stack-sym)
                       (set-stack! (new-stack)      (setq ,stack-sym new-stack))
@@ -65,21 +65,18 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
   (--dostack-validate-spec spec 3)
   (let* ( (val-sym         (car spec))
           (stack           (nth 1 spec))
-          (return-label `',(gensym "return-"))
           (stack-is-sym    (symbolp stack))
           (stack-sym       (if stack-is-sym stack (gensym "stack-")))
-          (varlist         (list (unless stack-is-sym `((,stack-sym ,stack))))))
-    `(catch ,return-label
-       (let ,@varlist
-         (cl-labels ( (stack      ()               ,stack-sym)
-                      (require-len>= (len))
-                      (pop! ()
-                        (unless (length> ,stack-sym 0)
-                          (signal 'stack-underflow (list ',stack-sym)))
-                        (pop ,stack-sym)))
-           (while ,stack-sym
-             (let ((,val-sym (pop!)))
-               ,@body)))))))
+          (bindings         (list (unless stack-is-sym `((,stack-sym ,stack))))))
+    `(let ,@bindings
+       (cl-labels ( (stack () ,stack-sym)
+                    (pop! ()
+                      (unless (length> ,stack-sym 0)
+                        (signal 'stack-underflow (list ',stack-sym)))
+                      (pop ,stack-sym)))
+         (while ,stack-sym
+           (let ((,val-sym (pop!)))
+             ,@body))))))
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
