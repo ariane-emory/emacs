@@ -126,16 +126,26 @@
   ;; (stack)
   )
 
+
 (defmacro maybe (type val)
-  "Return VAL when (pred VAL), otherwise return nil."
-  `(when (cl-typep ,val ,type) ,val))
+  "Return VAL when it if of type TYPE, otherwise return nil."
+  (let ((evaluated-type (if (eq 'quote (car-safe type))
+                          (eval type)
+                          type)))
+    `(when (cl-typep ,val ',evaluated-type)
+       ,val)))
+
+(maybe 'integer foo)
+(maybe integer foo)
 
 (setq foo 7)
 (setq ty 'integer)
 
 (maybe ty foo)
-(maybe 'integer foo)
-(maybe integer foo)
+(when
+  (cl-typep foo integer)
+  foo)
+
 
 
 
