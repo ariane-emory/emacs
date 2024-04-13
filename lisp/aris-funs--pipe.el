@@ -218,7 +218,7 @@
               (catch ,return-label
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
-                (dostack (expr ,body)
+                (dostack-lite (expr ,body)
                   (--pipe-prndiv)
                   (labeled-print "Current" expr)
                   (labeled-print "Remaining" (stack))
