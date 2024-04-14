@@ -57,17 +57,23 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defunt typedmul (('integer x) ('integer y))
-  "Multiply two integers."
-  (* x y))
+(defunt tsqr (('integer x))
+  "Square an integer."
+  (* x x))
 
-(defun tmul (x y)
-  "Multiply two integers."
+(defun tsqr (x)
+  "Square an integer."
   (if-let
-    ( (x (maybe 'integer x))
-      (y (maybe 'integer y)))
-    (progn (* x y))
+    ((x (maybe 'integer x)))
+    (progn (* x x))
     (error "type error")))
 
-(tmul 2 3)
-(tmul 2 "foo")
+(defun tsqr (x)
+  "Square an integer."
+  (if-let
+    ((x (maybe 'integer x)))
+    (progn (* x x))
+    (error "type error")))
+
+(tsqr 3)
+(tsqr "3")
