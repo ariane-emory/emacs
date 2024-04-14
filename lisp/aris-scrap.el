@@ -86,10 +86,8 @@
 (type-check-for-arg (integer x))
 (type-check-for-arg x)
 
-
 (defmacro defunt (name arglist &rest rest)
-  (let (new-arglist
-         type-checks)
+  (let (new-arglist type-checks)
     (dolist (arg arglist)
       (if-let ((check (type-check-for-arg arg)))
         (progn
