@@ -325,5 +325,43 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MATCH2 scratch tests:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when nil
+  (progn
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+
+    (let ( (*mp--use-new-pipe-macro* t)
+           (*mp--verbose* t)
+           (*mp--merge-duplicate-alist-keys* nil)
+           (*mp--use-dotted-pairs-in-result* nil))
+      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+    
+    (let ( (*mp--use-new-pipe-macro* nil)
+           (*mp--verbose* t)
+           (*mp--merge-duplicate-alist-keys* nil)
+           (*mp--use-dotted-pairs-in-result* nil))
+      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+
+    (let ( (*mp--use-new-pipe-macro* t)
+           (*mp--verbose* t)
+           (*mp--merge-duplicate-alist-keys* t)
+           (*mp--use-dotted-pairs-in-result* nil))
+      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+    
+    (let ( (*mp--use-new-pipe-macro* nil)
+           (*mp--verbose* t)
+           (*mp--merge-duplicate-alist-keys* t)
+           (*mp--use-dotted-pairs-in-result* nil))
+      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+    
+    (merge-duplicate-alist-keys '((a 1) (a 2) (a 3) (a 4) (a 5) (b 8)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--match-pattern2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
