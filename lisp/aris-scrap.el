@@ -114,8 +114,10 @@
         (if (and ty (symbolp ty))
           (progn
             (prn "defunt: ty is a non-nil symbol.")
-            (push `(cl-check-type ,(cadr arg) ,ty) type-checks))
-          (prn "defunt: ty is NOT a non-nil symbol."))))
+            (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
+            (push (cadr arg) new-arglist))
+          (prn "defunt: ty is NOT a non-nil symbol.")
+          (push arg new-arglist))))
     
     (let ( (new-arglist (nreverse new-arglist))
            (type-checks (nreverse type-checks)))
