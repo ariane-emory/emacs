@@ -126,65 +126,6 @@
   ;; (stack)
   )
 
-;; Case 3 doesn't work:
-(defmacro maybe (type val)
-  "Return VAL when it if of type TYPE, otherwise return nil."
-  (let ((type (if (eq 'quote (car-safe type))
-                (eval type)
-                type)))
-    `(when (cl-typep ,val ',type) ,val)))
-
-;; Case 3 doesn't work:
-(defmacro maybe (type val)
-  "Return VAL when it if of type TYPE, otherwise return nil."
-  (let ((type (if (eq (car-safe type) 'quote)
-                (cadr type)
-                type)))
-    `(when (cl-typep ,val ',type) ,val)))
-
-;; Case 1 doesn't work:
-(defmacro maybe (type val)
-  "Return VAL when it if of type TYPE, otherwise return nil."
-  (let ((evaluated-type (if (symbolp type)
-                          (if (boundp type)
-                            (eval type)
-                            type)
-                          type)))
-    `(when (cl-typep ,val ',evaluated-type)
-       ,val)))
-
-;; Case 3 doesn't work:
-(defmacro maybe (type val)
-  "Return VAL when it is of type TYPE, otherwise return nil."
-  (let ((evaluated-type (if (eq (car-safe type) 'quote)
-                          (cadr type)
-                          type)))
-    `(when (cl-typep ,val ',evaluated-type)
-       ,val)))
-
-;; Only case 2 works: 
-(defmacro maybe (type val)
-  "Return VAL when it is of type TYPE, otherwise return nil."
-  (let ((evaluated-type (if (eq (car-safe type) 'quote)
-                          (eval (cadr type))
-                          type)))
-    `(when (cl-typep ,val ',evaluated-type)
-       ,val)))
-
-(defmacro maybe (type val)
-  "Return VAL when it if of type TYPE, otherwise return nil."
-  (if (and (symbolp type) (get type 'cl-deftype-satisfies))
-    `(when (cl-typep ,val ',type) ,val)
-    `(when (cl-typep ,val ,type) ,val)))
-
-;; All three cases work:
-
-(defmacro quote-when (test val)
-  "Quote VAL if TEST evaluates to a true value."
-  `(if ,test
-     ',val
-     ,val))
-
 (defmacro maybe (type val)
   "Return VAL when it is of type TYPE, otherwise return nil."
   (let ((type-form
@@ -199,17 +140,6 @@
 (maybe 'integer foo)  ; Works
 (maybe integer foo)   ; Works
 (maybe ty foo)        ; Works
-
-
-(maybe ty foo)
-(when
-  (cl-typep foo integer)
-  foo)
-
-
-(setq foo 7)
-(setq ty 'integer)
-
 
 (cl-typecase foo
   (ty foo))
@@ -229,8 +159,6 @@
 (if-let ((x (maybe integer foo)))
   (prn "yes: %S" x)
   (prn "no!"))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack (expr '(1 2 3 4 5 6 7 8 9 10))
