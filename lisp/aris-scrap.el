@@ -126,28 +126,35 @@
   ;; (stack)
   )
 
+(defmacro maybe (type val)
+  "Return VAL when it if of type TYPE, otherwise return nil."
+  (let ((type (if (eq 'quote (car-safe type))
+                (eval type)
+                type)))
+    `(when (cl-typep ,val ',type)
+       ,val)))
 
 (defmacro maybe (type val)
   "Return VAL when it if of type TYPE, otherwise return nil."
-  (let ((evaluated-type (if (eq 'quote (car-safe type))
-                          (eval type)
-                          type)))
-    `(when (cl-typep ,val ',evaluated-type)
+  (let ((type (if (eq (car-safe type) 'quote)
+                (cadr type)
+                type)))
+    `(when (cl-typep ,val ',type)
        ,val)))
 
 (maybe 'integer foo)
 (maybe integer foo)
-
-(setq foo 7)
 (setq ty 'integer)
-
 (maybe ty foo)
+(setq foo 7)
+
+
+(cl-typecase foo
+  (ty foo))
+
 (when
   (cl-typep foo integer)
   foo)
-
-
-
 
 (if-let ((x (when (integerp foo) foo)))
   (prn "yes: %S" x)
@@ -156,6 +163,12 @@
 (if-let ((x (maybe 'integer foo)))
   (prn "yes: %S" x)
   (prn "no!"))
+
+(if-let ((x (maybe integer foo)))
+  (prn "yes: %S" x)
+  (prn "no!"))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack (expr '(1 2 3 4 5 6 7 8 9 10))
