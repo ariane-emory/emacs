@@ -134,6 +134,7 @@
                                      (push arg new-arglist)))))))
     (prn "new-arglist    is %S" new-arglist)
     (prn "remaining-arglist is %S" remaining-arglist)
+    ;; if any TYPE-CHECKS were found...
     (if (not type-checks)
       ;; then expand into a normal defun:
       `(defun ,name ,arglist ,@body)
@@ -196,17 +197,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       (message "%s to the power of %d is %s." num pow res))
     res))
 
-(foo 2.5 3 t) ;; ⇒ 15.625 and prints "2.5 to the power of 3 is 15.625."
-
-
-(defun* foo (x y)
-  (* x y))
-
-;; expands into a normal defun:
-(defun foo
-  (x y)
-  (* x y))
-
-
+(foo 2.5 3 t) ;; ⇒ 15.625 and also prints "2.5 to the power of 3 is 15.625.".
 
 
