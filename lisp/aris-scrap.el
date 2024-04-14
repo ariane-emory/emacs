@@ -117,20 +117,29 @@
             (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
             (push (cadr arg) new-arglist))
           (prn "defunt: ty is NOT a non-nil symbol.")
-          (push arg new-arglist))))
-    
-    (let ( (new-arglist (nreverse new-arglist))
-           (type-checks (nreverse type-checks)))
+          (push arg new-arglist))))    
+    (let* ( (new-arglist (nreverse new-arglist))
+            (type-checks (nreverse type-checks))
+            (parse (byte-run--parse-body body t))
+            (docstring (nth 0 parse))
+            (declare-form (nth 1 parse))
+            (interactive-form (nth 2 parse))
+            (body (nth 3 parse))
+            (warnings (nth 4 parse))
+
+            )
       `(list
          ,new-arglist  
          ,type-checks
-         ,(byte-run--parse-body body t)
+         ,parse
+         ,body
          ))))
 
 (defunt foo ((integer x) y)
   "My docstring."
   (interactive)
   (* x y))
+
 
 
 (defunt foo (x y)
