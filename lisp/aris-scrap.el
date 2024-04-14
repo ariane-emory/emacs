@@ -135,7 +135,7 @@
         ;; expand into a normal defun:
         `(defun ,name ,arglist ,@body)
         ;; otherwise, tamper with the bodo to add type checks:
-        (let* ( (new-arglist (nreverse (append (nreverse remaining-args) new-arglist)))
+        (let* ( (new-arglist (append (nreverse new-arglist) remaining-args))
                 (type-checks (nreverse type-checks))
                 (parse (byte-run--parse-body body t))
                 (docstring (nth 0 parse))
