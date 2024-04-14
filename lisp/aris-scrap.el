@@ -117,7 +117,7 @@
             (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
             (push (cadr arg) new-arglist))
           (prn "defunt: ty is NOT a non-nil symbol.")
-          (push arg new-arglist))))    
+          (push arg new-arglist))))
     (let* ( (new-arglist (nreverse new-arglist))
             (type-checks (nreverse type-checks))
             (parse (byte-run--parse-body body t))
@@ -145,7 +145,3 @@
 (defunt foo (x y)
   (* x y))
 
-(defun foo
-  (x y)
-  nil nil
-  (* x y))
