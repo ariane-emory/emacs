@@ -118,8 +118,10 @@
                                 (prn "defun*: arg is %S." arg)                                
                                 (if-let ( (ty (car-safe arg))
                                           (_ (and ty (symbolp ty) (length= arg 2)))
-                                          (var (cadr arg))
-                                          (_ (and var (symbolp var))))
+                                          (var (nth 1 arg))
+                                          (_ (and var (symbolp var)))
+
+                                          )
                                   ;; then:
                                   (progn
                                     (prn "defun*: ty is %S." ty)
