@@ -87,9 +87,27 @@
             (var (cadr binding))
             (prd  (get typ 'cl-deftype-satisfies))
             )
-      `(,typ ,var ,prd))))
+      `(,var (if (cl-typep ,var ',typ)
+               ,var
+               (signal 'wrong-type-argument (list ,prd ,var)))
+         ;; `(,typ ,var ,prd)
+         ))))
 
-(expand-one-typed-binding ('integer x))
+(expand-one-typed-binding (integer x))
+
+(x
+  (if
+    (cl-typep x 'integer)
+    x
+    (signal 'wrong-type-argument
+      (list integerp x))))
+
+
+(if
+  (cl-typep x integer)
+  x
+  (signal 'wrong-type-argument
+    (list integerp x)))
 
 
 (expand-one-typed-binding x)
