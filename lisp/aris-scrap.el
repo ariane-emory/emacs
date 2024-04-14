@@ -68,12 +68,31 @@
     (progn (* x x))
     (error "type error")))
 
-(defun tsqr (x)
-  "Square an integer."
-  (if-let
-    ((x (maybe 'integer x)))
-    (progn (* x x))
-    (error "type error")))
-
 (tsqr 3)
 (tsqr "3")
+
+(defun tsqr (x)
+  "Square an integer."
+  (let
+    ((x (if (cl-typep x 'integer)
+          x 
+          (signal 'wrong-type-argument (list 'integerp x)))))
+    (* x x)))
+
+(defmacro expand-one-typed-binding (binding)
+  "Expand a single typed binding."
+  (if (not (and (consp binding) (length= binding 2)))
+    binding 
+    (let* ( (typ (car binding))
+            (var (cadr binding))
+            (prd  (get typ 'cl-deftype-satisfies))
+            )
+      `(,typ ,var ,prd))))
+
+(expand-one-typed-binding ('integer x))
+
+
+(expand-one-typed-binding x)
+
+
+
