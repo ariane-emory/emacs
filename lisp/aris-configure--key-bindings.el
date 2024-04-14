@@ -71,7 +71,8 @@
   ("C-s-z" .
     (lambda ()
       (interactive)
-      (pp-macroexpand-last-sexp t) (insert "\n") (message "Inserted macro.")))
+      (pp-macroexpand-last-sexp t) ;; (insert "\n")
+      (message "Inserted macro.")))
   
   ;; ("C-x C-e" . eval-last-sexp) ;; Default, don't actually bind.
   ("C-c C-<backspace>" .

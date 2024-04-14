@@ -89,13 +89,15 @@
 (defmacro defunt (name arglist &rest rest)
   (let (new-arglist type-checks)
     (dolist (arg arglist)
-      (if-let ((check (type-check-for-arg arg)))
-        (progn
-          (prn "Making typecheck for %S." arg)
-          (push check type-checks)
-          (push (car check) new-arglist))
-        (prn "NOT making typecheck for %S." arg)
-        (push arg new-arglist)))
+      (let ((check (type-check-for-arg arg)))
+        (prn "check is %S." check)
+        (if check
+          (progn
+            (prn "Making typecheck for %S." arg)
+            (push check type-checks)
+            (push (car check) new-arglist))
+          (prn "NOT making typecheck for %S." arg)
+          (push arg new-arglist))))
     (let ( (new-arglist (nreverse new-arglist))
            (type-checks (nreverse type-checks)))
       `(list
