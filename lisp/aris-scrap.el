@@ -101,44 +101,41 @@
               (var (cadr arg)))
       `(cl-check-type ,var ,ty))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun lambda-list-keyword-p (symbol)
   "Check if SYMBOL is a lambda list keyword."
   (member symbol '(&rest &optional &key &allow-other-keys)))
 
 (defmacro defun* (name arglist &rest body)
   "Like defun, but with the option of type checking (only for the mandatory parameters, for the moment ."
-  (let* (new-arglist type-checks (remaining-arglist arglist)
-          (remaining-arglist (catch 'break-loop
-                               (while remaining-arglist
-                                 ;; peek and bail if head is a lambda list keyword:
-                                 (when (lambda-list-keyword-p (car remaining-arglist))
-                                   (throw 'break-loop remaining-arglist))
-                                 ;; pop the head and examine it:
-                                 (let ((arg (pop remaining-arglist)))                                  
-                                   (prn "defun*: arg is %S." arg)                                
-                                   (if-let ( (var (car-safe arg))
-                                             (_ (and var
-                                                  (symbolp var)
-                                                  (length= arg 3)
-                                                  (eq : (nth 1 arg))))
-                                             (ty (nth 2 arg))
-                                             (_ (and ty (symbolp ty))))
-                                     ;; add a type checking form to TYPE-CHECKS:
-                                     (progn
-                                       (prn "defun*: ty is %S." ty)
-                                       (prn "defun*: ty is a non-nil symbol.")
-                                       (push `(cl-check-type ,var ,ty) type-checks)
-                                       (push var new-arglist))
-                                     ;; else just add the arg to NEW-ARGLIST:
-                                     (prn "defun*: ty is NOT a non-nil symbol.")
-                                     (push arg new-arglist)))))))
-    (prn "new-arglist    is %S" new-arglist)
-    (prn "remaining-arglist is %S" remaining-arglist)
+  (let* ( new-arglist type-checks
+          (remaining-arglist arglist)
+          (remaining-arglist
+            (catch 'break-loop
+              (while remaining-arglist
+                ;; peek and bail if head is a lambda list keyword:
+                (when (member (car remaining-arglist) '(&optional &key &allow-other-keys))
+                  (throw 'break-loop remaining-arglist))
+                ;; pop the head and examine it:
+                (let ((arg (pop remaining-arglist)))                                  
+                  (if-let ( (var (car-safe arg))
+                            (_ (and var
+                                 (symbolp var)
+                                 (length= arg 3)
+                                 (eq : (nth 1 arg))))
+                            (ty (nth 2 arg))
+                            (_ (and ty (symbolp ty))))
+                    ;; then add a type checking form to TYPE-CHECKS:
+                    (progn
+                      (push `(cl-check-type ,var ,ty) type-checks)
+                      (push var new-arglist))
+                    ;; else just add the arg to NEW-ARGLIST:
+                    (push arg new-arglist)))))))
     ;; if any TYPE-CHECKS were found...
     (if (not type-checks)
       ;; then expand into a normal defun:
       `(defun ,name ,arglist ,@body)
-      ;; else tamper with the body to prepend TYPE-CHECKS:
+      ;; else tamper with the body before expansion to prepend TYPE-CHECKS onto BODY:
       (let* ( (new-arglist (append (nreverse new-arglist) remaining-arglist))
               (type-checks (nreverse type-checks))
               (parse (byte-run--parse-body body t))
@@ -154,23 +151,13 @@
                           (when warnings (list warnings))
                           type-checks
                           body)))
-        (prn "===========================================")
-        (prn "defun*: new-arglist      is %S" new-arglist)
-        (prn "defun*: type-checks      is %S" type-checks)
-        (prn "defun*: parse            is %S" parse)
-        (prn "defun*: docstring        is %S" docstring)
-        (prn "defun*: declare-form     is %S" declare-form)
-        (prn "defun*: interactive-form is %S" interactive-form)
-        (prn "defun*: body             is %S" body)
-        (prn "defun*: warnings         is %S" warnings)
-        (prn "defun*: new-body         is %S" new-body)
         `(defun ,name 
            ,new-arglist  
            ,@new-body)))))
 
-;; try defining a function using the macro:
+;; define a function with type checks using the macro:
 (defun* foo ((num : number) (pow : integer) &optional print-message)
-  "Raise the number NUM to the power POW.
+  "A silly function to aise the number NUM to the integral power POW.
 
 This is marked as interactive for no good reason other than to test if
 INTERACTIVE-FORM is handled properly when defun* builds NEW-BODY and is
@@ -181,22 +168,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (when print-message (message "%s to the power of %d is %s." num pow res))
     res))
 
-;; expands into: 
-(defun foo
-  (num pow &optional print-message)
-  "Raise the number NUM to the power POW.\n\nThis is marked interactive for no reason other than to test if INTERACTIVE-FORM\nis handled appropriately when building NEW-BODY."
-  (declare
-    (pure t))
-  (interactive)
-  (cl-check-type num number)
-  (cl-check-type pow integer)
-  (let
-    ((res
-       (expt num pow)))
-    (when print
-      (message "%s to the power of %d is %s." num pow res))
-    res))
-
 (foo 2.5 3 t) ;; ⇒ 15.625 and also prints "2.5 to the power of 3 is 15.625.".
+(foo 2.5 3.5 t) ;; signals (wrong-type-argument integer 3.5 pow).
+
 
 
