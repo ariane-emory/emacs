@@ -171,11 +171,40 @@
     `(when (cl-typep ,val ',evaluated-type)
        ,val)))
 
+(defmacro maybe (type val)
+  "Return VAL when it if of type TYPE, otherwise return nil."
+  (if (and (symbolp type)
+        (get type 'cl-deftype-satisfies))
+    `(when (cl-typep ,val ',type) ,val)
+    `(when (cl-typep ,val ,type) ,val)))
+
+
+;; All three cases work:
+(defmacro maybe (type val)
+  "Return VAL when it is of type TYPE, otherwise return nil."
+  (let ((type-form
+          (if (and (symbolp type)
+                (get type 'cl-deftype-satisfies))
+            (list 'quote type)
+            type)))
+    `(when (cl-typep ,val ,type-form)
+       ,val)))
+
 (setq foo 7)
 (setq ty 'integer)
-(maybe 'integer foo)
-(maybe integer foo)
+(maybe 'integer foo)  ; Works
+(maybe integer foo)   ; Works
+(maybe ty foo)        ; Works
+
+
 (maybe ty foo)
+(when
+  (cl-typep foo integer)
+  foo)
+
+
+(setq foo 7)
+(setq ty 'integer)
 
 
 (cl-typecase foo
