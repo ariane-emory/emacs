@@ -13,48 +13,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;PATTERN-DISPATCH and some PIPE:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (progn
-    (let ((*wm--depth-indicator-enable*))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; Reset the pattern-call dispatcher's alist:
-      (pd--reset)
-
-      ;; Define some simple functions:
-      (def (doub n) (|> n (+ _ _)))
-      (def (sqr y) (|> y (* _ _)))
-      (def (doub-sqr y) (doub (sqr y)))
-
-      ;; Define a fib:
-      (def (fib 0) 0)
-      (def (fib 1) 1)
-      (def (fib n)
-        (|>
-          :(prn "Calculating (fib %d) using a pipe-based fib..." n)
-          (|> n
-            (- _ 1)
-            (fib _))
-          (+ _
-            (|> n
-              (- _ 2)
-              (fib _)
-              :(prn "Calculated (fib %d) = %d" n _)))))
-
-      ;; Call it with some output commenting on the proceedings:
-      (|> 3
-        :(prn "Starting out with %d" _)
-        (+ _ (|> 2 (+ _ 5)))
-        :(prn "Getting the result of (fib %d)" _)
-        (fib _)
-        :(prn "Result =  %d" _)) ;; ⇒ 55
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      )))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; STACKS:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
