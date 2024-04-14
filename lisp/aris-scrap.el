@@ -115,17 +115,19 @@
                                 (throw 'break-loop remaining-args))
                               ;; pop the head and examine it:
                               (let ((arg (pop remaining-args)))                                  
-                                (prn "defunt: arg is %S." arg)                                
+                                (prn "defun*: arg is %S." arg)                                
                                 (if-let ( (ty (car-safe arg))
                                           (_ (and ty (symbolp ty) (length= arg 2))))
+                                  ;; then:
                                   (progn
-                                    (prn "defunt: ty is %S." ty)
+                                    (prn "defun*: ty is %S." ty)
                                     (when (and ty (symbolp ty) (length= arg 2))
                                       (let ((var (cadr arg)))
-                                        (prn "defunt: ty is a non-nil symbol.")
+                                        (prn "defun*: ty is a non-nil symbol.")
                                         (push `(cl-check-type ,var ,ty) type-checks)
                                         (push var new-arglist))))
-                                  (prn "defunt: ty is NOT a non-nil symbol.")
+                                  ;; else:
+                                  (prn "defun*: ty is NOT a non-nil symbol.")
                                   (push arg new-arglist))
 
 
@@ -154,15 +156,15 @@
                           type-checks
                           body)))
         (prn "===========================================")
-        (prn "defunt: new-arglist      is %S" new-arglist)
-        (prn "defunt: type-checks      is %S" type-checks)
-        (prn "defunt: pase             is %S" parse)
-        (prn "defunt: docstring        is %S" docstring)
-        (prn "defunt: declare-form     is %S" declare-form)
-        (prn "defunt: interactive-form is %S" interactive-form)
-        (prn "defunt: body             is %S" body)
-        (prn "defunt: warnings         is %S" warnings)
-        (prn "defunt: new-body         is %S" new-body)
+        (prn "defun*: new-arglist      is %S" new-arglist)
+        (prn "defun*: type-checks      is %S" type-checks)
+        (prn "defun*: pase             is %S" parse)
+        (prn "defun*: docstring        is %S" docstring)
+        (prn "defun*: declare-form     is %S" declare-form)
+        (prn "defun*: interactive-form is %S" interactive-form)
+        (prn "defun*: body             is %S" body)
+        (prn "defun*: warnings         is %S" warnings)
+        (prn "defun*: new-body         is %S" new-body)
         `(defun ,name 
            ,new-arglist  
            ,@new-body)))))
