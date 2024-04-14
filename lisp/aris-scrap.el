@@ -106,68 +106,69 @@
   (member symbol '(&rest &optional &key &allow-other-keys)))
 
 (defmacro defun* (name arglist &rest body)
-  "Like defun, but with the option of type checking the mandatory arguments ."
-  (let (new-arglist type-checks (remaining-args arglist))
-    (let ((remaining-args (catch 'break-loop
-                            (while remaining-args
-                              ;; peek and bail if head is a lambda list keyword:
-                              (when (lambda-list-keyword-p (car remaining-args))
-                                (throw 'break-loop remaining-args))
-                              ;; pop the head and examine it:
-                              (let ((arg (pop remaining-args)))                                  
-                                (prn "defun*: arg is %S." arg)                                
-                                (if-let ( (ty (car-safe arg))
-                                          (_ (and ty (symbolp ty) (length= arg 2)))
-                                          (var (nth 1 arg))
-                                          (_ (and var (symbolp var))))
-                                  ;; then:
-                                  (progn
-                                    (prn "defun*: ty is %S." ty)
-                                    (prn "defun*: ty is a non-nil symbol.")
-                                    (push `(cl-check-type ,var ,ty) type-checks)
-                                    (push var new-arglist))
-                                  ;; else:
-                                  (prn "defun*: ty is NOT a non-nil symbol.")
-                                  (push arg new-arglist)))))))
-      (prn "new-arglist    is %S" new-arglist)
-      (prn "remaining-args is %S" remaining-args)
-      (if (not type-checks)
-        ;; expand into a normal defun:
-        `(defun ,name ,arglist ,@body)
-        ;; otherwise, tamper with the bodo to add type checks:
-        (let* ( (new-arglist (append (nreverse new-arglist) remaining-args))
-                (type-checks (nreverse type-checks))
-                (parse (byte-run--parse-body body t))
-                (docstring (nth 0 parse))
-                (declare-form (nth 1 parse))
-                (interactive-form (nth 2 parse))
-                (body (nth 3 parse))
-                (warnings (nth 4 parse))
-                (new-body ( append
-                            (when docstring (list docstring))
-                            (when declare-form (list declare-form))
-                            (when interactive-form (list interactive-form))
-                            (when warnings (list warnings))
-                            type-checks
-                            body)))
-          (prn "===========================================")
-          (prn "defun*: new-arglist      is %S" new-arglist)
-          (prn "defun*: type-checks      is %S" type-checks)
-          (prn "defun*: pase             is %S" parse)
-          (prn "defun*: docstring        is %S" docstring)
-          (prn "defun*: declare-form     is %S" declare-form)
-          (prn "defun*: interactive-form is %S" interactive-form)
-          (prn "defun*: body             is %S" body)
-          (prn "defun*: warnings         is %S" warnings)
-          (prn "defun*: new-body         is %S" new-body)
-          `(defun ,name 
-             ,new-arglist  
-             ,@new-body))))))
+  "Like defun, but with the option of type checking (only for the mandatory parameters, for the moment ."
+  (let* (new-arglist type-checks (remaining-arglist arglist)
+          (remaining-arglist (catch 'break-loop
+                               (while remaining-arglist
+                                 ;; peek and bail if head is a lambda list keyword:
+                                 (when (lambda-list-keyword-p (car remaining-arglist))
+                                   (throw 'break-loop remaining-arglist))
+                                 ;; pop the head and examine it:
+                                 (let ((arg (pop remaining-arglist)))                                  
+                                   (prn "defun*: arg is %S." arg)                                
+                                   (if-let ( (ty (car-safe arg))
+                                             (_ (and ty (symbolp ty) (length= arg 2)))
+                                             (var (nth 1 arg))
+                                             (_ (and var (symbolp var))))
+                                     ;; add a type checking form to TYPE-CHECKS:
+                                     (progn
+                                       (prn "defun*: ty is %S." ty)
+                                       (prn "defun*: ty is a non-nil symbol.")
+                                       (push `(cl-check-type ,var ,ty) type-checks)
+                                       (push var new-arglist))
+                                     ;; else just add the arg to NEW-ARGLIST:
+                                     (prn "defun*: ty is NOT a non-nil symbol.")
+                                     (push arg new-arglist)))))))
+    (prn "new-arglist    is %S" new-arglist)
+    (prn "remaining-arglist is %S" remaining-arglist)
+    (if (not type-checks)
+      ;; then expand into a normal defun:
+      `(defun ,name ,arglist ,@body)
+      ;; else tamper with the body to prepend TYPE-CHECKS:
+      (let* ( (new-arglist (append (nreverse new-arglist) remaining-arglist))
+              (type-checks (nreverse type-checks))
+              (parse (byte-run--parse-body body t))
+              (docstring (nth 0 parse))
+              (declare-form (nth 1 parse))
+              (interactive-form (nth 2 parse))
+              (body (nth 3 parse))
+              (warnings (nth 4 parse))
+              (new-body ( append
+                          (when docstring (list docstring))
+                          (when declare-form (list declare-form))
+                          (when interactive-form (list interactive-form))
+                          (when warnings (list warnings))
+                          type-checks
+                          body)))
+        (prn "===========================================")
+        (prn "defun*: new-arglist      is %S" new-arglist)
+        (prn "defun*: type-checks      is %S" type-checks)
+        (prn "defun*: pase             is %S" parse)
+        (prn "defun*: docstring        is %S" docstring)
+        (prn "defun*: declare-form     is %S" declare-form)
+        (prn "defun*: interactive-form is %S" interactive-form)
+        (prn "defun*: body             is %S" body)
+        (prn "defun*: warnings         is %S" warnings)
+        (prn "defun*: new-body         is %S" new-body)
+        `(defun ,name 
+           ,new-arglist  
+           ,@new-body)))))
 
 (defun* foo ((integer x) y &optional z)
   "My docstring."
   (interactive)
   (* x y z))
+
 
 ;; expands into: 
 (defun foo
