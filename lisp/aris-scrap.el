@@ -126,6 +126,7 @@
   ;; (stack)
   )
 
+;; Case 3 doesn't work:
 (defmacro maybe (type val)
   "Return VAL when it if of type TYPE, otherwise return nil."
   (let ((type (if (eq 'quote (car-safe type))
@@ -133,6 +134,7 @@
                 type)))
     `(when (cl-typep ,val ',type) ,val)))
 
+;; Case 3 doesn't work:
 (defmacro maybe (type val)
   "Return VAL when it if of type TYPE, otherwise return nil."
   (let ((type (if (eq (car-safe type) 'quote)
@@ -140,10 +142,39 @@
                 type)))
     `(when (cl-typep ,val ',type) ,val)))
 
+;; Case 1 doesn't work:
+(defmacro maybe (type val)
+  "Return VAL when it if of type TYPE, otherwise return nil."
+  (let ((evaluated-type (if (symbolp type)
+                          (if (boundp type)
+                            (eval type)
+                            type)
+                          type)))
+    `(when (cl-typep ,val ',evaluated-type)
+       ,val)))
+
+;; Case 3 doesn't work:
+(defmacro maybe (type val)
+  "Return VAL when it is of type TYPE, otherwise return nil."
+  (let ((evaluated-type (if (eq (car-safe type) 'quote)
+                          (cadr type)
+                          type)))
+    `(when (cl-typep ,val ',evaluated-type)
+       ,val)))
+
+;; Only case 2 works: 
+(defmacro maybe (type val)
+  "Return VAL when it is of type TYPE, otherwise return nil."
+  (let ((evaluated-type (if (eq (car-safe type) 'quote)
+                          (eval (cadr type))
+                          type)))
+    `(when (cl-typep ,val ',evaluated-type)
+       ,val)))
+
 (setq foo 7)
+(setq ty 'integer)
 (maybe 'integer foo)
 (maybe integer foo)
-(setq ty 'integer)
 (maybe ty foo)
 
 
