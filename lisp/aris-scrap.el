@@ -126,13 +126,15 @@
             (interactive-form (nth 2 parse))
             (body (nth 3 parse))
             (warnings (nth 4 parse))
-
+            (new-body (nconc
+                        `,@(list docstring)
+                        `,@declare-form
+                        `,@(list interactive-form)
+                        warnings type-checks body))
             )
-      `(list
+      `(defun ,name 
          ,new-arglist  
-         ,type-checks
-         ,parse
-         ,body
+         ,@new-body
          ))))
 
 (defunt foo ((integer x) y)
@@ -140,11 +142,10 @@
   (interactive)
   (* x y))
 
-
-
 (defunt foo (x y)
-  "My docstring."
-  (interactive)
   (* x y))
 
-
+(defun foo
+  (x y)
+  nil nil
+  (* x y))
