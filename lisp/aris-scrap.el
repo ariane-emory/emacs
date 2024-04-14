@@ -105,7 +105,7 @@
               (var (cadr arg)))
       `(cl-check-type ,var ,ty))))
 
-(defmacro defunt (name arglist &rest rest)
+(defmacro defunt (name arglist &rest body)
   (let (new-arglist type-checks)
     (dolist (arg arglist)
       (prn "defunt: arg is %S." arg)
@@ -123,9 +123,17 @@
            (type-checks (nreverse type-checks)))
       `(list
          ,new-arglist  
-         ,type-checks))))
+         ,type-checks
+         ,(byte-run--parse-body body t)
+         ))))
 
-(defunt foo ((integer x) y))
+(defunt foo ((integer x) y)
+  "My docstring."
+  (interactive)
+  (* x y))
 
-(defunt foo (x y))
+(defunt foo (x y)
+  "My docstring."
+  (interactive)
+  (* x y))
 
