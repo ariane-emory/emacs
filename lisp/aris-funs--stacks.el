@@ -63,11 +63,11 @@ stack in a scope where STACK is bound to the remaining stack items and the
 followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
 `rotr!', `over!', `stack-len'."
   (--dostack-validate-spec spec 3)
-  (let* ( (val-sym         (car spec))
-          (stack           (nth 1 spec))
-          (stack-is-sym    (symbolp stack))
-          (stack-sym       (if stack-is-sym stack (gensym "stack-")))
-          (bindings         (list (unless stack-is-sym `((,stack-sym ,stack))))))
+  (let* ( (val-sym      (car spec))
+          (stack        (nth 1 spec))
+          (stack-is-sym (symbolp stack))
+          (stack-sym    (if stack-is-sym stack (gensym "stack-")))
+          (bindings     (list (unless stack-is-sym `((,stack-sym ,stack))))))
     `(let ,@bindings
        (cl-labels ( (stack () ,stack-sym)
                     (pop! ()
