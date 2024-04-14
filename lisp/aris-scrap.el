@@ -116,7 +116,7 @@
                                   (prn "defunt: arg is %S." arg)
                                   (let ((ty (car-safe arg)))
                                     (prn "defunt: ty is %S." ty)
-                                    (if (and ty (symbolp ty))
+                                    (if (and ty (symbolp ty) (length= arg 2))
                                       (progn
                                         (prn "defunt: ty is a non-nil symbol.")
                                         (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
