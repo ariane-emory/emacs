@@ -116,9 +116,11 @@
                               ;; pop the head and examine it:
                               (let ((arg (pop remaining-args)))                                  
                                 (prn "defunt: arg is %S." arg)                                
-                                (if-let ((ty (car-safe arg)))
-                                  (progn (prn "defunt: ty is %S." ty)
-                                    (if (and ty (symbolp ty) (length= arg 2))
+                                (if-let ( (ty (car-safe arg))
+                                          (_ (and ty (symbolp ty) (length= arg 2))))
+                                  (progn
+                                    (prn "defunt: ty is %S." ty)
+                                    (when (and ty (symbolp ty) (length= arg 2))
                                       (let ((var (cadr arg)))
                                         (prn "defunt: ty is a non-nil symbol.")
                                         (push `(cl-check-type ,var ,ty) type-checks)
