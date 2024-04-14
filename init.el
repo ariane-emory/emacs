@@ -888,6 +888,7 @@
            aris-funs--prettify-symbols
            aris-funs--setup-lisp
            aris-funs--with-gensyms
+           aris-funs--defunstar
            aris-funs--error-when-and-error-unless
            steve-loshs-funs--if-let
            aris-configure--key-bindings
