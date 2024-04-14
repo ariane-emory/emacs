@@ -5,7 +5,7 @@
 (defmacro maybe (type val)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return VAL when it is of type TYPE, otherwise return nil."
-  `(when
+  `(and
      (cl-typep ,val
        ,(if (and (symbolp type) (get type 'cl-deftype-satisfies)) `',type type))
      ,val))
