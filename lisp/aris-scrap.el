@@ -127,14 +127,13 @@
             (interactive-form (nth 2 parse))
             (body (nth 3 parse))
             (warnings (nth 4 parse))
-            (new-body (append
+            (new-body ( append
                         (when docstring (list docstring))
                         (when declare-form (list declare-form))
                         (when interactive-form (list interactive-form))
                         (when warnings (list warnings))
                         type-checks
-                        body))
-            )
+                        body)))
       (prn "===========================================")
       (prn "defunt: new-arglist      is %S" new-arglist)
       (prn "defunt: type-checks      is %S" type-checks)
@@ -145,18 +144,20 @@
       (prn "defunt: body             is %S" body)
       (prn "defunt: warnings         is %S" warnings)
       (prn "defunt: new-body         is %S" new-body)
-
-      `(defun ,name 
-         ,new-arglist  
-         ,@new-body
-         ))))
+      (if type-checks 
+        `(defun ,name 
+           ,new-arglist  
+           ,@new-body
+           )
+        `(defun ,name ,arglist ,@body)
+        ))))
 
 (defunt foo ((integer x) y)
   "My docstring."
   (interactive)
   (* x y))
 
-;; expands to: 
+;; expands into: 
 (defun foo
   (x y)
   "My docstring."
