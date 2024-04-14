@@ -116,10 +116,13 @@
                                  ;; pop the head and examine it:
                                  (let ((arg (pop remaining-arglist)))                                  
                                    (prn "defun*: arg is %S." arg)                                
-                                   (if-let ( (ty (car-safe arg))
-                                             (_ (and ty (symbolp ty) (length= arg 2)))
-                                             (var (nth 1 arg))
-                                             (_ (and var (symbolp var))))
+                                   (if-let ( (var (car-safe arg))
+                                             (_ (and var
+                                                  (symbolp var)
+                                                  (length= arg 3)
+                                                  (eq : (nth 1 arg))))
+                                             (ty (nth 2 arg))
+                                             (_ (and ty (symbolp ty))))
                                      ;; add a type checking form to TYPE-CHECKS:
                                      (progn
                                        (prn "defun*: ty is %S." ty)
@@ -164,7 +167,7 @@
            ,new-arglist  
            ,@new-body)))))
 
-(defun* foo ((integer x) y &optional z)
+(defun* foo ((x : integer) y &optional z)
   "My docstring."
   (interactive)
   (* x y z))
