@@ -13,15 +13,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; maybe macro:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro maybe (type val)
-  "Return VAL when it is of type TYPE, otherwise return nil."
-  `(when
-     (cl-typep ,val
-       ,(if (and (symbolp type) (get type 'cl-deftype-satisfies)) `',type type))
-     ,val))
-
 (setq foo 7)
 (setq ty 'integer)
 (maybe 'integer foo)  ; Works
@@ -62,5 +53,15 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (message "Result %S is an integer." res)
   (message "Result was not an integer.")) ;; prints "Result 64 is an integer."
 
+(defun* pow ((num : number) (exp : integer))
+  (expt num exp))
 
-(defun* foo ((num : number) (exp : integer)) (expt num exp))
+(dolist (num '(3 3.5 "foo"))
+  (if-let ((res (maybe integer (pow num 3))))
+    (message "%d^3 is the integer %d." num res)
+    (message "%s^3 is not an integer." num)))
+
+;; prints:
+;; 3^3 is the integer 27.
+;; 3.5^3 is not an integer.
+;; and then signals (wrong-type-argument number "foo" num).
