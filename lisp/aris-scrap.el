@@ -156,7 +156,7 @@
         (prn "===========================================")
         (prn "defun*: new-arglist      is %S" new-arglist)
         (prn "defun*: type-checks      is %S" type-checks)
-        (prn "defun*: pase             is %S" parse)
+        (prn "defun*: parse            is %S" parse)
         (prn "defun*: docstring        is %S" docstring)
         (prn "defun*: declare-form     is %S" declare-form)
         (prn "defun*: interactive-form is %S" interactive-form)
@@ -167,19 +167,36 @@
            ,new-arglist  
            ,@new-body)))))
 
-(defun* foo ((x : integer) y &optional z)
-  "My docstring."
-  (interactive)
-  (* x y z))
+(defun* foo ((num : number) (pow : integer) &optional print)
+  "Raise the number NUM to the power POW.
 
+This is marked interactive for no reason other than to test if INTERACTIVE-FORM
+is handled properly when building NEW-BODY and marked pure mainly to test
+if DECLARE-FORM is handled properly."
+  (declare (pure t))
+  (interactive)
+  (let ((res (expt num pow)))
+    (when print (message "%s to the power of %d is %s." num pow res))
+    res))
 
 ;; expands into: 
 (defun foo
-  (x y &optional z)
-  "My docstring."
+  (num pow &optional print)
+  "Raise the number NUM to the power POW.\n\nThis is marked interactive for no reason other than to test if INTERACTIVE-FORM\nis handled appropriately when building NEW-BODY."
+  (declare
+    (pure t))
   (interactive)
-  (cl-check-type x integer)
-  (* x y z))
+  (cl-check-type num number)
+  (cl-check-type pow integer)
+  (let
+    ((res
+       (expt num pow)))
+    (when print
+      (message "%s to the power of %d is %s." num pow res))
+    res))
+
+(foo 2.5 3 t) ;; ⇒ 15.625 and prints "2.5 to the power of 3 is 15.625."
+
 
 (defun* foo (x y)
   (* x y))
