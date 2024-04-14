@@ -119,9 +119,7 @@
                                 (if-let ( (ty (car-safe arg))
                                           (_ (and ty (symbolp ty) (length= arg 2)))
                                           (var (nth 1 arg))
-                                          (_ (and var (symbolp var)))
-
-                                          )
+                                          (_ (and var (symbolp var))))
                                   ;; then:
                                   (progn
                                     (prn "defun*: ty is %S." ty)
@@ -130,46 +128,41 @@
                                     (push var new-arglist))
                                   ;; else:
                                   (prn "defun*: ty is NOT a non-nil symbol.")
-                                  (push arg new-arglist))
-
-
-                                )))))
+                                  (push arg new-arglist)))))))
       (prn "new-arglist    is %S" new-arglist)
-      (prn "remaining-args is %S" remaining-args)      
-      (when remaining-args
-        (setq new-arglist (append (nreverse remaining-args) new-arglist))))    
-    (if (not type-checks)
-      ;; expand into a normal defun:
-      `(defun ,name ,arglist ,@body)
-      ;; otherwise, tamper with the bodo to add type checks:
-      (let* ( (new-arglist (nreverse new-arglist))
-              (type-checks (nreverse type-checks))
-              (parse (byte-run--parse-body body t))
-              (docstring (nth 0 parse))
-              (declare-form (nth 1 parse))
-              (interactive-form (nth 2 parse))
-              (body (nth 3 parse))
-              (warnings (nth 4 parse))
-              (new-body ( append
-                          (when docstring (list docstring))
-                          (when declare-form (list declare-form))
-                          (when interactive-form (list interactive-form))
-                          (when warnings (list warnings))
-                          type-checks
-                          body)))
-        (prn "===========================================")
-        (prn "defun*: new-arglist      is %S" new-arglist)
-        (prn "defun*: type-checks      is %S" type-checks)
-        (prn "defun*: pase             is %S" parse)
-        (prn "defun*: docstring        is %S" docstring)
-        (prn "defun*: declare-form     is %S" declare-form)
-        (prn "defun*: interactive-form is %S" interactive-form)
-        (prn "defun*: body             is %S" body)
-        (prn "defun*: warnings         is %S" warnings)
-        (prn "defun*: new-body         is %S" new-body)
-        `(defun ,name 
-           ,new-arglist  
-           ,@new-body)))))
+      (prn "remaining-args is %S" remaining-args)
+      (if (not type-checks)
+        ;; expand into a normal defun:
+        `(defun ,name ,arglist ,@body)
+        ;; otherwise, tamper with the bodo to add type checks:
+        (let* ( (new-arglist (nreverse (append (nreverse remaining-args) new-arglist)))
+                (type-checks (nreverse type-checks))
+                (parse (byte-run--parse-body body t))
+                (docstring (nth 0 parse))
+                (declare-form (nth 1 parse))
+                (interactive-form (nth 2 parse))
+                (body (nth 3 parse))
+                (warnings (nth 4 parse))
+                (new-body ( append
+                            (when docstring (list docstring))
+                            (when declare-form (list declare-form))
+                            (when interactive-form (list interactive-form))
+                            (when warnings (list warnings))
+                            type-checks
+                            body)))
+          (prn "===========================================")
+          (prn "defun*: new-arglist      is %S" new-arglist)
+          (prn "defun*: type-checks      is %S" type-checks)
+          (prn "defun*: pase             is %S" parse)
+          (prn "defun*: docstring        is %S" docstring)
+          (prn "defun*: declare-form     is %S" declare-form)
+          (prn "defun*: interactive-form is %S" interactive-form)
+          (prn "defun*: body             is %S" body)
+          (prn "defun*: warnings         is %S" warnings)
+          (prn "defun*: new-body         is %S" new-body)
+          `(defun ,name 
+             ,new-arglist  
+             ,@new-body))))))
 
 (defun* foo ((integer x) y &optional z)
   "My docstring."
