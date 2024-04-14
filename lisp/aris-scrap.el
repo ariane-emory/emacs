@@ -119,7 +119,7 @@
                                 (if-let ( (ty (car-safe arg))
                                           (_ (and ty (symbolp ty) (length= arg 2)))
                                           (var (cadr arg))
-                                          (_ (symbolp var)))
+                                          (_ (and var (symbolp var))))
                                   ;; then:
                                   (progn
                                     (prn "defun*: ty is %S." ty)
