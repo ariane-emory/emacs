@@ -76,28 +76,29 @@
   "Check if SYMBOL is a lambda list keyword."
   (member symbol '(&rest &optional &key &allow-other-keys)))
 
-(defmacro type-check-for-arg (arg)
-  "Check the type of a single typed arg."
-  (if-let ( (ty (car-safe arg))
-            (__ (symbolp ty))
-            (var (cadr arg)))
-    `(cl-check-type ,var ,ty)))
-
 (type-check-for-arg (integer x))
 (type-check-for-arg x)
+
+(defmacro type-check-for-arg (arg)
+  "Check the type of a single typed arg."
+  (prn "tcfa: arg is %S." arg)
+  (let ((ty (car-safe arg)))
+    (prn "tcfa: ty is %S." ty)
+    (if-let ( (__ (and ty (symbolp ty)))
+              (var (cadr arg)))
+      `(cl-check-type ,var ,ty))))
 
 (defmacro defunt (name arglist &rest rest)
   (let (new-arglist type-checks)
     (dolist (arg arglist)
-      (let ((check (type-check-for-arg arg)))
-        (prn "check is %S." check)
-        (if check
+      (prn "defunt: arg is %S." arg)
+      (let ((ty (car-safe arg)))
+        (prn "defunt: ty is %S." ty)
+        (if (and ty (symbolp ty))
           (progn
-            (prn "Making typecheck for %S." arg)
-            (push check type-checks)
-            (push (car check) new-arglist))
-          (prn "NOT making typecheck for %S." arg)
-          (push arg new-arglist))))
+            (prn "defunt: It's a non-nil symbol.")
+            `(cl-check-type ,(cadr arg) ,ty))
+          (prn "defunt: It's NOT a non-nil symbol."))))
     (let ( (new-arglist (nreverse new-arglist))
            (type-checks (nreverse type-checks)))
       `(list
