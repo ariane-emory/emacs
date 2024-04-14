@@ -110,19 +110,19 @@
   (let (new-arglist type-checks)
     (let ((remaining-args (catch 'break-loop
                             (while arglist
-                              (let ((arg (pop arglist)))
-                                (when (lambda-list-keyword-p arg)
-                                  (throw 'break-loop (cons arg arglist)))
-                                (prn "defunt: arg is %S." arg)
-                                (let ((ty (car-safe arg)))
-                                  (prn "defunt: ty is %S." ty)
-                                  (if (and ty (symbolp ty))
-                                    (progn
-                                      (prn "defunt: ty is a non-nil symbol.")
-                                      (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
-                                      (push (cadr arg) new-arglist))
-                                    (prn "defunt: ty is NOT a non-nil symbol.")
-                                    (push arg new-arglist))))))))
+                              (if (lambda-list-keyword-p (car arglist))
+                                (throw 'break-loop arglist)
+                                (let ((arg (pop arglist)))                                  
+                                  (prn "defunt: arg is %S." arg)
+                                  (let ((ty (car-safe arg)))
+                                    (prn "defunt: ty is %S." ty)
+                                    (if (and ty (symbolp ty))
+                                      (progn
+                                        (prn "defunt: ty is a non-nil symbol.")
+                                        (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
+                                        (push (cadr arg) new-arglist))
+                                      (prn "defunt: ty is NOT a non-nil symbol.")
+                                      (push arg new-arglist)))))))))
       (prn "new-arglist    is %S" new-arglist)
       (prn "remaining-args is %S" remaining-args)      
       (when remaining-args
@@ -163,7 +163,7 @@
 (defun* foo ((integer x) y &optional z)
   "My docstring."
   (interactive)
-  (* x y))
+  (* x y z))
 
 ;; expands into: 
 (defun foo
@@ -171,8 +171,7 @@
   "My docstring."
   (interactive)
   (cl-check-type x integer)
-  (* x y))
-
+  (* x y z))
 
 (defun* foo (x y)
   (* x y))
