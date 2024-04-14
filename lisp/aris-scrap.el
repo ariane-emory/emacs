@@ -113,10 +113,9 @@
                               ;; peek and bail if head is a lambda list keyword:
                               (when (lambda-list-keyword-p (car remaining-args))
                                 (throw 'break-loop remaining-args))
-                              
+                              ;; pop the head and examine it:
                               (let ((arg (pop remaining-args)))                                  
-                                (prn "defunt: arg is %S." arg)
-                                
+                                (prn "defunt: arg is %S." arg)                                
                                 (if-let ((ty (car-safe arg)))
                                   (progn (prn "defunt: ty is %S." ty)
                                     (if (and ty (symbolp ty) (length= arg 2))
