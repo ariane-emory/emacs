@@ -108,17 +108,22 @@
 (defmacro defun* (name arglist &rest body)
   "Like defun, but with the option of type checking the mandatory arguments ."
   (let (new-arglist type-checks)
-    (dolist (arg arglist)
-      (prn "defunt: arg is %S." arg)
-      (let ((ty (car-safe arg)))
-        (prn "defunt: ty is %S." ty)
-        (if (and ty (symbolp ty))
-          (progn
-            (prn "defunt: ty is a non-nil symbol.")
-            (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
-            (push (cadr arg) new-arglist))
-          (prn "defunt: ty is NOT a non-nil symbol.")
-          (push arg new-arglist))))
+
+    (while arglist
+      (let ((arg (pop arglist)))
+        (prn "defunt: arg is %S." arg)
+        (let ((ty (car-safe arg)))
+          (prn "defunt: ty is %S." ty)
+          (if (and ty (symbolp ty))
+            (progn
+              (prn "defunt: ty is a non-nil symbol.")
+              (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
+              (push (cadr arg) new-arglist))
+            (prn "defunt: ty is NOT a non-nil symbol.")
+            (push arg new-arglist)))
+        )
+      )
+    
     (if (not type-checks)
       ;; expand into a normal defun:
       `(defun ,name ,arglist ,@body)
@@ -168,7 +173,7 @@
 (defun* foo (x y)
   (* x y))
 
-;; expands into a normal defun::
+;; expands into a normal defun:
 (defun foo
   (x y)
   (* x y))
