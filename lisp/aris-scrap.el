@@ -17,24 +17,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro maybe (type val)
   "Return VAL when it is of type TYPE, otherwise return nil."
-  `(when (cl-typep ,val ,type)
-     ,val))
-
-(defmacro maybe (type val)
-  "Return VAL when it is of type TYPE, otherwise return nil."
-  (let ((type-form
-          (if (and (symbolp type) (get type 'cl-deftype-satisfies))
-            `',type
-            type)))
-    `(when (cl-typep ,val ,type-form)
-       ,val)))
-
-(defmacro maybe (type val)
-  "Return VAL when it is of type TYPE, otherwise return nil."
-  `(when (cl-typep ,val
-           ,(if (and (symbolp type) (get type 'cl-deftype-satisfies))
-              `',type
-              type))
+  `(when
+     (cl-typep ,val
+       ,(if (and (symbolp type) (get type 'cl-deftype-satisfies)) `',type type))
      ,val))
 
 (setq foo 7)
@@ -57,57 +42,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defunt tsqr (('integer x))
-  "Square an integer."
-  (* x x))
-
-(defun tsqr (x)
-  "Square an integer."
-  (let
-    ((x (progn (cl-check-type x integer) x)))
-    (* x x)))
-
-(setq x 7)
-(cl-check-type 7 integer)
-(tsqr 3)
-(tsqr "3")
-
-(type-check-for-arg (integer x))
-(type-check-for-arg x)
-
-(defmacro defunt (name arglist &rest rest)
-  (let (new-arglist type-checks)
-    (dolist (arg arglist)
-      (prn "defunt: arg is %S." arg)
-      (let ((ty (car-safe arg)))
-        (prn "defunt: ty is %S." ty)
-        (if (and ty (symbolp ty))
-          (progn
-            (prn "defunt: It's a non-nil symbol.")
-            `(cl-check-type ,(cadr arg) ,ty))
-          (prn "defunt: It's NOT a non-nil symbol."))))
-    (let ( (new-arglist (nreverse new-arglist))
-           (type-checks (nreverse type-checks)))
-      `(list
-         ,new-arglist  
-         ,type-checks))))
-
-(defmacro type-check-for-arg (arg)
-  "Check the type of a single typed arg."
-  (prn "tcfa: arg is %S." arg)
-  (let ((ty (car-safe arg)))
-    (prn "tcfa: ty is %S." ty)
-    (if-let ( (__ (and ty (symbolp ty)))
-              (var (cadr arg)))
-      `(cl-check-type ,var ,ty))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun lambda-list-keyword-p (symbol)
-  "Check if SYMBOL is a lambda list keyword."
-  (member symbol '(&rest &optional &key &allow-other-keys)))
-
 (defmacro defun* (name arglist &rest body)
-  "Like defun, but with the option of type checking (only for the mandatory parameters, for the moment ."
+  "Like defun, but with the option of type checking (but only for the mandatory
+parameters, for the moment ."
   (let* ( new-arglist type-checks
           (remaining-arglist arglist)
           (remaining-arglist
@@ -157,7 +94,7 @@
 
 ;; define a function with type checks using the macro:
 (defun* foo ((num : number) (pow : integer) &optional print-message)
-  "A silly function to aise the number NUM to the integral power POW.
+  "A silly function to raise the number NUM to the integral power POW.
 
 This is marked as interactive for no good reason other than to test if
 INTERACTIVE-FORM is handled properly when defun* builds NEW-BODY and is
@@ -168,8 +105,9 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (when print-message (message "%s to the power of %d is %s." num pow res))
     res))
 
+;; try it out;
 (foo 2.5 3 t) ;; ⇒ 15.625 and also prints "2.5 to the power of 3 is 15.625.".
 (foo 2.5 3.5 t) ;; signals (wrong-type-argument integer 3.5 pow).
-
-
-
+(if-let ((res (maybe integer (foo 4 3 t))))
+  (message "Result %S is an integer." res)
+  (message "Result was not an integer.")) ;; prints "Result 64 is an integer."
