@@ -131,22 +131,20 @@
   (let ((type (if (eq 'quote (car-safe type))
                 (eval type)
                 type)))
-    `(when (cl-typep ,val ',type)
-       ,val)))
+    `(when (cl-typep ,val ',type) ,val)))
 
 (defmacro maybe (type val)
   "Return VAL when it if of type TYPE, otherwise return nil."
   (let ((type (if (eq (car-safe type) 'quote)
                 (cadr type)
                 type)))
-    `(when (cl-typep ,val ',type)
-       ,val)))
+    `(when (cl-typep ,val ',type) ,val)))
 
+(setq foo 7)
 (maybe 'integer foo)
 (maybe integer foo)
 (setq ty 'integer)
 (maybe ty foo)
-(setq foo 7)
 
 
 (cl-typecase foo
