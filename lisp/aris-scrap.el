@@ -108,22 +108,25 @@
 (defmacro defun* (name arglist &rest body)
   "Like defun, but with the option of type checking the mandatory arguments ."
   (let (new-arglist type-checks)
-
-    (while arglist
-      (let ((arg (pop arglist)))
-        (prn "defunt: arg is %S." arg)
-        (let ((ty (car-safe arg)))
-          (prn "defunt: ty is %S." ty)
-          (if (and ty (symbolp ty))
-            (progn
-              (prn "defunt: ty is a non-nil symbol.")
-              (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
-              (push (cadr arg) new-arglist))
-            (prn "defunt: ty is NOT a non-nil symbol.")
-            (push arg new-arglist)))
-        )
-      )
-    
+    (let ((remaining-args (catch 'break-loop
+                            (while arglist
+                              (let ((arg (pop arglist)))
+                                (when (lambda-list-keyword-p arg)
+                                  (throw 'break-loop (cons arg arglist)))
+                                (prn "defunt: arg is %S." arg)
+                                (let ((ty (car-safe arg)))
+                                  (prn "defunt: ty is %S." ty)
+                                  (if (and ty (symbolp ty))
+                                    (progn
+                                      (prn "defunt: ty is a non-nil symbol.")
+                                      (push `(cl-check-type ,(cadr arg) ,ty) type-checks)
+                                      (push (cadr arg) new-arglist))
+                                    (prn "defunt: ty is NOT a non-nil symbol.")
+                                    (push arg new-arglist))))))))
+      (prn "new-arglist    is %S" new-arglist)
+      (prn "remaining-args is %S" remaining-args)      
+      (when remaining-args
+        (setq new-arglist (append (nreverse remaining-args) new-arglist))))    
     (if (not type-checks)
       ;; expand into a normal defun:
       `(defun ,name ,arglist ,@body)
@@ -157,18 +160,19 @@
            ,new-arglist  
            ,@new-body)))))
 
-(defun* foo ((integer x) y)
+(defun* foo ((integer x) y &optional z)
   "My docstring."
   (interactive)
   (* x y))
 
 ;; expands into: 
 (defun foo
-  (x y)
+  (x y &optional z)
   "My docstring."
   (interactive)
   (cl-check-type x integer)
   (* x y))
+
 
 (defun* foo (x y)
   (* x y))
