@@ -106,6 +106,7 @@
       `(cl-check-type ,var ,ty))))
 
 (defmacro defunt (name arglist &rest body)
+  "defun but with the option of type checking the mandatory arguments ."
   (let (new-arglist type-checks)
     (dolist (arg arglist)
       (prn "defunt: arg is %S." arg)
@@ -126,12 +127,25 @@
             (interactive-form (nth 2 parse))
             (body (nth 3 parse))
             (warnings (nth 4 parse))
-            (new-body (nconc
-                        `,@(list docstring)
-                        `,@declare-form
-                        `,@(list interactive-form)
-                        warnings type-checks body))
+            (new-body (append
+                        (when docstring (list docstring))
+                        (when declare-form (list declare-form))
+                        (when interactive-form (list interactive-form))
+                        (when warnings (list warnings))
+                        type-checks
+                        body))
             )
+      (prn "===========================================")
+      (prn "defunt: new-arglist      is %S" new-arglist)
+      (prn "defunt: type-checks      is %S" type-checks)
+      (prn "defunt: pase             is %S" parse)
+      (prn "defunt: docstring        is %S" docstring)
+      (prn "defunt: declare-form     is %S" declare-form)
+      (prn "defunt: interactive-form is %S" interactive-form)
+      (prn "defunt: body             is %S" body)
+      (prn "defunt: warnings         is %S" warnings)
+      (prn "defunt: new-body         is %S" new-body)
+
       `(defun ,name 
          ,new-arglist  
          ,@new-body
@@ -142,6 +156,20 @@
   (interactive)
   (* x y))
 
+;; expands to: 
+(defun foo
+  (x y)
+  "My docstring."
+  (interactive)
+  (cl-check-type x integer)
+  (* x y))
+
 (defunt foo (x y)
   (* x y))
+
+;; expands into a normal defun::
+(defun foo
+  (x y)
+  (* x y))
+
 
