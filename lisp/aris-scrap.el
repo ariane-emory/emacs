@@ -79,6 +79,23 @@
 (type-check-for-arg (integer x))
 (type-check-for-arg x)
 
+(defmacro defunt (name arglist &rest rest)
+  (let (new-arglist type-checks)
+    (dolist (arg arglist)
+      (prn "defunt: arg is %S." arg)
+      (let ((ty (car-safe arg)))
+        (prn "defunt: ty is %S." ty)
+        (if (and ty (symbolp ty))
+          (progn
+            (prn "defunt: It's a non-nil symbol.")
+            `(cl-check-type ,(cadr arg) ,ty))
+          (prn "defunt: It's NOT a non-nil symbol."))))
+    (let ( (new-arglist (nreverse new-arglist))
+           (type-checks (nreverse type-checks)))
+      `(list
+         ,new-arglist  
+         ,type-checks))))
+
 (defmacro type-check-for-arg (arg)
   "Check the type of a single typed arg."
   (prn "tcfa: arg is %S." arg)
@@ -96,9 +113,10 @@
         (prn "defunt: ty is %S." ty)
         (if (and ty (symbolp ty))
           (progn
-            (prn "defunt: It's a non-nil symbol.")
-            `(cl-check-type ,(cadr arg) ,ty))
-          (prn "defunt: It's NOT a non-nil symbol."))))
+            (prn "defunt: ty is a non-nil symbol.")
+            (push `(cl-check-type ,(cadr arg) ,ty) type-checks))
+          (prn "defunt: ty is NOT a non-nil symbol."))))
+    
     (let ( (new-arglist (nreverse new-arglist))
            (type-checks (nreverse type-checks)))
       `(list
