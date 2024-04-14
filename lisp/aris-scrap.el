@@ -64,32 +64,50 @@
 (defun tsqr (x)
   "Square an integer."
   (let
-    ((x (if (cl-typep x 'integer)
-          x 
-          (signal 'wrong-type-argument (list 'integerp x)))))
+    ((x (progn (cl-check-type x integer) x)))
     (* x x)))
 
+(setq x 7)
+(cl-check-type 7 integer)
 (tsqr 3)
 (tsqr "3")
 
-(defmacro expand-one-typed-binding (binding)
-  "Expand a single typed binding."
-  (if (not (and (consp binding) (length= binding 2)))
-    binding 
-    (let* ( (typ (car binding))
-            (var (cadr binding))
-            (prd  (get typ 'cl-deftype-satisfies))
-            )
-      `(,var (if (cl-typep ,var ',typ)
-               ,var
-               (signal 'wrong-type-argument (list ,prd ,var)))
-         ;; `(,typ ,var ,prd)
-         ))))
+(defun lambda-list-keyword-p (symbol)
+  "Check if SYMBOL is a lambda list keyword."
+  (member symbol '(&rest &optional &key &allow-other-keys)))
 
-(expand-one-typed-binding (integer x))
+(defmacro type-check-for-arg (arg)
+  "Check the type of a single typed arg."
+  (if-let ( (ty (car-safe arg))
+            (__ (symbolp ty))
+            (var (cadr arg)))
+    `(cl-check-type ,var ,ty)))
+
+(type-check-for-arg (integer x))
+(type-check-for-arg x)
 
 
-(expand-one-typed-binding x)
+(defmacro defunt (name arglist &rest rest)
+  (let (new-arglist
+         type-checks)
+    (dolist (arg arglist)
+      (if-let ((check (type-check-for-arg arg)))
+        (progn
+          (prn "Making typecheck.")
+          (push check type-checks)
+          (push (car check) new-arglist))
+        (prn "NOT making typecheck.")
+        (push arg new-arglist)))
+    (let ( (new-arglist (nreverse new-arglist))
+           (type-checks (nreverse type-checks)))
+      `(list
+         ,new-arglist  
+         ,type-checks))))
 
 
+(defunt foo ((integer x) y))
+
+
+
+(defunt foo (x y))
 
