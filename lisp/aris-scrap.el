@@ -107,12 +107,12 @@
 
 (defmacro defun* (name arglist &rest body)
   "Like defun, but with the option of type checking the mandatory arguments ."
-  (let (new-arglist type-checks (arglist-stack arglist))
+  (let (new-arglist type-checks (remaining-args arglist))
     (let ((remaining-args (catch 'break-loop
-                            (while arglist-stack
-                              (if (lambda-list-keyword-p (car arglist-stack))
-                                (throw 'break-loop arglist-stack)
-                                (let ((arg (pop arglist-stack)))                                  
+                            (while remaining-args
+                              (if (lambda-list-keyword-p (car remaining-args))
+                                (throw 'break-loop remaining-args)
+                                (let ((arg (pop remaining-args)))                                  
                                   (prn "defunt: arg is %S." arg)
                                   (let ((ty (car-safe arg)))
                                     (prn "defunt: ty is %S." ty)
