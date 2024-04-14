@@ -173,19 +173,23 @@
 
 (defmacro maybe (type val)
   "Return VAL when it if of type TYPE, otherwise return nil."
-  (if (and (symbolp type)
-        (get type 'cl-deftype-satisfies))
+  (if (and (symbolp type) (get type 'cl-deftype-satisfies))
     `(when (cl-typep ,val ',type) ,val)
     `(when (cl-typep ,val ,type) ,val)))
 
-
 ;; All three cases work:
+
+(defmacro quote-when (test val)
+  "Quote VAL if TEST evaluates to a true value."
+  `(if ,test
+     ',val
+     ,val))
+
 (defmacro maybe (type val)
   "Return VAL when it is of type TYPE, otherwise return nil."
   (let ((type-form
-          (if (and (symbolp type)
-                (get type 'cl-deftype-satisfies))
-            (list 'quote type)
+          (if (and (symbolp type) (get type 'cl-deftype-satisfies))
+            `',type
             type)))
     `(when (cl-typep ,val ,type-form)
        ,val)))
