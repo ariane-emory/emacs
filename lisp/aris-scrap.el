@@ -132,8 +132,10 @@
   (interactive)
   (* x y))
 
+
 (defunt foo (x y)
   "My docstring."
   (interactive)
   (* x y))
+
 
