@@ -119,13 +119,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(|>
-  (+ 3 4)
-  (return! 55)
-  (* _ 5)
-  ;; (stack)
-  )
-
+;; maybe macro:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro maybe (type val)
   "Return VAL when it is of type TYPE, otherwise return nil."
   (let ((type-form
@@ -135,18 +130,24 @@
     `(when (cl-typep ,val ,type-form)
        ,val)))
 
+(defmacro maybe (type val)
+  "Return VAL when it is of type TYPE, otherwise return nil."
+  `(when (cl-typep ,val
+           ,(if (and (symbolp type) (get type 'cl-deftype-satisfies))
+              `',type
+              type))
+     ,val))
+
+(defmacro maybe (type val)
+  "Return VAL when it is of type TYPE, otherwise return nil."
+  `(when (cl-typep ,val ,type)
+     ,val))
+
 (setq foo 7)
 (setq ty 'integer)
 (maybe 'integer foo)  ; Works
 (maybe integer foo)   ; Works
 (maybe ty foo)        ; Works
-
-(cl-typecase foo
-  (ty foo))
-
-(when
-  (cl-typep foo integer)
-  foo)
 
 (if-let ((x (when (integerp foo) foo)))
   (prn "yes: %S" x)
