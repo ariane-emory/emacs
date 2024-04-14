@@ -114,15 +114,19 @@
                                 (throw 'break-loop remaining-args)
                                 (let ((arg (pop remaining-args)))                                  
                                   (prn "defunt: arg is %S." arg)
-                                  (let ((ty (car-safe arg)))
-                                    (prn "defunt: ty is %S." ty)
-                                    (if (and ty (symbolp ty) (length= arg 2))
-                                      (let ((var (cadr arg)))
-                                        (prn "defunt: ty is a non-nil symbol.")
-                                        (push `(cl-check-type ,var ,ty) type-checks)
-                                        (push var new-arglist))
-                                      (prn "defunt: ty is NOT a non-nil symbol.")
-                                      (push arg new-arglist)))))))))
+                                  
+                                  (if-let ((ty (car-safe arg)))
+                                    (progn (prn "defunt: ty is %S." ty)
+                                      (if (and ty (symbolp ty) (length= arg 2))
+                                        (let ((var (cadr arg)))
+                                          (prn "defunt: ty is a non-nil symbol.")
+                                          (push `(cl-check-type ,var ,ty) type-checks)
+                                          (push var new-arglist))))
+                                    (prn "defunt: ty is NOT a non-nil symbol.")
+                                    (push arg new-arglist))
+
+
+                                  ))))))
       (prn "new-arglist    is %S" new-arglist)
       (prn "remaining-args is %S" remaining-args)      
       (when remaining-args
