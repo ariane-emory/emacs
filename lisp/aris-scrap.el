@@ -72,10 +72,6 @@
 (tsqr 3)
 (tsqr "3")
 
-(defun lambda-list-keyword-p (symbol)
-  "Check if SYMBOL is a lambda list keyword."
-  (member symbol '(&rest &optional &key &allow-other-keys)))
-
 (type-check-for-arg (integer x))
 (type-check-for-arg x)
 
@@ -105,8 +101,12 @@
               (var (cadr arg)))
       `(cl-check-type ,var ,ty))))
 
-(defmacro defunt (name arglist &rest body)
-  "defun but with the option of type checking the mandatory arguments ."
+(defun lambda-list-keyword-p (symbol)
+  "Check if SYMBOL is a lambda list keyword."
+  (member symbol '(&rest &optional &key &allow-other-keys)))
+
+(defmacro defun* (name arglist &rest body)
+  "Like defun, but with the option of type checking the mandatory arguments ."
   (let (new-arglist type-checks)
     (dolist (arg arglist)
       (prn "defunt: arg is %S." arg)
@@ -119,40 +119,40 @@
             (push (cadr arg) new-arglist))
           (prn "defunt: ty is NOT a non-nil symbol.")
           (push arg new-arglist))))
-    (let* ( (new-arglist (nreverse new-arglist))
-            (type-checks (nreverse type-checks))
-            (parse (byte-run--parse-body body t))
-            (docstring (nth 0 parse))
-            (declare-form (nth 1 parse))
-            (interactive-form (nth 2 parse))
-            (body (nth 3 parse))
-            (warnings (nth 4 parse))
-            (new-body ( append
-                        (when docstring (list docstring))
-                        (when declare-form (list declare-form))
-                        (when interactive-form (list interactive-form))
-                        (when warnings (list warnings))
-                        type-checks
-                        body)))
-      (prn "===========================================")
-      (prn "defunt: new-arglist      is %S" new-arglist)
-      (prn "defunt: type-checks      is %S" type-checks)
-      (prn "defunt: pase             is %S" parse)
-      (prn "defunt: docstring        is %S" docstring)
-      (prn "defunt: declare-form     is %S" declare-form)
-      (prn "defunt: interactive-form is %S" interactive-form)
-      (prn "defunt: body             is %S" body)
-      (prn "defunt: warnings         is %S" warnings)
-      (prn "defunt: new-body         is %S" new-body)
-      (if type-checks 
+    (if (not type-checks)
+      ;; expand into a normal defun:
+      `(defun ,name ,arglist ,@body)
+      ;; otherwise, tamper with the bodo to add type checks:
+      (let* ( (new-arglist (nreverse new-arglist))
+              (type-checks (nreverse type-checks))
+              (parse (byte-run--parse-body body t))
+              (docstring (nth 0 parse))
+              (declare-form (nth 1 parse))
+              (interactive-form (nth 2 parse))
+              (body (nth 3 parse))
+              (warnings (nth 4 parse))
+              (new-body ( append
+                          (when docstring (list docstring))
+                          (when declare-form (list declare-form))
+                          (when interactive-form (list interactive-form))
+                          (when warnings (list warnings))
+                          type-checks
+                          body)))
+        (prn "===========================================")
+        (prn "defunt: new-arglist      is %S" new-arglist)
+        (prn "defunt: type-checks      is %S" type-checks)
+        (prn "defunt: pase             is %S" parse)
+        (prn "defunt: docstring        is %S" docstring)
+        (prn "defunt: declare-form     is %S" declare-form)
+        (prn "defunt: interactive-form is %S" interactive-form)
+        (prn "defunt: body             is %S" body)
+        (prn "defunt: warnings         is %S" warnings)
+        (prn "defunt: new-body         is %S" new-body)
         `(defun ,name 
            ,new-arglist  
-           ,@new-body
-           )
-        `(defun ,name ,arglist ,@body)
-        ))))
+           ,@new-body)))))
 
-(defunt foo ((integer x) y)
+(defun* foo ((integer x) y)
   "My docstring."
   (interactive)
   (* x y))
@@ -165,12 +165,14 @@
   (cl-check-type x integer)
   (* x y))
 
-(defunt foo (x y)
+(defun* foo (x y)
   (* x y))
 
 ;; expands into a normal defun::
 (defun foo
   (x y)
   (* x y))
+
+
 
 
