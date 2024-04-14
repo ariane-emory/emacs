@@ -167,21 +167,22 @@
            ,new-arglist  
            ,@new-body)))))
 
-(defun* foo ((num : number) (pow : integer) &optional print)
+;; try defining a function using the macro:
+(defun* foo ((num : number) (pow : integer) &optional print-message)
   "Raise the number NUM to the power POW.
 
-This is marked interactive for no reason other than to test if INTERACTIVE-FORM
-is handled properly when building NEW-BODY and marked pure mainly to test
-if DECLARE-FORM is handled properly."
+This is marked as interactive for no good reason other than to test if
+INTERACTIVE-FORM is handled properly when defun* builds NEW-BODY and is
+marked pure mainly to test if DECLARE-FORM is handled properly."
   (declare (pure t))
   (interactive)
   (let ((res (expt num pow)))
-    (when print (message "%s to the power of %d is %s." num pow res))
+    (when print-message (message "%s to the power of %d is %s." num pow res))
     res))
 
 ;; expands into: 
 (defun foo
-  (num pow &optional print)
+  (num pow &optional print-message)
   "Raise the number NUM to the power POW.\n\nThis is marked interactive for no reason other than to test if INTERACTIVE-FORM\nis handled appropriately when building NEW-BODY."
   (declare
     (pure t))
