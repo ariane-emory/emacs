@@ -117,14 +117,14 @@
                               (let ((arg (pop remaining-args)))                                  
                                 (prn "defun*: arg is %S." arg)                                
                                 (if-let ( (ty (car-safe arg))
-                                          (_ (and ty (symbolp ty) (length= arg 2))))
+                                          (_ (and ty (symbolp ty) (length= arg 2)))
+                                          (var (cadr arg)))
                                   ;; then:
                                   (progn
                                     (prn "defun*: ty is %S." ty)
-                                    (let ((var (cadr arg)))
-                                      (prn "defun*: ty is a non-nil symbol.")
-                                      (push `(cl-check-type ,var ,ty) type-checks)
-                                      (push var new-arglist)))
+                                    (prn "defun*: ty is a non-nil symbol.")
+                                    (push `(cl-check-type ,var ,ty) type-checks)
+                                    (push var new-arglist))
                                   ;; else:
                                   (prn "defun*: ty is NOT a non-nil symbol.")
                                   (push arg new-arglist))
