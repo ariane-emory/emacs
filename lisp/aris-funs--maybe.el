@@ -4,12 +4,6 @@ s;; maybe macro:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defmacro maybe (type val)
-  "Return VAL when it is of type TYPE, otherwise return nil."
-  `(and
-     (cl-typep ,val
-       ,(if (and (symbolp type) (get type 'cl-deftype-satisfies)) `',type type))
-     ,val))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,6 +14,7 @@ s;; maybe macro:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro maybe (type val)
   "Return VAL when it is of type TYPE, otherwise return nil."
   (let ((type-form
@@ -30,6 +25,13 @@ s;; maybe macro:
        ,val)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro maybe (type val)
+  "Return VAL when it is of type TYPE, otherwise return nil."
+  `(and
+     (cl-typep ,val
+       ,(if (and (symbolp type) (get type 'cl-deftype-satisfies)) `',type type))
+     ,val))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--maybe)
