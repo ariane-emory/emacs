@@ -53,7 +53,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (message "Result %S is an integer." res)
   (message "Result was not an integer.")) ;; prints "Result 64 is an integer."
 
-(defun* pow ((num : number) (exp : integer)) (expt num exp))
+(defun* pow ((num : number) (exp : integer))
+  (expt num exp))
 
 (dolist (num '(3 3.5 "foo"))
   (if-let ((res (maybe integer (pow num 3))))
@@ -64,9 +65,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; 3^3 is the integer 27.
 ;; 3.5^3 is not an integer.
 ;; and then signals (wrong-type-argument number "foo" num).
-(setq foo 7)
-(setq ty 'integer)
-(maybe integer foo)
-(maybe 'integer foo)
-(maybe ty foo)
 
+;; imaginary:
+(defun* pow ((num : number) (exp : integer) (nums: &rest integer))
+  (expt num exp))
