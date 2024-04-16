@@ -111,6 +111,7 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
        ((final
           (let ( (,var      nil)
                  (var-sym ',var)
+                 (body     ,body)
                  (flag      nil))
             (cl-labels ( (flag-is? (test-flag)
                            (eq flag (--valid-pipe-flag test-flag)))
@@ -146,48 +147,55 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
               (catch ,return-label
                 
                 ;; BEGINNING OF DOSTACK INVOCATION:
-                (dostack-lite (expr ,body)
-                  (--pipe-prndiv)
-                  (labeled-print "Current" expr)
-                  (labeled-print "Remaining" (stack))
-                  (labeled-print var-sym ,var)
-                  (labeled-print "Flag" flag)
-                  (if (--is-pipe-command? expr)
-                    (set-flag! (alist-get expr *--pipe-commands-to-flags*))
-                    (let ((result
-                            (eval (if (fun? expr)
-                                    (list expr var-sym)
-                                    (let ((return-label ,return-label))
-                                      `(cl-flet ((return! (value)
-                                                   (throw ',return-label value)))
-                                         ,expr))))))
-                      (labeled-print "Expr result" result)
-                      ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
-                      (cl-flet ((drop-next! () 
-                                  (let ((next (pop!)))
-                                    (--pipe-print "Popped 1st %S from %S." next (stack))
-                                    (when (memq next *--pipe--arity-1-commands*)
-                                      (let ((popped (pop!)))
-                                        (--pipe-print "Popped command's argument %S from %S."
-                                          popped (stack))))
-                                    (when (memq next *--pipe--arity-2-commands*)
-                                      (error "Ignoring the %S command is not yet supported." next)))))
-                        (cond
-                          ((flag-is? :IGNORE)
-                            (--pipe-print "Not setting %S because %S." result flag))
-                          ((flag-is? :WHEN)
-                            (when (not result) (drop-next!)))
-                          ((flag-is? :UNLESS)
-                            (when result (drop-next!)))
-                          ((flag-is? :RETURN)
-                            (--pipe-print "Returning due to command: %S" result)
-                            (throw ,return-label result))
-                          ((and (flag-is? :MAYBE) result)
-                            (store! result))
-                          ((and (flag-is? :MAYBE) (not result))
-                            (--pipe-print "Ignoring %S." result))
-                          (t (store! result)))
-                        (unset-flag!)))))
+                ;; (dostack-lite (expr ,body)
+                (cl-labels ( (stack () ,body)
+                             (pop! ()
+                               (unless (length> ,body 0)
+                                 (signal 'stack-underflow (list 'body)))
+                               (pop body)))
+                  (while body
+                    (let ((expr (pop!)))
+                      (--pipe-prndiv)
+                      (labeled-print "Current" expr)
+                      (labeled-print "Remaining" (stack))
+                      (labeled-print var-sym ,var)
+                      (labeled-print "Flag" flag)
+                      (if (--is-pipe-command? expr)
+                        (set-flag! (alist-get expr *--pipe-commands-to-flags*))
+                        (let ((result
+                                (eval (if (fun? expr)
+                                        (list expr var-sym)
+                                        (let ((return-label ,return-label))
+                                          `(cl-flet ((return! (value)
+                                                       (throw ',return-label value)))
+                                             ,expr))))))
+                          (labeled-print "Expr result" result)
+                          ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
+                          (cl-flet ((drop-next! () 
+                                      (let ((next (pop!)))
+                                        (--pipe-print "Popped 1st %S from %S." next (stack))
+                                        (when (memq next *--pipe--arity-1-commands*)
+                                          (let ((popped (pop!)))
+                                            (--pipe-print "Popped command's argument %S from %S."
+                                              popped (stack))))
+                                        (when (memq next *--pipe--arity-2-commands*)
+                                          (error "Ignoring the %S command is not yet supported." next)))))
+                            (cond
+                              ((flag-is? :IGNORE)
+                                (--pipe-print "Not setting %S because %S." result flag))
+                              ((flag-is? :WHEN)
+                                (when (not result) (drop-next!)))
+                              ((flag-is? :UNLESS)
+                                (when result (drop-next!)))
+                              ((flag-is? :RETURN)
+                                (--pipe-print "Returning due to command: %S" result)
+                                (throw ,return-label result))
+                              ((and (flag-is? :MAYBE) result)
+                                (store! result))
+                              ((and (flag-is? :MAYBE) (not result))
+                                (--pipe-print "Ignoring %S." result))
+                              (t (store! result)))
+                            (unset-flag!)))))))
                 ;; END OF DOSTACK BODY ARGUMENT.
                 
                 ;; For clarity, explicitly throw the return value if we run out of stack items:
@@ -202,6 +210,8 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(|> 5 (* _ _) (+ _ 8))
 (|> ((z)) 5 (* z z) (+ z 8))
 (|> ((z 5)) (* z z) (+ z 8))
+(|> 5 (* _ _) (+ _ 8))
+
+
