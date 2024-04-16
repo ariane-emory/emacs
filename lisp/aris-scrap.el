@@ -74,31 +74,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dostack-lite (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Iterate through a stack, executing the body of code for each element in the
-stack in a scope where STACK is bound to the remaining stack items and the
-followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
-`rotr!', `over!', `stack-len'."
-  (--dostack-validate-spec spec 3)
-  (let* ( (val-sym      (car spec))
-          (stack        (nth 1 spec))
-          (stack-is-sym (symbolp stack))
-          (stack-sym    (if stack-is-sym stack (gensym "stack-")))
-          (bindings     (list (unless stack-is-sym `((,stack-sym ,stack))))))
-    `(let ,@bindings
-       (cl-labels ( (stack () ,stack-sym)
-                    (pop! ()
-                      (unless (length> ,stack-sym 0)
-                        (signal 'stack-underflow (list ',stack-sym)))
-                      (pop ,stack-sym)))
-         (while ,stack-sym
-           (let ((,val-sym (pop!)))
-             ,@body))))))
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -107,104 +82,98 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
           (body         `',(alist-get 'body args)))
-    `(let
-       ((final
-          (let ( (,var      nil)
-                 (var-sym ',var)
-                 (body     ,body)
-                 (flag      nil))
-            (cl-labels ( (stack () body)
-                         (pop! ()
-                           (unless (length> ,body 0) (signal 'stack-underflow (list 'body)))
-                           (pop body))
-                         (drop-next! () 
-                           (let ((next (pop!)))
-                             (--pipe-print "Popped 1st %S from %S." next (stack))
-                             (when (memq next *--pipe--arity-1-commands*)
-                               (let ((popped (pop!)))
-                                 (--pipe-print "Popped command's argument %S from %S."
-                                   popped (stack))))
-                             (when (memq next *--pipe--arity-2-commands*)
-                               (error "Ignoring the %S command is not yet supported." next))))
-                         (flag-is? (test-flag)
-                           (eq flag (--valid-pipe-flag test-flag)))
-                         (set-flag! (new-flag &optional force)
-                           (let ((new-flag (--valid-pipe-flag new-flag t)))
-                             (cond
-                               ((and flag new-flag (not force))
-                                 (error "Cannot set flag to %S when flag is already set to %S."
-                                   new-flag flag))
-                               (force
-                                 (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
-                                 (setq flag new-flag))
-                               (t
-                                 (--pipe-print "Setting flag from %S to %S%s." flag new-flag
-                                   (if force " (forced)" ""))))
-                             (setq flag new-flag)))
-                         (unset-flag! ()
-                           (when flag
-                             (--pipe-print "Unsetting flag %S." flag)
-                             (set-flag! nil)))
-                         (store! (value)
-                           (prog1
-                             (setq ,var value)
-                             (--pipe-print "Updated %S to %S." var-sym ,var)))
-                         (labeled-print (label value)
-                           (let* ( (label (format "%s:" label))
-                                   (whites (make-string (- 21 (length label)) ?\ ))
-                                   (label (concat label whites)))
-                             (--pipe-print "%s%S" label value))))
-              (--pipe-prndiv)
-              (--pipe-print "START")
-              (--pipe-prndiv)
-              (catch ,return-label                
-                (while body
-                  (let ((expr (pop!)))
-                    (--pipe-prndiv)
-                    (labeled-print "Current" expr)
-                    (labeled-print "Remaining" (stack))
-                    (labeled-print var-sym ,var)
-                    (labeled-print "Flag" flag)
-                    (if (--is-pipe-command? expr)
-                      (set-flag! (alist-get expr *--pipe-commands-to-flags*))
-                      (let ((result
-                              (eval (if (fun? expr)
-                                      (list expr var-sym)
-                                      (let ((return-label ,return-label))
-                                        `(cl-flet ((return! (value)
-                                                     (throw ',return-label value)))
-                                           ,expr))))))
-                        (labeled-print "Expr result" result)
+    `(let ( (,var      nil)
+            (var-sym ',var)
+            (body     ,body)
+            (flag      nil))
+       (cl-labels ( (stack () body)
+                    (pop! ()
+                      (unless (length> ,body 0) (signal 'stack-underflow (list 'body)))
+                      (pop body))
+                    (drop-next! () 
+                      (let ((next (pop!)))
+                        (--pipe-print "Popped 1st %S from %S." next (stack))
+                        (when (memq next *--pipe--arity-1-commands*)
+                          (let ((popped (pop!)))
+                            (--pipe-print "Popped command's argument %S from %S."
+                              popped (stack))))
+                        (when (memq next *--pipe--arity-2-commands*)
+                          (error "Ignoring the %S command is not yet supported." next))))
+                    (flag-is? (test-flag)
+                      (eq flag (--valid-pipe-flag test-flag)))
+                    (set-flag! (new-flag &optional force)
+                      (let ((new-flag (--valid-pipe-flag new-flag t)))
                         (cond
-                          ((flag-is? :IGNORE)
-                            (--pipe-print "Not setting %S because %S." result flag))
-                          ((flag-is? :WHEN)
-                            (when (not result) (drop-next!)))
-                          ((flag-is? :UNLESS)
-                            (when result (drop-next!)))
-                          ((flag-is? :RETURN)
-                            (--pipe-print "Returning due to command: %S" result)
-                            (throw ,return-label result))
-                          ((and (flag-is? :MAYBE) result)
-                            (store! result))
-                          ((and (flag-is? :MAYBE) (not result))
-                            (--pipe-print "Ignoring %S." result))
-                          (t (store! result)))
-                        (unset-flag!)))))
-                ;; For clarity, explicitly throw the return value if we run out of stack items:
-                (throw ,return-label
-                  (progn
-                    (--pipe-prndiv)
-                    (--pipe-print "Returning this because stack is empty: %S" ,var)
-                    (--pipe-prndiv)
-                    ,var)))))))
-       (--pipe-print "Pipe's final return: %S" final)
-       final)))
+                          ((and flag new-flag (not force))
+                            (error "Cannot set flag to %S when flag is already set to %S."
+                              new-flag flag))
+                          (force
+                            (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                            (setq flag new-flag))
+                          (t
+                            (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+                              (if force " (forced)" ""))))
+                        (setq flag new-flag)))
+                    (unset-flag! ()
+                      (when flag
+                        (--pipe-print "Unsetting flag %S." flag)
+                        (set-flag! nil)))
+                    (store! (value)
+                      (prog1
+                        (setq ,var value)
+                        (--pipe-print "Updated %S to %S." var-sym ,var)))
+                    (labeled-print (label value)
+                      (let* ( (label (format "%s:" label))
+                              (whites (make-string (- 21 (length label)) ?\ ))
+                              (label (concat label whites)))
+                        (--pipe-print "%s%S" label value))))
+         (--pipe-prndiv)
+         (--pipe-print "START")
+         (--pipe-prndiv)
+         (catch ,return-label                
+           (while body
+             (let ((expr (pop!)))
+               (--pipe-prndiv)
+               (labeled-print "Current" expr)
+               (labeled-print "Remaining" (stack))
+               (labeled-print var-sym ,var)
+               (labeled-print "Flag" flag)
+               (if (--is-pipe-command? expr)
+                 (set-flag! (alist-get expr *--pipe-commands-to-flags*))
+                 (let ((result
+                         (eval (if (fun? expr)
+                                 (list expr var-sym)
+                                 (let ((return-label ,return-label))
+                                   `(cl-flet ((return! (value)
+                                                (throw ',return-label value)))
+                                      ,expr))))))
+                   (labeled-print "Expr result" result)
+                   (cond
+                     ((flag-is? :IGNORE)
+                       (--pipe-print "Not setting %S because %S." result flag))
+                     ((flag-is? :WHEN)
+                       (when (not result) (drop-next!)))
+                     ((flag-is? :UNLESS)
+                       (when result (drop-next!)))
+                     ((flag-is? :RETURN)
+                       (--pipe-print "Returning due to command: %S" result)
+                       (throw ,return-label result))
+                     ((and (flag-is? :MAYBE) result)
+                       (store! result))
+                     ((and (flag-is? :MAYBE) (not result))
+                       (--pipe-print "Ignoring %S." result))
+                     (t (store! result)))
+                   (unset-flag!)))))
+           ;; For clarity, explicitly throw the return value if we run out of stack items:
+           (throw ,return-label
+             (progn
+               (--pipe-prndiv)
+               (--pipe-print "Returning this because stack is empty: %S" ,var)
+               (--pipe-prndiv)
+               ,var)))))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq *pipe--verbose* t)
 (|> ((z)) 5 (* z z) (+ z 8))
 (|> ((z 5)) (* z z) (+ z 8))
 (|> 5 (* _ _) (+ _ 8))
-
-
