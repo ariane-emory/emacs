@@ -288,6 +288,7 @@
   ("M-s-i" . ielm)
   ("M-s-n" . narrow-to-region)
   ("M-s-m" . widen)
+  ("M-s-SPC" . aris-goto-nonwhite)
 
   ;; Mess with sexps:
   ("C-c i c" . aris-eval-sexp-and-insert-as-comment)
