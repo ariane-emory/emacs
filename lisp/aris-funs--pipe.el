@@ -277,7 +277,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming (newer version without dostack)
+  "`pipe' with optional let-like binding/symbol naming (newer version without dostack)."
   (let* ( (args            (eval `(--pipe-make-args ,head ,@tail)))
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
