@@ -81,16 +81,15 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (let* ( (args            (eval `(--pipe-make-args ,head ,@tail)))
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
-          (o-var-sym    `',var)  
+          (var-sym      `',var)  
           (body         `',(alist-get 'body args)))
     (--pipe-print "args is %S" args)
     (--pipe-print "return-label is %S" return-label)
     `(let ( (,var      nil)
-            ;; (var-sym ',var)
             (body     ,body)
             (flag      nil))
        ;; (--pipe-print "var-sym is   %S" var-sym)
-       (--pipe-print "o-var-sym is %S" ,o-var-sym)
+       (--pipe-print "var-sym is %S" ,var-sym)
        (cl-labels ( (pop! ()
                       (unless (length> ,body 0) (signal 'stack-underflow (list 'body)))
                       (pop body))
@@ -106,7 +105,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
                     (store! (value)
                       (prog1
                         (setq ,var value)
-                        (--pipe-print "Updated %S to %S." ,o-var-sym ,var)))
+                        (--pipe-print "Updated %S to %S." ,var-sym ,var)))
                     (flag-is? (test-flag)
                       (eq flag (--valid-pipe-flag test-flag)))
                     (set-flag! (new-flag &optional force)
@@ -140,13 +139,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
                (--pipe-prndiv)
                (labeled-print "Current" expr)
                (labeled-print "Remaining" body)
-               (labeled-print ,o-var-sym ,var)
+               (labeled-print ,var-sym ,var)
                (labeled-print "Flag" flag)
                (if (--is-pipe-command? expr)
                  (set-flag! (alist-get expr *--pipe-commands-to-flags*))
                  (let ((result
                          (eval (if (fun? expr)
-                                 `(,expr ,,o-var-sym)
+                                 `(,expr ,,var-sym)
                                  (let ((return-label ,return-label))
                                    `(cl-flet ((return! (value)
                                                 (--pipe-print "Throwing %S." ',return-label)
@@ -192,5 +191,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (|> ((z 5)) (* z z) :return 9 (+ z 8) double) ;; => 9
 (|> ((z 5)) (* z z) (return! 9) (+ z 8) double) ;; => 9
+
 
 
