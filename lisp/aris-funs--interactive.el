@@ -280,10 +280,10 @@
   comment."
   (interactive)
   (execute-kbd-macro
-    (kbd (concat
-           "C-M-e SPC ; ; SPC C-c C-<backspace> <backspace> "
-           "C-r ; ; <right> <right> <right> = > SPC C-M-e"))))
-           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (kbd
+      (concat "C-M-e C-SPC C-r ) <right> C-k SPC ; ; SPC C-c C-<backspace> <backspace> "
+        "C-r ; ; <right> <right> <right> = > SPC C-M-e"))))
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
