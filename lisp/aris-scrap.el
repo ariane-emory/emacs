@@ -16,7 +16,7 @@
 (setq foo 7)
 (setq ty 'integer)
 (maybe 'integer foo)  
-(maybe integer foo) 
+;; (maybe integer foo) 
 (maybe ty foo)        
 
 (if-let ((x (when (integerp foo) foo)))
@@ -27,9 +27,9 @@
   (prn "yes: %S" x)
   (prn "no!"))
 
-(if-let ((x (maybe integer foo)))
-  (prn "yes: %S" x)
-  (prn "no!"))
+;; (if-let ((x (maybe integer foo)))
+;;   (prn "yes: %S" x)
+;;   (prn "no!"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,24 +66,10 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; 3.5^3 is not an integer.
 ;; and then signals (wrong-type-argument number "foo" num).
 
-;; imaginary:
+;; imaginary &rest syntax:
 (defun* pow ((num : number) (exp : integer) (nums : &rest integer))
   (expt num exp))
 (defun* pow ((num : number) (exp : integer) (&rest nums : integer))
   (expt num exp))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(cl-defun foo (bar &optional (baz 7))
-  (+ bar baz))
-
-(defun foo (bar &rest --cl-rest--)
-  "\n\n(fn BAR &optional (BAZ 7))"
-  (let* ((baz (if --cl-rest-- (pop --cl-rest--) 7)))
-    (progn
-      (when --cl-rest--
-        (signal 'wrong-number-of-arguments (list 'foo (+ 2 (length --cl-rest--)))))
-      (cl-block foo
-        (+ bar baz)))))
-
-(foo 3 4)
-(foo 3)
