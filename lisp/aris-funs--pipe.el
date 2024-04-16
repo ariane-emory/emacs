@@ -282,7 +282,8 @@
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
           (body         `',(alist-get 'body args)))
-    (prn "args is %S" args)
+    (--pipe-print "return-label is %S" return-label)
+    (--pipe-print "args is %S" args)
     `(let ( (,var      nil)
             (var-sym ',var)
             (body     ,body)
@@ -343,7 +344,7 @@
                  (set-flag! (alist-get expr *--pipe-commands-to-flags*))
                  (let ((result
                          (eval (if (fun? expr)
-                                 (list expr var-sym)
+                                 `(,expr ,var-sym)
                                  `(cl-flet ((return! (value) (throw ,return-label value)))
                                     ,expr)))))
                    (labeled-print "Expr result" result)
