@@ -171,7 +171,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
                (--pipe-print "Returning this because stack is empty: %S" ,var)
                (--pipe-prndiv)
                ,var)))))))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq *pipe--verbose* t)
 (|> ((z)) 5 (* z z) (+ z 8))
