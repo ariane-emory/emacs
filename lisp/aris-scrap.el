@@ -1,4 +1,4 @@
-;; -*- lexical-binding: nil; fill-column: 90; lisp-indent-offset: 2; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
+;; -*- lexical-binding: nil; fill-column: 100; lisp-indent-offset: 2; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'aris-funs--alists)
@@ -72,6 +72,31 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (defun* pow ((num : number) (exp : integer) (&rest nums : integer))
   (expt num exp))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dostack-lite (spec &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Iterate through a stack, executing the body of code for each element in the
+stack in a scope where STACK is bound to the remaining stack items and the
+followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
+`rotr!', `over!', `stack-len'."
+  (--dostack-validate-spec spec 3)
+  (let* ( (val-sym      (car spec))
+          (stack        (nth 1 spec))
+          (stack-is-sym (symbolp stack))
+          (stack-sym    (if stack-is-sym stack (gensym "stack-")))
+          (bindings     (list (unless stack-is-sym `((,stack-sym ,stack))))))
+    `(let ,@bindings
+       (cl-labels ( (stack () ,stack-sym)
+                    (pop! ()
+                      (unless (length> ,stack-sym 0)
+                        (signal 'stack-underflow (list ',stack-sym)))
+                      (pop ,stack-sym)))
+         (while ,stack-sym
+           (let ((,val-sym (pop!)))
+             ,@body))))))
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
