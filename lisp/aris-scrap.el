@@ -169,7 +169,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
                (--pipe-prndiv)
                (--pipe-print "Returning this because stack is empty: %S" ,var)
                (--pipe-prndiv)
-               ,var)))))))
+               ,var))
+           ) ;; END OF CATCH.
+         ) ;; END OF CL-LABELS.
+       ) ;; END OF LET (AND OF EXPANDED MACRO CONTENT).
+    ) ;; END OF LET*. 
+  ) ;; END OF DEFMACRO.
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq *pipe--verbose* t)

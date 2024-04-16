@@ -346,9 +346,15 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Comment the sexp at point."
   (interactive)
+  (forward-sexp)
   (save-excursion
+    (backward-sexp)
     (mark-sexp)
-    (comment-region (point) (mark))))
+    (comment-region (point) (mark)))
+  (right-char)
+  (skip-chars-forward "[:space:]")
+
+  )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
