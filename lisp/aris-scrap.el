@@ -176,4 +176,3 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (|> ((z)) 5 (* z z) (+ z 8))
 (|> ((z 5)) (* z z) (return! 9) (+ z 8))
 (|> 5 (* _ _) (+ _ 8))
-jjjj
