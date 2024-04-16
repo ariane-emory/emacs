@@ -77,7 +77,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro |> (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "`pipe' with optional let-like binding/symbol naming."
+  "`pipe' with optional let-like binding/symbol naming (newer version without dostack)."
   (let* ( (args            (eval `(--pipe-make-args ,head ,@tail)))
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
@@ -175,13 +175,16 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
        ) ;; END OF LET (AND OF EXPANDED MACRO CONTENT).
     ) ;; END OF LET*. 
   ) ;; END OF DEFMACRO.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (setq *pipe--verbose* t)
 (|> ((z)) 5 (* z z) (+ z 8) double) ;; => 66
 (|> ((z 5)) (* z z) (+ z 8) double) ;; => 66
 (|> 5 (* _ _) (+ _ 8) double) ;; => 66
 
-(|> ((z 5)) (* z z) (return! 9) (+ z 8) double) ;; => 9
 (|> ((z 5)) (* z z) :return 9 (+ z 8) double) ;; => 9
+(|> ((z 5)) (* z z) (return! 9) (+ z 8) double) ;; => 9
+
+
