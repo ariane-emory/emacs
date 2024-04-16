@@ -142,7 +142,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
                  (set-flag! (alist-get expr *--pipe-commands-to-flags*))
                  (let ((result
                          (eval (if (fun? expr)
-                                 (list expr var-sym)
+                                 `(,expr ,var-sym)
                                  (let ((return-label ,return-label))
                                    `(cl-flet ((return! (value)
                                                 (--pipe-print "Throwing %S." ',return-label)
