@@ -88,6 +88,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
             (var-sym ',var)
             (body     ,body)
             (flag      nil))
+       (--pipe-print "var-sym is %S" var-sym)
        (cl-labels ( (pop! ()
                       (unless (length> ,body 0) (signal 'stack-underflow (list 'body)))
                       (pop body))
