@@ -82,6 +82,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
           (body         `',(alist-get 'body args)))
+    (prn "args is %S" args)
     `(let ( (,var      nil)
             (var-sym ',var)
             (body     ,body)
@@ -175,3 +176,4 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (|> ((z)) 5 (* z z) (+ z 8))
 (|> ((z 5)) (* z z) (return! 9) (+ z 8))
 (|> 5 (* _ _) (+ _ 8))
+jjjj
