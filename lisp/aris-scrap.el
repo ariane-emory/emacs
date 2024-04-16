@@ -147,8 +147,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
                  (let ((result
                          (eval (if (fun? expr)
                                  (list expr ,var-sym)
-                                 (let ((return-label ',return-label))
-                                   `(cl-flet ((return! (value) (throw ,return-label value)))
+                                 (let ((return-label ,return-label))
+                                   `(cl-flet ((return! (value) (throw ',return-label value)))
                                       ,expr))))))
                    (labeled-print "Expr result" result)
                    (cond
