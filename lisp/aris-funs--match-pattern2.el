@@ -22,7 +22,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun match-pattern2--match (pattern target)
+(defun match-pattern--match2 (pattern target)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Match a PATTERN list against a TARGET list.
 
@@ -30,18 +30,18 @@ This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of
 Intelligence' but with several improvements.
 
 Examples:
-  (`match-pattern2--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`match-pattern--match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
 
-  (`match-pattern2--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`match-pattern--match2' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
   (setq `*mp--use-dotted-pairs-in-result*' nil)
 
-  (`match-pattern2--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`match-pattern--match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (`match-pattern2--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`match-pattern--match2' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ((original-indent *wm--indent*))
     (cl-letf (((symbol-function 'print) (if *mp--verbose* #'indented-message #'ignore)))
@@ -293,36 +293,8 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'match2 'match-pattern2--match)
+(defalias 'match2 'match-pattern--match2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Just a quick test that should match successfully with the default configuration:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (progn
-    (let ((*mp--verbose* t))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      (let ((*mp--use-dotted-pairs-in-result* t))
-
-        (mp--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-        ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
-
-        (mp--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-        ;; ⇒ t
-        )
-
-      (let ((*mp--use-dotted-pairs-in-result* nil))
-        (mp--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
-        ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
-
-        (mp--match '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
-        ;; ⇒ t
-        )
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      )))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
