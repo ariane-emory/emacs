@@ -86,11 +86,10 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; breaking case:
 (|> 1 :unless t :unless T)
 
-
-(let ((stk '(1 2 3 4 5 6 7 8 9)))
-  (let ((counter 4))
-    (while (not (= counter 0))
-      (prn counter)
-      (let ((popped (pop stk)))
-        (when (even? popped) 
-          (cl-decf counter))))))
+;; (let ((stk '(1 2 3 4 5 6 7 8 9)))
+;;   (let ((counter 4))
+;;     (while (not (= counter 0))
+;;       (prn counter)
+;;       (let ((popped (pop stk)))
+;;         (when (even? popped) 
+;;           (cl-decf counter))))))

@@ -55,7 +55,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* nil
+(defcustom *pipe--verbose* t
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
@@ -407,15 +407,17 @@
        (cl-labels ( (pop! ()
                       (unless (length> body 0) (signal 'stack-underflow (list 'body)))
                       (pop body))
-                    (drop-next! () 
-                      (let ((popped (pop!)))
-                        (--pipe-print "Popped 1st %S from %S." popped body)
-                        (when (memq popped *--pipe--arity-1-commands*)
-                          (let ((popped (pop!)))
-                            (--pipe-print "Popped command's argument %S from %S."
-                              popped body)))
-                        (when (memq popped *--pipe--arity-2-commands*)
-                          (error "Ignoring the %S command is not yet supported." popped))))
+                    (drop-next! ()
+                      (let ((drop-count 1))
+                        (while (positive? drop-count)
+                          (prn "Drop count is %S" drop-count)
+                          (cl-decf drop-count)
+                          (let* ( (popped (pop!))
+                                  (poppeds-drop-count (pipe--get-command-arity popped))
+                                  (next-drop-count (+ drop-count poppeds-drop-count)))
+                            (prn "Just dropped %S, adding %d to drop-count, new drop-count is %s"
+                              popped poppeds-drop-count next-drop-count)
+                            (setq drop-count next-drop-count)))))
                     (store! (value)
                       (prog1
                         (setq ,var value)
