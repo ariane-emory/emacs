@@ -285,8 +285,7 @@
     `(let ( (,var      nil)
             (var-sym ',var)
             (body     ,body)
-            (flag      nil)
-            (return-label ',return-label) )
+            (flag      nil))
        (cl-labels ( (pop! ()
                       (unless (length> ,body 0) (signal 'stack-underflow (list 'body)))
                       (pop body))
@@ -343,8 +342,11 @@
                  (let ((result
                          (eval (if (fun? expr)
                                  `(,expr ,var-sym)
-                                 `(cl-flet ((return! (value) (throw ,return-label value)))
-                                    ,expr)))))
+                                 (let ((return-label ,return-label))
+                                   `(cl-flet ((return! (value)
+                                                (--pipe-print "Throwing %S." ',return-label)
+                                                (throw ',return-label value)))
+                                      ,expr))))))
                    (labeled-print "Expr result" result)
                    (cond
                      ((flag-is? :IGNORE)
