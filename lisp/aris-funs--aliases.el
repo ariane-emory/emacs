@@ -31,7 +31,9 @@
 (defalias 'rplacd!         'rplacd)
 (defalias 'string?         'stringp)
 (defalias 'zero?           'zerop)
+(defalias 'decf            'cl-decf)
 (defalias 'decr            'cl-decf)
+(defalias 'incf            'cl-incf)
 (defalias 'incr            'cl-incf)
 (setq else t) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
