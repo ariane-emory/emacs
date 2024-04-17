@@ -107,7 +107,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun pipe--get-command-arity (command)
+(defun --get-pipe-command-arity (command)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the arity of a pipe command COMMAND or 0 if COMMAND is not a pipe command."
   (if-let ( (alist-value (alist-get command *--pipe-commands*))
@@ -413,7 +413,7 @@
                           (prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
                           (let* ( (popped (pop!))
-                                  (poppeds-drop-count (pipe--get-command-arity popped))
+                                  (poppeds-drop-count (--get-pipe-command-arity popped))
                                   (next-drop-count (+ drop-count poppeds-drop-count)))
                             (--pipe-prn "Just dropped %S, adding %d to drop-count, new drop-count is %s"
                               popped poppeds-drop-count next-drop-count)
@@ -505,15 +505,15 @@
 (defun pipe--run-tests ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Run the unit tests for the `pipe' function."
-  (confirm that (pipe--get-command-arity :) returns 1)
-  (confirm that (pipe--get-command-arity :?) returns 1)
-  (confirm that (pipe--get-command-arity :ignore) returns 1)
-  (confirm that (pipe--get-command-arity :maybe) returns 1)
-  (confirm that (pipe--get-command-arity :return) returns 1)
-  (confirm that (pipe--get-command-arity :unless) returns 2)
-  (confirm that (pipe--get-command-arity :when) returns 2)
-  (confirm that (pipe--get-command-arity :foo) returns 0)
-  (confirm that (pipe--get-command-arity 7) returns 0)
+  (confirm that (--get-pipe-command-arity :) returns 1)
+  (confirm that (--get-pipe-command-arity :?) returns 1)
+  (confirm that (--get-pipe-command-arity :ignore) returns 1)
+  (confirm that (--get-pipe-command-arity :maybe) returns 1)
+  (confirm that (--get-pipe-command-arity :return) returns 1)
+  (confirm that (--get-pipe-command-arity :unless) returns 2)
+  (confirm that (--get-pipe-command-arity :when) returns 2)
+  (confirm that (--get-pipe-command-arity :foo) returns 0)
+  (confirm that (--get-pipe-command-arity 7) returns 0)
 
   ;; With no spec:
   (confirm that (|> 1) returns 1)
