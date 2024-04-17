@@ -96,3 +96,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;; surprisingly this works:
 (|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+

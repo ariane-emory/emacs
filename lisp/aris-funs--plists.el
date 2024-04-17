@@ -25,10 +25,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro plist-put! (plist-symbol key value)
+(defmacro plist-put! (plist key value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Add or update a key-value pair in a plist."
-  `(setq ,plist-symbol (plist-put ,plist-symbol ,key ,value)))
+  `(setf ,plist (plist-put ,plist ,key ,value)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (confirm that (plist-put! plist 'a 10) returns (d 4 a 10 c 3 b 2))
