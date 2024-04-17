@@ -98,5 +98,3 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;; breaking case, genuinely malformed:
 (|> 1 :unless t :unless T)
-
-
