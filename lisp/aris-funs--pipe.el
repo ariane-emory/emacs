@@ -55,7 +55,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* t
+(defcustom *pipe--verbose* nil
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
