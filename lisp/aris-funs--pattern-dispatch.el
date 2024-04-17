@@ -116,24 +116,14 @@
                (*mp--merge-duplicate-alist-keys* nil)
                (*mp--target-elements-must-be-verbatim* nil)
                (*mp--use-dotted-pairs-in-result* nil)
-               (*mp--verbatim-element?* nil)
-               ;; temporary:
-               (*match-pattern2--anything-tag* 'anything)
-               (*match-pattern2--capture-can-be-predicate* nil)
-               (*match-pattern2--capture-element?* 'symbolp)
-               (*match-pattern2--get-capture-symbol-fun* (lambda (e) e))
-               (*match-pattern2--get-capture-tag-fun* (lambda (e) 'anything))
-               (*match-pattern2--kleene-tag* nil)
-               (*match-pattern2--merge-duplicate-alist-keys* nil)
-               (*match-pattern2--target-elements-must-be-verbatim* nil)
-               (*match-pattern2--use-dotted-pairs-in-result* nil)
-               (*match-pattern2--verbatim-element?* nil))
+               (*mp--verbatim-element?* nil))
           (--pd-prn "Trying pattern '%s on target '%s..." pattern call-pattern)
           (let ( (match-result (match2 pattern call-pattern)))
             (when *pd--allow-match-fallback*
               (--pd-prn "MATCH2 FAILED, FALLING BACK TO MATCH!"))
-            (let ((match-result (or match-result
-                                  (and *pd--allow-match-fallback* (match pattern call-pattern)))))
+            (let ((match-result
+                    (or match-result
+                      (and *pd--allow-match-fallback* (match pattern call-pattern)))))
               (when match-result
                 (throw 'matched
                   (setq result (cons match-result (cdr pattern-case))))))))))
@@ -239,7 +229,7 @@ because we're gong to be stshing stuff in their symbol properties."
         (error-when "DEF:  Variable definition's body must be a single value."
           is-illegal-definition)
         `(progn
-           (--pd-prn "DEF: Defining variable '%s." ',symbol)
+           (--pd-prn "DEF:  Defining variable '%s." ',symbol)
            (setq ,symbol ,value-expr)))
       ;; Pseudo-function definition case:
       (let* ( (full-pattern-including-group-symbol pattern-or-symbol)
