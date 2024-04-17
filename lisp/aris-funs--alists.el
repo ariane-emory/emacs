@@ -31,7 +31,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun alist-set (key alist value)
+(defun alist-put (key alist value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively set a KEY in ALIST to VALUE by building a new alist in
 which KEY is set to VALUE, adding a new key/value pair if it wasn't already present.
@@ -53,23 +53,23 @@ may be applied before or after to get your desired result."
     (nreverse result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((alist '((a . 1) (b . 2) (c . 3))))
-  (confirm that (alist-set 'b alist 4) returns ((a . 1) (b . 4) (c . 3)))
-  (confirm that (alist-set 'd alist 5) returns ((a . 1) (b . 2) (c . 3) (d . 5))))
+  (confirm that (alist-put 'b alist 4) returns ((a . 1) (b . 4) (c . 3)))
+  (confirm that (alist-put 'd alist 5) returns ((a . 1) (b . 2) (c . 3) (d . 5))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro alist-set! (key alist value)
+(defmacro alist-put! (key alist value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively set a KEY in ALIST to VALUE by modifying the alist in
 place, adding a new key/value pair if it wasn't already present."
-  `(setf ,alist (alist-set ,key ,alist ,value)))
+  `(setf ,alist (alist-put ,key ,alist ,value)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))))
-  (confirm that (alist-set! 'b alist 20)
+  (confirm that (alist-put! 'b alist 20)
     returns ((a . 1) (b . 20) (c . 3) (d (e . 4) (f . 5))))
   (confirm that (alist-get 'd alist) returns ((e . 4) (f . 5)))
-  (confirm that (alist-set! 'e (alist-get 'd alist) 40) returns ((e . 40) (f . 5)))
+  (confirm that (alist-put! 'e (alist-get 'd alist) 40) returns ((e . 40) (f . 5)))
   (confirm that alist returns ((a . 1) (b . 20) (c . 3) (d (e . 40) (f . 5)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
