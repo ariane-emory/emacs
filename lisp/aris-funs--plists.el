@@ -102,11 +102,11 @@ does not modify the original."
     (sort (cl-loop for (key value) on plist-symbol by #'cddr
             collect (list key value))
       (lambda (a b) (string< (car a) (car b))))))
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq plist (make-plist '(d a c b) '(4 1 3 2)))
-;; (plist-sort plist)
-;; plist
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((plist (make-plist '(d a c b) '(4 1 3 2))))
+  (confirm that (plist-sort plist) returns (a 1 b 2 c 3 d 4))
+  (confirm that plist returns (d 4 a 1 c 3 b 2)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
