@@ -60,7 +60,7 @@
   :group 'pipe
   :type 'boolean)
 
-(defcustom *pipe--print-fun* 'indented-message
+(defcustom *pipe--print-fun* 'prn
   "The function to use to print messages."
   :group 'pipe
   :type 'function)
