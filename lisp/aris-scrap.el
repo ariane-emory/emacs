@@ -85,3 +85,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;; breaking case, genuinely malformed:
 (|> 1 :unless t :unless T)
+
+
+
+;; naming examples for an imaginary frobnosticate-widget package:
+fw--frobnosticate-widget    ;; a public-facing function in the frobnosticate-widget package.
+--fw-frobnostication-helper ;; an internal function in the frobnosticate-widget package.
+*fw--frobnostication-level* ;; a public-facing (usually customizable) variable in the frobnosticate-widget package.
+*--fw-frobnostication-mode* ;; an internal variable in the frobnosticate-widget package not meant for customization
+frobnosticate-widget        ;; an convenient alias for fw--frobnosticate-widget.
