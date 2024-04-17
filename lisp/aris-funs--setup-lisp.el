@@ -7,7 +7,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun aris-setup-lisp ()
   (interactive)
-  (indented-message  "Setting up Lisp in buffer '%s. %d'" (buffer-name) *wm--indent*)
+  (indented-message "Setting up Lisp in buffer '%s.'" (buffer-name))
   (setq-local display-fill-column-indicator-mode nil)
   (setq-local display-fill-column-indicator nil)
   (display-fill-column-indicator-mode -1)
