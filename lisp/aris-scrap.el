@@ -89,7 +89,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
             (body     ,body)
             (flag      nil))
        (cl-labels ( (pop! ()
-                      (unless (length> ,body 0) (signal 'stack-underflow (list 'body)))
+                      (unless (length> body 0) (signal 'stack-underflow (list 'body)))
                       (pop body))
                     (drop-next! () 
                       (let ((next (pop!)))
