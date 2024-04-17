@@ -108,9 +108,14 @@
 
 (defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe-commands*)))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *--pipe-commands-to-flags* (mapr *--pipe-commands* (lambda (x) (cons (car x) (cddr x))))
-  "An alist mapping commands to flags. This is not meant to be customized.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --is-pipe-command? (kw)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return t if KW is a pipe command."
+  (and (keyword? kw) (not (null (assoc kw *--pipe-commands*)))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -123,6 +128,25 @@
     arity
     0))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --get-pipe-command-flag (command)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Get the arity of a pipe command COMMAND or 0 if COMMAND is not a pipe command."
+  (when-let ((alist-value (alist-get command *--pipe-commands*)))
+    (cdr alist-value)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --valid-pipe-flag (kw &optional or-nil)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return KW if it is a valid pipe flag, or signal an error. If OR-NIL is t, return nil if KW is nil."
+  (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
+    (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
+  kw)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -145,35 +169,10 @@
               (head-is-spec tail)
               (t (cons head tail))))
           (alist
-            `'( ;; (head-is-cons . ,head-is-cons)
-                ;; (car-head . ,car-head)
-                ;; (car-head-is-cons . ,car-head-is-cons)
-                ;; (car-head-length . ,car-head-length)
-                ;; (head-is-spec . ,head-is-spec)
-                ;; (head-is-spec-with-init-form . ,head-is-spec-with-init-form)
-                ;; (head . ,head)
-                (var . ,var)
+            `'((var . ,var)
                 (body . ,body))))
     alist))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --valid-pipe-flag (kw &optional or-nil)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return KW if it is a valid pipe flag, or signal an error. If OR-NIL is t, return nil if KW is nil."
-  (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
-    (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
-  kw)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --is-pipe-command? (kw)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return t if KW is a pipe command."
-  (and (keyword? kw) (not (null (assoc kw *--pipe-commands-to-flags*)))))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -244,7 +243,7 @@
                (labeled-print var-sym ,var)
                (labeled-print "Flag" flag)
                (if (--is-pipe-command? expr)
-                 (set-flag! (alist-get expr *--pipe-commands-to-flags*))
+                 (set-flag! (--get-pipe-command-flag expr))
                  (let ((result
                          (eval (if (fun? expr)
                                  `(,expr ,var-sym)
@@ -351,7 +350,7 @@
 ;;                (labeled-print ,var-sym ,var)
 ;;                (labeled-print "Flag" flag)
 ;;                (if (--is-pipe-command? expr)
-;;                  (set-flag! (alist-get expr *--pipe-commands-to-flags*))
+;;                  (set-flag! (--get-pipe-command-flag expr))
 ;;                  (let ((result
 ;;                          (eval (if (fun? expr)
 ;;                                  `(,expr ,,var-sym)
@@ -405,6 +404,14 @@
   (confirm that (--is-pipe-command? :return) returns t)
   (confirm that (--is-pipe-command? :unless) returns t)
   (confirm that (--is-pipe-command? :when)  returns t)
+
+  (confirm that (--get-pipe-command-flag :) returns :IGNORE)
+  (confirm that (--get-pipe-command-flag :ignore) returns :IGNORE)
+  (confirm that (--get-pipe-command-flag :?) returns :MAYBE)
+  (confirm that (--get-pipe-command-flag :maybe) returns :MAYBE)
+  (confirm that (--get-pipe-command-flag :return) returns :RETURN)
+  (confirm that (--get-pipe-command-flag :unless) returns :UNLESS)
+  (confirm that (--get-pipe-command-flag :when) returns :WHEN)
 
   (confirm that (--get-pipe-command-arity :) returns 1)
   (confirm that (--get-pipe-command-arity :?) returns 1)
