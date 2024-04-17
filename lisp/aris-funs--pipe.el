@@ -103,17 +103,17 @@
 (defvar *--pipe--arity-2-commands*
   (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe--commands*) #'car)
   "Commands that take two arguments. This is not meant to be customized.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun pipe--get-command-arity (command)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Get the arity of a pipe command."
-  (let ((arity (car (alist-get command *--pipe--commands*))))
-    (when (not arity)
-      (error "Invalid pipe command: %S. Must be one of %S." command *--pipe--commands*))
-    arity))
+  "Get the arity of a pipe command COMMAND or 0 if COMMAND is not a pipe command."
+  (if-let ( (alist-value (alist-get command *--pipe--commands*))
+            (arity (car alist-value)))
+    arity
+    0))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -510,6 +510,9 @@
   (confirm that (pipe--get-command-arity :return) returns 1)
   (confirm that (pipe--get-command-arity :unless) returns 2)
   (confirm that (pipe--get-command-arity :when) returns 2)
+  (confirm that (pipe--get-command-arity :foo) returns 0)
+  (confirm that (pipe--get-command-arity 7) returns 0)
+
 
   ;; With no spec:
   (confirm that (|> 1) returns 1)
