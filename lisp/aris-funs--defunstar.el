@@ -3,7 +3,7 @@
 (defmacro defun* (name arglist &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Like defun, but with the option of type checking (but only for the mandatory
-parameters, for the moment ."
+parameters, for the moment)."
   (let* ( new-arglist type-checks
           (remaining-arglist arglist)
           (remaining-arglist
