@@ -38,20 +38,13 @@
 (defmacro maybe (type val)
   "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
   `(and (cl-typep ,val ,type) ,val))
-     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  (progn
-    (setq foo 7)
-    (setq ty 'integer)
-    (maybe 'integer foo)  
-    (maybe integer foo) ;; not with conservative version
-    (maybe ty foo)
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ( (foo 7) (ty 'integer))
+  (confirm that (maybe 'integer foo) returns 7)
+  (confirm that (maybe ty foo) returns 7)
+  (confirm that (maybe 'integer "nope") returns nil)
+  (confirm that (maybe ty "nope") returns nil))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
