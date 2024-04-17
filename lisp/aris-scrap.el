@@ -1,4 +1,4 @@
-;; -*- lexical-binding: nil; fill-column: 100; lisp-indent-offset: 2; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
+;; -*- lexical-binding: nil; fill-column: 120; lisp-indent-offset: 2; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'aris-funs--alists)
@@ -9,6 +9,17 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--stacks)
 (require 'aris-funs--unsorted)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; naming examples for an imaginary frobnosticate-widget package:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fw--frobnosticate-widget     ;; a public-facing function in the frobnosticate-widget package.
+;; --fw-frobnostication-helper  ;; an internal function in the frobnosticate-widget package.
+;; *fw--frobnostication-level*  ;; a public-facing (usually customizable) variable in the frobnosticate-widget package.
+;; *--fw-frobnostication-count* ;; an internal variable in the frobnosticate-widget package not meant for customization
+;; frobnosticate-widget         ;; an convenient alias for fw--frobnosticate-widget.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -87,10 +98,3 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (|> 1 :unless t :unless T)
 
 
-
-;; naming examples for an imaginary frobnosticate-widget package:
-fw--frobnosticate-widget    ;; a public-facing function in the frobnosticate-widget package.
---fw-frobnostication-helper ;; an internal function in the frobnosticate-widget package.
-*fw--frobnostication-level* ;; a public-facing (usually customizable) variable in the frobnosticate-widget package.
-*--fw-frobnostication-mode* ;; an internal variable in the frobnosticate-widget package not meant for customization
-frobnosticate-widget        ;; an convenient alias for fw--frobnosticate-widget.
