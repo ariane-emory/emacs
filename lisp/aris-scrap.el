@@ -97,4 +97,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (|> ((z 5)) (* z z) (return! 9) (+ z 8) double) ;; => 9
 
 ;; breaking case, genuinely malformed:
-(|> 1 :unless t :unless T)
+(|> 1 :unless t :unless t)
+(|> 1 :unless t :unless)
+(|> 1 :unless)
