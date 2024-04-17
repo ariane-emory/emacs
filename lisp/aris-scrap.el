@@ -17,6 +17,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fw--frobnosticate-widget     ;; a public-facing function in the frobnosticate-widget package.
 ;; --fw-frobnostication-helper  ;; an internal function in the frobnosticate-widget package.
+;; --do-fw-stuff                ;; an internal function in the frobnosticate-widget package.
 ;; *fw--frobnostication-level*  ;; a public-facing (usually customizable) variable in the frobnosticate-widget package.
 ;; *--fw-frobnostication-count* ;; an internal variable in the frobnosticate-widget package not meant for customization
 ;; frobnosticate-widget         ;; an convenient alias for fw--frobnosticate-widget.
