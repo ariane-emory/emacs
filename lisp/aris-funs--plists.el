@@ -133,7 +133,7 @@ does not modify the original."
 (defun plist-vals (plist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Extracts the values from a plist PLIST."
-  (unless (listp plist)          (error "PLIST must be a list"))
+  (unless (list? plist)          (error "PLIST must be a list"))
   (unless (even? (length plist)) (error "PLIST must have an even number of elements"))
   (plist-keys (cdr plist)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

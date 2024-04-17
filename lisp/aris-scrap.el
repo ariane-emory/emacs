@@ -26,27 +26,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq foo 7)
-(setq ty 'integer)
-(maybe 'integer foo)  
-;; (maybe integer foo) 
-(maybe ty foo)        
-
-(if-let ((x (when (integerp foo) foo)))
-  (prn "yes: %S" x)
-  (prn "no!"))
-
-(if-let ((x (maybe 'integer foo)))
-  (prn "yes: %S" x)
-  (prn "no!"))
-
-;; (if-let ((x (maybe integer foo)))
-;;   (prn "yes: %S" x)
-;;   (prn "no!"))
+(let ((foo 7))
+  (if-let ((x (maybe 'integer foo)))
+    (prn "yes: %S" x)
+    (prn "no!")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; define a function with type checks using the macro:
+;; define a function with type checks using the defun* macro:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun* foo ((num : number) (exp : integer) &optional print-message)
   "A silly function to raise the number NUM to the integral power EXP.
 
@@ -70,7 +59,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (expt num exp))
 
 (dolist (num '(3 3.5 "foo"))
-  (if-let ((res (maybe integer (pow num 3))))
+  (if-let ((res (maybe 'integer (pow num 3))))
     (message "%d^3 is the integer %d." num res)
     (message "%s^3 is not an integer." num)))
 
@@ -89,12 +78,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq *pipe--verbose* t)
-(|> ((z)) 5 (* z z) (+ z 8) double) ;; => 66
-(|> ((z 5)) (* z z) (+ z 8) double) ;; => 66
+(|> ((e)) 5 (* e e) (+ e 8) double) ;; => 66
+(|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
 (|> 5 (* _ _) (+ _ 8) double) ;; => 66
 
-(|> ((z 5)) (* z z) :return 9 (+ z 8) double) ;; => 9
-(|> ((z 5)) (* z z) (return! 9) (+ z 8) double) ;; => 9
+(|> ((e 5)) (* e e) :return 9 (+ e 8) double) ;; => 9
+(|> ((e 5)) (* e e) (return! 9) (+ e 8) double) ;; => 9
 
 ;; breaking cases, genuinely malformed:
 (|> 1 :unless t)
@@ -102,4 +91,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;; not detected:
 (|> 1 :unless t :return) 
-(|> 1 :unless t :when nil) 
+(|> 1 :unless t :when nil 3)
+(|> 1 :unless :unless t 2 3)
+
+;; surprisingly this works:
+(|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
