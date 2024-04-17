@@ -83,7 +83,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (|> ((z 5)) (* z z) :return 9 (+ z 8) double) ;; => 9
 (|> ((z 5)) (* z z) (return! 9) (+ z 8) double) ;; => 9
 
-;; breaking case:
+;; breaking case, genuinely malformed:
 (|> 1 :unless t :unless T)
 
 ;; (let ((stk '(1 2 3 4 5 6 7 8 9)))

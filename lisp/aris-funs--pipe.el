@@ -415,15 +415,15 @@
                           (let* ( (popped (pop!))
                                   (poppeds-drop-count (pipe--get-command-arity popped))
                                   (next-drop-count (+ drop-count poppeds-drop-count)))
-                            (prn "Just dropped %S, adding %d to drop-count, new drop-count is %s"
+                            (--pipe-print "Just dropped %S, adding %d to drop-count, new drop-count is %s"
                               popped poppeds-drop-count next-drop-count)
                             (setq drop-count next-drop-count)))))
                     (store! (value)
                       (prog1
                         (setq ,var value)
                         (--pipe-print "Updated %S to %S." var-sym ,var)))
-                    (flag-is? (test-flag)
-                      (eq flag (--valid-pipe-flag test-flag)))
+                    (flag-is? (tested-flag)
+                      (eq flag (--valid-pipe-flag tested-flag)))
                     (set-flag! (new-flag &optional force)
                       (let ((new-flag (--valid-pipe-flag new-flag t)))
                         (cond
