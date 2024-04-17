@@ -513,7 +513,6 @@
   (confirm that (pipe--get-command-arity :foo) returns 0)
   (confirm that (pipe--get-command-arity 7) returns 0)
 
-
   ;; With no spec:
   (confirm that (|> 1) returns 1)
   (confirm that (|> 1 2) returns 2)
