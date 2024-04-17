@@ -160,6 +160,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --valid-pipe-flag (kw &optional or-nil)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return KW if it is a valid pipe flag, or signal an error. If OR-NIL is t, return nil if KW is nil."
   (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
     (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
   kw)
@@ -167,8 +169,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --is-pipe-command? (kw) 
-  (and (keyword? expr) (assoc expr *--pipe-commands-to-flags*)))
+(defun --is-pipe-command? (kw)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return t if KW is a pipe command."
+  (and (keyword? kw) (not (null (assoc kw *--pipe-commands-to-flags*)))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -394,6 +398,14 @@
 (defun pipe--run-tests ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Run the unit tests for the `pipe' function."
+  (confirm that (--is-pipe-command? :) returns t)
+  (confirm that (--is-pipe-command? :ignore) returns t)
+  (confirm that (--is-pipe-command? :?) returns t)
+  (confirm that (--is-pipe-command? :maybe) returns t)
+  (confirm that (--is-pipe-command? :return) returns t)
+  (confirm that (--is-pipe-command? :unless) returns t)
+  (confirm that (--is-pipe-command? :when)  returns t)
+
   (confirm that (--get-pipe-command-arity :) returns 1)
   (confirm that (--get-pipe-command-arity :?) returns 1)
   (confirm that (--get-pipe-command-arity :ignore) returns 1)
