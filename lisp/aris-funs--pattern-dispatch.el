@@ -64,7 +64,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --pd-get-group (group-symbol)
+(defun --get-pd-group (group-symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (assoc group-symbol *pd--pattern-dispatch-table*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -160,7 +160,7 @@ because we're gong to be stshing stuff in their symbol properties."
      (--pd-prn "MAKE: Doing dispatch for '%s..." ',symbol)
      (with-indentation
        (let* ( (group-symbol (get ',symbol :PD-GROUP))
-               (group (--pd-get-group group-symbol))
+               (group (--get-pd-group group-symbol))
                (group-rows (cdr group))
                (call-pattern args))
          (--pd-prn "MAKE: Looked up group for '%s and found:" ',symbol)
