@@ -112,10 +112,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --is-pipe-command? (kw)
+(defun --get-pipe-command (kw)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return t if KW is a pipe command."
-  (and (keyword? kw) (not (null (assoc kw *--pipe-commands*)))))
+  "Retrieve the command associated with a keyword KW, or nil if KW is not a command."
+  (alist-get kw *--pipe-commands*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -233,7 +233,7 @@
                (labeled-print "Remaining" body)
                (labeled-print var-sym ,var)
                (labeled-print "Flag" flag)
-               (if-let ((command (alist-get expr *--pipe-commands*)))
+               (if-let ((command (--get-pipe-command expr)))
                  (set-flag! (cdr command))
                  (let ((result
                          (eval (if (fun? expr)
@@ -340,7 +340,7 @@
 ;;                (labeled-print "Remaining" body)
 ;;                (labeled-print ,var-sym ,var)
 ;;                (labeled-print "Flag" flag)
-;;                (if-let ((command (alist-get expr *--pipe-commands*)))
+;;                (if-let ((command (--get-pipe-command expr)))
 ;;                  (set-flag! (cdr command))
 ;;                  (let ((result
 ;;                          (eval (if (fun? expr)
@@ -388,14 +388,16 @@
 (defun pipe--run-tests ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Run the unit tests for the `pipe' function."
-  (confirm that (--is-pipe-command? :) returns t)
-  (confirm that (--is-pipe-command? :ignore) returns t)
-  (confirm that (--is-pipe-command? :?) returns t)
-  (confirm that (--is-pipe-command? :maybe) returns t)
-  (confirm that (--is-pipe-command? :return) returns t)
-  (confirm that (--is-pipe-command? :unless) returns t)
-  (confirm that (--is-pipe-command? :when)  returns t)
-
+  (confirm that (--get-pipe-command :) returns (1 . :IGNORE))
+  (confirm that (--get-pipe-command :ignore) returns (1 . :IGNORE))
+  (confirm that (--get-pipe-command :?) returns (1 . :MAYBE))
+  (confirm that (--get-pipe-command :maybe) returns (1 . :MAYBE))
+  (confirm that (--get-pipe-command :return) returns (1 . :RETURN))
+  (confirm that (--get-pipe-command :unless) returns (2 . :UNLESS))
+  (confirm that (--get-pipe-command :when)  returns (2 . :WHEN))
+  (confirm that (--get-pipe-command :foo) returns nil)
+  (confirm that (--get-pipe-command :7) returns nil)
+  
   (confirm that (--get-pipe-command-arity :) returns 1)
   (confirm that (--get-pipe-command-arity :?) returns 1)
   (confirm that (--get-pipe-command-arity :ignore) returns 1)
