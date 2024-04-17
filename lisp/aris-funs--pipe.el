@@ -388,6 +388,27 @@
 (defun pipe--run-tests ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Run the unit tests for the `pipe' function."
+  (confirm that (--valid-pipe-flag :IGNORE) returns :IGNORE)
+  (confirm that (--valid-pipe-flag :MAYBE)  returns :MAYBE)
+  (confirm that (--valid-pipe-flag :RETURN) returns :RETURN)
+  (confirm that (--valid-pipe-flag :UNLESS) returns :UNLESS)
+  (confirm that (--valid-pipe-flag :WHEN)   returns :WHEN)
+  (confirm that (--valid-pipe-flag nil t)   returns nil)
+  
+  (confirm that
+    (condition-case _
+      (--valid-pipe-flag :foo)
+      (error (cadr _)))
+    returns
+    "Invalid pipe flag: :foo. Must be one of (:IGNORE :MAYBE :RETURN :UNLESS :WHEN).")
+
+  (confirm that
+    (condition-case _
+      (--valid-pipe-flag nil)
+      (error (cadr _)))
+    returns
+    "Invalid pipe flag: nil. Must be one of (:IGNORE :MAYBE :RETURN :UNLESS :WHEN).")
+  
   (confirm that (--get-pipe-command :) returns (1 . :IGNORE))
   (confirm that (--get-pipe-command :ignore) returns (1 . :IGNORE))
   (confirm that (--get-pipe-command :?) returns (1 . :MAYBE))
