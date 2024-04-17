@@ -9,7 +9,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --dostack-validate-spec (spec max-len)
+(defun --validate-dostack-spec (spec max-len)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (cons? spec)
     (signal 'wrong-type-argument (list 'cons? spec)))
@@ -23,9 +23,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Iterate through a stack, executing the body of code for each element in the
 stack in a scope where STACK is bound to the remaining stack items and the
-followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
-`rotr!', `over!', `stack-len'."
-  (--dostack-validate-spec spec 3)
+following stack functions are defined: `len', `pop!', `push!', `require-len>=',
+`return!', `set-stack!', `stack'."
+  (--validate-dostack-spec spec 3)
   (let* ( (val-sym         (car spec))
           (stack           (nth 1 spec))
           (return-label `',(gensym "return-"))
@@ -60,9 +60,8 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Iterate through a stack, executing the body of code for each element in the
 stack in a scope where STACK is bound to the remaining stack items and the
-followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
-`rotr!', `over!', `stack-len'."
-  (--dostack-validate-spec spec 3)
+following stack functions are defined: `pop!', `stack'."
+  (--validate-dostack-spec spec 2)
   (let* ( (val-sym      (car spec))
           (stack        (nth 1 spec))
           (stack-is-sym (symbolp stack))
@@ -86,14 +85,14 @@ followingstack operators are defined: `push!', `pop!', `swap!', `dup!', `rotl!',
   "A dumb little Forth-like stack machine without enough operations to be very useful,
 meant mainly for use in dostack's unit tests."
   ;; (let (out)
-  (--dostack-validate-spec spec 3)
+  (--validate-dostack-spec spec 2)
   (let* ( (return-label `',(gensym "return-"))
-          (val-sym   (car spec))
-          (out-sym   (gensym "out-"))
-          (body      (or body `((push-out! ,val-sym)))))
+          (val-sym         (car spec))
+          (out-sym         (gensym "out-"))
+          (body            (or body `((push-out! ,val-sym)))))
     `(catch ,return-label
        (let (,out-sym)
-         (cl-flet ( (out       ()              (reverse ,out-sym))
+         (cl-flet ( (out () (reverse ,out-sym))
                     (push-out! (&optional val) (push (or val ,val-sym) ,out-sym)))
            (dostack ,spec
              (cl-labels ( (push-back! (value)
@@ -207,34 +206,45 @@ meant mainly for use in dostack's unit tests."
     (doforthy (_ '(:over 1 :rotl 2 3 4 :drop 100 5 :swap 9 :rotr 8 10 :dup twice))) 
     returns (1 3 2 4 5 10 9 8 twice twice))
 
-  (confirm that (doforthy (_ '(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))) 
+  (confirm that
+    (doforthy (_ '(9 :dup 8 :swap 7 :drop 6 :over 5 :rotl 4 :rotr 3 2 1))) 
     returns (9 8 8 6 5 2 4 3 1))
 
-  (confirm that (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9)) (push-out! x))
+  (confirm that
+    (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9)) (push-out! x))
     returns (1 2 4 3 5 6 8 9))
 
-  (confirm that (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
-                  (when (odd? x) (push-out! x)))
+  (confirm that
+    (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
+      (when (odd? x) (push-out! x)))
     returns (1 3 5 9))
 
-  (confirm that (doforthy (x '(1 2 3 :stop 4 5 6 7))) returns ((1 2 3) :stop (4 5 6 7)))
-  (confirm that (doforthy (x '(1 2 3 :return 4 5 6 7 8))) returns :return)
+  (confirm that
+    (doforthy (x '(1 2 3 :stop 4 5 6 7)))
+    returns ((1 2 3) :stop (4 5 6 7)))
+  
+  (confirm that
+    (doforthy (x '(1 2 3 :return 4 5 6 7 8)))
+    returns :return)
 
-  (confirm that (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
-                  (when (odd? x)   (push-out! x))
-                  (when (eql? 8 x) (stop!)))
+  (confirm that
+    (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9))
+      (when (odd? x)   (push-out! x))
+      (when (eql? 8 x) (stop!)))
     returns ((1 3 5) 8 (9)))
 
-  (confirm that (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
-                  (when (odd? x)    (push-out! x))
-                  (when (eql? 10 x) (stop!))) 
+  (confirm that
+    (doforthy (x '(1 2 :swap 3 4 5 6 :drop 7 8 9 10 11 12))
+      (when (odd? x)    (push-out! x))
+      (when (eql? 10 x) (stop!))) 
     returns ((1 3 5 9) 10 (11 12)))
   
-  (prn "Ran all dostack test cases."))
+  (prn "Ran all dostack test cases.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dostack--run-tests)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
