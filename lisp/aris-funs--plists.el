@@ -38,26 +38,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro plist-remove!(plist-symbol key)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Remove a key and it's associated value - this actually removes it, it doesn't just set it to nill"
-  `(let (new-plist (old-plist ,plist-symbol))
-     (while old-plist
-       (let ((k (car old-plist))
-              (v (cadr old-plist)))
-         (unless (eq k ,key)
-           (plist-put! new-plist k v))
-         (setq old-plist (cddr old-plist))))
-     (setq ,plist-symbol new-plist)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((plist (make-plist '(d a c b) '(4 1 3 2))))
-  (confirm that (plist-remove! plist 'a) returns (d 4 c 3 b 2))
-  (confirm that (plist-remove! plist 'b) returns (d 4 c 3))
-  (confirm that plist returns (d 4 c 3)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun plist-remove (plist key)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Remove a key and it's associated value. This version returns a new plist and
@@ -75,6 +55,19 @@ does not modify the original."
   (confirm that (plist-remove plist 'a) returns (d 4 c 3 b 2))
   (confirm that (plist-remove (plist-remove plist 'c) 'b) returns (d 4 a 1))
   (confirm that plist returns (d 4 a 1 c 3 b 2)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro plist-remove!(plist key)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Remove a key and it's associated value - this actually removes it, it doesn't just set it to nill"
+  `(setf ,plist (plist-remove ,plist ,key)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((plist (make-plist '(d a c b) '(4 1 3 2))))
+  (confirm that (plist-remove! plist 'a) returns (d 4 c 3 b 2))
+  (confirm that (plist-remove! plist 'b) returns (d 4 c 3))
+  (confirm that plist returns (d 4 c 3)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
