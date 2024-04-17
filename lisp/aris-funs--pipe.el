@@ -235,8 +235,11 @@
                (labeled-print "Remaining" body)
                (labeled-print var-sym ,var)
                (labeled-print "Flag" flag)
-               (if-let ((command (--get-pipe-command expr)))
-                 (set-flag! (cdr command))
+               (if-let ( (command (--get-pipe-command expr))
+                         (command-arity (car command))
+                         (command-flag (cdr command)) ;; named so as to not shadow flag in set-flag!
+                         )
+                 (set-flag! command-flag)
                  (let ((result
                          (eval (if (fun? expr)
                                  `(,expr ,var-sym)
