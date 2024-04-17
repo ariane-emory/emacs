@@ -191,10 +191,13 @@
                           (prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
                           (let* ( (popped (pop!))
-                                  (poppeds-drop-count (--get-pipe-command-arity popped))
-                                  (next-drop-count (+ drop-count poppeds-drop-count)))
-                            (--pipe-prn "Just dropped %S, adding %d to drop-count, new drop-count is %s"
-                              popped poppeds-drop-count next-drop-count)
+                                  (poppeds-arity (--get-pipe-command-arity popped))
+                                  (next-drop-count (+ drop-count poppeds-arity)))
+                            (unless (length>= next-drop-count)
+                              (error "malformed pipe body detected during drop"))
+                            (--pipe-prn
+                              "Just dropped %S, adding %d to drop-count, new drop-count is %s"
+                              popped poppeds-arity next-drop-count)
                             (setq drop-count next-drop-count)))))
                     (store! (value)
                       (prog1
@@ -237,9 +240,11 @@
                (labeled-print "Flag" flag)
                (if-let ( (command (--get-pipe-command expr))
                          (command-arity (car command))
-                         (command-flag (cdr command)) ;; named so as to not shadow flag in set-flag!
-                         )
-                 (set-flag! command-flag)
+                         (command-flag (cdr command))) ;; named so as to not shadow flag in set-flag!
+                 (progn
+                   (unless (length>= command-arity)
+                     (error "malformed pipe body"))
+                   (set-flag! command-flag))
                  (let ((result
                          (eval (if (fun? expr)
                                  `(,expr ,var-sym)
