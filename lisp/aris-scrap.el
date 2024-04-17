@@ -98,8 +98,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;; breaking cases, genuinely malformed:
 (|> 1 :unless t)
-(|> 1 :unless)
+(|> 1 :return)
 
 ;; not detected:
-(|> 1 :unless t :unless t) 
-(|> 1 :unless t :unless) 
+(|> 1 :unless t :return) 
+(|> 1 :unless t :when nil) 
