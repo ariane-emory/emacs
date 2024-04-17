@@ -25,7 +25,7 @@
   :group 'pattern-dispatch
   :type 'boolean)
 
-(defcustom *pd--print-fun* 'indented-message
+(defcustom *pd--print-fun* 'prn
   "The function to use to print messages."
   :group 'pattern-dispatch 
   :type 'function)
