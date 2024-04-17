@@ -71,7 +71,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --pd-eval-match-result (match-result)
+(defun --eval-pd-match-result (match-result)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the MATCH-RESULT for a call pattern."
   (--pd-prn "Evaluating match result '%s" match-result)
@@ -98,7 +98,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --pd-match-call-pattern-in-group (call-pattern group)
+(defun --match-pd-call-pattern-in-group (call-pattern group)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
   (error-unless "Invalid call, no pattern group for '%s." '(call-pattern) group)    
@@ -147,7 +147,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --pd-make-dispatcher-fun (symbol)
+(defmacro --make-pd-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
@@ -166,14 +166,14 @@ because we're gong to be stshing stuff in their symbol properties."
          (--pd-prn "MAKE: Looked up group for '%s and found:" ',symbol)
          (--pd-prndiv)
          (pd--prn-group group)
-         (--pd-eval-match-result
-           (--pd-match-call-pattern-in-group
+         (--eval-pd-match-result
+           (--match-pd-call-pattern-in-group
              call-pattern group-rows))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --pd-bind (symbol)
+(defun --bind-pd-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (--pd-prndiv ?\#)
@@ -197,7 +197,7 @@ because we're gong to be stshing stuff in their symbol properties."
     (--pd-prn "BIND: '%s isn't bound or was bound by us, we can %sbind it."
       symbol (if already-bound "re" "")))
   ;; Attach our handler function to SYMBOL's function cell:
-  (fset symbol (eval `(--pd-make-dispatcher-fun ,symbol)))
+  (fset symbol (eval `(--make-pd-dispatcher-fun ,symbol)))
   ;; Stash the group label and a serial numbe in properties on SYMBOL:
   (put symbol :PD-GROUP symbol)
   (setq *pd--handler-count* (1+ *pd--handler-count*))
@@ -253,7 +253,7 @@ because we're gong to be stshing stuff in their symbol properties."
            (--pd-prndiv ?\#)
            (--pd-prn "DEF:  Defining pattern '%s in group '%s."
              ',pattern-without-group-symbol ',group-symbol)
-           (--pd-bind ',group-symbol)
+           (--bind-pd-dispatcher-fun ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
            (let ( (new-pattern-case (list (cons ',pattern-without-group-symbol ',def-body)))
                   (group-alist (assoc ',group-symbol *pd--pattern-dispatch-table*)))
