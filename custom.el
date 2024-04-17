@@ -4,6 +4,7 @@
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
   '(*pattern-dispatch--verbose* t)
+  '(*pipe--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
   '(backtrace-line-length 20000)

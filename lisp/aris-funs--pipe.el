@@ -409,7 +409,7 @@
                       (pop body))
                     (drop-next! ()
                       (let ((drop-count 1))
-                        (while (positive? drop-count)
+                        (until (zero? drop-count)
                           (prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
                           (let* ( (popped (pop!))
