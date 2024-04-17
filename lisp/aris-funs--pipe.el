@@ -12,6 +12,35 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgroup pipe nil
+  "Elixir-style pipe operator.")
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defcustom *pipe--verbose* nil
+  "Whether the pipe operator should print verbose messages."
+  :group 'pipe
+  :type 'boolean)
+
+(defcustom *pipe--print-fun* 'prn
+  "The function to use to print messages."
+  :group 'pipe
+  :type 'function)
+
+(defcustom *pipe--print-divider-fun* 'prndiv
+  "The function to use to print dividers."
+  :group 'pipe
+  :type 'function)
+
+(defcustom *pipe--default-var-sym* '_
+  "The default symbol to use for the pipe operator."
+  :group 'pipe
+  :type 'symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe (head &rest tail)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`pipe' with optional let-like binding/symbol naming.
@@ -49,35 +78,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defgroup pipe nil
-  "Elixir-style pipe operator.")
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* nil
-  "Whether the pipe operator should print verbose messages."
-  :group 'pipe
-  :type 'boolean)
-
-(defcustom *pipe--print-fun* 'prn
-  "The function to use to print messages."
-  :group 'pipe
-  :type 'function)
-
-(defcustom *pipe--print-divider-fun* 'prndiv
-  "The function to use to print dividers."
-  :group 'pipe
-  :type 'function)
-
-(defcustom *pipe--default-var-sym* '_
-  "The default symbol to use for the pipe operator."
-  :group 'pipe
-  :type 'symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *--pipe-commands*
   '(
      (:       . (1 . :IGNORE))
@@ -95,14 +95,6 @@
 
 (defvar *--pipe-commands-to-flags* (mapr *--pipe-commands* (lambda (x) (cons (car x) (cddr x))))
   "An alist mapping commands to flags. This is not meant to be customized.")
-
-;; (defvar *--pipe-arity-1-commands*
-;;   (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe-commands*) #'car)
-;;   "Commands that take one argument. This is not meant to be customized.")
-
-;; (defvar *--pipe-arity-2-commands*
-;;   (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe-commands*) #'car)
-;;   "Commands that take two arguments. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
