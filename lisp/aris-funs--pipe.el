@@ -96,13 +96,13 @@
 (defvar *--pipe-commands-to-flags* (mapr *--pipe-commands* (lambda (x) (cons (car x) (cddr x))))
   "An alist mapping commands to flags. This is not meant to be customized.")
 
-(defvar *--pipe-arity-1-commands*
-  (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe-commands*) #'car)
-  "Commands that take one argument. This is not meant to be customized.")
+;; (defvar *--pipe-arity-1-commands*
+;;   (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe-commands*) #'car)
+;;   "Commands that take one argument. This is not meant to be customized.")
 
-(defvar *--pipe-arity-2-commands*
-  (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe-commands*) #'car)
-  "Commands that take two arguments. This is not meant to be customized.")
+;; (defvar *--pipe-arity-2-commands*
+;;   (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe-commands*) #'car)
+;;   "Commands that take two arguments. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
