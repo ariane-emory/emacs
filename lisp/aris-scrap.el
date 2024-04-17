@@ -34,6 +34,29 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq *pipe--verbose* t)
+(|> ((e)) 5 (* e e) (+ e 8) double) ;; => 66
+(|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
+(|> 5 (* _ _) (+ _ 8) double) ;; => 66
+
+(|> ((e 5)) (* e e) :return 9 (+ e 8) double) ;; => 9
+(|> ((e 5)) (* e e) (return! 9) (+ e 8) double) ;; => 9
+
+;; breaking cases, genuinely malformed:
+(|> 1 :unless t)
+(|> 1 :return)
+
+;; not detected:
+(|> 1 :unless t :return) 
+(|> 1 :unless t :when nil 3)
+(|> 1 :unless :unless t 2 3)
+
+;; surprisingly this works:
+(|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; define a function with type checks using the defun* macro:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun* foo ((num : number) (exp : integer) &optional print-message)
@@ -75,30 +98,5 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (expt num exp))
 (defun* pow ((num : number) (exp : &optional integer))
   (expt num (or exp 2)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq *pipe--verbose* t)
-(|> ((e)) 5 (* e e) (+ e 8) double) ;; => 66
-(|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
-(|> 5 (* _ _) (+ _ 8) double) ;; => 66
-
-(|> ((e 5)) (* e e) :return 9 (+ e 8) double) ;; => 9
-(|> ((e 5)) (* e e) (return! 9) (+ e 8) double) ;; => 9
-
-;; breaking cases, genuinely malformed:
-(|> 1 :unless t)
-(|> 1 :return)
-
-;; not detected:
-(|> 1 :unless t :return) 
-(|> 1 :unless t :when nil 3)
-(|> 1 :unless :unless t 2 3)
-
-;; surprisingly this works:
-(|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
