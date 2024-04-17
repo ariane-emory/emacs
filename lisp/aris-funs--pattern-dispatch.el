@@ -402,7 +402,7 @@ because we're gong to be stshing stuff in their symbol properties."
       (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
       (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
       
-      (prn "Prnting the table:")
+      (prn "Printing the table:")
       (pd--print-table)
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       )))

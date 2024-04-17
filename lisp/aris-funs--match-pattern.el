@@ -75,7 +75,7 @@ element is an invalid element."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *pm--print-fun* 'indented-message
+(defcustom *mp--print-fun* 'indented-message
   "The function to use to print messages."
   :group 'match-pattern
   :type 'function)
@@ -105,11 +105,11 @@ verbatim element."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pm--print (first &rest rest)
+(defmacro mp--print (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *pm--print-fun*"
+  "Wrap *mp--print-fun*. NOT YET USED FOR SOME REASON?"
   `(when *pm--verbose*     
-     (funcall *pm--print-fun* ,first ,@rest)
+     (funcall *mp--print-fun* ,first ,@rest)
      nil))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -78,11 +78,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe--commands*
+(defvar *--pipe-commands*
   '(
      (:       . (1 . :IGNORE))
-     (:?      . (1 . :MAYBE))
      (:ignore . (1 . :IGNORE))
+     (:?      . (1 . :MAYBE))
      (:maybe  . (1 . :MAYBE))
      (:return . (1 . :RETURN))
      (:unless . (2 . :UNLESS))
@@ -90,18 +90,18 @@
      )
   "An alist mapping commands to their flags and arities. This is not meant to be customized.")
 
-(defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe--commands*)))
+(defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe-commands*)))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
 
-(defvar *--pipe-commands-to-flags* (mapr *--pipe--commands* (lambda (x) (cons (car x) (cddr x))))
+(defvar *--pipe-commands-to-flags* (mapr *--pipe-commands* (lambda (x) (cons (car x) (cddr x))))
   "An alist mapping commands to flags. This is not meant to be customized.")
 
-(defvar *--pipe--arity-1-commands*
-  (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe--commands*) #'car)
+(defvar *--pipe-arity-1-commands*
+  (mapr (cl-remove-if (lambda (x) (not (= 1 (cadr x)))) *--pipe-commands*) #'car)
   "Commands that take one argument. This is not meant to be customized.")
 
-(defvar *--pipe--arity-2-commands*
-  (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe--commands*) #'car)
+(defvar *--pipe-arity-2-commands*
+  (mapr (cl-remove-if (lambda (x) (not (= 2 (cadr x)))) *--pipe-commands*) #'car)
   "Commands that take two arguments. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -110,7 +110,7 @@
 (defun pipe--get-command-arity (command)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the arity of a pipe command COMMAND or 0 if COMMAND is not a pipe command."
-  (if-let ( (alist-value (alist-get command *--pipe--commands*))
+  (if-let ( (alist-value (alist-get command *--pipe-commands*))
             (arity (car alist-value)))
     arity
     0))
@@ -118,7 +118,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --pipe-print (first &rest rest)
+(defmacro --pipe-prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-fun*"
   `(when *pipe--verbose* (ignore (funcall *pipe--print-fun* ,first ,@rest))))
@@ -202,27 +202,27 @@
 ;;                                  (error "Cannot set flag to %S when flag is already set to %S."
 ;;                                    new-flag flag))
 ;;                                (force
-;;                                  (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+;;                                  (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag)
 ;;                                  (setq flag new-flag))
 ;;                                (t
-;;                                  (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+;;                                  (--pipe-prn "Setting flag from %S to %S%s." flag new-flag
 ;;                                    (if force " (forced)" ""))))
 ;;                              (setq flag new-flag)))
 ;;                          (unset-flag! ()
 ;;                            (when flag
-;;                              (--pipe-print "Unsetting flag %S." flag)
+;;                              (--pipe-prn "Unsetting flag %S." flag)
 ;;                              (set-flag! nil)))
 ;;                          (store! (value)
 ;;                            (prog1
 ;;                              (setq ,var value)
-;;                              (--pipe-print "Updated %S to %S." var-sym ,var)))
+;;                              (--pipe-prn "Updated %S to %S." var-sym ,var)))
 ;;                          (labeled-print (label value)
 ;;                            (let* ( (label (format "%s:" label))
 ;;                                    (whites (make-string (- 21 (length label)) ?\ ))
 ;;                                    (label (concat label whites)))
-;;                              (--pipe-print "%s%S" label value))))
+;;                              (--pipe-prn "%s%S" label value))))
 ;;               (--pipe-prndiv)
-;;               (--pipe-print "START")
+;;               (--pipe-prn "START")
 ;;               (--pipe-prndiv)
 ;;               (catch ,return-label
 
@@ -246,27 +246,27 @@
 ;;                       ;; Because drop-next! calls pop, this flet has to be inside of the dostack.
 ;;                       (cl-flet ((drop-next! () 
 ;;                                   (let ((next (pop!)))
-;;                                     (--pipe-print "Popped 1st %S from %S." next (stack))
-;;                                     (when (memq next *--pipe--arity-1-commands*)
+;;                                     (--pipe-prn "Popped 1st %S from %S." next (stack))
+;;                                     (when (memq next *--pipe-arity-1-commands*)
 ;;                                       (let ((popped (pop!)))
-;;                                         (--pipe-print "Popped command's argument %S from %S."
+;;                                         (--pipe-prn "Popped command's argument %S from %S."
 ;;                                           popped (stack))))
-;;                                     (when (memq next *--pipe--arity-2-commands*)
+;;                                     (when (memq next *--pipe-arity-2-commands*)
 ;;                                       (error "Ignoring the %S command is not yet supported." next)))))
 ;;                         (cond
 ;;                           ((flag-is? :IGNORE)
-;;                             (--pipe-print "Not setting %S because %S." result flag))
+;;                             (--pipe-prn "Not setting %S because %S." result flag))
 ;;                           ((flag-is? :WHEN)
 ;;                             (when (not result) (drop-next!)))
 ;;                           ((flag-is? :UNLESS)
 ;;                             (when result (drop-next!)))
 ;;                           ((flag-is? :RETURN)
-;;                             (--pipe-print "Returning due to command: %S" result)
+;;                             (--pipe-prn "Returning due to command: %S" result)
 ;;                             (throw ,return-label result))
 ;;                           ((and (flag-is? :MAYBE) result)
 ;;                             (store! result))
 ;;                           ((and (flag-is? :MAYBE) (not result))
-;;                             (--pipe-print "Ignoring %S." result))
+;;                             (--pipe-prn "Ignoring %S." result))
 ;;                           (t (store! result)))
 ;;                         (unset-flag!)))))
 ;;                 ;; END OF DOSTACK BODY ARGUMENT.
@@ -275,10 +275,10 @@
 ;;                 (throw ,return-label
 ;;                   (progn
 ;;                     (--pipe-prndiv)
-;;                     (--pipe-print "Returning this because stack is empty: %S" ,var)
+;;                     (--pipe-prn "Returning this because stack is empty: %S" ,var)
 ;;                     (--pipe-prndiv)
 ;;                     ,var)))))))
-;;        (--pipe-print "Pipe's final return: %S" final)
+;;        (--pipe-prn "Pipe's final return: %S" final)
 ;;        final)))
 ;;        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -292,8 +292,8 @@
 ;;           (var             (alist-get 'var  args))
 ;;           (body         `',(alist-get 'body args))  
 ;;           (var-sym      `',var))
-;;     (--pipe-print "return-label is %S" return-label)
-;;     (--pipe-print "args is %S" args)
+;;     (--pipe-prn "return-label is %S" return-label)
+;;     (--pipe-prn "args is %S" args)
 ;;     `(let ( (,var      nil)
 ;;             (body     ,body)
 ;;             (flag      nil))
@@ -302,17 +302,17 @@
 ;;                       (pop body))
 ;;                     (drop-next! () 
 ;;                       (let ((next (pop!)))
-;;                         (--pipe-print "Popped 1st %S from %S." next body)
-;;                         (when (memq next *--pipe--arity-1-commands*)
+;;                         (--pipe-prn "Popped 1st %S from %S." next body)
+;;                         (when (memq next *--pipe-arity-1-commands*)
 ;;                           (let ((popped (pop!)))
-;;                             (--pipe-print "Popped command's argument %S from %S."
+;;                             (--pipe-prn "Popped command's argument %S from %S."
 ;;                               popped body)))
-;;                         (when (memq next *--pipe--arity-2-commands*)
+;;                         (when (memq next *--pipe-arity-2-commands*)
 ;;                           (error "Ignoring the %S command is not yet supported." next))))
 ;;                     (store! (value)
 ;;                       (prog1
 ;;                         (setq ,var value)
-;;                         (--pipe-print "Updated %S to %S." ,var-sym ,var)))
+;;                         (--pipe-prn "Updated %S to %S." ,var-sym ,var)))
 ;;                     (flag-is? (test-flag)
 ;;                       (eq flag (--valid-pipe-flag test-flag)))
 ;;                     (set-flag! (new-flag &optional force)
@@ -322,23 +322,23 @@
 ;;                             (error "Cannot set flag to %S when flag is already set to %S."
 ;;                               new-flag flag))
 ;;                           (force
-;;                             (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+;;                             (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag)
 ;;                             (setq flag new-flag))
 ;;                           (t
-;;                             (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+;;                             (--pipe-prn "Setting flag from %S to %S%s." flag new-flag
 ;;                               (if force " (forced)" ""))))
 ;;                         (setq flag new-flag)))
 ;;                     (unset-flag! ()
 ;;                       (when flag
-;;                         (--pipe-print "Unsetting flag %S." flag)
+;;                         (--pipe-prn "Unsetting flag %S." flag)
 ;;                         (set-flag! nil)))
 ;;                     (labeled-print (label value)
 ;;                       (let* ( (label  (format "%s:" label))
 ;;                               (whites (make-string (- 21 (length label)) ?\ ))
 ;;                               (label  (concat label whites)))
-;;                         (--pipe-print "%s%S" label value))))
+;;                         (--pipe-prn "%s%S" label value))))
 ;;          (--pipe-prndiv)
-;;          (--pipe-print "START")
+;;          (--pipe-prn "START")
 ;;          (--pipe-prndiv)
 ;;          (catch ,return-label                
 ;;            (while body
@@ -355,31 +355,31 @@
 ;;                                  `(,expr ,,var-sym)
 ;;                                  (let ((return-label ,return-label))
 ;;                                    `(cl-flet ((return! (value)
-;;                                                 (--pipe-print "Throwing %S." ',return-label)
+;;                                                 (--pipe-prn "Throwing %S." ',return-label)
 ;;                                                 (throw ',return-label value)))
 ;;                                       ,expr))))))
 ;;                    (labeled-print "Expr result" result)
 ;;                    (cond
 ;;                      ((flag-is? :IGNORE)
-;;                        (--pipe-print "Not setting %S because %S." result flag))
+;;                        (--pipe-prn "Not setting %S because %S." result flag))
 ;;                      ((flag-is? :WHEN)
 ;;                        (when (not result) (drop-next!)))
 ;;                      ((flag-is? :UNLESS)
 ;;                        (when result (drop-next!)))
 ;;                      ((flag-is? :RETURN)
-;;                        (--pipe-print "Returning due to command: %S" result)
+;;                        (--pipe-prn "Returning due to command: %S" result)
 ;;                        (throw ,return-label result))
 ;;                      ((and (flag-is? :MAYBE) result)
 ;;                        (store! result))
 ;;                      ((and (flag-is? :MAYBE) (not result))
-;;                        (--pipe-print "Ignoring %S." result))
+;;                        (--pipe-prn "Ignoring %S." result))
 ;;                      (t (store! result)))
 ;;                    (unset-flag!)))))
 ;;            ;; For clarity, explicitly throw the return value if we run out of stack items:
 ;;            (throw ,return-label
 ;;              (progn
 ;;                (--pipe-prndiv)
-;;                (--pipe-print "Returning this because stack is empty: %S" ,var)
+;;                (--pipe-prn "Returning this because stack is empty: %S" ,var)
 ;;                (--pipe-prndiv)
 ;;                ,var))
 ;;            ) ;; END OF CATCH.
@@ -398,8 +398,8 @@
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
           (body         `',(alist-get 'body args)))
-    (--pipe-print "return-label is %S" return-label)
-    (--pipe-print "args is %S" args)
+    (--pipe-prn "return-label is %S" return-label)
+    (--pipe-prn "args is %S" args)
     `(let ( (,var      nil)
             (var-sym ',var)
             (body     ,body)
@@ -415,13 +415,13 @@
                           (let* ( (popped (pop!))
                                   (poppeds-drop-count (pipe--get-command-arity popped))
                                   (next-drop-count (+ drop-count poppeds-drop-count)))
-                            (--pipe-print "Just dropped %S, adding %d to drop-count, new drop-count is %s"
+                            (--pipe-prn "Just dropped %S, adding %d to drop-count, new drop-count is %s"
                               popped poppeds-drop-count next-drop-count)
                             (setq drop-count next-drop-count)))))
                     (store! (value)
                       (prog1
                         (setq ,var value)
-                        (--pipe-print "Updated %S to %S." var-sym ,var)))
+                        (--pipe-prn "Updated %S to %S." var-sym ,var)))
                     (flag-is? (tested-flag)
                       (eq flag (--valid-pipe-flag tested-flag)))
                     (set-flag! (new-flag &optional force)
@@ -431,23 +431,23 @@
                             (error "Cannot set flag to %S when flag is already set to %S."
                               new-flag flag))
                           (force
-                            (--pipe-print "FORCING FLAG FROM %S TO %S." flag new-flag)
+                            (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag)
                             (setq flag new-flag))
                           (t
-                            (--pipe-print "Setting flag from %S to %S%s." flag new-flag
+                            (--pipe-prn "Setting flag from %S to %S%s." flag new-flag
                               (if force " (forced)" ""))))
                         (setq flag new-flag)))
                     (unset-flag! ()
                       (when flag
-                        (--pipe-print "Unsetting flag %S." flag)
+                        (--pipe-prn "Unsetting flag %S." flag)
                         (set-flag! nil)))
                     (labeled-print (label value)
                       (let* ( (label  (format "%s:" label))
                               (whites (make-string (- 21 (length label)) ?\ ))
                               (label  (concat label whites)))
-                        (--pipe-print "%s%S" label value))))
+                        (--pipe-prn "%s%S" label value))))
          (--pipe-prndiv)
-         (--pipe-print "START")
+         (--pipe-prn "START")
          (--pipe-prndiv)
          (catch ,return-label                
            (while body
@@ -464,31 +464,31 @@
                                  `(,expr ,var-sym)
                                  (let ((return-label ,return-label))
                                    `(cl-flet ((return! (value)
-                                                (--pipe-print "Throwing %S." ',return-label)
+                                                (--pipe-prn "Throwing %S." ',return-label)
                                                 (throw ',return-label value)))
                                       ,expr))))))
                    (labeled-print "Expr result" result)
                    (cond
                      ((flag-is? :IGNORE)
-                       (--pipe-print "Not setting %S because %S." result flag))
+                       (--pipe-prn "Not setting %S because %S." result flag))
                      ((flag-is? :WHEN)
                        (when (not result) (drop-next!)))
                      ((flag-is? :UNLESS)
                        (when result (drop-next!)))
                      ((flag-is? :RETURN)
-                       (--pipe-print "Returning due to command: %S" result)
+                       (--pipe-prn "Returning due to command: %S" result)
                        (throw ,return-label result))
                      ((and (flag-is? :MAYBE) result)
                        (store! result))
                      ((and (flag-is? :MAYBE) (not result))
-                       (--pipe-print "Ignoring %S." result))
+                       (--pipe-prn "Ignoring %S." result))
                      (t (store! result)))
                    (unset-flag!)))))
            ;; For clarity, explicitly throw the return value if we run out of stack items:
            (throw ,return-label
              (progn
                (--pipe-prndiv)
-               (--pipe-print "Returning this because stack is empty: %S" ,var)
+               (--pipe-prn "Returning this because stack is empty: %S" ,var)
                (--pipe-prndiv)
                ,var))
            ) ;; END OF CATCH.
@@ -754,7 +754,7 @@
     (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 15)
   
-  (--pipe-print "Ran all pipe test cases.")
+  (--pipe-prn "Ran all pipe test cases.")
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pipe--run-tests)
