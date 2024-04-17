@@ -163,28 +163,5 @@ is odd, the last cons in the resulting alist's value cell will be nil."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when nil
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (progn
-    (if (not (boundp 'plist))
-      (setq plist nil))
-    (plist-put! plist 'a 1)
-    (plist-put! plist 'b 2)
-    (plist-put! plist 'c 3)
-    (plist-remove! plist 'a)
-    (plist-remove! plist 'b)
-    (plist-remove! plist 'c)
-    (plist-put! plist 'c 3)
-    (plist-put! plist 'a 1)
-    (plist-put! plist 'b 2)
-    (plist-sort! plist)
-    (plist-keys plist)
-    (plist-vals plist)
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--plists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
