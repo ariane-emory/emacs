@@ -72,33 +72,30 @@ does not modify the original."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro plist-sort! (plist-symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Sort a plist by key."
-  `(setq ,plist-symbol
-     (apply 'append
-       (sort (cl-loop for (key value) on ,plist-symbol by #'cddr
-               collect (list key value))
-         (lambda (a b) (string< (car a) (car b)))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((plist (make-plist '(d a c b) '(4 1 3 2))))
-  (confirm that (plist-sort! plist) returns (a 1 b 2 c 3 d 4))
-  (confirm that plist returns (a 1 b 2 c 3 d 4)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun plist-sort (plist-symbol)
+(defun plist-sort (plist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Sort a plist by key. This version returns a new plist and does not modify the original."
   (apply 'append
-    (sort (cl-loop for (key value) on plist-symbol by #'cddr
+    (sort (cl-loop for (key value) on plist by #'cddr
             collect (list key value))
       (lambda (a b) (string< (car a) (car b))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (confirm that (plist-sort plist) returns (a 1 b 2 c 3 d 4))
   (confirm that plist returns (d 4 a 1 c 3 b 2)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro plist-sort! (plist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Sort a plist by key."
+  `(setf ,plist (plist-sort ,plist)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((plist (make-plist '(d a c b) '(4 1 3 2))))
+  (confirm that (plist-sort! plist) returns (a 1 b 2 c 3 d 4))
+  (confirm that plist returns (a 1 b 2 c 3 d 4)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
