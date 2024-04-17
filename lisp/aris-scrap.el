@@ -68,11 +68,14 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; 3.5^3 is not an integer.
 ;; and then signals (wrong-type-argument number "foo" num).
 
-;; imaginary &rest syntax:
+;; imaginary &rest/optional syntax:
 (defun* pow ((num : number) (exp : integer) (nums : &rest integer))
   (expt num exp))
 (defun* pow ((num : number) (exp : integer) (&rest nums : integer))
   (expt num exp))
+(defun* pow ((num : number) (exp : &optional integer))
+  (expt num (or exp 2)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
