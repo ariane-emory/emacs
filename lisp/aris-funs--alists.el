@@ -327,7 +327,7 @@ to achieve your preferred structure."
               (value (cdr pair)))
         (let ((new-tail (list key value)))
           (if tail
-            (rplacd! tail new-tail)
+            (setcdr tail new-tail)
             (setq result new-tail))
           (setq tail (cdr new-tail))
           )))
