@@ -131,15 +131,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --get-pipe-command-flag (command)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Get the arity of a pipe command COMMAND or 0 if COMMAND is not a pipe command."
-  (when-let ((alist-value (alist-get command *--pipe-commands*)))
-    (cdr alist-value)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun --valid-pipe-flag (kw &optional or-nil)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return KW if it is a valid pipe flag, or signal an error. If OR-NIL is t, return nil if KW is nil."
@@ -242,8 +233,8 @@
                (labeled-print "Remaining" body)
                (labeled-print var-sym ,var)
                (labeled-print "Flag" flag)
-               (if (--is-pipe-command? expr)
-                 (set-flag! (--get-pipe-command-flag expr))
+               (if-let ((command (alist-get expr *--pipe-commands*)))
+                 (set-flag! (cdr command))
                  (let ((result
                          (eval (if (fun? expr)
                                  `(,expr ,var-sym)
@@ -349,8 +340,8 @@
 ;;                (labeled-print "Remaining" body)
 ;;                (labeled-print ,var-sym ,var)
 ;;                (labeled-print "Flag" flag)
-;;                (if (--is-pipe-command? expr)
-;;                  (set-flag! (--get-pipe-command-flag expr))
+;;                (if-let ((command (alist-get expr *--pipe-commands*)))
+;;                  (set-flag! (cdr command))
 ;;                  (let ((result
 ;;                          (eval (if (fun? expr)
 ;;                                  `(,expr ,,var-sym)
@@ -404,14 +395,6 @@
   (confirm that (--is-pipe-command? :return) returns t)
   (confirm that (--is-pipe-command? :unless) returns t)
   (confirm that (--is-pipe-command? :when)  returns t)
-
-  (confirm that (--get-pipe-command-flag :) returns :IGNORE)
-  (confirm that (--get-pipe-command-flag :ignore) returns :IGNORE)
-  (confirm that (--get-pipe-command-flag :?) returns :MAYBE)
-  (confirm that (--get-pipe-command-flag :maybe) returns :MAYBE)
-  (confirm that (--get-pipe-command-flag :return) returns :RETURN)
-  (confirm that (--get-pipe-command-flag :unless) returns :UNLESS)
-  (confirm that (--get-pipe-command-flag :when) returns :WHEN)
 
   (confirm that (--get-pipe-command-arity :) returns 1)
   (confirm that (--get-pipe-command-arity :?) returns 1)
