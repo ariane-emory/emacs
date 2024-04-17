@@ -85,10 +85,10 @@ which KEY is not present, doing nothing if it was not already present."
       (unless (eq (car pair) key)
         (push pair result)))
     (nreverse result)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a . 1) (b . 2) (c . 3)))
-;; (alist-remove 'b alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a . 1) (b . 2) (c . 3))))
+  (confirm that (alist-remove 'b alist) returns ((a . 1) (c . 3))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,13 +97,15 @@ which KEY is not present, doing nothing if it was not already present."
   "Destructively remove a KEY from ALIST to VALUE by modifying the alist in
 place."
   `(setf ,alist (alist-remove ,key ,alist)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))))
+  (confirm that (alist-remove! 'b alist)
+    returns ((a . 1) (c . 3) (d (e . 4) (f . 5))))
+  (confirm that (alist-get 'd alist) returns ((e . 4) (f . 5)))
+  (confirm that (alist-remove! 'e (alist-get 'd alist)) returns ((f . 5)))
+  (confirm that (alist-remove! 'f (alist-get 'd alist)) returns nil)
+  (confirm that alist returns ((a . 1) (c . 3) (d))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5))))
-;; (alist-remove! 'b alist)
-;; (alist-get 'd alist)
-;; (alist-remove! 'e (alist-get 'd alist))
-;; (alist-remove! 'f (alist-get 'd alist))
-;; alist  
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
