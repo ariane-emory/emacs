@@ -858,10 +858,12 @@
           (setq-local display-line-numbers-mode nil)
           (setq-local cursor-type nil)))
 
-      (add-hook 'Buffer-menu-mode-hook (lambda () (setq-local truncate-lines t)))
       (add-hook 'inferior-emacs-lisp-mode-hook 'aris-setup-lisp)
       (add-hook 'org-mode-hook (lambda () (variable-pitch-mode)))
+      (add-hook 'Buffer-menu-mode-hook (lambda () (setq-local truncate-lines t)))
+      (add-hook 'debugger-mode-hook (lambda () (setq-local truncate-lines t)))
       (add-hook 'special-mode-hook (lambda () (setq-local truncate-lines nil))))
+    
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Use my own custom packages:
