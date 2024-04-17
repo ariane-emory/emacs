@@ -39,6 +39,7 @@ which KEY is set to VALUE, adding a new key/value pair if it wasn't already pres
 This is meant for non-dotted ALISTs and might produce unexpexted results if
 applied to dotted ALISTs. As usual, `add-dots-to-alist'/`remove-dots-from-alist'
 may be applied before or after to get your desired result."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "ALIST must be a proper list, not %S!" alist))
   (let (result key-found)
@@ -127,12 +128,12 @@ in which they are not present."
   `(setf ,alist (alist-remove-empty ,alist))
   ;; `(setf ,alist (cl-remove-if (lambda (pair) (null (cdr pair))) ,alist))
   )
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3) (d (e 4) (f 5))))
-;; (alist-remove! 'e (alist-get 'd alist))
-;; (alist-remove! 'f (alist-get 'd alist))
-;; (alist-remove-empty! alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a 1) (b 2) (c 3) (d (e 4) (f 5)))))
+  (confirm that (alist-remove! 'e (alist-get 'd alist)) returns ((f 5)))
+  (confirm that (alist-remove! 'f (alist-get 'd alist)) returns nil)
+  (confirm that (alist-remove-empty! alist) returns ((a 1) (b 2) (c 3))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -152,7 +153,7 @@ Examples:
 (`add-dots-to-alist'
   '((a . 1) (b 2) (c . 3))) ⇒
     ((a . 1) (b . 2) (c . 3))"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "Not a proper list!"))
   (mapr
@@ -162,12 +163,12 @@ Examples:
         ((-cons-pair? pair) pair)
         ((> (length (cdr pair)) 1) pair)
         (t (cons (car pair) (cadr pair)))))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3)))
-;; (add-dots-to-alist alist)
-;; (setq alist '((a . 1) (b . 2) (c . 3)))
-;; (add-dots-to-alist alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a 1) (b 2) (c 3))))
+  (confirm that (add-dots-to-alist alist) returns ((a . 1) (b . 2) (c . 3)))
+  (confirm that (setq alist '((a . 1) (b . 2) (c . 3))) returns ((a . 1) (b . 2) (c . 3)))
+  (confirm that (add-dots-to-alist alist) returns ((a . 1) (b . 2) (c . 3))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -201,7 +202,7 @@ Examples:
       (`add-dots-to-alist'
        '((a 1) (b 2) (c 3)))))) ⇒
         ((a 1) (b 2) (c 3))"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "Not a proper list!"))
   (mapr
@@ -213,12 +214,12 @@ Examples:
           (cons (car pair) (list (cdr pair))))
         ((atom pair) (error "Improper alist."))
         (t pair)))))
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c 3)))
-;; (remove-dots-from-alist alist)
-;; (setq alist '((a . 1) (b . 2) (c . 3)))
-;; (remove-dots-from-alist alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a 1) (b 2) (c 3))))
+  (confirm that (remove-dots-from-alist alist) returns ((a 1) (b 2) (c 3)))
+  (confirm that (setq alist '((a . 1) (b . 2) (c . 3))) returns ((a . 1) (b . 2) (c . 3)))
+  (confirm that (remove-dots-from-alist alist) returns ((a 1) (b 2) (c 3))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -249,6 +250,7 @@ Examples:
   (`remove-dots-from-alist'
     (`add-dots-to-alist'
       (`add-dots-to-alist' '((a 1) (b 2) (c 3))))))"
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "Not a proper list!"))
   (let (result)
@@ -261,10 +263,11 @@ Examples:
           (setcdr existing (nconc (cdr existing) tail))
           (push (cons key tail) result))))
     (nreverse result)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (z . 7)))
-;; (merge-duplicate-alist-keys alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((v . 1) (w . 2) (w . 3) (x . 4) (y . 5) (y . 6) (z . 7))))
+  (confirm that (merge-duplicate-alist-keys alist)
+    returns ((v 1) (w 2 3) (x 4) (y 5 6) (z 7))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -282,6 +285,7 @@ Examples:
   (`flatten-alist-values'
    '((a 1) (b 2 2) (c 3) (d 4 5 6)))) ⇒
      ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))"
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "Not a proper list!"))
   (let (result)
@@ -292,10 +296,11 @@ Examples:
         (dolist (value values)
           (push (cons key value) result))))
     (nreverse result)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2 2) (c 3) (d 4 5 6)))
-;; (flatten-alist-values alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a 1) (b 2 2) (c 3) (d 4 5 6))))
+  (confirm that (flatten-alist-values alist)
+    returns ((a . 1) (b . 2) (b . 2) (c . 3) (d . 4) (d . 5) (d . 6))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -313,6 +318,7 @@ ALIST used dotted lists or not:
 
 `add-dots-to-alist'/`remove-dots-from-alist' may be applied beforehand in order
 to achieve your preferred structure."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (list? alist) (error "ALIST must be a list"))
   (let (result tail)
     (while alist
@@ -326,12 +332,12 @@ to achieve your preferred structure."
           (setq tail (cdr new-tail))
           )))
     result))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2 2) (c 3) (d 4 5 6)))
-;; (alist-to-plist alist) ⇒ (a (1) b (2 2) c (3) d (4 5 6))
-;; (setq alist '((a . 1) (b 2 2) (c . 3) (d 4 5 6)))
-;; (alist-to-plist alist) ⇒ (a 1 b (2 2) c 3 d (4 5 6))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a 1) (b 2 2) (c 3) (d 4 5 6))))
+  (confirm that (alist-to-plist alist) returns (a (1) b (2 2) c (3) d (4 5 6))))
+(let ((alist '((a . 1) (b 2 2) (c . 3) (d 4 5 6))))
+  (confirm that (alist-to-plist alist) returns (a 1 b (2 2) c 3 d (4 5 6))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
