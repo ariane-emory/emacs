@@ -114,10 +114,10 @@ place."
   "Non-destructively remove all empty values from ALIST by building a new alist
 in which they are not present."
   `(cl-remove-if (lambda (pair) (null (cdr pair))) ,alist))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq alist '((a 1) (b 2) (c) (d (e 4) (f 5))))
-;; (alist-remove-empty alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((alist '((a 1) (b 2) (c) (d (e 4) (f 5)))))
+  (confirm that (alist-remove-empty alist) returns ((a 1) (b 2) (d (e 4) (f 5)))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
