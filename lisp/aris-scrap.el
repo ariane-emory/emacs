@@ -1,4 +1,4 @@
-;; -*- lexical-binding: nil; fill-column: 120; lisp-indent-offset: 2; eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); eval: (company-posframe-mode -1) -*-
+;; -*- lexical-binding: nil; fill-column: 120; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'pp)
 (require 'aris-funs--alists)
@@ -35,7 +35,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq *pipe--verbose* t)
-(|> ((e)) 5 (* e e) (+ e 8) double) ;; => 66
+(|>
+  ((e)) 5 (* e e) (+ e 8) double) ;; => 66
 (|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
 (|> 5 (* _ _) (+ _ 8) double) ;; => 66
 
@@ -50,13 +51,12 @@
 (|> 6 :when odd? 101 :unless odd? 200)
 
 ;; breaking cases, genuinely malformed:
-(|> 1 :unless t)
-(|> 1 :return)
+;; (|> 1 :unless t)
+;; (|> 1 :return)
+;; (|> 1 :unless t :return) 
 
-;; not detected:
-(|> 1 :unless t :return) 
-(|> 1 :unless t :when nil 3)
-(|> 1 :unless :unless t 2 3)
+;; detected as bad flag set:
+;;(|> 1 :unless :unless t 2 3)
 
 ;; surprisingly this works:
 (|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
@@ -75,23 +75,26 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (declare (pure t))
   (interactive)
   (let ((res (expt num exp)))
-    (when print-message (message "%s to the power of %d is %s." num exp res))
+    (when print-message
+      (message "%s to the power of %d is %s." num exp res))
     res))
 
 ;; try it out;
 (foo 2.5 3 t) ;; ⇒ 15.625 and also prints "2.5 to the power of 3 is 15.625.".
-(foo 2.5 3.5 t) ;; signals (wrong-type-argument integer 3.5 pow).
-(if-let ((res (maybe integer (foo 4 3 t))))
+;; (foo 2.5 3.5 t) ;; signals (wrong-type-argument integer 3.5 pow).
+
+(if-let ((res (maybe 'integer (foo 4 3 t))))
   (message "Result %S is an integer." res)
   (message "Result was not an integer.")) ;; prints "Result 64 is an integer."
 
 (defun* pow ((num : number) (exp : integer))
   (expt num exp))
 
-(dolist (num '(3 3.5 "foo"))
-  (if-let ((res (maybe 'integer (pow num 3))))
-    (message "%d^3 is the integer %d." num res)
-    (message "%s^3 is not an integer." num)))
+;; appropriate (wrong-type-argument number "foo" num):
+;; (dolist (num '(3 3.5 "foo"))
+;;   (if-let ((res (maybe 'integer (pow num 3))))
+;;       (message "%d^3 is the integer %d." num res)
+;;     (message "%s^3 is not an integer." num)))
 
 ;; prints:
 ;; 3^3 is the integer 27.
@@ -99,29 +102,18 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; and then signals (wrong-type-argument number "foo" num).
 
 ;; imaginary &rest/optional syntax:
-(defun* pow ((num : number) (exp : integer) (nums : &rest integer))
-  (expt num exp))
-(defun* pow ((num : number) (exp : integer) (&rest nums : integer))
-  (expt num exp))
-(defun* pow ((num : number) (exp : &optional integer))
-  (expt num (or exp 2)))
-(defun* pow ((num : number) (&optional exp : integer))
-  (expt num (or exp 2)))
+;; (defun* pow ((num : number) (exp : integer) (nums : &rest integer))
+;;         (expt num exp))
+;; (defun* pow ((num : number) (exp : integer) (&rest nums : integer))
+;;         (expt num exp))
+;; (defun* pow ((num : number) (exp : &optional integer))
+;;         (expt num (or exp 2)))
+;; (defun* pow ((num : number) (&optional exp : integer))
+;;         (expt num (or exp 2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defun grok/pcase (obj)
-  (pcase obj
-    ((or
-       (and
-         (pred stringp)
-         (pred (string-match "^key:\\([[:digit:]]+\\)$"))
-         (app (match-string 1) val))
-       (let val (list "149" 'default)))
-      val)))
-
-(`(,key . ,val))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-deftype list-of-length (n)
   "Type specifier for lists of length N."
   `(and list (satisfies (lambda (lst) (= (length lst) ,n)))))
@@ -134,12 +126,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
   (list bar baz)) ;; => (bar baz), wait, what, why didn't match fail?1
 
-
 (defun* foo ((bar : (list-of-length 3)))
   bar)
 
 (foo '(1 2 3))
-(foo '(1 2))
+;; appropriate wrong-type-argument:
+;; (foo '(1 2))
 
 (cl-defun foo ((a b &optional (c 9)) d)
   (list b c))
@@ -212,12 +204,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (pcase-if (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
   (progn
     (message "foo")
-    (list bar baz)))
+    (list bar baz))
+  'else)
 
 (pcase '(foo bar baz quux)
   (`(foo ,bar ,baz ,quux)
     (message "foo")
     (list bar baz)))
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
