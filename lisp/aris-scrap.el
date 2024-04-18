@@ -162,7 +162,7 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
   "Type specifier for lists of length N."
   `(and list (satisfies (lambda (lst) (= (length lst) ,n)))))
 
-(cl-typep '(1 2 3 4) '(list-of-length 4))k
+(cl-typep '(1 2 3 4) '(list-of-length 4))
 
 (pcase-let ((`(foo ,bar ,baz) '(foo bar baz)))
   (list bar baz)) ;; => (bar baz), wait, what, why didn't match fail?1
