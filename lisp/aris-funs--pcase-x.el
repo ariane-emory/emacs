@@ -7,8 +7,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro pcase-if ((pat scrutinee) then &body else)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate THEN-EXPR if PAT matches SCRUTINEE, otherwise evaluate ELSE-BODY."
-  (prn "then is %S" then)
+  "Evaluate THEN when SCRUTINEE matches PAT, otherwise evaluate ELSE."
   `(pcase ,scrutinee
      (,pat ,@(macroexp-unprogn then))
      ,@(when else `((T ,@else)))))
@@ -18,7 +17,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro pcase-when ((pat scrutinee) &body body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate BODY when PAT matches SCRUTINEE."
+  "Evaluate BODY when SCRUTINEE matches PAT."
   `(pcase-if (,pat ,scrutinee) ,(macroexp-progn body)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

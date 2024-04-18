@@ -128,58 +128,18 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (cl-typep '(1 2 3 4) '(list-of-length 4))
 
-(let ((foo '(this 1 2 3 4))) 
-  (pcase-let ((`(this ,foo ,bar ,baz) foo))
-    (list foo bar baz))) ;; => (1 2 3)
-
-(let ((foo '(this 1 2 3 4))) 
-  (pcase-let ((`(this ,foo ,bar ,baz . _) foo))
-    (list foo bar baz))) ;; => (1 2 3)
-
-(let ((foo '(this 1 2 3 4))) 
-  (pcase-let ((`(this ,foo ,bar ,baz . ,_) foo))
-    (list foo bar baz))) ;; => (1 2 3)
-
-(let ((target '(this 1 2 3 4))) 
-  (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
-    (list foo bar baz stop))) ;; => (1 2 3 (4))
-
-(let ((target '(this 1 2 3 4))) 
-  (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
-    (list foo bar baz stop))) ;; => (1 2 3 nil)
-
-(let ((target '(this 1 2 3 4))) 
-  (pcase-let ((`(this ,foo ,bar ,baz . ,stop) target))
-    (guard (null stop))
-    (list foo bar baz stop)))
-
-(let ((target '(this 1 2 3 4))) 
-  (pcase-let ((`(this ,foo ,bar ,baz . ,stop) target))
-    (guard (null stop))
-    (list foo bar baz stop)))
-
-(let ((target '(this 1 2 3 4))) 
-  (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
-    (list foo bar baz stop))) ;; => (1 2 3 (4))
-
-There must be something funny about pcase-let. It seems to be a bit more lenient than normal pcase.
-
-
-Okay, so I'm trying to learn my way around `pcase` and its friends...
-
 (pcase '(foo bar baz quux)
   (`(foo ,bar ,baz) (list bar baz))) ;; => nil, this makes sense, the scrutinee has more elements than the pattern
 
 (pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
   (list bar baz)) ;; => (bar baz), wait, what, why didn't match fail?1
 
-(pcase--macroexpand '(cl-type integer))
-(pcase--macroexpand '(cl-type (integer 0 10)))
 
 (defun* foo ((bar : (list-of-length 3)))
   bar)
 
 (foo '(1 2 3))
+(foo '(1 2))
 
 (cl-defun foo ((a b &optional (c 9)) d)
   (list b c))
@@ -199,7 +159,6 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
 
 (--> 5 (+ 3 it))
 
-
 '(-as-> 5 x (+ 3 x) (* 6 x) (neg x))
 
 (macroexpand-all '(-as-> 5 x (+ 3 x) (* 6 x) (neg x)))
@@ -216,21 +175,6 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
   (* it 3)
   (+ it 8)
   neg)
-
-(defmacro -as-> (value variable &rest forms)
-  "Starting with VALUE, thread VARIABLE through FORMS.
-
-In the first form, bind VARIABLE to VALUE.  In the second form, bind
-VARIABLE to the result of the first form, and so forth."
-  (declare (debug (form symbolp body)))
-  (if (null forms)
-    `,value
-    `(let ((,variable ,value) (foo 1))
-       (-as-> ,(if (symbolp (car forms))
-                 (list (car forms) variable)
-                 (car forms))
-         ,variable
-         ,@(cdr forms)))))
 
 (macroexpand-all '(-as-> 5 it ((lambda (x) (* x 10)) it)))
 
@@ -271,10 +215,11 @@ VARIABLE to the result of the first form, and so forth."
   (progn
     (message "foo")
     (list bar baz)))
-(pcase
-  '(foo bar baz quux)
+
+(pcase '(foo bar baz quux)
   (`(foo ,bar ,baz ,quux)
     (message "foo")
     (list bar baz)))
+
 
 
