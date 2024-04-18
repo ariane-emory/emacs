@@ -180,3 +180,9 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
   bar)
 
 (foo '(1 2 3))
+
+(cl-defun foo ((a b &optional (c 9)) d)
+  (list b c))
+
+(setq baz 777)
+(foo `(1 ,baz) 4)
