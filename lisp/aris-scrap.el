@@ -46,8 +46,8 @@
 (|> 6 :when odd? 100)
 (|> 5 :unless odd? 100)
 (|> 6 :unless odd? 100)
-(|> 5 :when odd? 100 :unless odd? 200)
-(|> 6 :when odd? 100 :unless odd? 200)
+(|> 5 :when odd? 101 :unless odd? 200)
+(|> 6 :when odd? 101 :unless odd? 200)
 
 ;; breaking cases, genuinely malformed:
 (|> 1 :unless t)
