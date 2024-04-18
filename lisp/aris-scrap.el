@@ -197,6 +197,26 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
 
 (foo '(1 . 2) '((4 . 5) (6 . 7) (8 . 9)) 'additional-arg1 'additional-arg2)
 
+(--> 5 (+ 3 it))
+
+
+'(-as-> 5 x (+ 3 x) (* 6 x) (neg x))
+
+(macroexpand-all '(-as-> 5 x (+ 3 x) (* 6 x) (neg x)))
+(let ((x 5))
+  (let ((x (+ 3 x)))
+    (let ((x (* 6 x)))
+      (neg x))))
+
+(|> ((it)) 5 (* it 3) (+ it 8) neg)
+(-->       5 (* it 3) (+ it 8) neg)
+
+(macroexpand-all '(--> 5 (* it 3) (+ it 8) neg))
+
+(let ((it 5))
+  (let ((it (* it 3)))
+    (let ((it (+ it 8)))
+      (neg it))))
 
 
 
