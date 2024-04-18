@@ -209,9 +209,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (message "foo")
   (list bar baz))
 
-(pcase-if
-  (`(foo ,bar ,baz ,quux)
-    '(foo bar baz quux))
+(pcase-if (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
   (progn
     (message "foo")
     (list bar baz)))
