@@ -5,28 +5,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro pcase-if-let ((pat scrut) then &body else)
+(cl-defmacro pcase-if-let ((pat scrutinee) then &body else)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate THEN-EXPR if PAT matches SCRUT, otherwise evaluate ELSE-BODY."
-  `(pcase ,scrut
+  "Evaluate THEN-EXPR if PAT matches SCRUTINEE, otherwise evaluate ELSE-BODY."
+  `(pcase ,scrutinee
      (,pat ,then)
-     (t ,@else)))
+     ,@(when else `((T ,@else)))))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (cl-defmacro pcase-when-let ((pat scrut) &body body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Evaluate BODY when PAT matches SCRUT."
-;;   `(pcase-if-let (,pat ,scrut) (progn ,@body)))
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro pcase-when-let ((pat scrut) &body body)
+(cl-defmacro pcase-when-let ((pat scrutinee) &body body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate BODY when PAT matches SCRUT."
-  `(pcase-if-let (,pat ,scrut) ,(macroexp-progn body)))
+  "Evaluate BODY when PAT matches SCRUTINEE."
+  `(pcase-if-let (,pat ,scrutinee) ,(macroexp-progn body)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
