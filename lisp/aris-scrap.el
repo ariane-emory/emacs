@@ -34,36 +34,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq *pipe--verbose* t)
-(|>
-  ((e)) 5 (* e e) (+ e 8) double) ;; => 66
-(|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
-(|> 5 (* _ _) (+ _ 8) double) ;; => 66
-
-(|> ((e 5)) (* e e) :return 9 (+ e 8) double) ;; => 9
-(|> ((e 5)) (* e e) (return! 9) (+ e 8) double) ;; => 9
-
-(|> 5 :when odd? 100)
-(|> 6 :when odd? 100)
-(|> 5 :unless odd? 100)
-(|> 6 :unless odd? 100)
-(|> 5 :when odd? 101 :unless odd? 200)
-(|> 6 :when odd? 101 :unless odd? 200)
-
-;; breaking cases, genuinely malformed:
-;; (|> 1 :unless t)
-;; (|> 1 :return)
-;; (|> 1 :unless t :return) 
-
-;; detected as bad flag set:
-;;(|> 1 :unless :unless t 2 3)
-
-;; surprisingly this works:
-(|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; define a function with type checks using the defun* macro:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun* foo ((num : number) (exp : integer) &optional print-message)
@@ -120,35 +90,77 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (cl-typep '(1 2 3 4) '(list-of-length 4))
 
-(pcase '(foo bar baz quux)
-  (`(foo ,bar ,baz) (list bar baz))) ;; => nil, this makes sense, the scrutinee has more elements than the pattern
-
-(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
-  (list bar baz)) ;; => (bar baz), wait, what, why didn't match fail?1
-
 (defun* foo ((bar : (list-of-length 3)))
   bar)
 
 (foo '(1 2 3))
 ;; appropriate wrong-type-argument:
 ;; (foo '(1 2))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(cl-defun foo ((a b &optional (c 9)) d)
-  (list b c))
 
-(setq baz 777)
-(foo `(1 ,baz) 4)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(pcase '(foo bar baz quux)
+  (`(foo ,bar ,baz) (list bar baz))) ;; => nil, this makes sense, the scrutinee has more elements than the pattern
 
-(cl-defun foo ((a &rest as) (b &rest bs))
-  (list as bs))
+(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
+  (list bar baz)) ;; => (bar baz), wait, what, why didn't match fail?1
 
-(cl-defun foo ((a . b) &rest (cs . ds))
-  (list a b cs ds))
+(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
+  (list bar baz))
 
-(foo '(1 . 2) '((4 . 5) (6 . 7) (8 . 9))) ;; => (1 2 ((4 . 5) (6 . 7) (8 . 9)) nil)
+(pcase-let ((`(foo ,bar ,baz) '(foop bar baz quux)))
+  (list bar baz))
 
-(foo '(1 . 2) '((4 . 5) (6 . 7) (8 . 9)) 'additional-arg1 'additional-arg2)
+(pcase '(foo bar baz quux) (`(foo ,bar ,baz) (list bar baz)))
 
+(pcase-when (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
+  (message "foo")
+  (list bar baz))
+
+(pcase-if (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
+  (progn
+    (message "foo")
+    (list bar baz))
+  'else)
+
+(pcase '(foo bar baz quux)
+  (`(foo ,bar ,baz ,quux)
+    (message "foo")
+    (list bar baz)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq *pipe--verbose* t)
+(|> ((e)) 5 (* e e) (+ e 8) double) ;; => 66
+(|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
+(|> 5 (* _ _) (+ _ 8) double) ;; => 66
+
+(|> ((e 5)) (* e e) :return 9 (+ e 8) double) ;; => 9
+(|> ((e 5)) (* e e) (return! 9) (+ e 8) double) ;; => 9
+
+(|> 5 :when odd? 100)
+(|> 6 :when odd? 100)
+(|> 5 :unless odd? 100)
+(|> 6 :unless odd? 100)
+(|> 5 :when odd? 101 :unless odd? 200)
+(|> 6 :when odd? 101 :unless odd? 200)
+
+;; breaking cases, genuinely malformed:
+;; (|> 1 :unless t)
+;; (|> 1 :return)
+;; (|> 1 :unless t :return) 
+
+;; detected as a bad set-flag!:
+;; (|> 1 :unless :unless t 2 3)
+
+;; surprisingly this works:
+(|> ((e 9)) (* e e) :when even? :when (> e 50) :return 9 (+ e 8) double)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (--> 5 (+ 3 it))
 
 '(-as-> 5 x (+ 3 x) (* 6 x) (neg x))
@@ -188,28 +200,4 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       (let ((it (neg it)))
         (let ((x it))
           (* x 10)))))) ;; => -230
-
-(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
-  (list bar baz))
-
-(pcase-let ((`(foo ,bar ,baz) '(foop bar baz quux)))
-  (list bar baz))
-
-(pcase '(foo bar baz quux) (`(foo ,bar ,baz) (list bar baz)))
-
-(pcase-when (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
-  (message "foo")
-  (list bar baz))
-
-(pcase-if (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
-  (progn
-    (message "foo")
-    (list bar baz))
-  'else)
-
-(pcase '(foo bar baz quux)
-  (`(foo ,bar ,baz ,quux)
-    (message "foo")
-    (list bar baz)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
