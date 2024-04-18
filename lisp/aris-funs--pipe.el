@@ -208,12 +208,11 @@
                     (set-flag! (new-flag &optional force)
                       (let ((new-flag (--valid-pipe-flag new-flag t)))
                         (cond
-                          ((and flag new-flag (not force))
+                          ((and (not force) flag new-flag)
                             (error "Cannot set flag to %S when flag is already set to %S."
                               new-flag flag))
                           (force
-                            (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag)
-                            (setq flag new-flag))
+                            (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag)                            )
                           (t
                             (--pipe-prn "Setting flag from %S to %S%s." flag new-flag
                               (if force " (forced)" ""))))
