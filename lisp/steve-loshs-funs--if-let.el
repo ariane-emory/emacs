@@ -1,4 +1,4 @@
-;; -*- fill-column: 90;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
+;; -*- fill-column: 90; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Steve Losh's CL implementations of if-let/when-let, translated into emacs lisp by
 ;; ariane-emory.
@@ -9,6 +9,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro When-let* (bindings &body body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Bind `bindings` serially and execute `body`, short-circuiting on `nil`.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
   (with-gensyms (block)
@@ -16,8 +17,12 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
        (let* ,(cl-loop for (symbol value) in bindings
                 collect `(,symbol (or ,value (cl-return-from ,block nil))))
          ,@body))))
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro If-let* (bindings then &body else)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Bind `bindings` serially and execute `then` if all are true, or `else` otherwise.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
   (with-gensyms (outer inner)
@@ -27,8 +32,12 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
                   collect `(,symbol (or ,value (cl-return-from ,inner nil))))
            (cl-return-from ,outer ,then)))
        ,@else)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro When-let (bindings &body body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Bind `bindings` in parallel and execute `body`, short-circuiting on `nil`.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
   (with-gensyms (block) 
@@ -36,8 +45,12 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/ "
        (let ,(cl-loop for (symbol value) in bindings
                collect `(,symbol (or ,value (cl-return-from ,block nil))))
          ,@body))))
+         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro If-let (bindings then &body else)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Bind `bindings` in parrallel and execute `then` if all are true, or `else` otherwise.
 See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
   (with-gensyms (outer inner) 
@@ -47,7 +60,7 @@ See: https://stevelosh.com/blog/2018/07/fun-with-macros-if-let/"
                  collect `(,symbol (or ,value (cl-return-from ,inner nil))))
            (cl-return-from ,outer ,then)))
        ,@else)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
