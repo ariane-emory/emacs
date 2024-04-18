@@ -209,14 +209,58 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
       (neg x))))
 
 (|> ((it)) 5 (* it 3) (+ it 8) neg)
-(-->       5 (* it 3) (+ it 8) neg)
 
-(macroexpand-all '(--> 5 (* it 3) (+ it 8) neg))
+(--> 5 (* it 3) (+ it 8) neg (lambda (x) (* x 10)))
 
+(-as-> 5 it
+  (* it 3)
+  (+ it 8)
+  neg)
+
+(defmacro -as-> (value variable &rest forms)
+  "Starting with VALUE, thread VARIABLE through FORMS.
+
+In the first form, bind VARIABLE to VALUE.  In the second form, bind
+VARIABLE to the result of the first form, and so forth."
+  (declare (debug (form symbolp body)))
+  (if (null forms)
+    `,value
+    `(let ((,variable ,value) (foo 1))
+       (-as-> ,(if (symbolp (car forms))
+                 (list (car forms) variable)
+                 (car forms))
+         ,variable
+         ,@(cdr forms)))))
+
+(macroexpand-all '(-as-> 5 it ((lambda (x) (* x 10)) it)))
+
+;; expands to:
+(let ((it 5) (foo 1))
+  (let ((x it)) (* x 10)))
+
+
+(let ((it 5))
+  (let ((x it))
+    (* x 10)))
+
+(macroexpand-all '(-as-> 5 it (* it 3) (+ it 8) neg ((lambda (x) (* x 10)) it)))
+
+;;; Expands to:
 (let ((it 5))
   (let ((it (* it 3)))
     (let ((it (+ it 8)))
-      (neg it))))
+      (let ((it (neg it)))
+        (let ((x it))
+          (* x 10)))))) ;; => -230
 
+(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
+  (list bar baz))
 
+(pcase-let ((`(foo ,bar ,baz) '(foop bar baz quux)))
+  (list bar baz))
+
+(pcase '(foo bar baz quux) (`(foo ,bar ,baz) (list bar baz)))
+
+(pcase-when-let (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
+  (list bar baz))
 

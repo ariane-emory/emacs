@@ -832,7 +832,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                '(:family "Gill Sans" :height 1.15))))
+                     '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()
@@ -892,6 +892,7 @@
            aris-funs--defunstar
            aris-funs--maybe
            aris-funs--error-when-and-error-unless
+           aris-funs--pcase-x
            steve-loshs-funs--if-let
            aris-configure--key-bindings
            aris-configure--tetris-keymap
