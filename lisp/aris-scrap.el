@@ -150,12 +150,17 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
     (list foo bar baz stop))) ;; => (1 2 3 (4))
 
+
+
 There must be something funny about pcase-let. It seems to be a bit more lenient than normal pcase.
 
-(pcase '(this 1 2 3 4)
-  (`(this ,foo ,bar ,baz)
-    (list foo bar baz))) ;; => nil
+(pcase '(foo bar baz quux)
+  (`(foo ,bar ,baz)
+    (list bar baz))) ;; this makes sense.
 
+
+(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
+  (list bar baz))
 
 
 '(this 1 2 3 4)
