@@ -1,4 +1,4 @@
-;; -*- fill-column: 90; lexical-binding: nil; lisp-indent-offset: 2; eval: (display-fill-column-indicator-mode 1); -*-
+;; -*- fill-column: 90; lexical-binding: nil; eval: (display-fill-column-indicator-mode 1); -*-
 (message "[ARI] Loading init.el...")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
