@@ -1,33 +1,29 @@
-;; -*- lexical-binding: nil; fill-column: 105;  eval: (display-fill-column-indicator-mode 1); eval: (variable-pitch-mode -1); -*-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; -*- fill-column: 90; eval: (display-fill-column-indicator-mode 1); -*-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pattern matching functions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (require 'cl-lib)
-;; (require 'dash)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--with-messages)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--pipe)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq lexical-binding nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom *mp--use-new-pipe-macro* t
   "Whether to use the new pipe macro or the old one."
   :group 'match-pattern
   :type 'boolean)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun match-pattern--match2 (pattern target)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Match a PATTERN list against a TARGET list.
 
-This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of Artificial
-Intelligence' but with several improvements.
+This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of
+Artificial Intelligence' but with several improvements.
 
 Examples:
   (`match-pattern--match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
@@ -62,7 +58,8 @@ Examples:
                           (string-tail (string) ;; pure.
                             (substring string 1))              
                           (transform-string-head (string fun) ;; pure.
-                            (concat (funcall fun (string-head string)) (string-tail string)))
+                            (concat (funcall fun (string-head string))
+                              (string-tail string)))
                           (capitalize (string) ;; pure.
                             (transform-string-head string #'upcase))
                           (uncapitalize (string) ;; pure.
@@ -70,16 +67,16 @@ Examples:
                  (cl-flet* ( (fail-to-match         () (cons nil accumulator))
                              (match-successfully    () (cons t accumulator))
                              (pattern-head-is-atom? () (atom pattern-head))
-                             (elem-is-of-elem-type? (elem label preferred-p inverse-p) ;; semi-pure.
+                             ;; semi-pure;
+                             (elem-is-of-elem-type? (elem label preferred-p inverse-p)
                                (let ((result
-                                       ;; If `preferred-p' isn't set, but `inverse-p' is, we assume
-                                       ;; that anything that's not inverse-p must be have the other
-                                       ;; elem type.
+                                       ;; If `preferred-p' isn't set, but `inverse-p' is,
+                                       ;; we assume that anything that's not inverse-p
+                                       ;; must have the other elem type.
                                        (cond
                                          (preferred-p (funcall preferred-p elem))
                                          (inverse-p (not (funcall inverse-p elem)))
                                          (t nil))))
-                                 ;; (print "elem %s is a %s element? %s." elem label result)
                                  result))
                              (elem-is-verbatim? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "verbatim"
@@ -115,7 +112,8 @@ Examples:
                              (pattern-head-is-invalid? ()
                                (if *mp--invalid-element?*
                                  (funcall *mp--invalid-element?* pattern-head)
-                                 (not (or (pattern-head-is-verbatim?) (pattern-head-is-capture?)))))
+                                 (not (or (pattern-head-is-verbatim?)
+                                      (pattern-head-is-capture?)))))
                              (capture-at-pattern-head-has-tag? (tag)
                                (when tag
                                  (assert-pattern-head-is-capture!)
@@ -137,17 +135,20 @@ Examples:
                                (let ( (matched (car (continue pattern-tail target)))
                                       (string label))
                                  (print
-                                   (if matched "%s matched!" "lookahead failed, %s didn't match!")
+                                   (if matched
+                                     "%s matched!"
+                                     "lookahead failed, %s didn't match!")
                                    string)
                                  matched))
                              (pattern-tail-matches-target? ()
                                (lookahead target "pattern-tail"))
                              (pattern-tail-matches-target-tail? ()
                                (lookahead target-tail "tails")))
-                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                    ;; Body of matchrec:
-                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                   (print "matching %s against %s with acc %s..." pattern target accumulator)
+                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                   (print "matching %s against %s with acc %s..."
+                     pattern target accumulator)
                    (with-indentation
                      ;; (print "target-head %s is %sa verbatim element." target-head
                      ;;   (if (elem-is-verbatim? target-head) "" "not "))
@@ -162,7 +163,8 @@ Examples:
                                           ;; (print "case %s does not apply." ,index)
                                           result))))
                        (cond
-                         ;; If `pattern' is null, match successfully when `target' is null too:
+                         ;; If `pattern' is null, match successfully when `target' is
+                         ;; null too:
                          ((case 1 "Empty pattern" (null pattern))
                            (with-indentation
                              (print "pattern is null and %s match%s!"
@@ -180,16 +182,15 @@ Examples:
                            (with-indentation
                              (print "target is null and pattern isn't, no match!")
                              (fail-to-match)))
-                         ;; If `pattern-head' is a verbatim element, match if it's equal to (car
-                         ;; `target'):
+                         ;; If `pattern-head' is a verbatim element, match if it's equal
+                         ;; to (car `target'):
                          ((case 3 "Verbatim element" (pattern-head-is-verbatim?))
                            (with-indentation
-                             ;;(print "pattern-head %s is a verbatim element." pattern-head)
                              (if (heads-are-equal?)
                                (continue pattern-tail target-tail)
                                (fail-to-match))))
-                         ;; If `*mp--target-elements-must-be-verbatim*' is set, then signal 
-                         ;; an error if `target-head' isn't a verbatim element:
+                         ;; If `*mp--target-elements-must-be-verbatim*' is set, then 
+                         ;; signal an error if `target-head' isn't a verbatim element:
                          ((case 4 "Error case: non-verbatim target element"
                             (and
                               *mp--target-elements-must-be-verbatim*
@@ -204,7 +205,8 @@ Examples:
                                  (fail-to-match)))))
                          ;; If `pattern-head' isn't either a verbatim element or a capture,
                          ;; something has gone wrong:
-                         ((case 5 "Error case: invalid pattern element" (pattern-head-is-invalid?))
+                         ((case 5 "Error case: invalid pattern element"
+                            (pattern-head-is-invalid?))
                            (error "pattern-head '%s' is an invalid element." pattern-head))
                          ;; From here on, we know that `pattern-head' must be a capture.
                          ;; Case when `pattern-head' is tagged with the "anything" tag:
@@ -225,7 +227,8 @@ Examples:
                                    (print
                                      (concat
                                        "pattern-pattern tail matches the target-tail "
-                                       "target, so we'll take pattern-head as a Kleene item.")))
+                                       "target, so we'll take pattern-head as a "
+                                       "Kleene item.")))
                                  (continue pattern-tail target-tail target-head))
                                ((case 102 "Kleene: pattern-tail matches target?"
                                   (pattern-tail-matches-target?))
@@ -248,10 +251,11 @@ Examples:
                              (continue pattern-tail target-tail target-head)))
                          ;; Some unimplemented case happened, signal an error:
                          ((case 9 "Error case: this case should be unrachable" t)
-                           (error "Unhandled case! Double-check your configuration."))))))))))
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                           (error
+                             "Unhandled case! Double-check your configuration."))))))))))
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           (let ( (*wm--indent* original-indent)
                  (match-result (matchrec pattern target 0 nil)))
             ;;(print "Match result is %s." match-result)
@@ -287,22 +291,22 @@ Examples:
                       (if *mp--use-dotted-pairs-in-result*
 		                    (add-dots-to-alist it)
 		                    it)))
-                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                   )))))))))
-                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'match2 'match-pattern--match2)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MATCH2 scratch tests:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (progn
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
     (let ( (*mp--use-new-pipe-macro* t)
@@ -330,11 +334,11 @@ Examples:
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
     
     (merge-duplicate-alist-keys '((a 1) (a 2) (a 3) (a 4) (a 5) (b 8)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--match-pattern2)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
