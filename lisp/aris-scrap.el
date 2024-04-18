@@ -186,3 +186,17 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
 
 (setq baz 777)
 (foo `(1 ,baz) 4)
+
+(cl-defun foo ((a &rest as) (b &rest bs))
+  (list as bs))
+
+(cl-defun foo ((a . b) &rest (cs . ds))
+  (list a b cs ds))
+
+(foo '(1 . 2) '((4 . 5) (6 . 7) (8 . 9))) ;; => (1 2 ((4 . 5) (6 . 7) (8 . 9)) nil)
+
+(foo '(1 . 2) '((4 . 5) (6 . 7) (8 . 9)) 'additional-arg1 'additional-arg2)
+
+
+
+
