@@ -113,8 +113,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
        (let val (list "149" 'default)))
       val)))
 
-
 (`(,key . ,val))
+
+(cl-deftype list-of-length (n)
+  "Type specifier for lists of length N."
+  `(and list (satisfies (lambda (lst) (= (length lst) ,n)))))
+
+(cl-typep '(1 2 3 4) '(list-of-length 4))
 
 (let ((foo '(this 1 2 3 4))) 
   (pcase-let ((`(this ,foo ,bar ,baz) foo))
@@ -158,12 +163,13 @@ Okay, so I'm trying to learn my way around `pcase` and its friends...
 (pcase '(foo bar baz quux)
   (`(foo ,bar ,baz) (list bar baz))) ;; => nil, this makes sense, the scrutinee has more elements than the pattern
 
-(cl-deftype list-of-length (n)
-  "Type specifier for lists of length N."
-  `(and list (satisfies (lambda (lst) (= (length lst) ,n)))))
-
-(cl-typep '(1 2 3 4) '(list-of-length 4))
-
-(pcase-let ((`(foo ,bar ,baz) '(foo bar baz)))
+(pcase-let ((`(foo ,bar ,baz) '(foo bar baz quux)))
   (list bar baz)) ;; => (bar baz), wait, what, why didn't match fail?1
 
+(pcase--macroexpand '(cl-type integer))
+(pcase--macroexpand '(cl-type (integer 0 10)))
+
+(defun* foo ((bar : (list-of-length 3)))
+  bar)
+
+(foo '(1 2 3))

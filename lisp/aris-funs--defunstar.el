@@ -21,7 +21,8 @@ parameters, for the moment)."
                                  (length= arg 3)
                                  (eq : (nth 1 arg))))
                             (ty (nth 2 arg))
-                            (_ (and ty (symbolp ty))))
+                            ;; (_ (and ty (symbolp ty)))
+                            )
                     ;; then add a type checking form to TYPE-CHECKS:
                     (progn
                       (push `(cl-check-type ,var ,ty) type-checks)
