@@ -513,8 +513,8 @@
       (use-package-with-message idle-highlight-mode :ensure t
         :init
         (setq idle-highlight-exceptions
-          '("defun" "defmacro" "cond" "when" "unless" "let" "if" "progn"
-             "lambda" "defclsas" "provide" "require" "error" "defmethod"))
+          '( "defun" "defmacro" "cond" "when" "unless" "let" "if" "progn"
+             "lambda" "defclaas" "provide" "require" "error" "defmethod"))
         (setq idle-highlight-exceptions-face nil)
         (setq idle-highlight-idle-time 0.1)
         (setq idle-highlight-visible-buffers t)
@@ -525,10 +525,9 @@
         :init
         (setq inf-ruby-default-implementation "brewruby")
         (setq inf-ruby-implementations
-          '(("ruby" . inf-ruby--irb-command)
+          '( ("ruby" . inf-ruby--irb-command)
              ("brewruby" . "/opt/homebrew/opt/ruby/bin/irb --inf-ruby-mode")
-             ("jruby" .
-               "jruby -S irb --prompt default --noreadline -r irb/completion")
+             ("jruby" . "jruby -S irb --prompt default --noreadline -r irb/completion")
              ("rubinius" . "rbx -r irb/completion")
              ("yarv" . "irb1.9 -r irb/completion")
              ("macruby" . "macirb -r irb/completion")
@@ -832,7 +831,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                     '(:family "Gill Sans" :height 1.15))))
+                '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()
