@@ -262,5 +262,15 @@ VARIABLE to the result of the first form, and so forth."
 (pcase '(foo bar baz quux) (`(foo ,bar ,baz) (list bar baz)))
 
 (pcase-when-let (`(foo ,bar ,baz ,quux) '(foo bar baz quux))
+  (prn "message")
   (list bar baz))
+
+(pcase-if-let
+  (`(foo ,bar ,baz ,quux)
+    '(foo bar baz quux))
+  (list bar baz))
+
+
+
+
 
