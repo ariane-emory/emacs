@@ -17,20 +17,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
 (defcustom *mp--anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
-  "The symbol used by `match-pattern' to represent a wildcard, matching any single item in
-TARGET."
+  "The symbol used by `match-pattern' to represent a wildcard, matching any single item
+in TARGET."
   :group 'match-pattern
   :type 'symbol)
 
 (defcustom *mp--capture-can-be-predicate* t
-  "Whether a capture's 'tag' in th PATTERN argument to `match-pattern' is
-allowed to be a predicate function."
+  "Whether a capture's 'tag' in th PATTERN argument to `match-pattern' is allowed to be
+a predicate function."
   :group 'match-pattern
   :type 'boolean)
 
 (defcustom *mp--capture-element?* #'-cons-pair?
-  "The function used by `match-pattern' to determine if a PATTERN element
-represents a capture. By default, true pairs are considered captures."
+  "The function used by `match-pattern' to determine if a PATTERN elementrepresents a
+ capture. By default, true pairs are considered captures."
   :group 'match-pattern
   :type 'function)
 
@@ -58,8 +58,8 @@ non-verbatim TARGET element is encountered. This setting only applies when
 
 (defcustom *mp--invalid-element?* nil
   "The function used by `match-pattern' to determine if a PATTERN element is an illegal
-element. By default, any element that is neither a capture element or a verbatim
-element is an invalid element."
+element. By default, any element that is neither a capture element or a verbatim element
+is an invalid element."
   :group 'match-pattern
   :type 'function)
 
@@ -79,7 +79,8 @@ element is an invalid element."
   :type 'function)
 
 (defcustom *mp--target-elements-must-be-verbatim* t
-  "Whether the elements of  the TARGET argument to `match-pattern' must be verbatim elements."
+  "Whether the elements of  the TARGET argument to `match-pattern' must be verbatim
+elements."
   :group 'match-pattern
   :type 'boolean)
 
@@ -90,8 +91,8 @@ element is an invalid element."
 
 (defcustom *mp--verbatim-element?* nil 
   "The function used by `match-pattern' to determine if a PATTERN element is a verbatim
-(non-capturing).  element. By default any element that isn't a capture element is a
-verbatim element."
+(non-capturing).  element. By default any element that isn't a capture element is averbatim
+element."
   :group 'match-pattern
   :type 'function)
 
@@ -146,14 +147,15 @@ Examples:
                      (pattern-tail (cdr pattern))
                      (target-head  (car target))
                      (target-tail  (cdr target)))
-               (cl-flet ((plural? (string) ;; pure.
-                           (equal "s" (substring string -1)))
+               (cl-flet ( (plural? (string) ;; pure.
+                            (equal "s" (substring string -1)))
                           (string-head (string) ;; pure.
                             (substring string 0 1))
                           (string-tail (string) ;; pure.
                             (substring string 1))              
                           (transform-string-head (string fun) ;; pure.
-                            (concat (funcall fun (string-head string)) (string-tail string)))
+                            (concat (funcall fun (string-head string))
+                              (string-tail string)))
                           (capitalize (string) ;; pure.
                             (transform-string-head string #'upcase))
                           (uncapitalize (string) ;; pure.
