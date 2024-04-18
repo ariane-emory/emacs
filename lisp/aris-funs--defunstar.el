@@ -4,7 +4,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Like defun, but with the option of type checking (but only for the mandatory
 parameters, for the moment)."
-  (let* ( new-arglist type-checks
+  (let* ( new-arglist
+          type-checks
           (remaining-arglist arglist)
           (remaining-arglist
             (catch 'break-loop

@@ -98,5 +98,66 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (expt num exp))
 (defun* pow ((num : number) (exp : &optional integer))
   (expt num (or exp 2)))
+(defun* pow ((num : number) (&optional exp : integer))
+  (expt num (or exp 2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun grok/pcase (obj)
+  (pcase obj
+    ((or
+       (and
+         (pred stringp)
+         (pred (string-match "^key:\\([[:digit:]]+\\)$"))
+         (app (match-string 1) val))
+       (let val (list "149" 'default)))
+      val)))
+
+
+(`(,key . ,val))
+
+(let ((foo '(this 1 2 3 4))) 
+  (pcase-let ((`(this ,foo ,bar ,baz) foo))
+    (list foo bar baz))) ;; => (1 2 3)
+
+(let ((foo '(this 1 2 3 4))) 
+  (pcase-let ((`(this ,foo ,bar ,baz . _) foo))
+    (list foo bar baz))) ;; => (1 2 3)
+
+(let ((foo '(this 1 2 3 4))) 
+  (pcase-let ((`(this ,foo ,bar ,baz . ,_) foo))
+    (list foo bar baz))) ;; => (1 2 3)
+
+(let ((target '(this 1 2 3 4))) 
+  (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
+    (list foo bar baz stop))) ;; => (1 2 3 (4))
+
+(let ((target '(this 1 2 3 4))) 
+  (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
+    (list foo bar baz stop))) ;; => (1 2 3 nil)
+
+(let ((target '(this 1 2 3 4))) 
+  (pcase-let ((`(this ,foo ,bar ,baz . ,stop) target))
+    (guard (null stop))
+    (list foo bar baz stop)))
+
+(let ((target '(this 1 2 3 4))) 
+  (pcase-let ((`(this ,foo ,bar ,baz . ,stop) target))
+    (guard (null stop))
+    (list foo bar baz stop)))
+
+(let ((target '(this 1 2 3 4))) 
+  (pcase-let (((and `(this ,foo ,bar ,baz . ,stop) (guard (null stop))) target))
+    (list foo bar baz stop))) ;; => (1 2 3 (4))
+
+There must be something funny about pcase-let. It seems to be a bit more lenient than normal pcase.
+
+(pcase '(this 1 2 3 4)
+  (`(this ,foo ,bar ,baz)
+    (list foo bar baz))) ;; => nil
+
+
+
+'(this 1 2 3 4)
+
 

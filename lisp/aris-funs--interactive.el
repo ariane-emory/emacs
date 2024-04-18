@@ -280,9 +280,7 @@
   comment."
   (interactive)
   (execute-kbd-macro
-    (kbd
-      (concat "C-M-e C-SPC C-r ) <right> C-k SPC ; ; SPC C-c C-<backspace> <backspace> "
-        "C-r ; ; <right> <right> <right> = > SPC C-M-e")))
+    (kbd "C-M-a C-M-f C-SPC C-e C-w SPC C-c C-<backspace> <backspace> <backspace> C-M-b ; ; SPC = > SPC C-M-e <right>"))
   (aris-goto-nonwhite))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -307,7 +305,7 @@
   (interactive "*")
   (let ((closing nil))
     (save-excursion
-      (while (condition-case nil
+      (while (condition-caseku nil
 	             (progn
 		             (backward-up-list)
 		             (let ((syntax (syntax-after (point))))
