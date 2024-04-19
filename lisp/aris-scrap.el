@@ -113,22 +113,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-deftype list-of-length (n)
-  "Type specifier for lists of length N."
-  `(and list (satisfies (lambda (lst) (= (length lst) ,n)))))
-
-(cl-typep '(1 2 3 4) '(list-of-length 4))
-
-(defun* foo ((bar : (list-of-length 3)))
-  bar)
-
-(foo '(1 2 3))
-;; appropriate wrong-type-argument:
-;; (foo '(1 2))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pcase '(foo bar baz quux)
   (`(foo ,bar ,baz) (list bar baz))) ;; => nil, this makes sense, the scrutinee has more elements than the pattern
 
@@ -233,13 +217,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun* fib ((n : integer))
-  (match n
+  (pcase n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
 (defun* fib ((n : integer)) => integer
-  (match n
+  (pcase n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
@@ -276,7 +260,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; with pcase/pipe expanded too:
 (defun fib (n)
   (cl-check-type n integer)
-  (let ((fib-return-1100a
+  (let ((fib-return-1100
           (cond
             ((eql n 0) (let nil 0))
             ((eql n 1) (let nil 1))
@@ -286,7 +270,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     fib-return-1100))
 
 (fib 10) ;; => 55
-;;;;;e;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
