@@ -316,3 +316,4 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (take-pat `(,foo ,bar))
 
+(|> 7 ,loop (* _ 3) :go ,loop)
