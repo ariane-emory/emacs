@@ -334,8 +334,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
-(def (fib (n : positive-integer)) => positive-integer
-  (|> `(a 0 b 1 i ,n) (plist-get _ 'a))
+(def (fib (n : positive-integer)) ; => positive-integer
+  (|> `(a 0 b 1 i ,n) :when (zero? (plist-get _ 'i)) (plist-get _ 'a) 'exit)
 
   )
 (fib 10)
