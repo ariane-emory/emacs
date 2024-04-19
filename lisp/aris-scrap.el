@@ -310,6 +310,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (prn "stk is %s and rev is %s" stk rev))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro take-pat (pat)
   (prn "pat is %s, #1 = %s, #2 = %s, #3 = %s" pat
     (car pat) (cadaadr pat) (car (cdadadr pat))))
@@ -317,3 +319,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (take-pat `(,foo ,bar))
 
 (|> 7 ,loop (* _ 3) :go ,loop)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
