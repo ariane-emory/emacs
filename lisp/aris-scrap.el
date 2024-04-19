@@ -334,6 +334,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
+(pipe-iter-fib 10) ;; => 55
 
 (def (pipe-iter-fib (n : positive-integer)) => positive-integer
   "Non-recursive version of a pipe-based `fib'."
@@ -352,5 +353,62 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     ;; extract return value (else positive-integer return type wouldn't satisy):
     (alist-get 'a _)))
 
-(pipe-iter-fib 10) ;; => 55
+(def*
+  (pipe-iter-fib
+    (n : positive-integer))
+  => positive-integer "Non-recursive version of a pipe-based `fib'."
+  (|>
+    `((a . 0)
+       (b . 1)
+       (i \, n))
+    'loop
+    `((a \,
+        (alist-get 'b _))
+       (b \,
+         (+
+           (alist-get 'a _)
+           (alist-get 'b _)))
+       (i \,
+         (1-
+           (alist-get 'i _))))
+    :unless
+    (zero?
+      (alist-get 'i _))
+    :go 'loop
+    (alist-get 'a _)))
 
+(defun* pipe-iter-fib
+  ((n : positive-integer))
+  => positive-integer "Non-recursive version of a pipe-based `fib'."
+  (|>
+    `((a . 0)
+       (b . 1)
+       (i \, n))
+    'loop
+    `((a \,
+        (alist-get 'b _))
+       (b \,
+         (+
+           (alist-get 'a _)
+           (alist-get 'b _)))
+       (i \,
+         (1-
+           (alist-get 'i _))))
+    :unless
+    (zero?
+      (alist-get 'i _))
+    :go 'loop
+    (alist-get 'a _)))
+
+(defun pipe-iter-fib (n)
+  (cl-check-type n positive-integer)
+  (let ((pipe-iter-fib-return-1666 "Non-recursive version of a pipe-based `fib'."
+          (|> `
+            ((a . 0) (b . 1) (i \, n))
+            'loop
+            `((a \,(alist-get 'b _)) (b \,(+ (alist-get 'a _) (alist-get 'b _))) (i \,(1- (alist-get 'i _))))
+            :unless (zero? (alist-get 'i _)) :go 'loop
+            (alist-get 'a _))))
+    (unless (cl-typep pipe-iter-fib-return-1666 'positive-integer)
+      (signal 'wrong-type-return (list 'positive-integer pipe-iter-fib-return-1666)))
+    pipe-iter-fib-return-1666))
