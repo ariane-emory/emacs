@@ -96,7 +96,7 @@ parameters, for the moment)."
     ;;   `(defun ,name ,arglist ,@body)
     ;; else tamper with the body before expansion to prepend TYPE-CHECKS onto BODY:
     (let* ( (new-arglist (append (nreverse new-arglist) remaining-arglist))
-            (type-checks (nreverse type-checks))
+            (type-checks (nreverse type-checks))q
             (parse (byte-run--parse-body body t))
             (docstring (nth 0 parse))
             (declare-form (nth 1 parse))
@@ -124,6 +124,18 @@ parameters, for the moment)."
             (defun-expr `(defun ,name ,new-arglist ,@new-body)))
       defun-expr)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro def* (spec &rest body)
+  (pcase spec
+    (`(,name . ,arglist)
+      (if-let ( (_ (eq '=> (car (last (butlast arglist)))))
+                (return-type (car (last arglist))))
+        `(defun* ,name ,(cl-subseq arglist 0 -2) => ,return-type ,@body)
+        `(defun* ,name ,arglist ,@body)))
+    (_ (error "bad spec %S" spec))))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

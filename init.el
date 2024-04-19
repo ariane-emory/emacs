@@ -892,6 +892,7 @@
            aris-funs--maybe
            aris-funs--error-when-and-error-unless
            aris-funs--pcase-x
+           aris-types
            steve-loshs-funs--if-let
            aris-configure--key-bindings
            aris-configure--tetris-keymap

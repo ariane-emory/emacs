@@ -9,6 +9,7 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--stacks)
 (require 'aris-funs--unsorted)
+(require 'aris-types)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -22,6 +23,13 @@
 ;; *--fw-frobnostication-count* ;; an internal variable in the frobnosticate-widget package not meant for customization
 ;; frobnosticate-widget         ;; either a public-facing function in the frobnosticate-widget package or a convenient
 ;;                              ;;  alias for fw--frobnosticate-widget.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(macroexpand '`(,(/ n d) . ,(% n d))) ;; (cons (/ n d) (% n d))
+(macroexpand '`(,(/ n d) \,(% n d))) ;; (cons (/ n d) (% n d))
+(equal (macroexpand '`(,(/ n d) \,(% n d))) (macroexpand '`(,(/ n d) . ,(% n d)))) ;; => t
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -186,7 +194,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (let ((it 5) (foo 1))
   (let ((x it)) (* x 10)))
 
-
 (let ((it 5))
   (let ((x it))
     (* x 10)))
@@ -219,26 +226,15 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro def (spec &rest body)
-  (pcase spec
-    (`(,name . ,arglist)
-      (if-let ( (_ (eq '=> (car (last (butlast arglist)))))
-                (return-type (car (last arglist))))
-        `(defun* ,name ,(cl-subseq arglist 0 -2) => ,return-type ,@body)
-        `(defun* ,name ,arglist ,@body)))
-    (_ (error "bad spec %S" spec))))
-
-(defalias 'match 'pcase)
-
-(def (fib (n : integer) => integer)
-  (match n
+(def* (fib (n : integer) => integer)
+  (pcase n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
 ;; ... expands into:
 (defun* fib ((n : integer)) => integer
-  (match n
+  (pcase n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
@@ -247,7 +243,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (defun fib (n)
   (cl-check-type n integer)
   (let ((fib-return-342
-          (match n
+          (pcase n
             (0 0)
             (1 1)
             (n (+ (fib (- n 1)) (fib (- n 2)))))))
@@ -255,7 +251,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       (signal 'wrong-type-return (list 'integer fib-return-342)))
     fib-return-342))
 
-;; with match/pcase expanded too:
+;; with pcase expanded too:
 (defun fib (n)
   (cl-check-type n integer)
   (let ((fib-return-342
@@ -274,27 +270,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-deftype seq-of-length (n)
-  "Type specifier for things of length N."
-  `(and sequence (satisfies (lambda (seq) (length= seq ,n)))))
-
-(cl-deftype seq-of-ty (ty)
-  "Type specifier for things with elements of type TY."
-  `(and sequence (satisfies (lambda (seq) (cl-every (lambda (x) (cl-typep x ',ty)) seq)))))
-
-(cl-deftype vec-of-2-integers ()
-  "Type specifier for lists of length 2 containing integers."
-  `(and vector (seq-of-length 2) (seq-of-ty integer)))
-
-(cl-deftype pair-of-integers ()
-  "Type specifier for cons pairs of integers."
-  `(and cons (satisfies (lambda (x) (and (integerp (car x)) (integerp (cdr x)))))))
-
-;; Example usage:
-(cl-typep '(1 . 2) 'pair-of-integers) ; This will return t.
-(cl-typep '(1 . "2") 'pair-of-integers) ; This will return nil.
-
-(def (div-mod (n : integer) (d : integer)) => pair-of-integers
+(def* (div-mod (n : integer) (d : integer)) => pair-of-integers
   `(,(/ n d) . ,(% n d)))
 
 ;; ... expands to:
@@ -306,18 +282,10 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (n d)
   (cl-check-type n integer)
   (cl-check-type d integer)
-  (let ((div-mod-return-1790 `(,(/ n d) \,(% n d))))
+  (let ((div-mod-return-1790 (cons (/ n d) (% n d))))
     (unless (cl-typep div-mod-return-1790 'pair-of-integers)
       (signal 'wrong-type-return (list 'pair-of-integers div-mod-return-1790)))
     div-mod-return-1790))
 
 (div-mod 19 8) ;; => (2 . 3)
-
-
-(setq x 1 y 2)
-
-(cons x y)
-
-(macroexpand '`(,(/ n d) . ,(% n d))) ;; (cons (/ n d) (% n d))
-(macroexpand '`(,(/ n d) \,(% n d))) ;; (cons (/ n d) (% n d))
-(equal (macroexpand '`(,(/ n d) \,(% n d))) (macroexpand '`(,(/ n d) . ,(% n d)))) ;; => t
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
