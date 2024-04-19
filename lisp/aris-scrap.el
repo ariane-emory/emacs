@@ -255,15 +255,14 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; with pcase/pipe expanded too:
 (defun fib (n)
   (cl-check-type n integer)
-  (let ((fib-return-1100
+  (let ((fib-return-1100a
           (cond
             ((eql n 0) (let nil 0))
             ((eql n 1) (let nil 1))
-            (t         (let ((n n)) (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))))
+            (t (let ((n n)) (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))))
     (unless (cl-typep fib-return-1100 'integer)
       (signal 'wrong-type-return (list 'integer fib-return-1100)))
     fib-return-1100))
-
 
 (fib 10) ;; => 55
 ;;;;;e;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
