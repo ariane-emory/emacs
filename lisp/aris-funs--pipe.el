@@ -185,8 +185,7 @@
                       (unless (length>= 1) (signal 'stack-underflow (list 'body)))
                       (pop body))
                     (drop-next! ()
-                      (let ( (drop-count 1)
-                             poppeds)
+                      (let ((drop-count 1) poppeds)
                         (until (zero? drop-count)
                           (--pipe-prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
@@ -698,14 +697,14 @@
       (pd--reset)
 
       ;; Define some simple functions:
-      (def (doub n) (|> n (+ _ _)))
-      (def (sqr y) (|> y (* _ _)))
-      (def (doub-sqr y) (doub (sqr y)))
+      (pdef (doub n) (|> n (+ _ _)))
+      (pdef (sqr y) (|> y (* _ _)))
+      (pdef (doub-sqr y) (doub (sqr y)))
 
       ;; Define a fib:
-      (def (fib 0) 0)
-      (def (fib 1) 1)
-      (def (fib n)
+      (pdef (fib 0) 0)
+      (pdef (fib 1) 1)
+      (pdef (fib n)
         (|>
           :(prn "Calculating (fib %d) using a pipe-based fib..." n)
           (|> n
