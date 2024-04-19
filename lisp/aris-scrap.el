@@ -201,3 +201,16 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         (let ((x it))
           (* x 10)))))) ;; => -230
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defalias 'match 'pcase)
+(defalias 'def 'defun**)
+
+(defun** fib ((n : integer)) : integer
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
+
+
+
+(fib 10)
