@@ -262,8 +262,12 @@
                      (let ((go-label (pop!)) found-go-label)
                        (message "This is a :go to %s" go-label)
                        (set-remaining-body! (cdr body))
-                       
-                       
+
+                       (while (and (not found-go-label) remaining-body)
+                         (let ((poppeds (pop-next-and-args!)))
+                           (--pipe-prn "poppeds are %s, left with %s"
+                             poppeds remaining-body))
+                         )
                        )
                      )
                    (_ (let
