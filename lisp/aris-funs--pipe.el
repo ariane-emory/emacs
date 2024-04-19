@@ -204,7 +204,7 @@
                                 "new drop-count is %s")
                               popped popped-things-arity next-drop-count)
                             (setq drop-count next-drop-count)))
-                        poppeds))
+                        (nreverse poppeds)))
                     (store! (value)
                       (prog1
                         (setq ,var value)
