@@ -268,26 +268,13 @@
                          (let ((poppeds (pop-next-and-args!)))
                            (--pipe-prn "poppeds are %S, left with %S"
                              poppeds remaining-body)
-
-                           (--pipe-prn "%S vs %S = %S"
-                             poppeds `(,go-label)
-                             (equal poppeds `(,go-label)))
-
-                           (setq found-go-label (equal poppeds `(,go-label)))
-                           ;; (pcase poppeds ; '('loop)
-                           ;;   ((and `(',found-label) (guard (eq found-label go-label)))
-                           ;;     (--pipe-prn "FOUND THE LABEL %s FOR %s, CONTINUE FROM %s."
-                           ;;       found-label go-label remaining-body)
-                           ;;     (setq found-go-label t)))
-
-                           ;; (pcase poppeds 
-                           ;;   (`(',go-label)
-                           ;;     (--pipe-prn "FOUND THE LABEL, CONTINUE FROM %s."
-                           ;;       remaining-body)
-                           ;;     (setq found-go-label t)))
-                           ))
+                           ;; (--pipe-prn "%S vs %S = %S"
+                           ;;   poppeds `(,go-label)
+                           ;;   (equal poppeds `(,go-label)))
+                           (setq found-go-label (equal poppeds `(,go-label)))))
                        ;; error if we didn't find the label:
-                       (unless found-go-label
+                       (if found-go-label
+                         (--pipe-prn "CONTINUING FROM %S." remaining-body)
                          (error ":go label %s not found in %s" go-label body))))
                    (_ (let
                         ((result

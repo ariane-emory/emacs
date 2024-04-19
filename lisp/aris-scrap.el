@@ -365,7 +365,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       ;;; :(debug 9)
       (plist-get _ 'a))
     ))
-;;(fib 6)
+;;(fib 10)
 
 (setq look-for 'loop)
 
