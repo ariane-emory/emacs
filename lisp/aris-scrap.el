@@ -285,4 +285,15 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (def (div-mod (n : integer) (d : integer) : (and (list-of-length 2) (list-of-tys integer)))
   (list (/ n d) (% n d)))
 
+(defun* div-mod ((n : integer) (d : integer)) : (and (list-of-length 2) (list-of-tys integer))
+  (list (/ n d) (% n d)))
+
+(defun div-mod (n d)
+  (cl-check-type n integer)
+  (cl-check-type d integer)
+  (let ((div-mod-return-603 (list (/ n d) (% n d))))
+    (unless (cl-typep div-mod-return-603 '(and (list-of-length 2) (list-of-tys integer)))
+      (signal 'wrong-type-return (list '(and (list-of-length 2) (list-of-tys integer)) div-mod-return-603)))
+    div-mod-return-603))
+
 (div-mod 19 8) ;; => (2 3)
