@@ -202,6 +202,10 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
           (* x 10)))))) ;; => -230
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fib ((n : integer)) : integer) ;; name = fib, arglist = ((n : integer)), return = integer
+(foo ((n : integer) (o : integer)) : integer) ;; name = fib, arglist = ((n : integer) (m : integer)), return = integer
+(foo ((n : integer) (o : integer))) ;; name = fib, arglist = ((n : integer) (m : integer)), return = nil
+
 (defalias 'match 'pcase)
 (defalias 'def 'defun*)
 
@@ -220,6 +224,22 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (fib 10)
 
+(defmacro def* (spec &rest body)
+  (pcase spec
+    (`(,name . ,arglist)
+      (if-let ( (_ (eq : (car (last (butlast arglist)))))
+                (return-type (car (last arglist))))
+        (let ((arglist (cl-subseq arglist 0 -2)))
+          (message "this happens, arglist is %S and last is %S"
+            arglist return-type)
+          `(defun* ,name ,arglist : ,return-type ,@body))
+        `(defun* ,name ,arglist ,@body))))
+  (_ (error "bad spec %S" spec)))
 
-(pcase '(fib (n : integer) : integer)
-  (`(,name . ,rest) (list name rest)))
+(def* (fib ((n : integer)) : integer)
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
+
+

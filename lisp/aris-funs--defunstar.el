@@ -75,7 +75,6 @@ parameters, for the moment)."
                   (throw 'break-loop remaining-arglist))
                 ;; pop the head and examine it:
                 (let ((arg (pop remaining-arglist)))
-                  (prn "POPPED %S." arg)
                   (if-let ( (var (car-safe arg))
                             (_ (and var
                                  (symbolp var)
@@ -90,7 +89,7 @@ parameters, for the moment)."
                       (push var new-arglist))
                     ;; else just add the arg to NEW-ARGLIST:
                     (push arg new-arglist)))))))
-    (prn "TYPE-CHECKS is %S." type-checks)
+    ;; (prn "TYPE-CHECKS is %S." type-checks)
     ;; if any TYPE-CHECKS were found...
     ;; (if (not type-checks)
     ;;   ;; then expand into a normal defun:
