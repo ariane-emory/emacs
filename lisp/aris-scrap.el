@@ -319,4 +319,4 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (take-pat `(,foo ,bar))
 
-(|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
+(|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop) ;; => 189
