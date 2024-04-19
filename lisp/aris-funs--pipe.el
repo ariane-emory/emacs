@@ -260,6 +260,7 @@
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)))
                        (message "This is a :go to %s" go-label))
+                     (debug)
                      (set-remaining-body! '',(cdr body))
                      )
                    (_ (let
