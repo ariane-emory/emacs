@@ -94,11 +94,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *--pipe-commands*
-  '(
-     (:       . (1 . :IGNORE))
+  '( (:       . (1 . :IGNORE))
      (:ignore . (1 . :IGNORE))
      (:?      . (1 . :MAYBE))
-     (:go     . (1 . :GOING))
+     (:go     . (1 . nil)) ;; doesn't use a flag right now.
      (:maybe  . (1 . :MAYBE))
      (:return . (1 . :RETURN))
      (:unless . (2 . :UNLESS))
@@ -179,7 +178,7 @@
     `(let ( (,var             nil)
             (var-sym        ',var)
             (remaining-body ,body)
-            (flag             nil))
+            (flag            nil))
        (cl-labels ( (length>= (len)
                       (length> remaining-body (1- len)))
                     (pop! ()
@@ -249,8 +248,13 @@
                  (pcase expr
                    ;; ('nil (error "impossible, expr is %s?" expr))
                    (`',label (message "Skip past label %s..." label))
+                   ;; maybe this should be handled inside _ case like other flagged items
+                   ;; so as to eval the label:
                    (:go
-                     (error "This is a :go: %s" expr))
+                     (unless (length>= (--get-pipe-command-arity :go))
+                       (error "malformed pipe body"))
+                     (let ((go-label (pop!)))
+                       (error "This is a :go to %s" go-label)))
                    (_ (let
                         ((result
                            (eval (if (fun? expr)
