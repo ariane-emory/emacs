@@ -109,8 +109,8 @@
   (progn
     (setq reps 10)
     (setq n 20)
-    (benchmark-run reps (match-rec-fib n)) ;; (0.123622 0 0.0)
-    (benchmark-run reps (pipe-match-rec-fib n)) ;; (185.330855 1257 129.114517)
-    (benchmark-run reps (pipe-iter-fib n))) ;; (0.007254 0 0.0)
+    (benchmark-run reps (match-rec-fib n)) ;; (0.109016 0 0.0)
+    (benchmark-run reps (pipe-match-rec-fib n)) ;; (188.736017 1369 131.53158799999997)    
+    (benchmark-run reps (pipe-iter-fib n))) ;; (0.007916 0 0.0)
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
