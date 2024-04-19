@@ -224,6 +224,20 @@
 (defun eleventh (lst)  (caddr (cddddr (cddddr lst))))
 (defun twelfth  (lst) (cadddr (cddddr (cddddr lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (first '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 1)
+(confirm that (second '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 2)
+(confirm that (third '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 3)
+(confirm that (fourth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 4)
+(confirm that (fifth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 5)
+(confirm that (sixth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 6)
+(confirm that (seventh '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 7)
+(confirm that (eighth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 8)
+(confirm that (ninth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 9)
+(confirm that (tenth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 10)
+(confirm that (eleventh '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 11)
+(confirm that (twelfth '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 12)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq lst '(1 2 3 4 5 6 7 8 9 10 11 12))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
