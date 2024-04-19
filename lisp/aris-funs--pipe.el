@@ -203,6 +203,7 @@
                               (concat "Just dropped %S, adding %d to drop-count, "
                                 "new drop-count is %s")
                               popped popped-things-arity next-drop-count)
+                            (push popped poppeds)
                             (setq drop-count next-drop-count)))
                         (nreverse poppeds)))
                     (store! (value)
@@ -266,10 +267,10 @@
                        (while (and (not found-go-label) remaining-body)
                          (let ((poppeds (pop-next-and-args!)))
                            (--pipe-prn "poppeds are %s, left with %s"
-                             poppeds remaining-body))
-                         )
-                       )
-                     )
+                             poppeds remaining-body)))
+                       
+                       (unless found-go-label
+                         (error ":go label %s not found" go-label))))
                    (_ (let
                         ((result
                            (eval (if (fun? expr)
