@@ -145,7 +145,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq *pipe--verbose* nil)
+;; (setq *pipe--verbose* nil)
 (|> ((e)) 5 (* e e) (+ e 8) double) ;; => 66
 (|> ((e 5)) (* e e) (+ e 8) double) ;; => 66
 (|> 5 (* _ _) (+ _ 8) double) ;; => 66
@@ -334,16 +334,16 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
-(setq *pipe--verbose* t)
+;; (setq *pipe--verbose* t)
 
 (def (fib (n : positive-integer)) ; => positive-integer
   (let ((break 10))
     (|>
       `(a 0 b 1 i ,n)
       'loop
-      :(debug 1)
+      ;;; :(debug 1)
       :when (zero? (plist-get _ 'i)) :go 'exit
-      :(debug 2)
+      ;;; :(debug 2)
       ;; :(prn "***PLIST:     %s" _)
       ;; :(debug)
       ;; :(debug 3)
@@ -354,32 +354,26 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       ;; :(setq break (1- break))
       ;; :(debug)
       ;; :(prn "***BREAK    : %s" break)
-      :(debug 6)
+      ;; :(debug 6)
       :when (zero? (plist-get _ 'i)) :go 'exit
       ;; :when (zero? break) :go 'exit
-      :(debug 7)
+      ;;;:(debug 7)
+      :unless (zero? (plist-get _ 'i))
       :go 'loop
       :(debug 8)
       'exit
-      :(debug 9)
+      ;;; :(debug 9)
       (plist-get _ 'a))
     ))
 ;;(fib 6)
 
 (setq look-for 'loop)
 
-(pcase '('loop)
-  (`(',sym) (if (eq sym look-for)
-              (prn "FOUND THE LABEL.")
-              (prn "NOT THE LABEL"))))
-
-(pcase '('notloop)
-  (`(',sym) (if (eq sym look-for)
-              (prn "FOUND THE LABEL.")
-              (prn "NOT THE LABEL"))))
-
-
 (pcase '('notloop)
   ((and `(',sym) (guard (eq sym look-for)))
     (prn "FOUND THE LABEL."))
   (_ (prn "NOT THE LABEL")))
+
+(pcase '('loop)
+  ((and `(',sym) (guard (eq sym look-for)))
+    (prn "FOUND THE LABEL.")))

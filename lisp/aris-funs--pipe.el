@@ -261,20 +261,31 @@
                      (unless (length>= (--get-pipe-command-arity expr))
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)) found-go-label)
-                       (message "This is a :go to %s" go-label)
+                       (message "This is a :go to %S" go-label)
                        (set-remaining-body! (cdr body)) ;; rewind.
                        ;; skip exprs/commands+args until we find the label:
                        (while (and (not found-go-label) remaining-body)
                          (let ((poppeds (pop-next-and-args!)))
-                           (--pipe-prn "poppeds are %s, left with %s"
+                           (--pipe-prn "poppeds are %S, left with %S"
                              poppeds remaining-body)
-                           (--pipe-prn "comparing %s and %s = %s"
-                             (car poppeds) go-label (eq (car poppeds) go-label))
-                           (pcase poppeds 
-                             (`(',go-label)
-                               (--pipe-prn "FOUND THE LABEL, CONTINUE FROM %s."
-                                 remaining-body)
-                               (setq found-go-label t)))))
+
+                           (--pipe-prn "%S vs %S = %S"
+                             poppeds `(,go-label)
+                             (equal poppeds `(,go-label)))
+
+                           (setq found-go-label (equal poppeds `(,go-label)))
+                           ;; (pcase poppeds ; '('loop)
+                           ;;   ((and `(',found-label) (guard (eq found-label go-label)))
+                           ;;     (--pipe-prn "FOUND THE LABEL %s FOR %s, CONTINUE FROM %s."
+                           ;;       found-label go-label remaining-body)
+                           ;;     (setq found-go-label t)))
+
+                           ;; (pcase poppeds 
+                           ;;   (`(',go-label)
+                           ;;     (--pipe-prn "FOUND THE LABEL, CONTINUE FROM %s."
+                           ;;       remaining-body)
+                           ;;     (setq found-go-label t)))
+                           ))
                        ;; error if we didn't find the label:
                        (unless found-go-label
                          (error ":go label %s not found in %s" go-label body))))
