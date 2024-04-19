@@ -368,7 +368,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (setq look-for 'loop)
 
-(pcase '('foo)
-  (`(,label)
-    (prn "FOUND THE LABEL %s."
-      label)))
+(pcase '('loop)
+  (`(',sym) (if (eq sym look-for)
+              (prn "FOUND THE LABEL.")
+              (prn "NOT THE LABEL"))))
+
+(pcase '('notloop)
+  (`(',sym) (if (eq sym look-for)
+              (prn "FOUND THE LABEL.")
+              (prn "NOT THE LABEL"))))
