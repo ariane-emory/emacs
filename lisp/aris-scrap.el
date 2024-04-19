@@ -336,6 +336,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 (def (pipe-iter-fib (n : positive-integer)) => positive-integer
+  "Non-recursive version of a pipe-based `fib'."
   (|>
     ;; basically just an env alist:
     `( (a . 0)
