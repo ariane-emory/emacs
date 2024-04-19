@@ -285,6 +285,7 @@
           (lambda ()
             ;;(setq-local lexical-binding t)
 	          (eldoc-mode 1)
+            (company-posframe-mode -1)
             (aris-setup-lisp))))
 
       (use-package-with-message face-remap

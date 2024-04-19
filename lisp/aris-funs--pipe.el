@@ -180,7 +180,7 @@
              (var-sym        ',var)
              (body            ,body)
              (remaining-body   body)
-             (flag            nil))
+             (flag             nil))
        (cl-labels ( (length>= (len)
                       (length> remaining-body (1- len)))
                     (set-remaining-body! (new-body)
@@ -632,17 +632,19 @@
       ;; Define a fib:
       (pdef (fib 0) 0)
       (pdef (fib 1) 1)
-      (pdef (fib n)
-        (|>
-          :(prn "Calculating (fib %d) using a pipe-based fib..." n)
-          (|> n
-            (- _ 1)
-            (fib _))
-          (+ _
-            (|> n
-              (- _ 2)
-              (fib _)
-              :(prn "Calculated (fib %d) = %d" n _)))))
+      (pdef (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+      
+      ;; (pdef (fib n)
+      ;;   (|>
+      ;;     :(prn "Calculating (fib %d) using a pipe-based fib..." n)
+      ;;     (|> n
+      ;;       (- _ 1)
+      ;;       (fib _))
+      ;;     (+ _
+      ;;       (|> n
+      ;;         (- _ 2)
+      ;;         (fib _)
+      ;;         :(prn "Calculated (fib %d) = %d" n _)))))
 
       ;; Call it with some output commenting on the proceedings:
       (|> 3
