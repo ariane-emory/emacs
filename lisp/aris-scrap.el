@@ -279,7 +279,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   `(and list (satisfies (lambda (lst) (length= lst ,n)))))
 
 (cl-deftype list-of-tys (ty)
-  "Type specifier for a list with elements of type TY."
+  "Type specifier for lists with elements of type TY."
   `(and list (satisfies (lambda (lst) (cl-every (lambda (x) (cl-typep x ',ty)) lst)))))
 
 (def (div-mod (n : integer) (d : integer) : (and (list-of-length 2) (list-of-tys integer)))
