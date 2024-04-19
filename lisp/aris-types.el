@@ -14,10 +14,21 @@
   "Type specifier for lists of length 2 containing integers."
   `(and vector (seq-of-length 2) (seq-of-ty integer)))
 
+(cl-deftype pair ()
+  "Type specifier for  dotted cons pairs."
+  `(and cons (not (satisfies (lambda (x) (listp (cdr x)))))))
+
 (cl-deftype pair-of-integers ()
   "Type specifier for cons pairs of integers."
-  `(and cons (satisfies (lambda (x) (and (integerp (car x)) (integerp (cdr x)))))))
+  `(and pair (satisfies (lambda (x) (and (integerp (car x)) (integerp (cdr x)))))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (cl-typep '(1 2) 'pair-of-integers) returns nil)
+(confirm that (cl-typep '(1 . 2) 'pair-of-integers) returns t)
+(confirm that (cl-typep '(1 . 2.0) 'pair-of-integers) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -187,7 +187,7 @@
                     (drop-next! ()
                       (let ((drop-count 1))
                         (until (zero? drop-count)
-                          (prn "Drop count is %S" drop-count)
+                          (--pipe-prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
                           (let* ( (popped (pop!))
                                   (poppeds-arity (--get-pipe-command-arity popped))

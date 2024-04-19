@@ -226,7 +226,15 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (fib (n : integer) => integer)
+(def* (fib (n : integer)) => integer
+  (pcase n
+    (0 0)
+    (1 1)
+    ;;(n (+ (fib (- n 1)) (fib (- n 2))))))
+    (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
+(fib 10)
+
+(def* (fib (n : integer)) => integer
   (pcase n
     (0 0)
     (1 1)

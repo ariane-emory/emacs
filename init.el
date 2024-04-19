@@ -831,7 +831,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                '(:family "Gill Sans" :height 1.15))))
+                     '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()
@@ -886,6 +886,7 @@
            aris-funs--pattern-dispatch
            aris-funs--pipe
            aris-funs--prettify-symbols
+           aris-funs--rainbow-cursor
            aris-funs--setup-lisp
            aris-funs--with-gensyms
            aris-funs--defunstar
@@ -897,7 +898,6 @@
            aris-configure--key-bindings
            aris-configure--tetris-keymap
            aris-configure--global-abbrevs-table 
-           aris-configure--rainbow-cursor
            aris-configure--xwidget-browse-menu
            aris-mode--local-caps-lock
            xah-lees-configure--emoji-fix
