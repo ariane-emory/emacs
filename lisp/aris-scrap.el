@@ -203,14 +203,18 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defalias 'match 'pcase)
-(defalias 'def 'defun**)
+(defalias 'def 'defun*)
 
-(defun** fib ((n : integer)) : integer
+(defun* fib ((n : integer)) : integer
   (match n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
-
+(defun* fib ((n : integer))
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
 
 (fib 10)
