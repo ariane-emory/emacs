@@ -209,13 +209,49 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun caaaaar (lst) (car (caaaar lst)))
+(defun caaaadr (lst) (car (caaadr lst)))
+(defun caaadar (lst) (car (caadar lst)))
+(defun caaaddr (lst) (car (caaddr lst)))
+(defun caadaar (lst) (car (cadaar lst)))
+(defun caadadr (lst) (car (cadadr lst)))
+(defun caaddar (lst) (car (caddar lst)))
+(defun caadddr (lst) (car (cadddr lst)))
+(defun cadaaar (lst) (car (cdaaar lst)))
+(defun cadaadr (lst) (car (cdaadr lst)))
+(defun cadadar (lst) (car (cdadar lst)))
+(defun cadaddr (lst) (car (cdaddr lst)))
+(defun caddaar (lst) (car (cddaar lst)))
+(defun caddadr (lst) (car (cddadr lst)))
+(defun cadddar (lst) (car (cddddr lst)))
+(defun caddddr (lst) (car (cddddr lst)))
+(defun cdaaaar (lst) (cdr (caaaar lst)))
+(defun cdaaadr (lst) (cdr (caaadr lst)))
+(defun cdaadar (lst) (cdr (caadar lst)))
+(defun cdaaddr (lst) (cdr (caaddr lst)))
+(defun cdadaar (lst) (cdr (cadaar lst)))
+(defun cdadadr (lst) (cdr (cadadr lst)))
+(defun cdaddar (lst) (cdr (caddar lst)))
+(defun cdadddr (lst) (cdr (cadddr lst)))
+(defun cddaaar (lst) (cdr (cdaaar lst)))
+(defun cddaadr (lst) (cdr (cdaadr lst)))
+(defun cddadar (lst) (cdr (cdadar lst)))
+(defun cddaddr (lst) (cdr (cdaddr lst)))
+(defun cdddaar (lst) (cdr (cddaar lst)))
+(defun cdddadr (lst) (cdr (cddadr lst)))
+(defun cddddar (lst) (cdr (cdddar lst)))
+(defun cdddddr (lst) (cdr (cadddr lst)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list funs (retrieving by position):
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun first    (lst)                    (car lst))
 (defun second   (lst)                   (cadr lst))
 (defun third    (lst)                  (caddr lst))
 (defun fourth   (lst)                 (cadddr lst))
-(defun fifth    (lst)            (car (cddddr lst)))
+(defun fifth    (lst)                (caddddr lst))
 (defun sixth    (lst)           (cadr (cddddr lst)))
 (defun seventh  (lst)          (caddr (cddddr lst)))
 (defun eighth   (lst)         (cadddr (cddddr lst)))
@@ -329,42 +365,6 @@
     (cdddr Cdr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun caaaaar (lst) (car (caaaar lst)))
-(defun caaaadr (lst) (car (caaadr lst)))
-(defun caaadar (lst) (car (caadar lst)))
-(defun caaaddr (lst) (car (caaddr lst)))
-(defun caadaar (lst) (car (cadaar lst)))
-(defun caadadr (lst) (car (cadadr lst)))
-(defun caaddar (lst) (car (caddar lst)))
-(defun caadddr (lst) (car (cadddr lst)))
-(defun cadaaar (lst) (car (cdaaar lst)))
-(defun cadaadr (lst) (car (cdaadr lst)))
-(defun cadadar (lst) (car (cdadar lst)))
-(defun cadaddr (lst) (car (cdaddr lst)))
-(defun caddaar (lst) (car (cddaar lst)))
-(defun caddadr (lst) (car (cddadr lst)))
-(defun cadddar (lst) (car (cddddr lst)))
-(defun caddddr (lst) (car (cadddr lst)))
-(defun cdaaaar (lst) (cdr (caaaar lst)))
-(defun cdaaadr (lst) (cdr (caaadr lst)))
-(defun cdaadar (lst) (cdr (caadar lst)))
-(defun cdaaddr (lst) (cdr (caaddr lst)))
-(defun cdadaar (lst) (cdr (cadaar lst)))
-(defun cdadadr (lst) (cdr (cadadr lst)))
-(defun cdaddar (lst) (cdr (caddar lst)))
-(defun cdadddr (lst) (cdr (cadddr lst)))
-(defun cddaaar (lst) (cdr (cdaaar lst)))
-(defun cddaadr (lst) (cdr (cdaadr lst)))
-(defun cddadar (lst) (cdr (cdadar lst)))
-(defun cddaddr (lst) (cdr (cdaddr lst)))
-(defun cdddaar (lst) (cdr (cddaar lst)))
-(defun cdddadr (lst) (cdr (cddadr lst)))
-(defun cddddar (lst) (cdr (cdddar lst)))
-(defun cdddddr (lst) (cdr (cadddr lst)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
