@@ -225,13 +225,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (`(,name . ,arglist)
       (if-let ( (_ (eq : (car (last (butlast arglist)))))
                 (return-type (car (last arglist))))
-        `(defun* ,name ,@(cl-subseq arglist 0 -2) : ,return-type ,@body)
-        `(defun* ,name ,@arglist ,@body)))
+        `(defun* ,name ,(cl-subseq arglist 0 -2) : ,return-type ,@body)
+        `(defun* ,name ,arglist ,@body)))
     (_ (error "bad spec %S" spec))))
 
 (defalias 'match 'pcase)
 
-(def (fib ((n : integer)) : integer)
+(def (fib (n : integer) : integer)
   (match n
     (0 0)
     (1 1)
