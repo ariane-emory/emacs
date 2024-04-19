@@ -118,12 +118,12 @@
                (*mp--use-dotted-pairs-in-result* nil)
                (*mp--verbatim-element?* nil))
           (--pd-prn "Trying pattern '%s on target '%s..." pattern call-pattern)
-          (let ( (match-result (match2 pattern call-pattern)))
+          (let ( (match-result (pmatch2 pattern call-pattern)))
             (when *pd--allow-match-fallback*
               (--pd-prn "MATCH2 FAILED, FALLING BACK TO MATCH!"))
             (let ((match-result
                     (or match-result
-                      (and *pd--allow-match-fallback* (match pattern call-pattern)))))
+                      (and *pd--allow-match-fallback* (pmatch pattern call-pattern)))))
               (when match-result
                 (throw 'matched
                   (setq result (cons match-result (cdr pattern-case))))))))))

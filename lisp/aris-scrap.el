@@ -230,17 +230,17 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defalias 'match 'pcase)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def* (fib (n : positive-integer)) => positive-integer
-  (pcase n
+  (match n
     (0 0)
     (1 1)
-    ;;(n (+ (fib (- n 1)) (fib (- n 2))))))
     (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
 
 ;; ... expands into:
 (defun* fib ((n : positive-integer)) => positive-integer
-  (pcase n
+  (match n
     (0 0)
     (1 1)
     (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
@@ -249,7 +249,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (defun fib (n)
   (cl-check-type n positive-integer)
   (let ((fib-return-1100
-          (pcase n
+          (match n
             (0 0)
             (1 1)
             (n (|> n 1- fib (+ _ (|> n (- _ 2) fib)))))))
@@ -257,7 +257,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       (signal 'wrong-type-return (list 'positive-integer fib-return-1100)))
     fib-return-1100))
 
-;; with pcase/pipe expanded too:
+;; with match/pipe expanded too:
 (defun fib (n)
   (cl-check-type n positive-integer)
   (let ((fib-return-1100
