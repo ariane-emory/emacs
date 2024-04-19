@@ -248,7 +248,9 @@
                    (set-flag! command-flag))
                  (pcase expr
                    ;; ('nil (error "impossible, expr is %s?" expr))
-                   (`',label (error "Skip past label %s..." label))
+                   (`',label (message "Skip past label %s..." label))
+                   (:go
+                     (error "This is a :go: %s" expr))
                    (_ (let
                         ((result
                            (eval (if (fun? expr)
