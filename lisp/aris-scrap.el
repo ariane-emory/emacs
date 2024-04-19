@@ -321,4 +321,9 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (|> 7 ,loop (* _ 3) :go ,loop)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(pcase ',bar
+  (`(\, ,label) (message "this is a label %s" label)))
+
+(pcase ''bar
+  (`',label (message "this is a label %s" label)))
 

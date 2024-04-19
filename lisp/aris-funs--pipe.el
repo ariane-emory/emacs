@@ -176,15 +176,15 @@
           (body         `',(alist-get 'body args)))
     ;; (--pipe-prn "return-label is %S" return-label)
     ;; (--pipe-prn "args is %S" args)
-    `(let ( (,var      nil)
-            (var-sym ',var)
-            (body     ,body)
-            (flag      nil))
+    `(let ( (,var             nil)
+            (var-sym        ',var)
+            (remaining-body ,body)
+            (flag             nil))
        (cl-labels ( (length>= (len)
-                      (length> body (1- len)))
+                      (length> remaining-body (1- len)))
                     (pop! ()
-                      (unless (length>= 1) (signal 'stack-underflow (list 'body)))
-                      (pop body))
+                      (unless (length>= 1) (signal 'stack-underflow (list 'remaining-body)))
+                      (pop remaining-body))
                     (drop-next! ()
                       (let ((drop-count 1) poppeds)
                         (until (zero? drop-count)
@@ -228,14 +228,14 @@
                               (label  (concat label whites)))
                         (--pipe-prn "%s%S" label value))))
          (--pipe-prndiv)
-         (--pipe-prn "START WITH %s!" body)
+         (--pipe-prn "START WITH %s!" remaining-body)
          (--pipe-prndiv)
          (catch ,return-label                
-           (while body
+           (while remaining-body
              (let ((expr (pop!)))
                (--pipe-prndiv)
                (labeled-print "Current" expr)
-               (labeled-print "Remaining" body)
+               (labeled-print "Remaining" remaining-body)
                (labeled-print var-sym ,var)
                (labeled-print "Flag" flag)
                (if-let ( (command (--get-pipe-command expr))
@@ -247,7 +247,8 @@
                      (error "malformed pipe body"))
                    (set-flag! command-flag))
                  (pcase expr
-                   ('nil (error "impossible, expr is %s?" expr))
+                   ;; ('nil (error "impossible, expr is %s?" expr))
+                   (`',label (error "Skip past label %s..." label))
                    (_ (let
                         ((result
                            (eval (if (fun? expr)
@@ -374,11 +375,11 @@
   (confirm that (|> 2 :?(when (odd? _) 100)) returns 2)
 
   (confirm that (|> 1 :? t) returns t)
-  ;; (confirm that (|> 1 :? nil) returns 1)
+  (confirm that (|> 1 :? nil) returns 1)
   (confirm that (|> 1 :?(= _ 1)) returns t)
   (confirm that (|> 2 :?(= _ 1)) returns 2)
   (confirm that (|> 1 :maybe t) returns t)
-  ;; (confirm that (|> 1 :maybe nil) returns 1)
+  (confirm that (|> 1 :maybe nil) returns 1)
   (confirm that (|> 1 :maybe(= _ 1)) returns t)
   (confirm that (|> 2 :maybe(= _ 1)) returns 2)
 
@@ -419,11 +420,11 @@
   (confirm that (|> ((x)) 2 :?(when (odd? x) 100)) returns 2)
 
   (confirm that (|> ((x)) 1 :? t) returns t)
-  ;; (confirm that (|> ((x)) 1 :? nil) returns 1)
+  (confirm that (|> ((x)) 1 :? nil) returns 1)
   (confirm that (|> ((x)) 1 :?(= x 1)) returns t)
   (confirm that (|> ((x)) 2 :?(= x 1)) returns 2)
   (confirm that (|> ((x)) 1 :maybe t) returns t)
-  ;; (confirm that (|> ((x)) 1 :maybe nil) returns 1)
+  (confirm that (|> ((x)) 1 :maybe nil) returns 1)
   (confirm that (|> ((x)) 1 :maybe(= x 1)) returns t)
   (confirm that (|> ((x)) 2 :maybe(= x 1)) returns 2)
 
@@ -464,11 +465,11 @@
   (confirm that (|> ((x 2)) :?(when (odd? x) 100)) returns 2)
 
   (confirm that (|> ((x 1)) :? t) returns t)
-  ;; (confirm that (|> ((x 1)) :? nil) returns 1)
+  (confirm that (|> ((x 1)) :? nil) returns 1)
   (confirm that (|> ((x 1)) :?(= x 1)) returns t)
   (confirm that (|> ((x 2)) :?(= x 1)) returns 2)
   (confirm that (|> ((x 1)) :maybe t) returns t)
-  ;; (confirm that (|> ((x 1)) :maybe nil) returns 1)
+  (confirm that (|> ((x 1)) :maybe nil) returns 1)
   (confirm that (|> ((x 1)) :maybe(= x 1)) returns t)
   (confirm that (|> ((x 2)) :maybe(= x 1)) returns 2)
 
