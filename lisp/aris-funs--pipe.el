@@ -98,6 +98,7 @@
      (:       . (1 . :IGNORE))
      (:ignore . (1 . :IGNORE))
      (:?      . (1 . :MAYBE))
+     (:go     . (1 . :GOING))
      (:maybe  . (1 . :MAYBE))
      (:return . (1 . :RETURN))
      (:unless . (2 . :UNLESS))
