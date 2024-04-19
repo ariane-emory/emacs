@@ -103,7 +103,7 @@ parameters, for the moment)."
             (interactive-form (nth 2 parse))
             (body (nth 3 parse))
             (return-type
-              (when (eq : (first body))
+              (when (eq '=> (first body))
                 (second body)))
             (return-sym (when return-type (gensym (format "%s-return-" name))))
             (body
@@ -114,21 +114,14 @@ parameters, for the moment)."
                       (signal 'wrong-type-return (list ',return-type ,return-sym)))
                     ,return-sym))))
             (warnings (nth 4 parse))
-            (new-body ( append
+            (new-body (append
                         (when docstring (list docstring))
                         (when declare-form (list declare-form))
                         (when interactive-form (list interactive-form))
                         (when warnings (list warnings))
                         type-checks
                         body))
-            ;; (new-body (if return-type
-            ;;             `(cl-check-type ,return-type
-            ;;                (,@(cddr new-body)))
-            ;;             new-body))
-            (defun-expr `(defun ,name 
-                           ,new-arglist  
-                           ,@new-body)))
-      (prn "Return type: %S." return-type)
+            (defun-expr `(defun ,name ,new-arglist ,@new-body)))
       defun-expr)))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

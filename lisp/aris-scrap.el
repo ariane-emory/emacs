@@ -210,7 +210,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
-(defun* fib ((n : integer)) : integer
+(defun* fib ((n : integer)) => integer
   (match n
     (0 0)
     (1 1)
@@ -219,25 +219,25 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro def (spec &rest body)
+(defmacro def* (spec &rest body)
   (pcase spec
     (`(,name . ,arglist)
-      (if-let ( (_ (eq : (car (last (butlast arglist)))))
+      (if-let ( (_ (eq '=> (car (last (butlast arglist)))))
                 (return-type (car (last arglist))))
-        `(defun* ,name ,(cl-subseq arglist 0 -2) : ,return-type ,@body)
+        `(defun* ,name ,(cl-subseq arglist 0 -2) => ,return-type ,@body)
         `(defun* ,name ,arglist ,@body)))
     (_ (error "bad spec %S" spec))))
 
 (defalias 'match 'pcase)
 
-(def (fib (n : integer) : integer)
+(def* (fib (n : integer) => integer)
   (match n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
 ;; ... expands into:
-(defun* fib ((n : integer)) : integer
+(defun* fib ((n : integer)) => integer
   (match n
     (0 0)
     (1 1)
@@ -274,26 +274,30 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-deftype list-of-length (n)
-  "Type specifier for lists of length N."
-  `(and list (satisfies (lambda (lst) (length= lst ,n)))))
+(cl-deftype of-length (n)
+  "Type specifier for things of length N."
+  `(satisfies (lambda (seq) (length= seq ,n))))
 
-(cl-deftype list-of-tys (ty)
-  "Type specifier for lists with elements of type TY."
-  `(and list (satisfies (lambda (lst) (cl-every (lambda (x) (cl-typep x ',ty)) lst)))))
+(cl-deftype of-ty (ty)
+  "Type specifier for things with elements of type TY."
+  `(satisfies (lambda (seq) (cl-every (lambda (x) (cl-typep x ',ty)) seq))))
 
-(def (div-mod (n : integer) (d : integer) : (and (list-of-length 2) (list-of-tys integer)))
+(cl-deftype list-of-2-integers ()
+  "Type specifier for lists of length 2 containing integers."
+  `(and list (of-length 2) (of-ty integer)))
+
+(def* (div-mod (n : integer) (d : integer)) => list-of-2-integers
   `(,(/ n d) ,(% n d)))
 
-(defun* div-mod ((n : integer) (d : integer)) : (and (list-of-length 2) (list-of-tys integer))
+(defun* div-mod ((n : integer) (d : integer)) => list-of-2-integers
   `(,(/ n d) ,(% n d)))
 
 (defun div-mod (n d)
   (cl-check-type n integer)
   (cl-check-type d integer)
-  (let ((div-mod-return-719 (list (/ n d) (% n d))))
-    (unless (cl-typep div-mod-return-719 '(and (list-of-length 2) (list-of-tys integer)))
-      (signal 'wrong-type-return (list '(and (list-of-length 2) (list-of-tys integer)) div-mod-return-719)))
-    div-mod-return-719))
+  (let ((div-mod-return-614 (list (/ n d) (% n d))))
+    (unless (cl-typep div-mod-return-614 'list-of-2-integers)
+      (signal 'wrong-type-return (list 'list-of-2-integers div-mod-return-614)))
+    div-mod-return-614))
 
 (div-mod 19 8) ;; => (2 3)
