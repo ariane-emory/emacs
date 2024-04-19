@@ -65,7 +65,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; define a function with type checks using the defun* macro:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun* foo ((num : number) (exp : integer) &optional print-message)
+(defun* foo ((num : number) (exp : positive-integer) &optional print-message)
   "A silly function to raise the number NUM to the integral power EXP.
 
 This is marked as interactive for no good reason other than to test if
@@ -82,11 +82,11 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (foo 2.5 3 t) ;; ⇒ 15.625 and also prints "2.5 to the power of 3 is 15.625.".
 ;; (foo 2.5 3.5 t) ;; signals (wrong-type-argument integer 3.5 pow).
 
-(if-let ((res (maybe 'integer (foo 4 3 t))))
-  (message "Result %S is an integer." res)
-  (message "Result was not an integer.")) ;; prints "Result 64 is an integer."
+(if-let ((res (maybe 'positive-integer (foo 4 3 t))))
+  (message "Result %S is a positive-integer." res)
+  (message "Result was not a positive-integer.")) ;; prints "Result 64 is an integer."
 
-(defun* pow ((num : number) (exp : integer))
+(defun* pow ((num : number) (exp : positive-integer))
   (expt num exp))
 
 ;; appropriate (wrong-type-argument number "foo" num):
@@ -216,13 +216,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun* fib ((n : integer))
+(defun* fib ((n : positive-integer))
   (pcase n
     (0 0)
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
-(defun* fib ((n : integer)) => integer
+(defun* fib ((n : positive-integer)) => positive-integer
   (pcase n
     (0 0)
     (1 1)
@@ -231,7 +231,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (fib (n : integer)) => integer
+(def* (fib (n : positive-integer)) => positive-integer
   (pcase n
     (0 0)
     (1 1)
@@ -239,7 +239,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
 
 ;; ... expands into:
-(defun* fib ((n : integer)) => integer
+(defun* fib ((n : positive-integer)) => positive-integer
   (pcase n
     (0 0)
     (1 1)
@@ -247,26 +247,26 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 ;; ... which expands to:
 (defun fib (n)
-  (cl-check-type n integer)
+  (cl-check-type n positive-integer)
   (let ((fib-return-1100
           (pcase n
             (0 0)
             (1 1)
             (n (|> n 1- fib (+ _ (|> n (- _ 2) fib)))))))
-    (unless (cl-typep fib-return-1100 'integer)
-      (signal 'wrong-type-return (list 'integer fib-return-1100)))
+    (unless (cl-typep fib-return-1100 'positive-integer)
+      (signal 'wrong-type-return (list 'positive-integer fib-return-1100)))
     fib-return-1100))
 
 ;; with pcase/pipe expanded too:
 (defun fib (n)
-  (cl-check-type n integer)
+  (cl-check-type n positive-integer)
   (let ((fib-return-1100
           (cond
             ((eql n 0) (let nil 0))
             ((eql n 1) (let nil 1))
             (t (let ((n n)) (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))))
-    (unless (cl-typep fib-return-1100 'integer)
-      (signal 'wrong-type-return (list 'integer fib-return-1100)))
+    (unless (cl-typep fib-return-1100 'positive-integer)
+      (signal 'wrong-type-return (list 'positive-integer fib-return-1100)))
     fib-return-1100))
 
 (fib 10) ;; => 55
@@ -274,21 +274,21 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (div-mod (n : integer) (d : integer)) => (pair-of integer)
+(def* (div-mod (n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
   `(,(/ n d) . ,(% n d)))
 
 ;; ... expands to:
-(defun* div-mod ((n : integer) (d : integer)) => (pair-of integer)
+(defun* div-mod ((n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
   `(,(/ n d) \,(% n d)))
 
 ;; ... which expands to:
 (defun div-mod
   (n d)
-  (cl-check-type n integer)
-  (cl-check-type d integer)
+  (cl-check-type n positive-integer)
+  (cl-check-type d positive-integer)
   (let ((div-mod-return-1790 (cons (/ n d) (% n d))))
-    (unless (cl-typep div-mod-return-1790 '(pair-of integer))
-      (signal 'wrong-type-return (list 'pair-of-integers div-mod-return-1790)))
+    (unless (cl-typep div-mod-return-1790 '(pair-of positive-integer))
+      (signal 'wrong-type-return (list 'pair-of positive-integer div-mod-return-17q90)))
     div-mod-return-1790))
 
 (div-mod 19 8) ;; => (2 . 3)
