@@ -320,7 +320,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
-(def (match-rec-fib (n : integer) : integer)
+(def (match-rec-fib (n : positive-integer)) => positive-integer
   (match n
     (0 0)
     (1 1)
@@ -355,7 +355,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (ignore!
   (progn
     (setq reps 10)
-    (setq n 10)
+    (setq n 20)
     (benchmark-run reps (match-rec-fib n)) ;; 
     (benchmark-run reps (pipe-match-rec-fib n)) ;; => (180.770903 1268 125.78926799999999)
     (benchmark-run reps (pipe-iter-fib n))) ;; => (0.006795 0 0.0)
