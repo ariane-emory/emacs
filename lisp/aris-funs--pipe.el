@@ -185,19 +185,20 @@
                       (unless (length>= 1) (signal 'stack-underflow (list 'body)))
                       (pop body))
                     (drop-next! ()
-                      (let ((drop-count 1))
+                      (let ( (drop-count 1)
+                             poppeds)
                         (until (zero? drop-count)
                           (--pipe-prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
                           (let* ( (popped (pop!))
-                                  (poppeds-arity (--get-pipe-command-arity popped))
-                                  (next-drop-count (+ drop-count poppeds-arity)))
+                                  (popped-things-arity (--get-pipe-command-arity popped))
+                                  (next-drop-count (+ drop-count popped-things-arity)))
                             (unless (length>= next-drop-count)
                               (error "malformed pipe body detected during drop"))
                             (--pipe-prn
                               (concat "Just dropped %S, adding %d to drop-count, "
                                 "new drop-count is %s")
-                              popped poppeds-arity next-drop-count)
+                              popped popped-things-arity next-drop-count)
                             (setq drop-count next-drop-count)))))
                     (store! (value)
                       (prog1
@@ -212,7 +213,7 @@
                             (error "Cannot set flag to %S when flag is already set to %S."
                               new-flag flag))
                           (force
-                            (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag)                            )
+                            (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag))
                           (t
                             (--pipe-prn "Setting flag from %S to %S%s." flag new-flag
                               (if force " (forced)" ""))))

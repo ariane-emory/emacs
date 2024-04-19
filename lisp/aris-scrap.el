@@ -230,9 +230,14 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defalias 'match 'pcase)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (fib (n : positive-integer)) => positive-integer
+(defalias 'match 'pcase)
+(defalias 'def 'def*)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def (fib (n : positive-integer)) => positive-integer
   (match n
     (0 0)
     (1 1)
@@ -274,7 +279,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (div-mod (n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
+(def (div-mod (n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
   `(,(/ n d) . ,(% n d)))
 
 ;; ... expands to:
