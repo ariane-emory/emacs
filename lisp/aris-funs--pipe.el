@@ -189,7 +189,7 @@
                     (pop! ()
                       (unless (length>= 1) (signal 'stack-underflow (list 'remaining-body)))
                       (pop remaining-body))
-                    (drop-next! ()
+                    (pop-next-and-args! ()
                       (let ((drop-count 1) poppeds)
                         (until (zero? drop-count)
                           (--pipe-prn "Drop count is %S" drop-count)
@@ -260,7 +260,10 @@
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)) found-go-label)
                        (message "This is a :go to %s" go-label)
-                       (set-remaining-body! (cdr body)))
+                       (set-remaining-body! (cdr body))
+                       
+                       
+                       )
                      )
                    (_ (let
                         ((result
@@ -277,9 +280,9 @@
                           ((flag-is? :IGNORE)
                             (--pipe-prn "Not setting %S because %S." result flag))
                           ((flag-is? :WHEN)
-                            (when (not result) (drop-next!)))
+                            (when (not result) (pop-next-and-args!)))
                           ((flag-is? :UNLESS)
-                            (when result (drop-next!)))
+                            (when result (pop-next-and-args!)))
                           ((flag-is? :RETURN)
                             (--pipe-prn "Returning due to command: %S" result)
                             (throw ,return-label result))
