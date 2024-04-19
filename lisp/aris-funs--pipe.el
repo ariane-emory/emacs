@@ -203,7 +203,8 @@
                               (concat "Just dropped %S, adding %d to drop-count, "
                                 "new drop-count is %s")
                               popped popped-things-arity next-drop-count)
-                            (setq drop-count next-drop-count)))))
+                            (setq drop-count next-drop-count)))
+                        poppeds))
                     (store! (value)
                       (prog1
                         (setq ,var value)
