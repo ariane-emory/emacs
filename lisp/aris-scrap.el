@@ -278,11 +278,11 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (div-mod (n : integer) (d : integer)) => pair-of-integers
+(def* (div-mod (n : integer) (d : integer)) => (pair-of integer)
   `(,(/ n d) . ,(% n d)))
 
 ;; ... expands to:
-(defun* div-mod ((n : integer) (d : integer)) => pair-of-integers
+(defun* div-mod ((n : integer) (d : integer)) => (pair-of integer)
   `(,(/ n d) \,(% n d)))
 
 ;; ... expands to:
@@ -291,7 +291,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (cl-check-type n integer)
   (cl-check-type d integer)
   (let ((div-mod-return-1790 (cons (/ n d) (% n d))))
-    (unless (cl-typep div-mod-return-1790 'pair-of-integers)
+    (unless (cl-typep div-mod-return-1790 '(pair-of integer))
       (signal 'wrong-type-return (list 'pair-of-integers div-mod-return-1790)))
     div-mod-return-1790))
 
