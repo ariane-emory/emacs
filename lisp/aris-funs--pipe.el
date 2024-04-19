@@ -269,8 +269,8 @@
                            (--pipe-prn "poppeds are %s, left with %s"
                              poppeds remaining-body)
                            (--pipe-prn "comparing %s and %s = %s"
-                             (car poppeds) go-label (eq (car poppeds)go-label))
-                           (when (eql (car poppeds) go-label)
+                             (car poppeds) go-label (eq (car poppeds) go-label))
+                           (when (eq (car poppeds) go-label)
                              (--pipe-prn "FOUND THE LABEL")
                              (setq found-go-label t)
                              )))

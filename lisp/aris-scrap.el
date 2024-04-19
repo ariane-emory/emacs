@@ -321,4 +321,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (|> 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
 
-
+(setq foo 'loop)
+(pcase `(',foo)
+  (`(',loop) t))
