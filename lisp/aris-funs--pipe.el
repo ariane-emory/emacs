@@ -254,7 +254,7 @@
                    (set-flag! command-flag))
                  (pcase expr
                    ;; ('nil (error "impossible, expr is %s?" expr))
-                   (`',label (message "Skip past label %s..." label))
+                   (`',label (--pipe-prn "Skip past label %s..." label))
                    ;; maybe this should be handled inside _ case like other flagged items
                    ;; so as to eval the label:
                    (:go
@@ -267,10 +267,17 @@
                        (while (and (not found-go-label) remaining-body)
                          (let ((poppeds (pop-next-and-args!)))
                            (--pipe-prn "poppeds are %s, left with %s"
-                             poppeds remaining-body)))
+                             poppeds remaining-body)
+                           (--pipe-prn "comparing %s and %s = %s"
+                             (car poppeds) go-label (eq (car poppeds)go-label))
+                           (when (eql (car poppeds) go-label)
+                             (--pipe-prn "FOUND THE LABEL")
+                             (setq found-go-label t)
+                             )))
                        
-                       (unless found-go-label
-                         (error ":go label %s not found" go-label))))
+                       ;; (unless found-go-label
+                       ;;   (error ":go label %s not found" go-label))
+                       ))
                    (_ (let
                         ((result
                            (eval (if (fun? expr)
