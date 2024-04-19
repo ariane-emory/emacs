@@ -321,6 +321,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop) ;; => 189
 
+(def (fib (n : positive-integer)) => positive-integer
+  (match n
+    (0 0)
+    (1 1)
+    (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
+
 (ignore!
   (def (fib-iter (n : Int) : Int)
     (let loop ((a 0) (b 1) (i n))
@@ -328,15 +334,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
-
-(def (fib (n : positive-integer)) => positive-integer
-  (match n
-    (0 0)
-    (1 1)
-    (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
-
 (def (fib (n : positive-integer)) ; => positive-integer
-  (|> `((a . 0) (b . 1) (i . ,n)))
+  (|> `(a 0 b 1 i ,n))
 
   )
 (fib 10)
