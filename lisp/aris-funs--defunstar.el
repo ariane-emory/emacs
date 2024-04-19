@@ -104,6 +104,8 @@ parameters, for the moment)."
             (return-type
               (when (eq : (first body))
                 (second body)))
+            (return-sym (when return-type (gensym "ret-")))
+            (body (when return-type `((let ((,return-sym ,@(cddr body))) ,return-sym))))
             (warnings (nth 4 parse))
             (new-body ( append
                         (when docstring (list docstring))
@@ -112,12 +114,15 @@ parameters, for the moment)."
                         (when warnings (list warnings))
                         type-checks
                         body))
-            (new-body (when return-type `(cl-check-type ,return-type ,@new-body)))
+            ;; (new-body (if return-type
+            ;;             `(cl-check-type ,return-type
+            ;;                (,@(cddr new-body)))
+            ;;             new-body))
             (defun-expr `(defun ,name 
                            ,new-arglist  
                            ,@new-body)))
       (prn "Return type: %S." return-type)
-      defun-expr)));; )
+      defun-expr)))   ;; )
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
