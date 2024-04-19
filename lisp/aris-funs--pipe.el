@@ -105,7 +105,8 @@
      )
   "An alist mapping commands to their flags and arities. This is not meant to be customized.")
 
-(defvar *--pipe-flags* (cl-remove-duplicates (map #'cdr (alist-values *--pipe-commands*)))
+(defvar *--pipe-flags*
+  (compact (cl-remove-duplicates (map #'cdr (alist-values *--pipe-commands*))))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -181,6 +182,8 @@
             (flag            nil))
        (cl-labels ( (length>= (len)
                       (length> remaining-body (1- len)))
+                    (set-remaining-body! (new-body)
+                      (setq remaining-body new-body))
                     (pop! ()
                       (unless (length>= 1) (signal 'stack-underflow (list 'remaining-body)))
                       (pop remaining-body))
@@ -251,10 +254,12 @@
                    ;; maybe this should be handled inside _ case like other flagged items
                    ;; so as to eval the label:
                    (:go
-                     (unless (length>= (--get-pipe-command-arity :go))
+                     (unless (length>= (--get-pipe-command-arity expr))
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)))
-                       (error "This is a :go to %s" go-label)))
+                       (message "This is a :go to %s" go-label))
+                     (set-remaining-body! ,body)
+                     )
                    (_ (let
                         ((result
                            (eval (if (fun? expr)
@@ -316,7 +321,7 @@
       (error (cadr _)))
     returns
     "Invalid pipe flag: :foo. Must be one of (:IGNORE :MAYBE :RETURN :UNLESS :WHEN).")
-
+  
   (confirm that
     (condition-case _
       (--valid-pipe-flag nil)
