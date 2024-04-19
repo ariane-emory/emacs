@@ -12,15 +12,15 @@
 
 (cl-deftype vec-of-2-integers ()
   "Type specifier for lists of length 2 containing integers."
-  `(and vector (seq-of-length 2) (seq-of-ty integer)))
+  '(and vector (seq-of-length 2) (seq-of-ty integer)))
 
 (cl-deftype pair ()
-  "Type specifier for  dotted cons pairs."
-  `(and cons (not (satisfies (lambda (x) (listp (cdr x)))))))
+  "Type specifier for dotted cons pairs."
+  '(and cons (not (satisfies (lambda (x) (listp (cdr x)))))))
 
 (cl-deftype pair-of-integers ()
   "Type specifier for cons pairs of integers."
-  `(and pair (satisfies (lambda (x) (and (integerp (car x)) (integerp (cdr x)))))))
+  '(and pair (satisfies (lambda (x) (and (integerp (car x)) (integerp (cdr x)))))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
