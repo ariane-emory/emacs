@@ -346,7 +346,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     :(prn "new-plist: %s" _)
     :(setq break (1- break))
     :when (zero? break) :go 'exit
-    (debug)
+                                        ;(debug)
     :go 'loop
     'exit
     (plist-get _ 'a))
