@@ -218,7 +218,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro def (spec &rest body)
   (pcase spec
@@ -271,5 +270,19 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     fib-return-342))
 
 (fib 10) ;; => 55
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-deftype list-of-length (n)
+  "Type specifier for lists of length N."
+  `(and list (satisfies (lambda (lst) (length= lst ,n)))))
+
+(cl-deftype list-of-tys (ty)
+  "Type specifier for a list with elements of type TY."
+  `(and list (satisfies (lambda (lst) (cl-every (lambda (x) (cl-typep x ',ty)) lst)))))
+
+(def (div-mod (n : integer) (d : integer) : (and (list-of-length 2) (list-of-tys integer)))
+  (list (/ n d) (% n d)))
+
+(div-mod 19 8) ;; => (2 3)
