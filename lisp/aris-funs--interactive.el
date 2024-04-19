@@ -280,7 +280,7 @@
   comment."
   (interactive)
   (execute-kbd-macro
-    (kbd "C-M-a C-M-f C-SPC C-e C-w SPC C-c C-<backspace> <backspace> <backspace> C-M-b ; ; SPC = > SPC C-M-e <right>"))
+    (kbd "C-M-f C-SPC C-M-e C-w SPC ; ; SPC C-c C-<backspace> <backspace> C-r ; ; <right> <right> <right> = > SPC C-M-e"))
   (aris-goto-nonwhite))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
