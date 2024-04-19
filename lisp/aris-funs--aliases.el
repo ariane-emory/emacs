@@ -35,6 +35,7 @@
 (defalias 'incr            '1+)
 (defalias 'decf            'cl-decf)
 (defalias 'incf            'cl-incf)
+(defalias 'match           'pcase)
 (setq else t) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

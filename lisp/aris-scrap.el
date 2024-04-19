@@ -334,23 +334,33 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
+(setq *pipe--verbose* t)
 
 (def (fib (n : positive-integer)) ; => positive-integer
   (let ((break 10))
     (|>
       `(a 0 b 1 i ,n)
       'loop
+      :(debug)
       :when (zero? (plist-get _ 'i)) :go 'exit
-      :(prn "plist:     %s" _)
+      :(debug)
+      :(prn "PLIST:     %s" _)
+      ;; :(debug)
       :(debug)
       `(a ,(plist-get _ 'b) b ,(+ (plist-get _ 'a) (plist-get _ 'b)) i ,(1- (plist-get _ 'i)))
-      :(prn "new-plist: %s" _)
+      :(debug)
+      :(prn "NEW-PLIST: %s" _)
+      :(debug)
       :(setq break (1- break))
-      :(prn "break    : %s" break)
+      :(debug)
+      :(prn "BREAK    : %s" break)
       :(debug)
       :when (zero? break) :go 'exit
+      :(debug)
       :go 'loop
+      :(debug)
       'exit
+      :(debug)
       (plist-get _ 'a))
     ))
-;;(fib 10)
+;;(fib 8)
