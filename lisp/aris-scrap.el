@@ -219,3 +219,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 (fib 10)
+
+
+(pcase '(fib (n : integer) : integer)
+  (`(,name . ,rest) (list name rest)))
