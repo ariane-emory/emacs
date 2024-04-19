@@ -313,14 +313,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro take-pat (pat)
-  (prn "pat is %s, #1 = %s, #2 = %s, #3 = %s" pat
-    (car pat) (cadaadr pat) (car (cdadadr pat))))
-
-(take-pat `(,foo ,bar))
-
-(|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop) ;; => 189
-
 (def (fib (n : positive-integer)) => positive-integer
   (match n
     (0 0)
@@ -333,8 +325,6 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
       (if (= i 0)
         a
         (loop b (+ a b) (- i 1))))))
-
-(pipe-iter-fib 10) ;; => 55
 
 (def (pipe-iter-fib (n : positive-integer)) => positive-integer
   ;; "Non-recursive version of a pipe-based `fib'."
@@ -352,4 +342,9 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     :unless (zero? (alist-get 'i _)) :go 'loop
     ;; extract return value (else positive-integer return type wouldn't satisy):
     (alist-get 'a _)))
-(pipe-iter-fib 10)
+
+(pipe-iter-fib 20)
+(fib 20)
+
+(benchmark-run 10 (fib 10))
+(benchmark-run 10000 (+ 2 3))
