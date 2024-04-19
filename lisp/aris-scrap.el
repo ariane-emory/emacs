@@ -301,6 +301,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro take-pat (pat)
-  (prn "pat is %s, #1 = %s, #2 = %s, #3 = %s" pat (first pat) (second pat) (third pat)))
+  (prn "pat is %s, #1 = %s, #2 = %s, #3 = %s" pat
+    (car pat) (cadaadr pat) (car (cdadadr pat))))
 
 (take-pat `(,foo ,bar))
