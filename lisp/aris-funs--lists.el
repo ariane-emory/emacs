@@ -226,6 +226,42 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun caaaaar (lst) (car (caaaar)))
+(defun caaaadr (lst) (car (caaadr)))
+(defun caaadar (lst) (car (caadar)))
+(defun caaaddr (lst) (car (caaddr)))
+(defun caadaar (lst) (car (cadaar)))
+(defun caadadr (lst) (car (cadadr)))
+(defun caaddar (lst) (car (caddar)))
+(defun caadddr (lst) (car (cadddr)))
+(defun cadaaar (lst) (car (cdaaar)))
+(defun cadaadr (lst) (car (cdaadr)))
+(defun cadadar (lst) (car (cdadar)))
+(defun cadaddr (lst) (car (cdaddr)))
+(defun caddaar (lst) (car (cddaar)))
+(defun caddadr (lst) (car (cddadr)))
+(defun cadddar (lst) (car (cddddr)))
+(defun caddddr (lst) (car (cadddr)))
+(defun cdaaaar (lst) (cdr (caaaar)))
+(defun cdaaadr (lst) (cdr (caaadr)))
+(defun cdaadar (lst) (cdr (caadar)))
+(defun cdaaddr (lst) (cdr (caaddr)))
+(defun cdadaar (lst) (cdr (cadaar)))
+(defun cdadadr (lst) (cdr (cadadr)))
+(defun cdaddar (lst) (cdr (caddar)))
+(defun cdadddr (lst) (cdr (cadddr)))
+(defun cddaaar (lst) (cdr (cdaaar)))
+(defun cddaadr (lst) (cdr (cdaadr)))
+(defun cddadar (lst) (cdr (cdadar)))
+(defun cddaddr (lst) (cdr (cdaddr)))
+(defun cdddaar (lst) (cdr (cddaar)))
+(defun cdddadr (lst) (cdr (cddadr)))
+(defun cddddar (lst) (cdr (cdddar)))
+(defun cdddddr (lst) (cdr (cadddr)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun nthcdr (index lst)
 ;;   "Get the INDEXth cdr of LST."

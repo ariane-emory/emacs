@@ -240,7 +240,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (1 1)
     (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
 
-;; ... which expands into:
+;; ... which expands to:
 (defun fib (n)
   (cl-check-type n integer)
   (let ((fib-return-1100
@@ -276,7 +276,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (defun* div-mod ((n : integer) (d : integer)) => (pair-of integer)
   `(,(/ n d) \,(% n d)))
 
-;; ... expands to:
+;; ... which expands to:
 (defun div-mod
   (n d)
   (cl-check-type n integer)
@@ -299,3 +299,8 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         (prn "Popped %s from %s and pushed it onto %s." popped stk rev))))
   (prn "stk is %s and rev is %s" stk rev))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro take-pat (pat)
+  (prn "pat is %s, #1 = %s, #2 = %s, #3 = %s" pat (first pat) (second pat) (third pat)))
+
+(take-pat `(,foo ,bar))
