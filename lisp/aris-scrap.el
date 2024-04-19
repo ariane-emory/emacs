@@ -341,28 +341,12 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (|>
       `(a 0 b 1 i ,n)
       'loop
-      ;;; :(debug 1)
       :when (zero? (plist-get _ 'i)) :go 'exit
-      ;;; :(debug 2)
-      ;; :(prn "***PLIST:     %s" _)
-      ;; :(debug)
-      ;; :(debug 3)
       `(a ,(plist-get _ 'b) b ,(+ (plist-get _ 'a) (plist-get _ 'b)) i ,(1- (plist-get _ 'i)))
-      ;; :(prn "***NEW-PLIST: %s" _)
-                                        ;: (debug 4)
-      ;; :(debug 5)
-      ;; :(setq break (1- break))
-      ;; :(debug)
-      ;; :(prn "***BREAK    : %s" break)
-      ;; :(debug 6)
       :when (zero? (plist-get _ 'i)) :go 'exit
-      ;; :when (zero? break) :go 'exit
-      ;;;:(debug 7)
       :unless (zero? (plist-get _ 'i))
       :go 'loop
-      :(debug 8)
       'exit
-      ;;; :(debug 9)
       (plist-get _ 'a))
     ))
 ;;(fib 10)
