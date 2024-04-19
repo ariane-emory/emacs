@@ -261,7 +261,7 @@
                      (unless (length>= (--get-pipe-command-arity expr))
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)) found-go-label)
-                       (message "This is a :go to %S" go-label)
+                       (--pipe-prn ":GO-ING TO %S" go-label)
                        (set-remaining-body! (cdr body)) ;; rewind.
                        ;; skip exprs/commands+args until we find the label:
                        (while (and (not found-go-label) remaining-body)
