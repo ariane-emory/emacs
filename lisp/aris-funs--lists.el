@@ -240,7 +240,7 @@
 (defun cdddaar (lst) (cdr (cddaar lst)))
 (defun cdddadr (lst) (cdr (cddadr lst)))
 (defun cddddar (lst) (cdr (cdddar lst)))
-(defun cdddddr (lst) (cdr (cadddr lst)))
+(defun cdddddr (lst) (cdr (cddddr lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -252,13 +252,13 @@
 (defun third    (lst)                  (caddr lst))
 (defun fourth   (lst)                 (cadddr lst))
 (defun fifth    (lst)                (caddddr lst))
-(defun sixth    (lst)           (cadr (cddddr lst)))
-(defun seventh  (lst)          (caddr (cddddr lst)))
-(defun eighth   (lst)         (cadddr (cddddr lst)))
-(defun ninth    (lst)    (car (cddddr (cddddr lst))))
-(defun tenth    (lst)   (cadr (cddddr (cddddr lst))))
-(defun eleventh (lst)  (caddr (cddddr (cddddr lst))))
-(defun twelfth  (lst) (cadddr (cddddr (cddddr lst))))
+(defun sixth    (lst)           (car (cdddddr lst)))
+(defun seventh  (lst)          (cadr (cdddddr lst)))
+(defun eighth   (lst)         (caddr (cdddddr lst)))
+(defun ninth    (lst)    (car (cdddr (cdddddr lst))))
+(defun tenth    (lst)   (cadr (cdddr (cdddddr lst))))
+(defun eleventh (lst)  (caddr (cdddr (cdddddr lst))))
+(defun twelfth  (lst) (cadddr (cdddr (cdddddr lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (first    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 1)
 (confirm that (second   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 2)
