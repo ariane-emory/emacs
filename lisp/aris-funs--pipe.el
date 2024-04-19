@@ -259,9 +259,8 @@
                      (unless (length>= (--get-pipe-command-arity expr))
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)))
-                       (message "This is a :go to %s" go-label))
-                     (debug)
-                     (set-remaining-body! '',(cdr body))
+                       (message "This is a :go to %s" go-label)
+                       (set-remaining-body! (cdr body)))
                      )
                    (_ (let
                         ((result
