@@ -377,3 +377,9 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
   (`(',sym) (if (eq sym look-for)
               (prn "FOUND THE LABEL.")
               (prn "NOT THE LABEL"))))
+
+
+(pcase '('notloop)
+  ((and `(',sym) (guard (eq sym look-for)))
+    (prn "FOUND THE LABEL."))
+  (_ (prn "NOT THE LABEL")))
