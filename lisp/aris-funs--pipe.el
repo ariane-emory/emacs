@@ -262,7 +262,8 @@
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)) found-go-label)
                        (--pipe-prn ":GO-ING TO %S" go-label)
-                       (set-remaining-body! (cdr body)) ;; rewind.
+                       ;; rewind:
+                       (set-remaining-body! body)
                        ;; skip exprs/commands+args until we find the label:
                        (while (and (not found-go-label) remaining-body)
                          (let ((poppeds (pop-next-and-args!)))

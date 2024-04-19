@@ -102,9 +102,7 @@ parameters, for the moment)."
             (declare-form (nth 1 parse))
             (interactive-form (nth 2 parse))
             (body (nth 3 parse))
-            (return-type
-              (when (eq '=> (first body))
-                (second body)))
+            (return-type (when (eq '=> (first body)) (second body)))
             (return-sym (when return-type (gensym (format "%s-return-" name))))
             (body
               (if (null return-type)
