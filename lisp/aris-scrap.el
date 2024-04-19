@@ -9,7 +9,28 @@
 (require 'aris-funs--pattern-dispatch)
 (require 'aris-funs--stacks)
 (require 'aris-funs--unsorted)
+(require 'aris-funs--ignorebang)
 (require 'aris-types)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ignore!
+  (require 'huecycle)
+  `(huecycle-set-faces ((foreground . default)))'
+  (huecycle)
+  (huecycle-mode)
+  (huecycle-when-idle 3)
+  (huecycle-set-faces
+    ((background . hl-line)
+      (foreground . (line-number-current-line))
+      :random-color-hue-range (0.0 1.0)
+      :random-color-saturation-range (0.8 1.0)
+      :random-color-luminance-range (0.5 0.8))
+    ((foreground . warning)
+      :color-list ("#FF0000" "#FF0000" "#DDAAAA")
+      :next-color-func huecycle-get-next-list-color
+      :speed 5.0)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -305,3 +326,4 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (car pat) (cadaadr pat) (car (cdadadr pat))))
 
 (take-pat `(,foo ,bar))
+

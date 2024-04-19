@@ -245,40 +245,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; list funs (retrieving by position):
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun first-safe (lst) (car-safe lst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun first    (lst)                    (car lst))
-(defun second   (lst)                   (cadr lst))
-(defun third    (lst)                  (caddr lst))
-(defun fourth   (lst)                 (cadddr lst))
-(defun fifth    (lst)                (caddddr lst))
-(defun sixth    (lst)           (car (cdddddr lst)))
-(defun seventh  (lst)          (cadr (cdddddr lst)))
-(defun eighth   (lst)         (caddr (cdddddr lst)))
-(defun ninth    (lst)        (cadddr (cdddddr lst)))
-(defun tenth    (lst)   (car (cddddr (cdddddr lst))))
-(defun eleventh (lst)  (cadr (cddddr (cdddddr lst))))
-(defun twelfth  (lst) (caddr (cddddr (cdddddr lst))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (first    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 1)
-(confirm that (second   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 2)
-(confirm that (third    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 3)
-(confirm that (fourth   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 4)
-(confirm that (fifth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 5)
-(confirm that (sixth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 6)
-(confirm that (seventh  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 7)
-(confirm that (eighth   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 8)
-(confirm that (ninth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 9)
-(confirm that (tenth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 10)
-(confirm that (eleventh '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 11)
-(confirm that (twelfth  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 12)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun caar-safe (lst)
   (when-let ((Car (car-safe lst)))
     (car Car)))
@@ -464,6 +430,61 @@
     (cddddr Cdr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list funs (retrieving by position):
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun first    (lst)                    (car lst))
+(defun second   (lst)                   (cadr lst))
+(defun third    (lst)                  (caddr lst))
+(defun fourth   (lst)                 (cadddr lst))
+(defun fifth    (lst)                (caddddr lst))
+(defun sixth    (lst)           (car (cdddddr lst)))
+(defun seventh  (lst)          (cadr (cdddddr lst)))
+(defun eighth   (lst)         (caddr (cdddddr lst)))
+(defun ninth    (lst)        (cadddr (cdddddr lst)))
+(defun tenth    (lst)       (caddddr (cdddddr lst)))
+(defun eleventh (lst)  (car (cdddddr (cdddddr lst))))
+(defun twelfth  (lst) (cadr (cdddddr (cdddddr lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (first    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 1)
+(confirm that (second   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 2)
+(confirm that (third    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 3)
+(confirm that (fourth   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 4)
+(confirm that (fifth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 5)
+(confirm that (sixth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 6)
+(confirm that (seventh  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 7)
+(confirm that (eighth   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 8)
+(confirm that (ninth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 9)
+(confirm that (tenth    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 10)
+(confirm that (eleventh '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 11)
+(confirm that (twelfth  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 12)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun first-safe    (lst)                    (car-safe lst))
+(defun second-safe   (lst)                   (cadr-safe lst))
+(defun third-safe    (lst)                  (caddr-safe lst))
+(defun fourth-safe   (lst)                 (cadddr-safe lst))
+(defun fifth-safe    (lst)                (caddddr-safe lst))
+(defun sixth-safe    (lst)           (car (cdddddr-safe lst)))
+(defun seventh-safe  (lst)          (cadr (cdddddr-safe lst)))
+(defun eighth-safe   (lst)         (caddr (cdddddr-safe lst)))
+(defun ninth-safe    (lst)        (cadddr (cdddddr-safe lst)))
+(defun tenth-safe    (lst)       (caddddr (cdddddr-safe lst)))
+(defun eleventh-safe (lst)  (car (cdddddr (cdddddr-safe lst))))
+(defun twelfth-safe  (lst) (cadr (cdddddr (cdddddr-safe lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (first-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 1)
+(confirm that (second-safe   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 2)
+(confirm that (third-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 3)
+(confirm that (fourth-safe   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 4)
+(confirm that (fifth-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 5)
+(confirm that (sixth-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 6)
+(confirm that (seventh-safe  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 7)
+(confirm that (eighth-safe   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 8)
+(confirm that (ninth-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 9)
+(confirm that (tenth-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 10)
+(confirm that (eleventh-safe '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 11)
+(confirm that (twelfth-safe  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 12)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

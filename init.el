@@ -831,7 +831,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                     '(:family "Gill Sans" :height 1.15))))
+                '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()
@@ -874,6 +874,7 @@
            aris-funs--basic-preds
            aris-funs--unsorted
            aris-funs--confirm
+           aris-funs--ignorebang
            aris-funs--interactive
            aris-funs--lists
            aris-funs--stacks
