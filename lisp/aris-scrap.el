@@ -313,18 +313,24 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (fib (n : positive-integer)) => positive-integer
-  (match n
-    (0 0)
-    (1 1)
-    (n (|> n 1- fib (+ _ (|> n (- _ 2) fib))))))
-
 (ignore!
   (def (fib-iter (n : Int) : Int)
     (let loop ((a 0) (b 1) (i n))
       (if (= i 0)
         a
         (loop b (+ a b) (- i 1))))))
+
+(def (match-rec-fib (n : integer) : integer)
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (match-rec-fib (- n 1)) (match-rec-fib (- n 2))))))
+
+(def (pipe-match-rec-fib (n : positive-integer)) => positive-integer
+  (match n
+    (0 0)
+    (1 1)
+    (n (|> n 1- pipe-match-rec-fib (+ _ (|> n (- _ 2) pipe-match-rec-fib))))))
 
 (def (pipe-iter-fib (n : positive-integer)) => positive-integer
   ;; "Non-recursive version of a pipe-based `fib'."
@@ -346,10 +352,13 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 ;; (pipe-iter-fib 20)
 ;; (fib 20)
 
-(setq reps 10)
-(setq n 10)
-(benchmark-run reps (fib n)) ;; => (1.3783400000000001 10 0.9493239999999972)
-(benchmark-run reps (pipe-iter-fib n)) ;; => (0.003995 0 0.0)
+(ignore!
+  (progn
+    (setq reps 10)
+    (setq n 10)
+    (benchmark-run reps (match-rec-fib n)) ;; 
+    (benchmark-run reps (pipe-match-rec-fib n)) ;; => (180.770903 1268 125.78926799999999)
+    (benchmark-run reps (pipe-iter-fib n))) ;; => (0.006795 0 0.0)
+  )
 
-
-
+;; Wow, it's kinda nuts how much faster the `pipe-iter-fib` is compared to the naive `match` based recursive `fib` from yesterday:
