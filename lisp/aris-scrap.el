@@ -334,33 +334,22 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
         a
         (loop b (+ a b) (- i 1))))))
 
-;; (setq *pipe--verbose* t)
 
 (def (pipe-iter-fib (n : positive-integer)) => positive-integer
   (|>
-    ;; initialize env alist:
+    ;; basically just an env alist:
     `( (a . 0)
        (b . 1)
        (i . ,n))
     'loop
-    ;; update alist:
+    ;; update the env:
     `( (a . ,(alist-get 'b _))
        (b . ,(+ (alist-get 'a _) (alist-get 'b _)))
        (i . ,(1- (alist-get 'i _))))
-    ;; unless i = 0, loop;
+    ;; loop until i = 0:
     :unless (zero? (alist-get 'i _)) :go 'loop
     ;; extract return value (else positive-integer return type wouldn't satisy):
     (alist-get 'a _)))
 
 (pipe-iter-fib 10) ;; => 55
 
-(setq look-for 'loop)
-
-(pcase '('notloop)
-  ((and `(',sym) (guard (eq sym look-for)))
-    (prn "FOUND THE LABEL."))
-  (_ (prn "NOT THE LABEL")))
-
-(pcase '('loop)
-  ((and `(',sym) (guard (eq sym look-for)))
-    (prn "FOUND THE LABEL.")))
