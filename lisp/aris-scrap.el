@@ -343,9 +343,10 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     ;; extract return value (else positive-integer return type wouldn't satisy):
     (alist-get 'a _)))
 
-(pipe-iter-fib 20)
-(fib 20)
+;; (pipe-iter-fib 20)
+;; (fib 20)
 
-(benchmark-run 100 (fib 10)) ;; => (14.046519 102 9.741585)
-(benchmark-run 100 (pipe-iter-fib 10)) ;; => (0.143706 1 0.09579100000000551)
+;; (benchmark-run 100 (fib 10)) ;; => (14.046519 102 9.741585)
+;; (benchmark-run 100 (pipe-iter-fib 10)) ;; => (0.143706 1 0.09579100000000551)
+;; (benchmark-run (fib 10)) ;; => (14.046519 102 9.741585)
 
