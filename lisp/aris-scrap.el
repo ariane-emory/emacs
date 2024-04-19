@@ -225,8 +225,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (`(,name . ,arglist)
       (if-let ( (_ (eq : (car (last (butlast arglist)))))
                 (return-type (car (last arglist))))
-        (let ((arglist (cl-subseq arglist 0 -2)))
-          `(defun* ,name ,@arglist : ,return-type ,@body))
+        `(defun* ,name ,@(cl-subseq arglist 0 -2) : ,return-type ,@body)
         `(defun* ,name ,@arglist ,@body)))
     (_ (error "bad spec %S" spec))))
 
