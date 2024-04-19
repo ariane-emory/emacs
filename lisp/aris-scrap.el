@@ -341,26 +341,34 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (|>
       `(a 0 b 1 i ,n)
       'loop
-      :(debug)
+      :(debug 1)
       :when (zero? (plist-get _ 'i)) :go 'exit
-      :(debug)
-      :(prn "PLIST:     %s" _)
+      :(debug 2)
+      ;; :(prn "***PLIST:     %s" _)
       ;; :(debug)
-      :(debug)
+      ;; :(debug 3)
       `(a ,(plist-get _ 'b) b ,(+ (plist-get _ 'a) (plist-get _ 'b)) i ,(1- (plist-get _ 'i)))
-      :(debug)
-      :(prn "NEW-PLIST: %s" _)
-      :(debug)
-      :(setq break (1- break))
-      :(debug)
-      :(prn "BREAK    : %s" break)
-      :(debug)
-      :when (zero? break) :go 'exit
-      :(debug)
+      ;; :(prn "***NEW-PLIST: %s" _)
+                                        ;: (debug 4)
+      ;; :(debug 5)
+      ;; :(setq break (1- break))
+      ;; :(debug)
+      ;; :(prn "***BREAK    : %s" break)
+      :(debug 6)
+      :when (zero? (plist-get _ 'i)) :go 'exit
+      ;; :when (zero? break) :go 'exit
+      :(debug 7)
       :go 'loop
-      :(debug)
+      :(debug 8)
       'exit
-      :(debug)
+      :(debug 9)
       (plist-get _ 'a))
     ))
-;;(fib 8)
+;;(fib 6)
+
+(setq look-for 'loop)
+
+(pcase '('foo)
+  (`(,label)
+    (prn "FOUND THE LABEL %s."
+      label)))
