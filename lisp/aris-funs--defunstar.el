@@ -106,7 +106,7 @@ parameters, for the moment)."
             (return-type
               (when (eq : (first body))
                 (second body)))
-            (return-sym (when return-type (gensym "ret-")))
+            (return-sym (when return-type (gensym (format "%s-return-" name))))
             (body
               (if (null return-type)
                 body
