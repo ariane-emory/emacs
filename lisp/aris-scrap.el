@@ -219,7 +219,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro def* (spec &rest body)
+(defmacro def (spec &rest body)
   (pcase spec
     (`(,name . ,arglist)
       (if-let ( (_ (eq '=> (car (last (butlast arglist)))))
@@ -230,7 +230,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (defalias 'match 'pcase)
 
-(def* (fib (n : integer) => integer)
+(def (fib (n : integer) => integer)
   (match n
     (0 0)
     (1 1)
@@ -294,20 +294,30 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 (cl-typep '(1 . 2) 'pair-of-integers) ; This will return t.
 (cl-typep '(1 . "2") 'pair-of-integers) ; This will return nil.
 
-(def* (div-mod (n : integer) (d : integer)) => vec-of-2-integers
-  `[,(/ n d) ,(% n d)])
+(def (div-mod (n : integer) (d : integer)) => pair-of-integers
+  `(,(/ n d) . ,(% n d)))
 
-(defun* div-mod ((n : integer) (d : integer)) => vec-of-2-integers
-  `[,(/ n d) ,(% n d)])
+;; ... expands to:
+(defun* div-mod ((n : integer) (d : integer)) => pair-of-integers
+  `(,(/ n d) \,(% n d)))
 
-(defun div-mod (n d)
+;; ... expands to:
+(defun div-mod
+  (n d)
   (cl-check-type n integer)
   (cl-check-type d integer)
-  (let ((div-mod-return-1626 `[,(/ n d) ,(% n d)]))
-    (unless (cl-typep div-mod-return-1626 'vec-of-2-integers)
-      (signal 'wrong-type-return (list 'vec-of-2-integers div-mod-return-1626)))
-    div-mod-return-1626))
+  (let ((div-mod-return-1790 `(,(/ n d) \,(% n d))))
+    (unless (cl-typep div-mod-return-1790 'pair-of-integers)
+      (signal 'wrong-type-return (list 'pair-of-integers div-mod-return-1790)))
+    div-mod-return-1790))
 
-(div-mod 19 8) ;; => [2 3]
-(aref [2 3] 0)
+(div-mod 19 8) ;; => (2 . 3)
 
+
+(setq x 1 y 2)
+
+(cons x y)
+
+(macroexpand '`(,(/ n d) . ,(% n d))) ;; (cons (/ n d) (% n d))
+(macroexpand '`(,(/ n d) \,(% n d))) ;; (cons (/ n d) (% n d))
+(equal (macroexpand '`(,(/ n d) \,(% n d))) (macroexpand '`(,(/ n d) . ,(% n d)))) ;; => t
