@@ -183,6 +183,7 @@
        (cl-labels ( (length>= (len)
                       (length> remaining-body (1- len)))
                     (set-remaining-body! (new-body)
+                      (--pipe-print "Setting remaining-body to %S." new-body)
                       (setq remaining-body new-body))
                     (pop! ()
                       (unless (length>= 1) (signal 'stack-underflow (list 'remaining-body)))
@@ -258,7 +259,7 @@
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)))
                        (message "This is a :go to %s" go-label))
-                     (set-remaining-body! ,body)
+                     (set-remaining-body! ',(cdr body))
                      )
                    (_ (let
                         ((result

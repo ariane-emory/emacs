@@ -318,7 +318,7 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (take-pat `(,foo ,bar))
 
-(|> 7 'loop (* _ 3) :when (< 100 _) :go 'loop)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(|> 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
+
 
 
