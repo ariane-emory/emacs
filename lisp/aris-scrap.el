@@ -274,30 +274,40 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-deftype of-length (n)
+(cl-deftype seq-of-length (n)
   "Type specifier for things of length N."
-  `(satisfies (lambda (seq) (length= seq ,n))))
+  `(and sequence (satisfies (lambda (seq) (length= seq ,n)))))
 
-(cl-deftype of-ty (ty)
+(cl-deftype seq-of-ty (ty)
   "Type specifier for things with elements of type TY."
-  `(satisfies (lambda (seq) (cl-every (lambda (x) (cl-typep x ',ty)) seq))))
+  `(and sequence (satisfies (lambda (seq) (cl-every (lambda (x) (cl-typep x ',ty)) seq)))))
 
-(cl-deftype list-of-2-integers ()
+(cl-deftype vec-of-2-integers ()
   "Type specifier for lists of length 2 containing integers."
-  `(and list (of-length 2) (of-ty integer)))
+  `(and vector (seq-of-length 2) (seq-of-ty integer)))
 
-(def* (div-mod (n : integer) (d : integer)) => list-of-2-integers
-  `(,(/ n d) ,(% n d)))
+(cl-deftype pair-of-integers ()
+  "Type specifier for cons pairs of integers."
+  `(and cons (satisfies (lambda (x) (and (integerp (car x)) (integerp (cdr x)))))))
 
-(defun* div-mod ((n : integer) (d : integer)) => list-of-2-integers
-  `(,(/ n d) ,(% n d)))
+;; Example usage:
+(cl-typep '(1 . 2) 'pair-of-integers) ; This will return t.
+(cl-typep '(1 . "2") 'pair-of-integers) ; This will return nil.
+
+(def* (div-mod (n : integer) (d : integer)) => vec-of-2-integers
+  `[,(/ n d) ,(% n d)])
+
+(defun* div-mod ((n : integer) (d : integer)) => vec-of-2-integers
+  `[,(/ n d) ,(% n d)])
 
 (defun div-mod (n d)
   (cl-check-type n integer)
   (cl-check-type d integer)
-  (let ((div-mod-return-614 (list (/ n d) (% n d))))
-    (unless (cl-typep div-mod-return-614 'list-of-2-integers)
-      (signal 'wrong-type-return (list 'list-of-2-integers div-mod-return-614)))
-    div-mod-return-614))
+  (let ((div-mod-return-1626 `[,(/ n d) ,(% n d)]))
+    (unless (cl-typep div-mod-return-1626 'vec-of-2-integers)
+      (signal 'wrong-type-return (list 'vec-of-2-integers div-mod-return-1626)))
+    div-mod-return-1626))
 
-(div-mod 19 8) ;; => (2 3)
+(div-mod 19 8) ;; => [2 3]
+(aref [2 3] 0)
+
