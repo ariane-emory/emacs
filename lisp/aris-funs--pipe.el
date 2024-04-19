@@ -262,22 +262,22 @@
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)) found-go-label)
                        (message "This is a :go to %s" go-label)
-                       (set-remaining-body! (cdr body))
-
+                       (set-remaining-body! (cdr body)) ;; rewind.
+                       ;; skip exprs/commands+args until we find the label:
                        (while (and (not found-go-label) remaining-body)
                          (let ((poppeds (pop-next-and-args!)))
                            (--pipe-prn "poppeds are %s, left with %s"
                              poppeds remaining-body)
                            (--pipe-prn "comparing %s and %s = %s"
                              (car poppeds) go-label (eq (car poppeds) go-label))
-                           (when (eq (car poppeds) go-label)
-                             (--pipe-prn "FOUND THE LABEL")
-                             (setq found-go-label t)
-                             )))
-                       
-                       ;; (unless found-go-label
-                       ;;   (error ":go label %s not found" go-label))
-                       ))
+                           (pcase poppeds 
+                             (`(',go-label)
+                               (--pipe-prn "FOUND THE LABEL, CONTINUE FROM %s."
+                                 remaining-body)
+                               (setq found-go-label t)))))
+                       ;; error if we didn't find the label:
+                       (unless found-go-label
+                         (error ":go label %s not found in %s" go-label body))))
                    (_ (let
                         ((result
                            (eval (if (fun? expr)

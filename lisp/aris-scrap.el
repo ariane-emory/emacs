@@ -319,8 +319,4 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
 
 (take-pat `(,foo ,bar))
 
-(|> 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
-
-(setq foo 'loop)
-(pcase `(',foo)
-  (`(',loop) t))
+(|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
