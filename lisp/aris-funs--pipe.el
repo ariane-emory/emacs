@@ -601,6 +601,10 @@
   (confirm that
     (|> ((x 5)) (+ x 7) :(ignore "hello") (+ x 3) neg :when negative? neg :when (> x 20) (return! 11))
     returns 15)
+
+  (confirm that
+    (|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
+    returns 189)
   
   (--pipe-prn "Ran all pipe test cases.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
