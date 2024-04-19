@@ -237,6 +237,39 @@ marked pure mainly to test if DECLARE-FORM is handled properly."
     (1 1)
     (n (+ (fib (- n 1)) (fib (- n 2))))))
 
+;; ... expands into:
+(defun* fib ((n : integer)) : integer
+  (match n
+    (0 0)
+    (1 1)
+    (n (+ (fib (- n 1)) (fib (- n 2))))))
+
+;; ... which expands into:
+(defun fib (n)
+  (cl-check-type n integer)
+  (let ((fib-return-342
+          (match n
+            (0 0)
+            (1 1)
+            (n (+ (fib (- n 1)) (fib (- n 2)))))))
+    (unless (cl-typep fib-return-342 'integer)
+      (signal 'wrong-type-return (list 'integer fib-return-342)))
+    fib-return-342))
+
+;; with match/pcase expanded too:
+(defun fib (n)
+  (cl-check-type n integer)
+  (let ((fib-return-342
+          (cond
+            ((eql n 0) (let nil 0))
+            ((eql n 1) (let nil 1))
+            (t
+              (let ((n n))
+                (+ (fib (- n 1)) (fib (- n 2))))))))
+    (unless (cl-typep fib-return-342 'integer)
+      (signal 'wrong-type-return (list 'integer fib-return-342)))
+    fib-return-342))
+
 (fib 10) ;; => 55
 
 
