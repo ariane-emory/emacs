@@ -63,3 +63,8 @@
 (symbol-function 'bar)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(dotimes (n 20)
+  (let ((n (1+ n)))
+    (clear-memos 'untyped-memoized-until-fib)
+    (prn "%2d => %.10f" n
+      (first (benchmark-run n (untyped-memoized-until-fib 100))))))
