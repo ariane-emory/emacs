@@ -370,6 +370,12 @@
            flycheck-inline flycheck-rust macrostep markdown-mode 
            paredit platformio-mode rust-mode swift-mode which-key))
 
+      (use-package zoom :ensure t
+        :init
+        (setq zoom-size '(95 . 24))
+        :config
+        (zoom-mode 1))
+      
       (use-package-with-message beacon :ensure t
         :init
         (setq beacon-blink-delay 0.2)

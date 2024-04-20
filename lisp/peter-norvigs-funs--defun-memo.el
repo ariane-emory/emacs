@@ -8,6 +8,7 @@
 ;; https://people.eecs.berkeley.edu/~fateman/lisp/memo-simp.lisp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--with-messages)
+(require 'aris-funs--with-gensyms)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -35,13 +36,14 @@
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
     (setf (get name 'memo-table) table)
-    `(lambda (&rest args)
-       (let* ( (k   (funcall #',key args))
-               (val (gethash k ,table :MEMO-NOT-FOUND)))
-         (if (eq val :MEMO-NOT-FOUND)
-           (setf (gethash k ,table) (apply ,fun args))
-           val)))))
-           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-gensyms (memo-not-found)
+      `(lambda (&rest args)
+         (let* ( (k   (funcall #',key args))
+                 (val (gethash k ,table ',memo-not-found)))
+           (if (eq val ',memo-not-found)
+             (setf (gethash k ,table) (apply ,fun args))
+             val))))))
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
