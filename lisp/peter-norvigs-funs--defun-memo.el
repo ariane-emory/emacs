@@ -6,7 +6,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro defun-memo (fun args &body body)
+(defmacro defun-memo (fun args &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a memoized function."
   `(memoize (defun ,fun ,args . ,body)))
@@ -14,14 +14,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun memo (fun &key (key #'first) (test #'eql) name)
+(cl-defun memo (fun &key (key #'first) (test #'eql) name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
     (setf (get name 'memo) table)
     #'(lambda (&rest args)
         (let ((k (funcall key args)))
-          (multiple-value-bind (val found-p)
+          (cl-multiple-value-bind (val found-p)
             (gethash k table)
             (if found-p val
               (setf (gethash k table) (apply fun args))))))))
@@ -29,7 +29,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun memoize (fun-name &key (key #'first) (test #'eql))
+(cl-defun memoize (fun-name &key (key #'first) (test #'eql))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Replace fun-name's global definition with a memoized version."
   (clear-memoize fun-name)
@@ -43,7 +43,7 @@
 (defun clear-memoize (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Clear the hash table from a memo function."
-  (let ((table (get funy-name 'memo)))
+  (let ((table (get fun-name 'memo)))
     (when table (clrhash table))))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -55,7 +55,9 @@
   (maphash #'(lambda (k v) (format t "~%key= ~s value=~s" k v)) (get h 'memo)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun-memo mul (x y) (* x y))
 
+(mul 7 9)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--ignorebang)
+(provide 'peter-norvigs-funs--defun-memo)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
