@@ -34,23 +34,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (div-mod (n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
+(def* (div-mod (n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
   `(,(/ n d) . ,(% n d)))
 
 ;; ... expands to:
 (defun* div-mod ((n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
   `(,(/ n d) \,(% n d)))
-
-;; ... which expands to:
-(defun div-mod
-  (n d)
-  (cl-check-type n positive-integer)
-  (cl-check-type d positive-integer)
-  (let ((div-mod-return-1790 (cons (/ n d) (% n d))))
-    (unless (cl-typep div-mod-return-1790 '(pair-of positive-integer))
-      (signal 'wrong-type-return
-        (list 'pair-of positive-integer div-mod-return-17q90)))
-    div-mod-return-1790))
 
 (div-mod 19 8) ;; => (2 . 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,7 +47,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
-  (def (fib-iter (n : Int) : Int)
+  (def* (fib-iter (n : Int) : Int)
     (let loop ((a 0) (b 1) (i n))
       (if (= i 0)
         a
@@ -75,7 +64,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (typed-pcase-fib (n : positive-integer)) => positive-integer
+(def* (typed-pcase-fib (n : positive-integer)) => positive-integer
   (pcase n
     (0 0)
     (1 1)
@@ -84,7 +73,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (typed-piped-pcase-fib (n : positive-integer)) => positive-integer
+(def* (typed-piped-pcase-fib (n : positive-integer)) => positive-integer
   (match n
     (0 0)
     (1 1)
@@ -93,7 +82,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (typed-piped-iter-fib (n : positive-integer)) => positive-integer
+(def* (typed-piped-iter-fib (n : positive-integer)) => positive-integer
   ;; "Non-recursive version of a pipe-based `fib'."
   (|>
     ;; basically just an env alist:
@@ -140,7 +129,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (typed-naive-fib (n : positive-integer)) => positive-integer
+(def* (typed-naive-fib (n : positive-integer)) => positive-integer
   (if (<= n 1) n
     (+ (typed-naive-fib (- n 1)) (typed-naive-fib (- n 2)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,8 +145,8 @@
     (benchmark-run reps (typed-naive-fib n)) ;; => (0.075895 0 0.0)
     (benchmark-run reps (typed-pcase-fib n)) ;; => (0.094119 0 0.0)
     (benchmark-run reps (typed-piped-pcase-fib n)) ;; (188.736017 1369 131.53158799999997)    
-    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.013819000000000001 0 0.0)
-    (benchmark-run reps (piped-iter-fib n)) ;; => (0.113213 1 0.10347000000001572)
+    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.011290000000000001 0 0.0)
+    (benchmark-run reps (piped-iter-fib n)) ;; => (0.010399 0 0.0)
     )
-  ) ;; 
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
