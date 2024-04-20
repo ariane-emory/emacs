@@ -13,11 +13,11 @@
 (div-mod 19 8) ;; => (2 . 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(cl-defun foo (fun &key (key #'first) (test #'eql) name)
-  (list fun key test name))
+(defun foo (x y) (* x y))
 
-(foo 1 :name 2)
+(make-memo-fun (symbol-function 'foo))
 
-(defun-memo mul (x y) (* x y))
+(defun-memo foo (x y) (prn "Calculate %s x %s" x y ) (* x y))
 
-(mul 7 9)
+(foo 7 10)
+

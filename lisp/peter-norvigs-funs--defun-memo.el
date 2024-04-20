@@ -19,13 +19,15 @@
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
     (setf (get name 'memo) table)
-    #'(lambda (&rest args)
-        (let ((k (funcall key args)))
-          (cl-multiple-value-bind (val found-p)
-            (gethash k table)
-            (if found-p val
-              (setf (gethash k table) (apply fun args))))))))
-              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    `(lambda (&rest args)
+       (prn "args is %s" args)
+       (let ((k (funcall #',key args)))
+         (cl-multiple-value-bind (val found-p)
+           (gethash k ,table)
+           (if found-p
+             val
+             (setf (gethash k ,table) (apply ,fun args))))))))
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
