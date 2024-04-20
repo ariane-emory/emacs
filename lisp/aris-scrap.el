@@ -157,7 +157,36 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun untyped-tagbody-fib (n)
+  (let ((a 0) (b 1) (i n) (sym (gensym)))
+    (cl-block sym
+      (cl-tagbody
+        loop
+        (if (zerop i)
+          (go done))
+        (setq i (1- i))
+        (setq b (+ a b))
+        (setq a (- b a))
+        (go loop)
+        done
+        (cl-return-from sym a)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def* (typed-tagbody-fib (n : positive-integer)) => positive-integer
+  (let ((a 0) (b 1) (i n) (sym (gensym)))
+    (cl-block sym
+      (cl-tagbody
+        loop
+        (setq i (1- i))
+        (setq b (+ a b))
+        (setq a (- b a))
+        (when  (not (zerop i)) (go loop))
+        done
+        (cl-return-from sym a)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
@@ -170,8 +199,11 @@
     (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.075735 0 0.0)
     (benchmark-run reps (typed-pcase-fib n)) ;; => (0.18282 0 0.0)
 
-    (benchmark-run reps (untyped-piped-iter-fib n)) ;; => (0.013691 0 0.0)
-    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.015861 0 0.0)
+    (benchmark-run reps (untyped-piped-iter-fib n)) ;; => (0.013763000000000001 0 0.0)
+    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.021027 0 0.0)
+    
+    (benchmark-run reps (untyped-tagbody-fib n)) ;; => (0.000352 0 0.0)
+    (benchmark-run reps (typed-tagbody-fib n)) ;; => (0.000229 0 0.0)
 
     (benchmark-run reps (untyped-piped-pcase-fib n)) ;; => (398.437878 2690 276.91953)
     (benchmark-run reps (typed-piped-pcase-fib n)) ;; (188.736017 1369 131.53158799999997)    
