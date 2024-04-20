@@ -60,25 +60,3 @@
 
 (symbol-function 'bar)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(with-gensyms (foo) 1 2 3)
-(let ((foo (gensym "foo-")))
-  1 2 3)
-
-(with-gensyms nil 1 2 3)
-(progn 1 2 3)
-
-(with-gensyms (foo) foo)
-(let
-  ((foo
-     (gensym "foo-")))
-  foo)
-
-
-(with-gensyms nil 1)
-1
-(with-gensyms nil 1 2)
-(progn 1 2)
-
-
-
