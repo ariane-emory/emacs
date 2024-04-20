@@ -897,6 +897,7 @@
            aris-funs--pcase-x
            aris-types
            steve-loshs-funs--if-let
+           peter-norvigs-funs--defun-memo
            aris-configure--key-bindings
            aris-configure--tetris-keymap
            aris-configure--global-abbrevs-table 
