@@ -3,9 +3,12 @@
 ;; Peter Norvig's `defun-memo', translated from Common Lisp to Emacs Lisp by
 ;; ariane-emory.
 ;;
-;; Based largely on materiel found at: https://finnvolkel.com/memoization
+;; Based largely on materiel found at these URLs:
+;; https://finnvolkel.com/memoization
+;; https://people.eecs.berkeley.edu/~fateman/lisp/memo-simp.lisp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(require 'aris-funs--with-messages)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro defun-memo (fun-name args &rest body)
@@ -50,15 +53,16 @@
   ;; - ari changed the default test from from #'eql to #'equal.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Replace fun-name's global definition with a memoized version."
-  (clear-memoize fun-name)
+  (clear-memos fun-name)
   (setf (symbol-function fun-name)
     (make-memo-fun (symbol-function fun-name) fun-name key test)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun clear-memoize (fun-name)
+(defun clear-memos (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari renamed this from `clear-memoize' to `clear-memos'.
   ;; - ari renamed 'memo to 'memo-table.
   ;; - ari made this fun more elisp-y by using `when-let'.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,14 +73,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun format-memo-table (h)
+(defun print-memo-table (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari renamed 'memo to 'memo-table.
   ;; - ari adjusted the format string for elisp.
+  ;; - ari wrote this herself, it is not from Norvig.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Stringify the memo table for debugging purposes."
-  (maphash (lambda (k v) (format "key= %S value=%S\n" k v)) (get h 'memo-table)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let (result)
+    (maphash
+      (lambda (k v) (push (format "%S ⇒ %S" k v) result))
+      (get 'bar 'memo-table))
+    (nreverse result)))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
