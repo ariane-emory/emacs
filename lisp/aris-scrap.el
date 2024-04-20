@@ -1,5 +1,7 @@
 ;; -*- lexical-binding: nil; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'peter-norvigs-funs--defun-memo)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,19 +15,10 @@
 (div-mod 19 8) ;; => (2 . 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun foo (x y) (* x y))
 
-(make-memo-fun (symbol-function 'foo))
-
-(defun-memo foo (x y) (prn "Calculate %s x %s" x y ) (* x y))
-
-(foo 7 8)
-(foo 7 8)
-(foo 7 9)
-(foo 7 9 10)
-
-(defun* foo ((n : positive-integer)) => positive-integer
-  (* n n))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  type both argument and return::
+(defun* foo ((n : positive-integer)) => positive-integer (* n n))
 
 (defun foo (n)
   (cl-check-type n positive-integer)
@@ -34,8 +27,8 @@
       (signal 'wrong-type-return (list 'positive-integer foo-return-1126)))
     foo-return-1126))
 
-(defun* foo (n) => positive-integer
-  (* n n))
+;; only type return:
+(defun* foo (n) => positive-integer (* n n))
 
 (defun foo (n)
   (let ((foo-return-1127 (* n n)))
@@ -43,13 +36,27 @@
       (signal 'wrong-type-return (list 'positive-integer foo-return-1127)))
     foo-return-1127))
 
-(defun* foo ((n : positive-integer))
-  (* n n))
+;; only type argument:
+(defun* foo ((n : positive-integer)) (* n n))
 
 (defun foo (n)
   (cl-check-type n positive-integer)
   (* n n))
 
+;; type neither:
+(defun* foo (n) (* n n))
+
+(defun foo (n)
+  (* n n))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun-memo foo (x y) (prn "Calculate %s x %s.." x y ) (* x y))
+
+(foo 7 8)
+(foo 7 8)
+(foo 7 9)
+;; (foo 7 9 10)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
