@@ -625,16 +625,16 @@
       (pd--reset)
 
       ;; Define some simple functions:
-      (pdef (doub n) (|> n (+ _ _)))
-      (pdef (sqr y) (|> y (* _ _)))
-      (pdef (doub-sqr y) (doub (sqr y)))
+      (pd--def (doub n) (|> n (+ _ _)))
+      (pd--def (sqr y) (|> y (* _ _)))
+      (pd--def (doub-sqr y) (doub (sqr y)))
 
       ;; Define a fib:
-      (pdef (fib 0) 0)
-      (pdef (fib 1) 1)
-      (pdef (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+      (pd--def (fib 0) 0)
+      (pd--def (fib 1) 1)
+      (pd--def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
       
-      ;; (pdef (fib n)
+      ;; (pd--def (fib n)
       ;;   (|>
       ;;     :(prn "Calculating (fib %d) using a pipe-based fib..." n)
       ;;     (|> n

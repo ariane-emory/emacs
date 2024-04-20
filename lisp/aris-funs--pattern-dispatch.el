@@ -2,9 +2,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lust-style function definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (pdef (fib 0) 0)
-;; (pdef (fib 1) 1)
-;; (pdef (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+;; (pd--def (fib 0) 0)
+;; (pd--def (fib 1) 1)
+;; (pd--def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--match-pattern)
 (require 'aris-funs--match-pattern2)
@@ -363,7 +363,7 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Aliases:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'pdef 'pd--def)
+(defalias 'pd--def 'pd--def)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -377,12 +377,12 @@ because we're gong to be stshing stuff in their symbol properties."
            (*match-pattern2--verbose* nil))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (pd--reset)
-      (pdef (fib 0) 0)
-      (pdef (fib 1) 1)
-      (pdef (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-      (pdef (double n) (+ n n))
-      (pdef (square y) (* y y))
-      (pdef (double-square y) (double (square y)))
+      (pd--def (fib 0) 0)
+      (pd--def (fib 1) 1)
+      (pd--def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+      (pd--def (double n) (+ n n))
+      (pd--def (square y) (* y y))
+      (pd--def (double-square y) (double (square y)))
       (double-square 3)
 
       (prndiv)
