@@ -457,14 +457,14 @@
         :config
         (company-posframe-mode 1))
 
-      (use-package-with-message company-sourcekit :ensure t
-        :init 
-        (add-to-list 'company-backends 'company-sourcekit)
-        (setq sourcekit-available-ports '(8081))  
-        (setq sourcekit-sourcekittendaemon-executable
-          "/usr/local/bin/sourcekittendaemon")
-        (setq sourcekit-verbose t)
-        (setq company-sourcekit-verbose t))
+      ;; (use-package-with-message company-sourcekit :ensure t
+      ;;   :init 
+      ;;   (add-to-list 'company-backends 'company-sourcekit)
+      ;;   (setq sourcekit-available-ports '(8081))  
+      ;;   (setq sourcekit-sourcekittendaemon-executable
+      ;;     "/usr/local/bin/sourcekittendaemon")
+      ;;   (setq sourcekit-verbose t)
+      ;;   (setq company-sourcekit-verbose t))
 
       (use-package-with-message copilot :diminish copilot-mode
         :init
