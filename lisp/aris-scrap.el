@@ -59,6 +59,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (symbol-function 'bar)
+(lambda
+  (&rest args)
+  (let ((val (gethash args #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()) 'memo-not-found-898)))
+    (if (eq val 'memo-not-found-898)
+      (setf (gethash args #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()))
+        (apply
+          (lambda (x y)
+            (prn "Calculate %s x %s.." x y)
+            (* x y))
+          args))
+      val)))
+
+(lambda (&rest args)
+  (let ((val (gethash args #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()) 'memo-not-found-896)))
+    (if (eq val 'memo-not-found-896)
+      (setf (gethash args #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()))
+        (apply
+          (lambda
+            (x y)
+            (prn "Calculate %s x %s.." x y)
+            (* x y))
+          args))
+      val)))
+
+(lambda (&rest args)
+  (let ((val (gethash args #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()) 'memo-not-found-895)))
+    (if (eq val 'memo-not-found-895)
+      (setf (gethash args #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()))
+        (apply
+          (lambda (x y)
+            (prn "Calculate %s x %s.." x y)
+            (* x y))
+          args))
+      val)))
 
 (lambda (&rest args)
   (let* ( (k args)

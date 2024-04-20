@@ -25,8 +25,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-memo-fun (fun name test)
+(defun make-memo-fun (fun fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari removed the TEST argument.
   ;; - ari removed the KEY argument.
   ;; - ari replaced a "(`setf' (`get'" with a "(`put'".
   ;; - ari renamed 'memo to 'memo-table.
@@ -35,21 +36,21 @@
   ;; - ari adjusted this to use backwote so as to align with elisps scoping.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
-  (let ((table (make-hash-table :test test)))
-    (setf (get name 'memo-table) table)
+  (let ((table (make-hash-table :test #'equal)))
+    (setf (get fun-name 'memo-table) table)
     (with-gensyms (memo-not-found)
       `(lambda (&rest args)
-         (let* ( (k   args)
-                 (val (gethash k ,table ',memo-not-found)))
+         (let ((val (gethash args ,table ',memo-not-found)))
            (if (eq val ',memo-not-found)
-             (setf (gethash k ,table) (apply ,fun args))
+             (setf (gethash args ,table) (apply ,fun args))
              val))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun bind-to-memo-fun (fun-name &key (test #'equal))
+(cl-defun bind-to-memo-fun (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari removed the TEST argument.
   ;; - ari removed the KEY argument.
   ;; - ari renamed this from `memoize' to `bind-to-memo-fun'.
   ;; - ari changed the default key from #'first to #'identity.
@@ -58,7 +59,7 @@
   "Replace fun-name's global definition with a memoized version."
   (clear-memos fun-name)
   (setf (symbol-function fun-name)
-    (make-memo-fun (symbol-function fun-name) fun-name test)))
+    (make-memo-fun (symbol-function fun-name) fun-name)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
