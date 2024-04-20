@@ -100,8 +100,8 @@
   (untyped-memoized-naive-fib 2000))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun ack (m n)
-  "Compute the Ack function A(m, n)."
+(defun-memo ack (m n)
+  "Compute the Ackermann function A(m, n)."
   (cond
     ((zerop m) (1+ n))
     ((zerop n) (ack (1- m) 1))
@@ -111,3 +111,5 @@
 (message "Ack(1, 1) = %d" (ack 1 1))
 (message "Ack(3, 2) = %d" (ack 3 2))
 (message "Ack(4, 1) = %d" (ack 4 1))
+
+(print-memos 'ack)
