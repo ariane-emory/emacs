@@ -107,6 +107,29 @@
     ((zerop n) (ack (1- m) 1))
     (t (ack (1- m) (ack m (1- n))))))
 
+(defun-memo ack-iter (m n)
+  "Compute the Ackermann function A(m, n)."
+  (with-gensyms (block)
+    (cl-block block
+      (cl-tagbody
+        loop
+        (cond
+          ((zerop m)
+            (cl-return-from block (1+ n)))
+          ((zerop n)
+            (cl-decf m)
+            (setq n 1)
+            (go loop))
+          (t
+            (cl-decf m)
+            (setq n (ack-iter m (1- n)))
+            (go loop)))))))
+
+;; Test the Ack function
+(message "Ack-Iter(1, 1) = %d" (ack-iter 1 1))
+(message "Ack-Iter(3, 2) = %d" (ack-iter 3 2))
+(message "Ack-Iter(4, 1) = %d" (ack-iter 4 1))
+
 ;; Test the Ack function
 (message "Ack(1, 1) = %d" (ack 1 1))
 (message "Ack(3, 2) = %d" (ack 3 2))
