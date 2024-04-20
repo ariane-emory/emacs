@@ -18,7 +18,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a memoized function."
   `(progn
-     (memoize (defun ,fun-name ,args . ,body))
+     (bind-to-memo-fun (defun ,fun-name ,args . ,body))
      ',fun-name))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -35,10 +35,7 @@
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
     (setf (get name 'memo-table) table)
-    (prn "setting %s 'memo-table to %s" name table)
     `(lambda (&rest args)
-       (prn "args is %s" args)
-       (prn "table is %s" ,table)
        (let* ( (k   (funcall #',key args))
                (val (gethash k ,table :MEMO-NOT-FOUND)))
          (if (eq val :MEMO-NOT-FOUND)
@@ -48,8 +45,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun memoize (fun-name &key (key #'identity) (test #'equal))
+(cl-defun bind-to-memo-fun (fun-name &key (key #'identity) (test #'equal))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari renamed this from `memoize' to `bind-to-memo-fun'.
   ;; - ari changed the default key from #'first to #'identity.
   ;; - ari changed the default test from from #'eql to #'equal.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,7 +55,7 @@
   (clear-memos fun-name)
   (setf (symbol-function fun-name)
     (make-memo-fun (symbol-function fun-name) fun-name key test)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,6 +85,20 @@
       (get 'bar 'memo-table))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun print-memo-table (fun-name)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari wrote this herself, it is not from Norvig.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Format the memo table of FUN-NAME for debugging purposes."
+  (prndiv)
+  (prn "Memo table for '%S:" fun-name)
+  (prndiv)
+  (mapc #'prn (format-memo-table fun-name))
+  (prndiv))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
