@@ -68,32 +68,32 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--reset)
-(pdef (pd-fib 0) 0)
-(pdef (pd-fib 1) 1)
-(pdef (pd-fib n) (+ (fib (- n 1)) (fib (- n 2))))
+(pdef (pattern-dispatch-fib 0) 0)
+(pdef (pattern-dispatch-fib 1) 1)
+(pdef (pattern-dispatch-fib n) (+ (pattern-dispatch-fib (1- n)) (pattern-dispatch-fib (- n 2))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (match-rec-fib (n : positive-integer)) => positive-integer
+(def (typed-pcase-fib (n : positive-integer)) => positive-integer
+  (pcase n
+    (0 0)
+    (1 1)
+    (n (+ (typed-pcase-fib (- n 1)) (typed-pcase-fib (- n 2))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def (typed-piped-pcase-fib (n : positive-integer)) => positive-integer
   (match n
     (0 0)
     (1 1)
-    (n (+ (match-rec-fib (- n 1)) (match-rec-fib (- n 2))))))
+    (n (|> n 1- typed-piped-pcase-fib (+ _ (|> n (- _ 2) typed-piped-pcase-fib))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (pipe-match-rec-fib (n : positive-integer)) => positive-integer
-  (match n
-    (0 0)
-    (1 1)
-    (n (|> n 1- pipe-match-rec-fib (+ _ (|> n (- _ 2) pipe-match-rec-fib))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def (pipe-iter-fib (n : positive-integer)) => positive-integer
+(def (typed-piped-iter-fib (n : positive-integer)) => positive-integer
   ;; "Non-recursive version of a pipe-based `fib'."
   (|>
     ;; basically just an env alist:
@@ -113,12 +113,51 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun piped-iter-fib (n)
+  ;; "Non-recursive version of a pipe-based `fib'."
+  (|>
+    ;; basically just an env alist:
+    `( (a . 0)
+       (b . 1)
+       (i . ,n))
+    'loop
+    ;; update the env:
+    `( (a . ,(alist-get 'b _))
+       (b . ,(+ (alist-get 'a _) (alist-get 'b _)))
+       (i . ,(1- (alist-get 'i _))))
+    ;; loop until i = 0:
+    :unless (zero? (alist-get 'i _)) :go 'loop
+    ;; extract return value (else positive-integer return type wouldn't satisy):
+    (alist-get 'a _)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun traditional-naive-fib (n)
+  (if (<= n 1) n
+    (+ (traditional-naive-fib (- n 1)) (traditional-naive-fib (- n 2)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def (typed-naive-fib (n : positive-integer)) => positive-integer
+  (if (<= n 1) n
+    (+ (typed-naive-fib (- n 1)) (typed-naive-fib (- n 2)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
     (setq reps 10)
     (setq n 20)
-    (benchmark-run reps (match-rec-fib n)) ;; => (0.094119 0 0.0)
-    (benchmark-run reps (pipe-match-rec-fib n)) ;; (188.736017 1369 131.53158799999997)    
-    (benchmark-run reps (pipe-iter-fib n)) ;; => (0.013819000000000001 0 0.0)
-  )
+    (benchmark-run reps (traditional-naive-fib n)) ;; => (0.023791 0 0.0)
+    (benchmark-run reps (pattern-dispatch-fib n)) ;; => (283.103026 1793 179.31079300000005)
+    (benchmark-run reps (typed-naive-fib n)) ;; => (0.075895 0 0.0)
+    (benchmark-run reps (typed-pcase-fib n)) ;; => (0.094119 0 0.0)
+    (benchmark-run reps (typed-piped-pcase-fib n)) ;; (188.736017 1369 131.53158799999997)    
+    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.013819000000000001 0 0.0)
+    (benchmark-run reps (piped-iter-fib n)) ;; => (0.113213 1 0.10347000000001572)
+    )
+  ) ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
