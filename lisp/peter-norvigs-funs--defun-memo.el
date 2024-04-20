@@ -81,7 +81,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun format-memo-table (fun-name)
+(defun format-memos (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari renamed 'memo to 'memo-table.
   ;; - ari adjusted the format string for elisp.
@@ -97,7 +97,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun print-memo-table (fun-name)
+(defun print-memos (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari wrote this herself, it is not from Norvig.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -105,9 +105,9 @@
   (prndiv)
   (prn "Memo table for '%S:" fun-name)
   (prndiv)
-  (if-let ((formatted (format-memo-table fun-name)))
+  (if-let ((formatted (format-memos fun-name)))
     (mapc #'prn formatted)
-    "(empty)")
+    (prn "(empty)"))
   (prndiv))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
