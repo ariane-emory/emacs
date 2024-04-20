@@ -57,3 +57,17 @@
 (bar 7 8)
 (bar 7 9)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(symbol-function 'bar)
+
+(lambda (&rest args)
+  (let* ( (k args)
+          (val (gethash k #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()) 'memo-not-found-893)))
+    (if (eq val 'memo-not-found-893)
+      (setf (gethash k #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ()))
+        (apply
+          (lambda (x y)
+            (prn "Calculate %s x %s.." x y)
+            (* x y))
+          args))
+      val)))

@@ -25,8 +25,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-memo-fun (fun name key test)
+(defun make-memo-fun (fun name test)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari removed the KEY argument.
   ;; - ari replaced a "(`setf' (`get'" with a "(`put'".
   ;; - ari renamed 'memo to 'memo-table.
   ;; - ari renamed this fun from `memo' to `make-memo-fun'.
@@ -38,7 +39,7 @@
     (setf (get name 'memo-table) table)
     (with-gensyms (memo-not-found)
       `(lambda (&rest args)
-         (let* ( (k   (funcall #',key args))
+         (let* ( (k   args)
                  (val (gethash k ,table ',memo-not-found)))
            (if (eq val ',memo-not-found)
              (setf (gethash k ,table) (apply ,fun args))
@@ -47,8 +48,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun bind-to-memo-fun (fun-name &key (key #'identity) (test #'equal))
+(cl-defun bind-to-memo-fun (fun-name &key (test #'equal))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari removed the KEY argument.
   ;; - ari renamed this from `memoize' to `bind-to-memo-fun'.
   ;; - ari changed the default key from #'first to #'identity.
   ;; - ari changed the default test from from #'eql to #'equal.
@@ -56,8 +58,44 @@
   "Replace fun-name's global definition with a memoized version."
   (clear-memos fun-name)
   (setf (symbol-function fun-name)
-    (make-memo-fun (symbol-function fun-name) fun-name key test)))
+    (make-memo-fun (symbol-function fun-name) fun-name test)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun make-memo-fun (fun name key test)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ;; - ari replaced a "(`setf' (`get'" with a "(`put'".
+;;   ;; - ari renamed 'memo to 'memo-table.
+;;   ;; - ari renamed this fun from `memo' to `make-memo-fun'.
+;;   ;; - ari simplified the arguments to this function compared to the original.
+;;   ;; - ari adjusted this to use backwote so as to align with elisps scoping.
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Return a memo-function of FUN."
+;;   (let ((table (make-hash-table :test test)))
+;;     (setf (get name 'memo-table) table)
+;;     (with-gensyms (memo-not-found)
+;;       `(lambda (&rest args)
+;;          (let* ( (k   (funcall #',key args))
+;;                  (val (gethash k ,table ',memo-not-found)))
+;;            (if (eq val ',memo-not-found)
+;;              (setf (gethash k ,table) (apply ,fun args))
+;;              val))))))
+;;              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (cl-defun bind-to-memo-fun (fun-name &key (key #'identity) (test #'equal))
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ;; - ari renamed this from `memoize' to `bind-to-memo-fun'.
+;;   ;; - ari changed the default key from #'first to #'identity.
+;;   ;; - ari changed the default test from from #'eql to #'equal.
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Replace fun-name's global definition with a memoized version."
+;;   (clear-memos fun-name)
+;;   (setf (symbol-function fun-name)
+;;     (make-memo-fun (symbol-function fun-name) fun-name key test)))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
