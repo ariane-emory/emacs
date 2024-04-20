@@ -6,30 +6,32 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro defun-memo (fun args &rest body)
+(defmacro defun-memo (fun-name args &rest body)
+  ;; ari changed the return value to align with `defun''s.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a memoized function."
-  `(memoize (defun ,fun ,args . ,body)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(progn
+     (memoize (defun ,fun-name ,args . ,body))
+     ',fun-name))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun make-memo-fun (fun &key (key #'identity) (test #'equal) name)
-  ;; are renamed this fun from `memo' to `make-memo-fun'.
-  ;; ari changed the default key to #'first to #'identity.
-  ;; ari changed the default test to from #'eql to #'equal.
+(defun make-memo-fun (fun name key test)
+  ;; ari renamed this fun from `memo' to `make-memo-fun'.
+  ;; ari simplified the arguments to this function compared to the original.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
     (setf (get name 'memo) table)
     `(lambda (&rest args)
-       (prn "args is %s" args)
-       (let* ( (k (funcall #',key args))
-               (val (gethash k ,table :NOT-FOUND)))
-         (prn "k is %s" k)
-         (prn "table is %s" ,table)
-         (prn "val is %s" val)
-         (if (eq val :NOT-FOUND)
+       ;; (prn "args is %s" args)
+       (let* ( (k   (funcall #',key args))
+               (val (gethash k ,table :MEMO-NOT-FOUND)))
+         ;; (prn "k is %s" k)
+         ;; (prn "table is %s" ,table)
+         ;; (prn "val is %s" val)
+         (if (eq val :MEMO-NOT-FOUND)
            (setf (gethash k ,table) (apply ,fun args))
            val)))))
            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,8 +45,7 @@
   "Replace fun-name's global definition with a memoized version."
   (clear-memoize fun-name)
   (setf (symbol-function fun-name)
-    (make-memo-fun (symbol-function fun-name)
-      :name fun-name :key key :test test)))
+    (make-memo-fun (symbol-function fun-name) fun-name key test)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

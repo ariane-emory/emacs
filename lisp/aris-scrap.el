@@ -19,6 +19,9 @@
 
 (defun-memo foo (x y) (prn "Calculate %s x %s" x y ) (* x y))
 
-(foo 7 10)
+(foo 7 8)
+(foo 7 8)
+(foo 7 9)
+(foo 7 9 10)
 
 

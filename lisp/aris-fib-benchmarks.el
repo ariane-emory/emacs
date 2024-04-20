@@ -11,16 +11,37 @@
 (require 'aris-funs--unsorted)
 (require 'aris-funs--ignorebang)
 (require 'aris-types)
+(require 'peter-norvigs-funs--defun-memo)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore! ; tophy's `let loop' syntax:
-  (def* (fib-iter (n : Int) : Int)
+  (defun* fib-iter ((n : Int) : Int)
     (let loop ((a 0) (b 1) (i n))
       (if (= i 0)
         a
         (loop b (+ a b) (- i 1))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun untyped-piped-pcase-fib (n)
+  (pcase n
+    (0 0)
+    (1 1)
+    (n (|> n 1- untyped-piped-pcase-fib
+         (+ _ (|> n (- _ 2) untyped-piped-pcase-fib))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun* typed-piped-pcase-fib ((n : positive-integer)) => positive-integer
+  (pcase n
+    (0 0)
+    (1 1)
+    (n (|> n 1- typed-piped-pcase-fib
+         (+ _ (|> n (- _ 2) typed-piped-pcase-fib))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -42,9 +63,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-naive-fib (n : positive-integer)) => positive-integer
+(defun* typed-naive-fib ((n : positive-integer)) => positive-integer
   (if (<= n 1) n
     (+ (typed-naive-fib (- n 1)) (typed-naive-fib (- n 2)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun-memo untyped-memoized-naive-fib (n)
+  (if (<= n 1) n
+    (+ (untyped-memoized-naive-fib (- n 1)) (untyped-memoized-naive-fib (- n 2)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -58,31 +86,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-pcase-fib (n : positive-integer)) => positive-integer
+(defun* typed-pcase-fib ((n : positive-integer)) => positive-integer
   (pcase n
     (0 0)
     (1 1)
     (n (+ (typed-pcase-fib (- n 1)) (typed-pcase-fib (- n 2))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun untyped-piped-pcase-fib (n)
-  (pcase n
-    (0 0)
-    (1 1)
-    (n (|> n 1- untyped-piped-pcase-fib
-         (+ _ (|> n (- _ 2) untyped-piped-pcase-fib))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-piped-pcase-fib (n : positive-integer)) => positive-integer
-  (pcase n
-    (0 0)
-    (1 1)
-    (n (|> n 1- typed-piped-pcase-fib
-         (+ _ (|> n (- _ 2) typed-piped-pcase-fib))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -107,7 +115,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-piped-iter-fib (n : positive-integer)) => positive-integer
+(defun* typed-piped-iter-fib ((n : positive-integer)) => positive-integer
   ;; "Non-recursive version of a pipe-based `fib'."
   (|>
     ;; basically just an env alist:
@@ -143,7 +151,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-tagbody-fib (n : positive-integer)) => positive-integer
+(defun* typed-tagbody-fib ((n : positive-integer)) => positive-integer
   (with-gensyms (block)
     (let ((a 0) (b 1) (i n))
       (cl-block block
@@ -172,7 +180,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-until-fib (n : positive-integer)) => positive-integer
+(defun-memo untyped-memoized-until-fib (n)
+  (with-gensyms (block)
+    (let ((a 0) (b 1) (i n))
+      (until (zerop i)
+        (setq
+          i (1- i)
+          b (+ a b)
+          a (- b a)))
+      a)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun* typed-until-fib ((n : positive-integer)) => positive-integer
   (with-gensyms (block)
     (let ((a 0) (b 1) (i n))
       (until (zerop i)
@@ -189,25 +210,29 @@
   (progn
     (setq reps 20)
     (setq n 20)
-    (benchmark-run reps (untyped-naive-fib n)) ;; => (0.047994999999999996 0 0.0)
-    (benchmark-run reps (typed-naive-fib n)) ;; => (0.162711 0 0.0)
-
-    (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.075735 0 0.0)
-    (benchmark-run reps (typed-pcase-fib n)) ;; (0.192546 0 0.0)
-
-    (benchmark-run reps (untyped-piped-iter-fib n)) ;; => (0.013763000000000001 0 0.0)
-    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.020678000000000002 0 0.0)
-    
-    (benchmark-run reps (untyped-tagbody-fib n)) ;; => (0.000206 0 0.0)
-    (benchmark-run reps (typed-tagbody-fib n)) ;; => (0.000183 0 0.0)
-
-    (benchmark-run reps (untyped-until-fib n)) ;; => (0.000137 0 0.0)
-    (benchmark-run reps (typed-until-fib n)) ;; => (0.000158 0 0.0)
 
     (benchmark-run reps (untyped-piped-pcase-fib n)) ;; => (398.437878 2690 276.91953)
     (benchmark-run reps (typed-piped-pcase-fib n)) ;; (188.736017 1369 131.53158799999997)    
 
     (benchmark-run reps (untyped-pattern-dispatch-fib n)) ;; => (283.103026 1793 179.31079300000005)
+
+    (benchmark-run reps (untyped-naive-fib n)) ;; => (0.064612 0 0.0)
+    (benchmark-run reps (typed-naive-fib n)) ;; => (0.163468 0 0.0)
+
+    (benchmark-run reps (untyped-memoized-naive-fib n)) ;; => (7e-06 0 0.0)
+
+    (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.076192 0 0.0)
+    (benchmark-run reps (typed-pcase-fib n)) ;; => (0.190817 0 0.0)
+
+    (benchmark-run reps (untyped-piped-iter-fib n)) ;; => (0.015739 0 0.0)
+    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.110544 1 0.09509299999999854)
+    
+    (benchmark-run reps (untyped-tagbody-fib n)) ;; => (0.00032199999999999997 0 0.0)
+    (benchmark-run reps (typed-tagbody-fib n)) ;; => (0.00033 0 0.0)
+
+    (benchmark-run reps (untyped-memoized-until-fib n)) ;; => (1.1e-05 0 0.0)
+    (benchmark-run reps (untyped-until-fib n)) ;; => (0.000141 0 0.0)
+    (benchmark-run reps (typed-until-fib n)) ;; => (0.000126 0 0.0)
     ) ; END OF progn
   ) ; END OF ignore!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
