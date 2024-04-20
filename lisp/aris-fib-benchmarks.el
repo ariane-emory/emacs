@@ -219,9 +219,9 @@
     (benchmark-run reps (untyped-naive-fib n)) ;; => (0.064612 0 0.0)
     (benchmark-run reps (typed-naive-fib n)) ;; => (0.163468 0 0.0)
 
-    (benchmark-run reps (untyped-memoized-naive-fib n)) ;; => (7e-06 0 0.0)
+    (benchmark-run reps (untyped-memoized-naive-fib n)) ;; => (8.3e-05 0 0.0)
 
-    (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.076192 0 0.0)
+    (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.084303 0 0.0)
     (benchmark-run reps (typed-pcase-fib n)) ;; => (0.190817 0 0.0)
 
     (benchmark-run reps (untyped-piped-iter-fib n)) ;; => (0.015739 0 0.0)
