@@ -30,9 +30,11 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
-    (put name 'memo-table table)
+    (setf (get name 'memo-table) table)
+    (prn "setting %s 'memo-table to %s" name table)
     `(lambda (&rest args)
-       ;; (prn "args is %s" args)
+       (prn "args is %s" args)
+       (prn "table is %s" ,table)
        (let* ( (k   (funcall #',key args))
                (val (gethash k ,table :MEMO-NOT-FOUND)))
          (if (eq val :MEMO-NOT-FOUND)
