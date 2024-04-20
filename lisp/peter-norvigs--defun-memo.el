@@ -35,9 +35,7 @@
   (clear-memoize fun-name)
   (setf (symbol-function fun-name)
     (memo (symbol-function fun-name)
-      :name fun-name :key key :test test))
-  (compile fun-name);; added; compile always?
-  )
+      :name fun-name :key key :test test)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -51,10 +49,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dmpmemoht (h)
+(defun format-memo-table (h)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Print out the memo table."
-  (maphash #'(lambda (k v)(format t "~%key= ~s value=~s" k v)) (get h 'memo)))
+  "Stringify the memo table for debugging purposes."
+  (maphash #'(lambda (k v) (format t "~%key= ~s value=~s" k v)) (get h 'memo)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
