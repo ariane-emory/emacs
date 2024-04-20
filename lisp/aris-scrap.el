@@ -57,9 +57,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (pd--reset)
-(pdef (pattern-dispatch-fib 0) 0)
-(pdef (pattern-dispatch-fib 1) 1)
-(pdef (pattern-dispatch-fib n) (+ (pattern-dispatch-fib (1- n)) (pattern-dispatch-fib (- n 2))))
+(pdef (untyped-pattern-dispatch-fib 0) 0)
+(pdef (untyped-pattern-dispatch-fib 1) 1)
+(pdef (untyped-pattern-dispatch-fib n) (+ (untyped-pattern-dispatch-fib (1- n))
+                                         (untyped-pattern-dispatch-fib (- n 2))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun untyped-naive-fib (n)
+  (if (<= n 1) n
+    (+ (untyped-naive-fib (- n 1)) (untyped-naive-fib (- n 2)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def* (typed-naive-fib (n : positive-integer)) => positive-integer
+  (if (<= n 1) n
+    (+ (typed-naive-fib (- n 1)) (typed-naive-fib (- n 2)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -73,11 +88,31 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun untyped-pcase-fib (n)
+  (pcase n
+    (0 0)
+    (1 1)
+    (n (+ (untyped-pcase-fib (- n 1)) (untyped-pcase-fib (- n 2))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def* (typed-piped-pcase-fib (n : positive-integer)) => positive-integer
   (match n
     (0 0)
     (1 1)
-    (n (|> n 1- typed-piped-pcase-fib (+ _ (|> n (- _ 2) typed-piped-pcase-fib))))))
+    (n (|> n 1- typed-piped-pcase-fib
+         (+ _ (|> n (- _ 2) typed-piped-pcase-fib))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun untyped-piped-pcase-fib (n)
+  (match n
+    (0 0)
+    (1 1)
+    (n (|> n 1- untyped-piped-pcase-fib
+         (+ _ (|> n (- _ 2) untyped-piped-pcase-fib))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -102,7 +137,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun piped-iter-fib (n)
+(defun untyped-piped-iter-fib (n)
   ;; "Non-recursive version of a pipe-based `fib'."
   (|>
     ;; basically just an env alist:
@@ -122,31 +157,26 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun traditional-naive-fib (n)
-  (if (<= n 1) n
-    (+ (traditional-naive-fib (- n 1)) (traditional-naive-fib (- n 2)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (typed-naive-fib (n : positive-integer)) => positive-integer
-  (if (<= n 1) n
-    (+ (typed-naive-fib (- n 1)) (typed-naive-fib (- n 2)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
-    (setq reps 10)
+    (setq reps 20)
     (setq n 20)
-    (benchmark-run reps (traditional-naive-fib n)) ;; => (0.023791 0 0.0)
-    (benchmark-run reps (pattern-dispatch-fib n)) ;; => (283.103026 1793 179.31079300000005)
-    (benchmark-run reps (typed-naive-fib n)) ;; => (0.075895 0 0.0)
-    (benchmark-run reps (typed-pcase-fib n)) ;; => (0.094119 0 0.0)
+    (benchmark-run reps (untyped-naive-fib n)) ;; => (0.047994999999999996 0 0.0)
+    (benchmark-run reps (typed-naive-fib n)) ;; => (0.162711 0 0.0)
+
+    (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.075735 0 0.0)
+    (benchmark-run reps (typed-pcase-fib n)) ;; => (0.18282 0 0.0)
+
+    (benchmark-run reps (untyped-piped-iter-fib n)) ;; => (0.013691 0 0.0)
+    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.015861 0 0.0)
+
+    (benchmark-run reps (untyped-piped-pcase-fib n)) ;; => (398.437878 2690 276.91953)
     (benchmark-run reps (typed-piped-pcase-fib n)) ;; (188.736017 1369 131.53158799999997)    
-    (benchmark-run reps (typed-piped-iter-fib n)) ;; => (0.011290000000000001 0 0.0)
-    (benchmark-run reps (piped-iter-fib n)) ;; => (0.010399 0 0.0)
+
+    (benchmark-run reps (untyped-pattern-dispatch-fib n)) ;; => (283.103026 1793 179.31079300000005)
     )
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
