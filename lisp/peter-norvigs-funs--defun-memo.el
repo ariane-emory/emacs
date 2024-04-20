@@ -20,10 +20,11 @@
   (let ((table (make-hash-table :test test)))
     (setf (get name 'memo) table)
     `(lambda (&rest args)
-       (prn "args is %s" args)
+       (prn "will do (funcall %s %s)" #',key args)
        (let ((k (funcall #',key args)))
+         (prn "got %s" k)
          (cl-multiple-value-bind (val found-p)
-           (gethash k ,table)
+           (cl-values (gethash k ,table))
            (if found-p
              val
              (setf (gethash k ,table) (apply ,fun args))))))))
