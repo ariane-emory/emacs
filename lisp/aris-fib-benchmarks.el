@@ -57,23 +57,27 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun untyped-naive-fib (n)
-  (if (<= n 1) n
+  (if (<= n 1)
+    n
     (+ (untyped-naive-fib (- n 1)) (untyped-naive-fib (- n 2)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun-memo untyped-memoized-naive-fib (n)
+  (if (<= n 1)
+    n
+    (+ (untyped-memoized-naive-fib (- n 1)) (untyped-memoized-naive-fib (- n 2)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun* typed-naive-fib ((n : positive-integer)) => positive-integer
-  (if (<= n 1) n
+  (if (<= n 1)
+    n
     (+ (typed-naive-fib (- n 1)) (typed-naive-fib (- n 2)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun-memo untyped-memoized-naive-fib (n)
-  (if (<= n 1) n
-    (+ (untyped-memoized-naive-fib (- n 1)) (untyped-memoized-naive-fib (- n 2)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -96,7 +100,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun untyped-piped-iter-fib (n)
-  ;; "Non-recursive version of a pipe-based `fib'."
+  "Non-recursive version of a pipe-based `fib'."
   (|>
     ;; basically just an env alist:
     `( (a . 0)
@@ -109,7 +113,6 @@
        (i . ,(1- (alist-get 'i _))))
     ;; loop until i = 0:
     :unless (zero? (alist-get 'i _)) :go 'loop
-    ;; extract return value (else positive-integer return type wouldn't satisy):
     (alist-get 'a _)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -168,27 +171,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun untyped-until-fib (n)
-  (with-gensyms (block)
-    (let ((a 0) (b 1) (i n))
-      (until (zerop i)
-        (setq
-          i (1- i)
-          b (+ a b)
-          a (- b a)))
-      a)))
+  (let ((a 0) (b 1) (i n))
+    (until (zerop i)
+      (setq
+        i (1- i)
+        b (+ a b)
+        a (- b a)))
+    a))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun-memo untyped-memoized-until-fib (n)
-  (with-gensyms (block)
-    (let ((a 0) (b 1) (i n))
-      (until (zerop i)
-        (setq
-          i (1- i)
-          b (+ a b)
-          a (- b a)))
-      a)))
+  (let ((a 0) (b 1) (i n))
+    (until (zerop i)
+      (setq
+        i (1- i)
+        b (+ a b)
+        a (- b a)))
+    a))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -220,7 +221,8 @@
     (benchmark-run reps (typed-naive-fib n)) ;; => (0.163468 0 0.0)
 
     (benchmark-run reps (untyped-memoized-naive-fib n)) ;; => (1.1e-05 0 0.0)
-
+    (benchmark-run reps (untyped-memoized-until-fib n)) ;; => (1.1e-05 0 0.0)
+    
     (benchmark-run reps (untyped-pcase-fib n)) ;; => (0.084303 0 0.0)
     (benchmark-run reps (typed-pcase-fib n)) ;; => (0.190817 0 0.0)
 

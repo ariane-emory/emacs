@@ -21,7 +21,24 @@
   `(progn
      (bind-to-memo-fun (defun ,fun-name ,args . ,body))
      ',fun-name))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun bind-to-memo-fun (fun-name)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari removed the TEST argument.
+  ;; - ari removed the KEY argument.
+  ;; - ari renamed this from `memoize' to `bind-to-memo-fun'.
+  ;; - ari changed the default key from #'first to #'identity.
+  ;; - ari changed the default test from from #'eql to #'equal.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Replace fun-name's global definition with a memoized version."
+  (when (get fun-name 'memo-table)
+    (clear-memos fun-name))
+  (setf (symbol-function fun-name) (make-memo-fun fun-name))
+  fun-name)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,22 +67,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun bind-to-memo-fun (fun-name)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; - ari removed the TEST argument.
-  ;; - ari removed the KEY argument.
-  ;; - ari renamed this from `memoize' to `bind-to-memo-fun'.
-  ;; - ari changed the default key from #'first to #'identity.
-  ;; - ari changed the default test from from #'eql to #'equal.
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Replace fun-name's global definition with a memoized version."
-  (clear-memos fun-name)
-  (setf (symbol-function fun-name)
-    (make-memo-fun fun-name)))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun clear-memos (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari renamed this from `clear-memoize' to `clear-memos'.
@@ -73,8 +74,9 @@
   ;; - ari made this fun more elisp-y by using `when-let'.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Clear the hash table of a memo function."
-  (when-let ((table (get fun-name 'memo-table)))
-    (clrhash table)))
+  (if-let ((table (get fun-name 'memo-table)))
+    (clrhash table)
+    (error "No memo table found for '%S." fun-name)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -89,7 +91,7 @@
   (let (result)
     (maphash
       (lambda (k v) (push (format "%S ⇒ %S" k v) result))
-      (get 'bar 'memo-table))
+      (get fun-name 'memo-table))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
