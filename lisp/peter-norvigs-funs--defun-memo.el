@@ -14,7 +14,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun memo (fun &key (key #'first) (test #'eql) name)
+(cl-defun make-memo-fun (fun &key (key #'first) (test #'eql) name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
   (let ((table (make-hash-table :test test)))
@@ -34,7 +34,7 @@
   "Replace fun-name's global definition with a memoized version."
   (clear-memoize fun-name)
   (setf (symbol-function fun-name)
-    (memo (symbol-function fun-name)
+    (make-memo-fun (symbol-function fun-name)
       :name fun-name :key key :test test)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -55,9 +55,6 @@
   (maphash #'(lambda (k v) (format t "~%key= ~s value=~s" k v)) (get h 'memo)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun-memo mul (x y) (* x y))
-
-(mul 7 9)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'peter-norvigs-funs--defun-memo)

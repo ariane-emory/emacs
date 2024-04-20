@@ -12,3 +12,12 @@
 
 (div-mod 19 8) ;; => (2 . 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(cl-defun foo (fun &key (key #'first) (test #'eql) name)
+  (list fun key test name))
+
+(foo 1 :name 2)
+
+(defun-memo mul (x y) (* x y))
+
+(mul 7 9)
