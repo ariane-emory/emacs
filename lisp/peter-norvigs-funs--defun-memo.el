@@ -105,7 +105,9 @@
   (prndiv)
   (prn "Memo table for '%S:" fun-name)
   (prndiv)
-  (mapc #'prn (format-memo-table fun-name))
+  (if-let ((formatted (format-memo-table fun-name)))
+    (mapc #'prn formatted)
+    "(empty)")
   (prndiv))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
