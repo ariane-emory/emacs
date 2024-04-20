@@ -100,15 +100,6 @@
   (untyped-memoized-naive-fib 2000))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; φ m n 0 = m + n
-;; φ m n 1 = m * n
-;; φ m n 2 = m ^ n
-
-;; A 0 n             = n + 1
-;; A (m + 1) 0       = A m 1
-;; A (m + 1) (n + 1) = A m (A (m + 1) n)
-
 (defun ack (m n)
   "Compute the Ack function A(m, n)."
   (cond
