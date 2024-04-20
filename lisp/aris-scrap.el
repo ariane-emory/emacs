@@ -109,14 +109,14 @@
 ;; A (m + 1) 0       = A m 1
 ;; A (m + 1) (n + 1) = A m (A (m + 1) n)
 
-(defun ackermann (m n)
-  "Compute the Ackermann function A(m, n)."
+(defun ack (m n)
+  "Compute the Ack function A(m, n)."
   (cond
     ((zerop m) (1+ n))
-    ((zerop n) (ackermann (1- m) 1))
-    (t (ackermann (1- m) (ackermann m (1- n))))))
+    ((zerop n) (ack (1- m) 1))
+    (t (ack (1- m) (ack m (1- n))))))
 
-;; Test the Ackermann function
-(message "Ackermann(1, 1) = %d" (ackermann 1 1))
-(message "Ackermann(3, 2) = %d" (ackermann 3 2))
-(message "Ackermann(4, 1) = %d" (ackermann 4 1))
+;; Test the Ack function
+(message "Ack(1, 1) = %d" (ack 1 1))
+(message "Ack(3, 2) = %d" (ack 3 2))
+(message "Ack(4, 1) = %d" (ack 4 1))
