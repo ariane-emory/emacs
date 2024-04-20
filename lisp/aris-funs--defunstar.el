@@ -91,36 +91,36 @@ parameters, for the moment)."
                     (push arg new-arglist)))))))
     ;; (prn "TYPE-CHECKS is %S." type-checks)
     ;; if any TYPE-CHECKS were found...
-    ;; (if (not type-checks)
-    ;;   ;; then expand into a normal defun:
-    ;;   `(defun ,name ,arglist ,@body)
-    ;; else tamper with the body before expansion to prepend TYPE-CHECKS onto BODY:
-    (let* ( (new-arglist (append (nreverse new-arglist) remaining-arglist))
-            (type-checks (nreverse type-checks))q
-            (parse (byte-run--parse-body body t))
-            (docstring (nth 0 parse))
-            (declare-form (nth 1 parse))
-            (interactive-form (nth 2 parse))
-            (body (nth 3 parse))
-            (return-type (when (eq '=> (first body)) (second body)))
-            (return-sym (when return-type (gensym (format "%s-return-" name))))
-            (body
-              (if (null return-type)
-                body
-                `((let ((,return-sym ,@(cddr body)))
-                    (unless (cl-typep ,return-sym ',return-type)
-                      (signal 'wrong-type-return (list ',return-type ,return-sym)))
-                    ,return-sym))))
-            (warnings (nth 4 parse))
-            (new-body (append
-                        (when docstring (list docstring))
-                        (when declare-form (list declare-form))
-                        (when interactive-form (list interactive-form))
-                        (when warnings (list warnings))
-                        type-checks
-                        body))
-            (defun-expr `(defun ,name ,new-arglist ,@new-body)))
-      defun-expr)))
+    (if (and (not type-checks) (not (eq (car-safe body) '=>)))
+      ;; then expand into a normal defun:
+      `(defun ,name ,arglist ,@body)
+      ;; else tamper with the body before expansion to prepend TYPE-CHECKS onto BODY:
+      (let* ( (new-arglist (append (nreverse new-arglist) remaining-arglist))
+              (type-checks (nreverse type-checks))q
+              (parse (byte-run--parse-body body t))
+              (docstring (nth 0 parse))
+              (declare-form (nth 1 parse))
+              (interactive-form (nth 2 parse))
+              (body (nth 3 parse))
+              (return-type (when (eq '=> (first body)) (second body)))
+              (return-sym (when return-type (gensym (format "%s-return-" name))))
+              (body
+                (if (null return-type)
+                  body
+                  `((let ((,return-sym ,@(cddr body)))
+                      (unless (cl-typep ,return-sym ',return-type)
+                        (signal 'wrong-type-return (list ',return-type ,return-sym)))
+                      ,return-sym))))
+              (warnings (nth 4 parse))
+              (new-body (append
+                          (when docstring (list docstring))
+                          (when declare-form (list declare-form))
+                          (when interactive-form (list interactive-form))
+                          (when warnings (list warnings))
+                          type-checks
+                          body))
+              (defun-expr `(defun ,name ,new-arglist ,@new-body)))
+        defun-expr))))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

@@ -24,4 +24,32 @@
 (foo 7 9)
 (foo 7 9 10)
 
+(defun* foo ((n : positive-integer)) => positive-integer
+  (* n n))
+
+(defun foo (n)
+  (cl-check-type n positive-integer)
+  (let ((foo-return-1126 (* n n)))
+    (unless (cl-typep foo-return-1126 'positive-integer)
+      (signal 'wrong-type-return (list 'positive-integer foo-return-1126)))
+    foo-return-1126))
+
+(defun* foo (n) => positive-integer
+  (* n n))
+
+(defun foo (n)
+  (let ((foo-return-1127 (* n n)))
+    (unless (cl-typep foo-return-1127 'positive-integer)
+      (signal 'wrong-type-return (list 'positive-integer foo-return-1127)))
+    foo-return-1127))
+
+(defun* foo ((n : positive-integer))
+  (* n n))
+
+(defun foo (n)
+  (cl-check-type n positive-integer)
+  (* n n))
+
+
+
 
