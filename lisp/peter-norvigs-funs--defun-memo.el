@@ -25,8 +25,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-memo-fun (fun fun-name)
+(defun make-memo-fun (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari removed the FUN argument.
   ;; - ari removed the TEST argument.
   ;; - ari removed the KEY argument.
   ;; - ari replaced a "(`setf' (`get'" with a "(`put'".
@@ -36,7 +37,8 @@
   ;; - ari adjusted this to use backwote so as to align with elisps scoping.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
-  (let ((table (make-hash-table :test #'equal)))
+  (let ( (fun   (symbol-function fun-name))
+         (table (make-hash-table :test #'equal)))
     (setf (get fun-name 'memo-table) table)
     (with-gensyms (memo-not-found)
       `(lambda (&rest args)
@@ -59,7 +61,7 @@
   "Replace fun-name's global definition with a memoized version."
   (clear-memos fun-name)
   (setf (symbol-function fun-name)
-    (make-memo-fun (symbol-function fun-name) fun-name)))
+    (make-memo-fun fun-name)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
