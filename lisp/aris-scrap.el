@@ -7,23 +7,38 @@
 (defun munge-arglist (prepend-required-args prepend-optional-args arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
+  (prn "arglist:   %s" arglist)
   (let* ( (arglist (cons :DUMMY arglist))
           (pos arglist)
-          optionals)
+          optionals
+          rest)
     (while pos
-      (when (eq (second pos) '&optional) ; no case for &rest yet, avoid it for now.
-        (setq optionals (cddr pos)) ; snip into two separate lists. 
-        (setcdr pos nil))
+      (cond
+        ((eq (second pos) '&optional)
+          (setq optionals (cddr pos))
+          (setcdr pos nil)) ; snip into two separate lists. 
+        ((eq (second pos) '&rest)
+          (setq rest (cdr pos)) 
+          (setcdr pos nil))) ; snip into two separate lists. 
       (pop pos))
     (pop arglist) ; pop :DUMMY.
-    (let* ((arglist `(db-sym ,@arglist &optional db-prop ,@optionals)))
+    (prndiv)
+    (prn "required:  %s" arglist)
+    (prn "optionals: %s" optionals)
+    (prn "rest:      %s" rest)
+    (let ((arglist `( ,@prepend-required-args
+                      ,@arglist
+                      &optional ,@prepend-optional-args ,@optionals
+                      ,@rest)))
+      (prn "final:     %s" arglist)
       arglist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; working cases:
-(munge-arglist '(db-sym) '(db-prop) '(x y &optional z)) ;; => (db-sym x y &optional db-prop z)
+(munge-arglist '(db-sym) '(db-prop) '(x y &optional z)) ;; => (db-sym x y &optional db-prop &optional z)
 (munge-arglist '(db-sym) '(db-prop) '(x y)) ;; => (db-sym x y &optional db-prop)
-(munge-arglist '(db-sym) '(db-prop) '(&optional z)) ;; => (db-sym &optional db-prop z)
+(munge-arglist '(db-sym) '(db-prop) '(&optional z)) ;; => (db-sym &optional db-prop &optional z)
+(munge-arglist '(db-sym) '(db-prop) '(x y &optional z &rest body)) ;; => (db-sym x y &optional db-prop &optional z &rest body)
+(munge-arglist '(db-sym) '(db-prop) '(x y &rest body)) ;; => (db-sym x y &optional db-prop &rest body)
 
-;; non-working cases:
-(munge-arglist '(db-sym) '(db-prop) '(x y &optional z &rest body)) ;; => (db-sym db-sym &optional db-prop)
+(munge-arglist nil nil '(x y &rest body)) ;; => (x y &optional &rest body)
