@@ -18,7 +18,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten1 (input &optional accumulator)
+(defun norvigs-flatten (input &optional accumulator)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
 This is adapted from the version in Peter Norvig's book."
   ;; (prn "(flatten %s %s)" input accumulator)
@@ -27,63 +27,28 @@ This is adapted from the version in Peter Norvig's book."
           (cond
             ((null input) accumulator)
             ((atom input) (cons input accumulator))
-            (t (flatten1
+            (t (norvigs-flatten
                  (first input)
-                 (flatten1 (rest input) accumulator)))))) ;)
+                 (norvigs-flatten (rest input) accumulator)))))) ;)
     ;; (prn "⇒ %s" result)
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten3 (lst)
-  "Return a flat list of the atoms in the input."
-  (let (result)
-    (cl-labels ((iter (input)
-                  (dolist (item input)
-                    (if (listp item)
-                      (iter item)
-                      (push item result)))))
-      (iter lst))
-    (nreverse result)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten2 (lst)
+(defun flatten (lst)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
 I wrote this one myself."
   (when lst
     (if (consp (car lst))
-      (append (flatten2 (pop lst)) (flatten2 lst))
-      (cons (pop lst) (flatten2 lst)))))
+      (append (flatten (pop lst)) (flatten lst))
+      (cons (pop lst) (flatten lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
-(flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
-(flatten3 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
-(flatten4 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (a is lots with stuff nested of list this)
+(norvigs-flatten '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
+(flatten '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 
-(benchmark-run 1000 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.008683 0 0.0)
-(benchmark-run 1000 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.005622 0 0.0)
-(benchmark-run 1000 (flatten3 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.015327 0 0.0)
+(benchmark-run 1000 (norvigs-flatten '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.010135 0 0.0)
+(benchmark-run 1000 (flatten '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.005893 0 0.0)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten4 (lst &optional acc tail)
-  "Return a flat list of the atoms in the input."
-  (let* ( (acc (or acc '(:dummy)))
-          (tail (or tail acc)))
-    (prn "(flatten4 %s %s %s)" lst acc tail)
-    (debug)
-    (when lst
-      (if (consp (car lst))
-        (flatten4 lst acc tail)
-        (setcdr tail (list (pop lst)))
-        (setq tail (cdr tail)
-          (flatten4 lst acc (cdr tail))))
-      )
-    acc))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(flatten4 '(this (is a) (list (with lots) (of (nested stuff)))))
