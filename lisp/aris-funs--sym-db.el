@@ -18,7 +18,7 @@
           (table (make-hash-table :test test-fun)))
     (setf (get db-sym db-prop) table)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (hash-table-p (create-db 'foo 'sb #'eq)) returns t)
+(confirm that (hash-table-p (create-db 'foo 'db #'eq)) returns t)
 (confirm that (hash-table-p (create-db 'foo 'alt)) returns t)
 (confirm that (hash-table-p (get 'foo 'db)) returns t)
 (confirm that (hash-table-p (get 'foo 'alt)) returns t)
