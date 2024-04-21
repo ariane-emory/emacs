@@ -255,8 +255,8 @@
                  (pcase expr
                    ;; ('nil (error "impossible, expr is %s?" expr))
                    (`',label (--pipe-prn "Skip past label %s..." label))
-                   ;; maybe this should be handled inside _ case like other flagged items
-                   ;; so as to eval the label:
+                   ;; maybe this should be handled inside the _ case like other flagged 
+                   ;; items so as to eval the label:
                    (:go
                      (unless (length>= (--get-pipe-command-arity expr))
                        (error "malformed pipe body"))

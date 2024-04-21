@@ -106,3 +106,14 @@ This is from Norvig."
 (flatten '(this (is a) (list (with lots) (of (nested stuff)))))
 
 (flatten '(one two))
+
+(let ((*pipe--verbose* t))
+  (|> '(1 2 3 4 5 (6 7 8) 9 10) cdr cdr cdr car))
+
+(let ((*pipe--verbose* t))
+  (|> '(this (is a) (list (with lots) (of (nested stuff))))
+    cdr cdr car cdr car car))
+
+(let ((*pipe--verbose* t))
+  (|> '(this (is a) (list (with lots) (of (nested stuff))))
+    rest rest first rest first first))
