@@ -156,6 +156,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defun parse-arglist (arglist)
+  "Parse an argument list into required, optional, and rest sections."
+  (let* ( (section 'required)
+          required
+          optional
+          rest)
+    (dolist (arg arglist)
+      (cond
+        ((eq arg '&optional)
+          (setq section 'optional))
+        ((eq arg '&rest)
+          (setq section 'rest))
+        (t
+          (push arg (cl-case section
+                      (required required)
+                      (optional optional)
+                      (rest rest))))))
+    (list (nreverse required)
+      (nreverse optional)
+      (nreverse rest))))
+
 (parse-arglist '(x y &optional z)) ;; => '((x y) (z) nil
 (parse-arglist '(x y &optional z &rest rest)) ;; => '((x y) (z) (rest)
 (parse-arglist '(x y &rest rest)) ;; => '((x y) nil (rest)
