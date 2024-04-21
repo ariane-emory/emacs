@@ -74,7 +74,7 @@
         (cond
           ((eq next '&optional)
 
-            
+            (prn "SNIP REQUIRED")
             (setcdr pos nil) ; snip
             (setq pos tail)
             (setq required arglist)
@@ -97,6 +97,59 @@
       (prn "res: %s" res)
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun parse-arglist (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (arglist (cons :DUMMY arglist))
+          (pos arglist)
+          required
+          optional
+          rest)
+    (prn "")
+    (prn "initial arglist: %s" arglist)
+    
+    (while pos
+      (let* ( (head (first pos))
+              (tail (rest pos))
+              (next (first tail)))
+        (prndiv)
+        (prn "arglist:  %s" arglist)
+        (prn "pos:      %s" pos)
+        (prn "head:     %s" head)
+        (prn "tail:     %s" tail)
+        (prn "next:     %s" next)
+        (prn "required: %s" required)
+        (prn "optional: %s" optional)
+        (prn "rest:     %s" rest)
+        (cond
+          ((eq next '&optional)
+
+            (prn "SNIP REQUIRED")
+            (setcdr pos nil) ; snip
+            (setq pos tail)
+            (setq required arglist)
+            ))
+        ;; (cond
+        ;;   ((eq (second pos) '&optional)
+        ;;     (setq required arglist)
+        ;;     (setq optional (cddr pos))
+        ;;     (setcdr pos optional)) ; snip into two separate lists. 
+        ;;   ((eq (second pos) '&rest)
+        ;;     (setq rest (cddr pos)) 
+        ;;     (setcdr pos nil))) ; snip into two separate lists. 
+        (pop pos)))
+    (pop required) ; pop :DUMMY.
+    (prndiv)
+    ;; (prn "required:        %s" arglist)
+    ;; (prn "optional:        %s" optional)
+    ;; (prn "rest:            %s" rest)
+    (let ((res `'(,required ,optional ,rest)))
+      (prn "res: %s" res)
+      res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;; (parse-arglist '(x y)) ;; (nil nil nil)
 (parse-arglist '(x y &optional z)) ;; (nil nil nil)
