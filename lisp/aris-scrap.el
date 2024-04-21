@@ -110,31 +110,57 @@
     (prn "initial arglist: %s" arglist)
     (dolist (arg arglist)
       (prndiv)
-      (prn "section:   %s" section)
       (prn "arg:       %s" arg)
+      (prn "section:   %s" section)
       (prn "&required: %s" &required)
       (prn "&optional: %s" &optional)
       (prn "&rest:     %s" &optional)
       (prn "arg:       %s" arg)
       (cond
         ((eq arg '&optional)
-          (set section (cons arg (eval section))))
+          (prn "switch to opts")
+          (setq section '&optional))
         ((eq arg '&rest)
+          (prn "switch to rest")
           (setq section '&rest))
         (t
           (prn "push %s %s" arg section)
-          (set section (cons arg (eval section))))))))
+          (set section (cons arg (eval section))))))
+
+    (let ((res `'(,(nreverse &required) ,(nreverse &optional) ,(nreverse &rest))))
+      (prn "result: %s" res)
+      res)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; (parse-arglist '(x y)) ;; (nil nil nil)
-(parse-arglist '(x y &optional z)) ;; (nil nil nil)
-;; (parse-arglist '(x y &optional z &rest rest)) ;; (nil nil nil)
-;; (parse-arglist '(x y &rest rest)) ;; (nil nil nil)
-;; (parse-arglist '()) ;; (nil nil nil)
-;; (parse-arglist '(&optional z &rest rest)) ;; (nil nil nil)
-;; (parse-arglist '(&optional z)) ;; (nil nil nil)
-;; (parse-arglist '(&rest rest)) ;; (nil nil nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun parse-arglist (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (section 'required)
+          required
+          optional
+          rest)
+    (dolist (arg arglist)
+      (cond
+        ((eq arg '&optional)
+          (setq section 'optional))
+        ((eq arg '&rest)
+          (setq section 'rest))
+        (t
+          (set section (cons arg (symbol-value section))))))
+    (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
+      (prn "result: %s" res)
+      res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(parse-arglist '(x y &optional z)) ;; => '((x y) (z) nil
+(parse-arglist '(x y &optional z &rest rest)) ;; => '((x y) (z) (rest)
+(parse-arglist '(x y &rest rest)) ;; => '((x y) nil (rest)
+(parse-arglist '()) ;; => '(nil nil nil
+(parse-arglist '(&optional z &rest rest)) ;; => '(nil (z) (rest)
+(parse-arglist '(&optional z)) ;; => '(nil (z) nil
+(parse-arglist '(&rest rest)) ;; => '(nil nil (rest)
 
