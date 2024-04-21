@@ -40,7 +40,8 @@
      reverse-region
      variable-pitch-mode
      view-lossage
-     whitespace-mode))
+     whitespace-mode
+     zoom-mode))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

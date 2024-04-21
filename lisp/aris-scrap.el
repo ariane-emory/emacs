@@ -3,80 +3,34 @@
 (require 'aris-fib-benchmarks)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (div-mod (n : integer) (d : integer)) => (pair-of integer)
-  `(,(/ n d) . ,(% n d)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (def* (div-mod (n : integer) (d : integer)) => (pair-of integer)
+;;   `(,(/ n d) . ,(% n d)))
 
-;; ... expands to:
-(defun* div-mod ((n : integer) (d : integer)) => (pair-of integer)
-  `(,(/ n d) \,(% n d)))
+;; ;; ... expands to:
+;; (defun* div-mod ((n : integer) (d : integer)) => (pair-of integer)
+;;   `(,(/ n d) \,(% n d)))
 
-(div-mod 19 8) ;; => (2 . 3)
-(div-mod -19 8) ;; => (-2 . -3)
-(div-mod 19 -8) ;; => (-2 . 3)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  type both argument and return::
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun* foo ((n : positive-integer)) => positive-integer
-  (* n n))
-
-(defun foo (n)
-  (cl-check-type n positive-integer)
-  (let ((foo-return-1126 (* n n)))
-    (unless (cl-typep foo-return-1126 'positive-integer)
-      (signal 'wrong-type-return (list 'positive-integer foo-return-1126)))
-    foo-return-1126))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; only type return:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun* foo (n) => positive-integer
-  (* n n))
-
-(defun foo (n)
-  (let ((foo-return-1127 (* n n)))
-    (unless (cl-typep foo-return-1127 'positive-integer)
-      (signal 'wrong-type-return (list 'positive-integer foo-return-1127)))
-    foo-return-1127))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; only type argument:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun* foo ((n : positive-integer))
-  (* n n))
-
-(defun foo (n)
-  (cl-check-type n positive-integer)
-  (* n n))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; type neither:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun* foo (n)
-  (* n n))
-
-(defun foo (n)
-  (* n n))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (div-mod 19 8) ;; => (2 . 3)
+;; (div-mod -19 8) ;; => (-2 . -3)
+;; (div-mod 19 -8) ;; => (-2 . 3)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun flatten1 (input &optional accumulator)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
-This is from Peter Norvig's book."
-  (prn "(flatten %s %s)" input accumulator)
+This is adapted from the version in Peter Norvig's book."
+  ;; (prn "(flatten %s %s)" input accumulator)
   (let ((result
-          (with-indentation
-            (cond
-              ((null input) accumulator)
-              ((atom input) (cons input accumulator))
-              (t (flatten
-                   (first input)
-                   (flatten (rest input) accumulator)))))))
-    (prn "⇒ %s" result)
+          ;; (with-indentation
+          (cond
+            ((null input) accumulator)
+            ((atom input) (cons input accumulator))
+            (t (flatten
+                 (first input)
+                 (flatten (rest input) accumulator)))))) ;)
+    ;; (prn "⇒ %s" result)
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -93,3 +47,9 @@ I wrote this one myself."
 
 (flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
+
+(benchmark-run 500 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (27.197824 1 0.095641999999998)
+(benchmark-run 500 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (26.331097 2 0.1903599999999983)
+
+
+

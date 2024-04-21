@@ -114,22 +114,22 @@
       (setq use-dialog-box nil)
       (setq visible-bell t)
       (setq display-buffer-alist
-	'(("\\*Buffer List\\*" display-buffer-same-window
-	    (nil))
-	   ;; ("\\*Backtrace\\*" display-buffer-same-window
-	   ;;   (nil))
-	   ("\\*Compile-Log\\*" display-buffer-same-window
-	     (nil))
+	      '(("\\*Buffer List\\*" display-buffer-same-window
+	          (nil))
+	         ;; ("\\*Backtrace\\*" display-buffer-same-window
+	         ;;   (nil))
+	         ("\\*Compile-Log\\*" display-buffer-same-window
+	           (nil))
            ("\\*shell\\*" display-buffer-same-window
-	     (nil))
-	   (".*\\.el" display-buffer-same-window
-	     (nil))
-	   (".*\\.c" display-buffer-same-window
-	     (nil))
-	   (".*\\.h" display-buffer-same-window
-	     (nil))
-	   ("*Help*" display-buffer-same-window
-	     (nil)))))
+	           (nil))
+	         (".*\\.el" display-buffer-same-window
+	           (nil))
+	         (".*\\.c" display-buffer-same-window
+	           (nil))
+	         (".*\\.h" display-buffer-same-window
+	           (nil))
+	         ("*Help*" display-buffer-same-window
+	           (nil)))))
     
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Customize other properties/functions/lists:
@@ -284,7 +284,7 @@
         (emacs-lisp-mode .
           (lambda ()
             ;;(setq-local lexical-binding t)
-	    (eldoc-mode 1)
+	          (eldoc-mode 1)
             (company-posframe-mode -1)
             (aris-setup-lisp))))
 
@@ -297,7 +297,7 @@
           (lambda ()
             (aris-setup-lisp)
             (font-lock-add-keywords nil
-	      '( ;; AELisp's special forms are keywords.
+	            '( ;; AELisp's special forms are keywords.
                  ("(\\(apply\\_>\\)" . 1)
                  ("(\\(case\\_>\\)"  . 1)
                  ("(\\(decr\\_>\\)"  . 1)
@@ -309,7 +309,7 @@
                  ("(\\(repeat\\_>\\)"  . 1)
                  ("(\\(setq\\_>\\)"  . 1)
                  ("(\\(until\\_>\\)" . 1))
-	      'prepend))))
+	            'prepend))))
 
       (use-package-with-message paren
         :init
@@ -431,14 +431,14 @@
         ;;   (lambda (&rest _)
         ;;     "Restore the state of modes that might have been on during company."
         ;;     (when (boundp 'aris-stashed-flycheck-mode)
-	;;       (when aris-stashed-flycheck-mode (flycheck-mode 1))
-	;;       (kill-local-variable 'aris-stashed-flycheck-mode))
+	      ;;       (when aris-stashed-flycheck-mode (flycheck-mode 1))
+	      ;;       (kill-local-variable 'aris-stashed-flycheck-mode))
         ;;     (when (boundp 'aris-stashed-flycheck-inline-mode)
-	;;       (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-	;;       (kill-local-variable 'aris-stashed-flycheck-inline-mode))
+	      ;;       (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
+	      ;;       (kill-local-variable 'aris-stashed-flycheck-inline-mode))
         ;;     (when (boundp 'aris-stashed-beacon-mode)
-	;;       (when aris-stashed-beacon-mode (beacon-mode 1))
-	;;       (kill-local-variable 'aris-stashed-beacon-mode))))
+	      ;;       (when aris-stashed-beacon-mode (beacon-mode 1))
+	      ;;       (kill-local-variable 'aris-stashed-beacon-mode))))
         )
       
       ;; (use-package-with-message company-quickhelp :ensure t
@@ -747,11 +747,11 @@
             (setq-local company-tooltip-minimum-width 60)
             (setq-local company-tooltip-maximum-width 80)
             (setq-local lsp-semantic-tokens-enable 1)
-	    (aggressive-indent-mode 1)
+	          (aggressive-indent-mode 1)
             (aris-prettify-symbols-rust)
             (flycheck-rust-setup)
             (lsp)
-	    )))
+	          )))
 
       (use-package-with-message slime-company :ensure t)
 
@@ -762,11 +762,11 @@
         (setq slime-kill-without-query-p t)
         (setq slime-lisp-implementations
           '((sbcl
-	      ("/opt/homebrew/bin/sbcl"))
+	            ("/opt/homebrew/bin/sbcl"))
              (clisp
-	       ("/opt/homebrew/bin/clisp"))
+	             ("/opt/homebrew/bin/clisp"))
              (ecl
-	       ("/opt/homebrew/bin/ecl"))))
+	             ("/opt/homebrew/bin/ecl"))))
         (setq inferior-lisp-program "/opt/homebrew/bin/sbcl")
         (setq slime-compilation-finished-hook 'slime-maybe-show-compilation-log)
         (setq slime-load-failed-fasl 'never)
@@ -797,8 +797,8 @@
         (add-hook hook
           (lambda ()
             (c-set-offset 'arglist-close 0)
-	    (setq-local lsp-inlay-hint-enable nil)
-    	    (lsp)
+	          (setq-local lsp-inlay-hint-enable nil)
+    	      (lsp)
             ;; (lsp-inlay-hints-mode -1)
             ;; (lsp-lens-mode -1)
             ;; (lsp-semantic-tokens-mode -1)
@@ -902,6 +902,7 @@
            aris-funs--maybe
            aris-funs--error-when-and-error-unless
            aris-funs--pcase-x
+           aris-funs--div-mod
            aris-types
            steve-loshs-funs--if-let
            peter-norvigs-funs--defun-memo
@@ -994,9 +995,9 @@
                 (shell "dcp")))
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	    ;; Load desktop file:
+	          ;; Load desktop file:
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	    (with-messages "loading desktop" (desktop-read))))))
+	          (with-messages "loading desktop" (desktop-read))))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (provide 'aris-emacs-configuration))
