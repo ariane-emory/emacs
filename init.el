@@ -898,6 +898,7 @@
            aris-funs--setup-lisp
            aris-funs--with-gensyms
            aris-funs--parse-arglist
+           aris-funs--prepend-new-args
            aris-funs--sym-db
            aris-funs--defunstar
            aris-funs--maybe
