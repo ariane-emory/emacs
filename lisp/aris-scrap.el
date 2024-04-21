@@ -4,14 +4,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def* (div-mod (n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
+(def* (div-mod (n : integer) (d : integer)) => (pair-of integer)
   `(,(/ n d) . ,(% n d)))
 
 ;; ... expands to:
-(defun* div-mod ((n : positive-integer) (d : positive-integer)) => (pair-of positive-integer)
+(defun* div-mod ((n : integer) (d : integer)) => (pair-of integer)
   `(,(/ n d) \,(% n d)))
 
 (div-mod 19 8) ;; => (2 . 3)
+(div-mod -19 8) ;; => (-2 . -3)
+(div-mod 19 -8) ;; => (-2 . 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -82,69 +84,14 @@
       (let ((result (benchmark-run rep-count (untyped-memoized-until-fib 1000))))
         (prn "%3d reps = %.5f seconds." rep-count (first result)))))
   (print-memos 'untyped-memoized-until-fib))
-
-
-(ignore!
-  (progn
-    (dotimes (n 100)
-      (let ((rep-count (1+ n)))
-        (clear-memos 'untyped-memoized-naive-fib)
-        (let ((result (benchmark-run rep-count (untyped-memoized-naive-fib 1000))))
-          (prn "%3d reps = %.5f seconds." rep-count (first result)))))
-    (print-memos 'untyped-memoized-naive-fib)
-    )
-
-  (untyped-memoized-naive-fib 500)
-  (untyped-memoized-naive-fib 1000)
-  (untyped-memoized-naive-fib 1500)
-  (untyped-memoized-naive-fib 2000))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun-memo ack (m n)
-  "Compute the Ackermann function A(m, n)."
-  (cond
-    ((zerop m) (1+ n))
-    ((zerop n) (ack (1- m) 1))
-    (t (ack (1- m) (ack m (1- n))))))
-
-(defun-memo ack-iter (m n)
-  "Compute the Ackermann function A(m, n)."
-  (with-gensyms (block)
-    (cl-block block
-      (cl-tagbody
-        loop
-        (cond
-          ((zerop m)
-            (cl-return-from block (1+ n)))
-          ((zerop n)
-            (cl-decf m)
-            (setq n 1)
-            (go loop))
-          (t
-            (cl-decf m)
-            (setq n (ack-iter m (1- n)))
-            (go loop)))))))
-
-;; Test the Ack function
-(message "Ack-Iter(1, 1) = %d" (ack-iter 1 1))
-(message "Ack-Iter(3, 2) = %d" (ack-iter 3 2))
-(message "Ack-Iter(4, 1) = %d" (ack-iter 4 1))
-
-;; Test the Ack function
-(message "Ack(1, 1) = %d" (ack 1 1))
-(message "Ack(3, 2) = %d" (ack 3 2))
-(message "Ack(4, 1) = %d" (ack 4 1))
-
-(print-memos 'ack)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 (defun flatten (input &optional accumulator)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
 This is from Norvig."
-  (prn "(flatten %s   %s)" input accumulator)
+  (prn "(flatten %s %s)" input accumulator)
   (let ((result
           (with-indentation
             (cond
@@ -154,10 +101,8 @@ This is from Norvig."
                    (first input)
                    (flatten (rest input) accumulator)))))))
     (prn "⇒ %s" result)
-    result
-    ))
+    result))
 
 (flatten '(this (is a) (list (with lots) (of (nested stuff)))))
 
-(flatten '(this (is a) list))
-
+(flatten '(one two))
