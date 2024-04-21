@@ -9,8 +9,11 @@
 (defmacro defun--db-fun (name arglist &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Create a new DB in the sym NAME's DB-PROP property."
-  (let ((arglist (prepend-new-args '(db-sym) '(db-prop) nil arglist))) ; pop :DUMMY.
+  (let ( (arglist (prepend-new-args '(db-sym) '(db-prop) nil arglist))
+         (docstring (when (stringp (first body)) (list (pop body))))
+         )
     `(defun ,name ,arglist
+       ,@docstring
        (let* ( (db-prop (or db-prop 'db))
                (db (get db-sym db-prop)))
          ,@body))))
