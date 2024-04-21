@@ -31,7 +31,7 @@
   '(lisp-indent-offset 2)
   '(lsp-enable-indentation nil)
   '(lsp-enable-links nil)
-  '(max-lisp-eval-depth 10000)
+  '(max-lisp-eval-depth 1000)
   '(message-log-max 25000)
   '(package-selected-packages
      '(zoom huecycle dirvish spaceline slime-company rainbow-mode rainbow-delimiters powerline persistent-scratch nov modern-cpp-font-lock multiple-cursors lsp-ui lsp-mode idle-highlight-mode highlight-parentheses dpaste default-text-scale company-posframe centered-cursor-mode beacon which-key swift-mode rust-mode platformio-mode paredit markdown-mode flycheck-rust flycheck-inline f editorconfig diminish devdocs-browser devdocs company-box coffee-mode clhs adjust-parens ac-inf-ruby aggressive-indent))

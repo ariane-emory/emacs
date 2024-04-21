@@ -36,17 +36,6 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten2 (lst)
-  "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
-I wrote this one myself."
-  (when lst
-    (if (consp (car lst))
-      (append (flatten2 (pop lst)) (flatten2 lst))
-      (cons (pop lst) (flatten2 lst)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun flatten3 (lst)
   "Return a flat list of the atoms in the input."
   (let (result)
@@ -61,15 +50,35 @@ I wrote this one myself."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun flatten2 (lst)
+  "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
+I wrote this one myself."
+  (when lst
+    (if (consp (car lst))
+      (append (flatten2 (pop lst)) (flatten2 lst))
+      (cons (pop lst) (flatten2 lst)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun flatten4 (lst &optional acc tail)
   "Return a flat list of the atoms in the input."
-  
-  )
+  (let* ( (acc (or acc '(:dummy)))
+          (tail (or tail acc)))
+    (when lst
+      (if (consp (car lst))
+        (flatten4 lst acc tail)
+        (setcdr tail (list (pop lst)))
+        (flatten4 lst acc (cdr tail))))
+    
+    acc
+    ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten3 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
+(flatten4 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (a is lots with stuff nested of list this)
 
 (benchmark-run 1000 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.008683 0 0.0)
 (benchmark-run 1000 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.005622 0 0.0)
