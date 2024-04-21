@@ -27,9 +27,9 @@ This is adapted from the version in Peter Norvig's book."
           (cond
             ((null input) accumulator)
             ((atom input) (cons input accumulator))
-            (t (flatten
+            (t (flatten1
                  (first input)
-                 (flatten (rest input) accumulator)))))) ;)
+                 (flatten1 (rest input) accumulator)))))) ;)
     ;; (prn "⇒ %s" result)
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,15 +41,15 @@ This is adapted from the version in Peter Norvig's book."
 I wrote this one myself."
   (when lst
     (if (consp (car lst))
-      (append (flatten (pop lst)) (flatten lst))
-      (cons (pop lst) (flatten lst)))))
+      (append (flatten2 (pop lst)) (flatten2 lst))
+      (cons (pop lst) (flatten2 lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 
-(benchmark-run 500 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (27.197824 1 0.095641999999998)
-(benchmark-run 500 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (26.331097 2 0.1903599999999983)
+(benchmark-run 100000 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (3.13811 26 2.360741000000001)
+(benchmark-run 100000 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (1.2355470000000002 9 0.8095919999999985)
 
 
 
