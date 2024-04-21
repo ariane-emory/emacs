@@ -149,7 +149,7 @@
         ((eq arg '&rest)
           (setq section 'rest))
         (t
-          (set section (cons arg (symbol-value section))))))
+          (push arg (symbol-value section)))))
     (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
       (prn "result: %s" res)
       res)))
