@@ -69,7 +69,6 @@
        ,(nreverse optional)
        ,(nreverse rest))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (confirm that (parse-arglist '(x y &optional z)) returns ((x y) (z) nil))
 (confirm that (parse-arglist '(x y &optional z &rest rest)) returns ((x y) (z) (rest)))
 (confirm that (parse-arglist '(x y &rest rest)) returns ((x y) nil (rest)))
@@ -77,4 +76,5 @@
 (confirm that (parse-arglist '(&optional z &rest rest)) returns (nil (z) (rest)))
 (confirm that (parse-arglist '(&optional z)) returns (nil (z) nil))
 (confirm that (parse-arglist '(&rest rest)) returns (nil nil (rest)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
