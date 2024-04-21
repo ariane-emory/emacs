@@ -38,6 +38,7 @@
 (defalias 'match           'pcase)
 ;; (defalias 'head            'car)
 ;; (defalias 'tail            'cdr)
+(defalias 'first           'car)
 (defalias 'rest            'cdr)
 (setq else t) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

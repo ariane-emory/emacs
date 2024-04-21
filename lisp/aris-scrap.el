@@ -179,6 +179,28 @@
        ,(nreverse rest))))
 
 
+(defun parse-arglist (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (section 'required)
+          required
+          optional
+          rest)
+    (dolist (arg arglist)
+      (cond
+        ((eq arg '&optional)
+          (setq section 'optional))
+        ((eq arg '&rest)
+          (setq section 'rest))
+        (t
+          (prn "required: %s" required)
+          (prn "optional: %s" optional)
+          (prn "rest: %s"     rest)
+          (push arg (symbol-value section)))))
+    (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
+      (prn "result: %s" res)
+      res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (confirm that (parse-arglist '(x y &optional z)) returns ((x y) (z) nil))
 (confirm that (parse-arglist '(x y &optional z &rest rest)) returns ((x y) (z) (rest)))
 (confirm that (parse-arglist '(x y &rest rest)) returns ((x y) nil (rest)))
