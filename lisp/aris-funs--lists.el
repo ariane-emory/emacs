@@ -9,139 +9,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun depth (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Get the depth of a nested list structure."
-  (unless (list? lst) (error "LST must be a list"))
-  (let ( (stack (list (cons lst 1))) ; Stack with initial list and depth of 1
-         (max-depth 0))
-    (while stack
-      (let* ( (current (pop stack))
-              (current-list (car current))
-              (current-depth (cdr current)))
-        (if (> current-depth max-depth)
-          (setq max-depth current-depth))
-        (mapc (lambda (item)
-                (when (list? item)
-                  (push (cons item (1+ current-depth)) stack)))
-          current-list)))
-    max-depth))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (depth '(1 2 3 (4 5 (6 7 8) 9) 10)) returns 3)
-(confirm that (depth nil) returns 1)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compact (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Filter nil items from LST."
-  (unless (list? lst) (error "LST must be a list")) 
-  (while (and lst (nil? (car lst)))
-    (pop lst)) ;; (setq lst (cdr lst)))
-  (when lst
-    (let* ((result (list (pop lst)))
-            (tail result))
-      (while lst
-        (let ((head (pop lst)))
-          (unless (nil? head)
-            (setq tail (rplacd! tail (list head))))))
-      result)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
-(confirm that (compact '(nil)) returns nil)
-(confirm that (compact nil) returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun filter (pred? lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return a list containing those members of lst satisfying pred?."
-  (unless (fun? pred?) (error "PRED? must be a function"))
-  (unless (list? lst)  (error "LST must be a list"))
-  (let (result tail)
-    (while lst
-      (let ((head (pop lst)))
-        (if (funcall pred? head)
-          (let ((new-tail (list head)))
-            (if tail
-              (progn
-                (rplacd! tail new-tail)
-                (setq   tail new-tail))
-              (setq
-                result new-tail
-                tail   result))))))
-    result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (filter 'even? '(1 2 3 4 5 6 7 8 9 10)) returns (2 4 6 8 10))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun copy-list (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Take a shallow copy of LST."
-  (unless (list? lst) (error "LST must be a list"))
-  (when lst
-    (let* ( (result (list (pop lst)))
-            (tail result))
-      (while lst
-        (let ((new-tail (list (pop lst))))
-          (rplacd! tail new-tail)
-          (setq tail new-tail)))
-      result)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (copy-list '(1 2 3 4 5)) returns (1 2 3 4 5))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun intercalate (intercalated lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Intercalate INTERCALATED between items in LST."
-  (unless (list? lst) (error "LST must be a list"))
-  (when lst
-    (let* ( (result (list (car lst)))
-            (tail   result))
-      (setq lst (cdr lst))
-      (while lst
-        (let* ( (head     (pop lst))
-                (new-tail (list intercalated head)))
-          (rplacd! tail new-tail)
-          (setq tail (cdr new-tail))))
-      result)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (intercalate 'x '(1 2 3 4 5)) returns (1 x 2 x 3 x 4 x 5))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun split-list (pred? lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructivly split LST into two sublists:
-1. The longest initial sublist of elements satisfying PRED?
-2. The rest of the elements."
-  (unless (fun? pred?) (error "PRED? must be a function"))
-  (unless (list? lst)  (error "LST must be a list"))
-  (when lst
-    (let ( prev
-           (current lst))
-      (while (and current (funcall pred? (car current)))
-        (setq
-          prev    current
-          current (cdr current)))
-      (if prev
-        (progn
-          (rplacd! prev nil)
-          (list lst current))
-        (list nil lst)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (split-list 'even? '(2 4 6 7 8 10)) returns ((2 4 6) (7 8 10)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun all (pred? lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when all elems in LST? are PRED?"
@@ -171,6 +38,129 @@
 (confirm that (any 'even? '(1 3 5 7 9 11)) returns nil)
 (confirm that (any (lambda (x) (even? x)) '(1 3 5 7 9 10)) returns t)
 (confirm that (any (lambda (x) (even? x)) '(1 3 5 7 9 11)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compact (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Filter nil items from LST."
+  (unless (list? lst) (error "LST must be a list")) 
+  (while (and lst (nil? (car lst)))
+    (pop lst)) ;; (setq lst (cdr lst)))
+  (when lst
+    (let* ((result (list (pop lst)))
+            (tail result))
+      (while lst
+        (let ((head (pop lst)))
+          (unless (nil? head)
+            (setq tail (rplacd! tail (list head))))))
+      result)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
+(confirm that (compact '(nil)) returns nil)
+(confirm that (compact nil) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun copy-list (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Take a shallow copy of LST."
+  (unless (list? lst) (error "LST must be a list"))
+  (when lst
+    (let* ( (result (list (pop lst)))
+            (tail result))
+      (while lst
+        (let ((new-tail (list (pop lst))))
+          (rplacd! tail new-tail)
+          (setq tail new-tail)))
+      result)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (copy-list '(1 2 3 4 5)) returns (1 2 3 4 5))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun depth (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Get the depth of a nested list structure."
+  (unless (list? lst) (error "LST must be a list"))
+  (let ( (stack (list (cons lst 1))) ; Stack with initial list and depth of 1
+         (max-depth 0))
+    (while stack
+      (let* ( (current (pop stack))
+              (current-list (car current))
+              (current-depth (cdr current)))
+        (if (> current-depth max-depth)
+          (setq max-depth current-depth))
+        (mapc (lambda (item)
+                (when (list? item)
+                  (push (cons item (1+ current-depth)) stack)))
+          current-list)))
+    max-depth))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (depth '(1 2 3 (4 5 (6 7 8) 9) 10)) returns 3)
+(confirm that (depth nil) returns 1)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun filter (pred? lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return a list containing those members of lst satisfying pred?."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (list? lst)  (error "LST must be a list"))
+  (let (result tail)
+    (while lst
+      (let ((head (pop lst)))
+        (if (funcall pred? head)
+          (let ((new-tail (list head)))
+            (if tail
+              (progn
+                (rplacd! tail new-tail)
+                (setq   tail new-tail))
+              (setq
+                result new-tail
+                tail   result))))))
+    result))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (filter 'even? '(1 2 3 4 5 6 7 8 9 10)) returns (2 4 6 8 10))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun flatten (lst)
+  "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
+I wrote this one myself."
+  (when lst
+    (if (consp (car lst))
+      (append (flatten (pop lst)) (flatten lst))
+      (cons (pop lst) (flatten lst)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (flatten '(this (is a) (list (with lots) (of (nested stuff)))))
+  returns (this is a list with lots of nested stuff))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun flatten--norvig (input &optional accumulator)
+  "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
+This is adapted from the version in Peter Norvig's book."
+  ;; (prn "(flatten %s %s)" input accumulator)
+  (let ((result
+          ;; (with-indentation
+          (cond
+            ((null input) accumulator)
+            ((atom input) (cons input accumulator))
+            (t (flatten--norvig
+                 (first input)
+                 (flatten--norvig (rest input) accumulator)))))) ;)
+    ;; (prn "⇒ %s" result)
+    result))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (flatten--norvig '(this (is a) (list (with lots) (of (nested stuff)))))
+  returns (this is a list with lots of nested stuff))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -205,6 +195,62 @@
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (tails '((1 2 3) (4 5 6) (7 8 9))) returns ((2 3) (5 6) (8 9)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun intercalate (intercalated lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Intercalate INTERCALATED between items in LST."
+  (unless (list? lst) (error "LST must be a list"))
+  (when lst
+    (let* ( (result (list (car lst)))
+            (tail   result))
+      (setq lst (cdr lst))
+      (while lst
+        (let* ( (head     (pop lst))
+                (new-tail (list intercalated head)))
+          (rplacd! tail new-tail)
+          (setq tail (cdr new-tail))))
+      result)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (intercalate 'x '(1 2 3 4 5)) returns (1 x 2 x 3 x 4 x 5))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun maprc (lst fn)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Map FN over LST, discarding the result and returning LST."
+  (mapc fn lst))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (maprc (list 1 2 3) (lambda (x) (* 2 x))) returns (1 2 3))
+(confirm that (maprc '(1 2 3) (lambda (x) (* 2 x))) returns (1 2 3))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun split-list (pred? lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructivly split LST into two sublists:
+1. The longest initial sublist of elements satisfying PRED?
+2. The rest of the elements."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (list? lst)  (error "LST must be a list"))
+  (when lst
+    (let ( prev
+           (current lst))
+      (while (and current (funcall pred? (car current)))
+        (setq
+          prev    current
+          current (cdr current)))
+      (if prev
+        (progn
+          (rplacd! prev nil)
+          (list lst current))
+        (list nil lst)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (split-list 'even? '(2 4 6 7 8 10)) returns ((2 4 6) (7 8 10)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -510,17 +556,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (mapr (list 1 2 3) #'1+) returns (2 3 4))
 (confirm that (mapr '(1 2 3) #'1+) returns (2 3 4))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun maprc (lst fn)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Map FN over LST, discarding the result and returning LST."
-  (mapc fn lst))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (maprc (list 1 2 3) (lambda (x) (* 2 x))) returns (1 2 3))
-(confirm that (maprc '(1 2 3) (lambda (x) (* 2 x))) returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
