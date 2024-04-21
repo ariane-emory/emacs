@@ -231,7 +231,6 @@
     (benchmark-run reps (untyped-tagbody-fib n)) ;; => (0.00032199999999999997 0 0.0)
     (benchmark-run reps (typed-tagbody-fib n)) ;; => (0.00033 0 0.0)
 
-    (benchmark-run reps (untyped-memoized-until-fib n)) ;; => (1.1e-05 0 0.0)
     (benchmark-run reps (untyped-until-fib n)) ;; => (0.000141 0 0.0)
     (benchmark-run reps (typed-until-fib n)) ;; => (0.000126 0 0.0)
     ) ; END OF progn

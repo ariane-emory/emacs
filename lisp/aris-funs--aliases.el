@@ -36,6 +36,9 @@
 (defalias 'decf            'cl-decf)
 (defalias 'incf            'cl-incf)
 (defalias 'match           'pcase)
+(defalias 'head            'car)
+(defalias 'tail            'cdr)
+(defalias 'rest            'cdr)
 (setq else t) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

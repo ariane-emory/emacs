@@ -100,6 +100,8 @@
   (untyped-memoized-naive-fib 2000))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun-memo ack (m n)
   "Compute the Ackermann function A(m, n)."
   (cond
@@ -136,3 +138,15 @@
 (message "Ack(4, 1) = %d" (ack 4 1))
 
 (print-memos 'ack)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun flatten (input &optional accumulator)
+  "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
+This is from Norvig."
+  (cond
+    ((null input) accumulator)
+    ((atom input) (cons input accumulator))
+    (t (flatten (first input) (flatten (rest input) accumulator)))))
+
+(flatten '(this (is a) (list (with lots) (of (nested stuff)))))
