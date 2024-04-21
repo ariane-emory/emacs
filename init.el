@@ -896,6 +896,7 @@
            aris-funs--prettify-symbols
            aris-funs--rainbow-cursor
            aris-funs--setup-lisp
+           aris-funs--sym-db
            aris-funs--with-gensyms
            aris-funs--defunstar
            aris-funs--maybe
