@@ -6,7 +6,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro defun--db-fun (name arglist auto-create-db &rest body)
+(defmacro defun--db-fun (name arglist &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Create a new DB in the sym NAME's DB-PROP property."
   (let ( (arglist (prepend-new-args '(db-sym) '(db-prop) nil arglist))
@@ -15,15 +15,12 @@
        ,@docstring
        (let* ( (db-prop (or db-prop 'db))
                (db (get db-sym db-prop)))
-         ,@(when auto-create-db
-             `((unless (hash-table-p (get db-sym db-prop))
-                 (create-db db-sym db-prop))))
          ,@body))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun--db-fun create-db (&optional test-fun) nil
+(defun--db-fun create-db (&optional test-fun)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Create a new hashtable on DB-SYM's DB-PROP property."
   (let* ( (test-fun (or test-fun #'equal))
@@ -38,7 +35,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun--db-fun db-get (key) nil
+(defun--db-fun db-get (key)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the value of KEY in the hashtable on DB-SYM's DB-PROP property."
   (with-gensyms (db-not-found)
@@ -53,7 +50,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun--db-fun db-put (key val) nil
+(defun--db-fun db-put (key val)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Put VAL in the hashtable on DB-SYM's DB-PROP property under KEY."
   (setf (gethash key db) val))
@@ -68,7 +65,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun--db-fun db-clear () nil
+(defun--db-fun db-clear ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Clear the hashtable on DB-SYM's DB-PROP property."
   (clrhash db))
