@@ -44,3 +44,42 @@
 ;; (munge-arglist nil nil '(x y &rest body)) ;; => (x y &optional &rest body)
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun munge-arglist (prepend-required-args prepend-optional-args arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (parsed (parse-arglist arglist))
+          (required (first parsed))
+          (optionals (second parsed))
+          (rest (third parsed)))
+    (prndiv)
+    (prn "arglist:   %s" arglist)
+    (prn "parsed:    %s" parsed)
+    (prn "required:  %s" required)
+    (prn "optionals: %s" optionals)
+    (prn "rest:      %s" rest)
+    (let ((res (append prepend-required-args
+                 required
+                 (when (or prepend-optional-args optionals)
+                   `(&optional ,@prepend-optional-args ,@optionals))
+                 (when rest
+                   `(&rest ,@rest)))))
+      (prn "res:       %s" res)
+      res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (munge-arglist '(db-sym) '(db-prop) '(x y &optional z))
+  returns (db-sym x y &optional db-prop z))
+(confirm that (munge-arglist '(db-sym) '(db-prop) '(x y &optional z &rest rest))
+  returns (db-sym x y &optional db-prop z &rest rest))
+(confirm that (munge-arglist '(db-sym) '(db-prop) '(x y &rest rest))
+  returns (db-sym x y &optional db-prop &rest rest))
+(confirm that (munge-arglist '(db-sym) '(db-prop) '())
+  returns (db-sym &optional db-prop))
+(confirm that (munge-arglist '(db-sym) '(db-prop) '(&optional z &rest rest))
+  returns (db-sym &optional db-prop z &rest rest))
+(confirm that (munge-arglist '(db-sym) '(db-prop) '(&optional z))
+  returns (db-sym &optional db-prop z))
+(confirm that (munge-arglist '(db-sym) '(db-prop) '(&rest rest))
+  returns (db-sym &optional db-prop &rest rest))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
