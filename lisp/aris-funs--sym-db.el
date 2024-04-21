@@ -5,20 +5,22 @@
 (defmacro defun--db-fun (name arglist &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Create a new DB in the sym NAME's DB-PROP property."
-  (let* ((arglist '(x y &optional z)) (pos arglist) optionals)
+  (prndiv)
+  (let* ((arglist arglist) (pos arglist) optionals)
     (while pos
-      (when (eq (second pos) '&optional)
-        (setq optionals (cddr pos))
+      (prn "pos %s" pos)
+      (when (eq (first pos) '&optional)
+        (setq optionals (cdr pos))
         (setcdr pos nil))
       (pop pos))
     (prn "arglist %s" arglist)
-    (prn "optionals %s" optionals))
-  (let* ( (arglist (append '(db-sym) arglist optionals)))
-    (prn "arglist is now %s" arglist)
-    `(defun ,name ,arglist
-       (let* ( (db-prop (or db-prop 'db))
-               (db (get db-sym db-prop)))
-         ,@body))))
+    (prn "optionals %s" optionals)
+    (let* ( (arglist (append '(db-sym) arglist '(dp-prop) optionals)))
+      (prn "arglist is now %s" arglist)
+      `(defun ,name ,arglist
+         (let* ( (db-prop (or db-prop 'db))
+                 (db (get db-sym db-prop)))
+           ,@body)))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
