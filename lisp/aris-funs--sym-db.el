@@ -33,11 +33,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun--db-fun db-get (key &optional auto-create)
+(defun--db-fun db-get (key)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the value of KEY in the hashtable on DB-SYM's DB-PROP property."
-  (unless (hash-table-p (get db-sym db-prop))
-    (create-db db-sym db-prop))
   (with-gensyms (db-not-found)
     (let* ( (got (gethash key db db-not-found))
             (found (not (eq got db-not-found)))
