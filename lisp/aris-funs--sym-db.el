@@ -2,21 +2,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro defun-db-fun (name args &rest body)
+(defmacro defun--db-fun (name arglist &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(defun ,name ,args
-     (let* ( (db-prop (or db-prop 'db)))
-       ,@body)))
+  "Create a new DB in the sym NAME's DB-PROP property."
+  (let ((arglist (append '(db-sym) arglist)))
+    `(defun ,name ,arglist
+       (let* ( (db-prop (or db-prop 'db))
+               (db (get db-sym db-prop)))
+         ,@body))))
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun create-db (db-sym &optional db-prop test-fun)
+(defun--db-fun create-db (&optional db-prop test-fun)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (db-prop (or db-prop 'db))
-          (test-fun (or test-fun #'equal))
-          (table (make-hash-table :test test-fun)))
-    (setf (get db-sym db-prop) table)))
+  (let* ( (test-fun (or test-fun #'equal))
+          (new-table (make-hash-table :test test-fun)))
+    (setf db new-table)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (create-db 'foo 'db #'eq)) returns t)
 (confirm that (hash-table-p (create-db 'foo 'alt)) returns t)
@@ -26,12 +28,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun db-get (db-sym key &optional db-prop)
+(defun--db-fun db-get (key &optional db-prop)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (with-gensyms (db-not-found)
-    (let* ( (db-prop (or db-prop 'db))
-            (db (get db-sym db-prop))
-            (got (gethash key db db-not-found))
+    (let* ( (got (gethash key db db-not-found))
             (found (not (eq got db-not-found)))
             (val (when found got)))
       (cons val found))))
@@ -42,11 +42,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun db-put (db-sym key val &optional db-prop)
+(defun--db-fun db-put (key val &optional db-prop)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (db-prop (or db-prop 'db))
-          (db (get db-sym db-prop)))
-    (setf (gethash key db) val)))
+  (setf (gethash key db) val))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (db-put 'foo 'bar 777) returns 777)
 (confirm that (db-put 'foo 'bar 888 'alt) returns 888)
@@ -56,11 +54,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun db-clear (db-sym &optional db-prop)
+(defun--db-fun db-clear (&optional db-prop)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (db-prop (or db-prop 'db))
-          (db (get db-sym db-prop)))
-    (clrhash db)))
+  (clrhash db))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (db-clear 'foo)
 (db-clear 'foo 'alt)
