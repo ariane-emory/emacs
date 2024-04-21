@@ -49,16 +49,6 @@
             (found (not (eq got db-not-found)))
             (val (when found got)))
       (cons val found))))
-(defun db-get (db-sym key &optional db-prop)
-  (let* ((db-prop (or db-prop 'db))
-          (db (get db-sym db-prop)))
-    (with-gensyms (db-not-found)
-      (let* ((got (gethash key db db-not-found))
-              (found (not (eq got db-not-found)))
-              (val (when found got)))
-        (cons val found)))))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (db-get 'foo 'bar) returns (nil))
 (confirm that (db-get 'foo 'bar 'alt) returns (nil))
@@ -74,6 +64,8 @@
 (confirm that (db-put 'foo 'bar 888 'alt) returns 888)
 (confirm that (db-get 'foo 'bar) returns (777 . t))
 (confirm that (db-get 'foo 'bar 'alt) returns (888 . t))
+(confirm that (db-put 'foo 'baz nil) returns nil)
+(confirm that (db-get 'foo 'baz) returns (nil . t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
