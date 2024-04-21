@@ -64,9 +64,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten (input &optional accumulator)
+(defun flatten1 (input &optional accumulator)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
-This is from Norvig."
+This is from Peter Norvig's book."
   (prn "(flatten %s %s)" input accumulator)
   (let ((result
           (with-indentation
@@ -78,77 +78,18 @@ This is from Norvig."
                    (flatten (rest input) accumulator)))))))
     (prn "⇒ %s" result)
     result))
-
-(flatten '(this (is a) (list (with lots) (of (nested stuff)))))
-
-(flatten '(one (two three)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun create-db (db-sym &optional db-prop)
-  (let ( (db-prop (or db-prop 'db))
-         (table (make-hash-table :test #'equal)))
-    (setf (get db-sym db-prop) table)))
-(create-db 'foo)
-(create-db 'foo 'alt)
-(get 'foo 'db)
-
-(defun db-get (db-sym key &optional db-prop)
-  (with-gensyms (db-not-found)
-    (let* ( (db-prop (or db-prop 'db))
-            (db (get db-sym db-prop))
-            (got (gethash key db db-not-found))
-            (found (not (eq got db-not-found)))
-            (val (when found got)))
-      (cons found val))))
-(db-get 'foo 'bar)
-(db-get 'foo 'bar 'alt)
-
-(defun db-put (db-sym key val &optional db-prop)
-  (let* ( (db-prop (or db-prop 'db))
-          (db (get db-sym db-prop)))
-    (setf (gethash key db) val)))
-(db-put 'foo 'bar 777)
-(db-put 'foo 'bar 888 'alt)
-
-(defun db-clear (db-sym &optional db-prop)
-  (let* ( (db-prop (or db-prop 'db))
-          (db (get db-sym db-prop)))
-    (clrhash db)))
-(db-clear 'foo)
-(db-clear 'foo 'alt)
 
 
-(let* ((arglist '(x y &optional z)) (pos arglist))
-  (while pos
-    (prn "%s %s" (car pos) (cadr pos))
-    (pop pos)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun flatten2 (lst)
+  "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
+I wrote this one myself."
+  (when lst
+    (if (consp (car lst))
+      (append (flatten (pop lst)) (flatten lst))
+      (cons (pop lst) (flatten lst)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(let* ((arglist '(x y &optional z)) (pos arglist) tail)
-  (while pos
-    (prn "%s %s" (car pos) (cadr pos))
-    (when (eq (cadr pos) '&optional)
-      (setq tail (cadr pos))
-      (setcdr pos nil))
-    (pop pos))
-  (prn "arglist %s" arglist)
-  (prn "tail %s" tail))
-
-(let* ((arglist '(x y &optional z)) 
-        (pos arglist) 
-        tail)
-  (dolist (arg arglist)
-    (when (eq arg '&optional)
-      (setq tail (cdr pos))
-      (setcdr pos nil))
-    (setq pos (cdr pos)))
-  (prn "arglist %s" arglist)
-  (prn "tail %s" tail))
-
-
-(let* ((arglist '(x y &optional z)) (pos arglist) tail)
-  (while pos
-    (when (eq (second pos) '&optional)
-      (setq tail (cddr pos))
-      (setcdr pos nil))
-    (pop pos))
-  (prn "arglist %s" arglist)
-  (prn "tail %s" tail))
+(flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
+(flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)

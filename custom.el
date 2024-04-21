@@ -49,7 +49,8 @@
   '(tooltip-mode nil)
   '(truncate-lines t)
   '(use-short-answers t)
-  '(word-wrap t))
+  '(word-wrap t)
+  '(zoom-size '(96 . 24)))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
