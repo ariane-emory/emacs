@@ -144,9 +144,20 @@
 (defun flatten (input &optional accumulator)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
 This is from Norvig."
-  (cond
-    ((null input) accumulator)
-    ((atom input) (cons input accumulator))
-    (t (flatten (first input) (flatten (rest input) accumulator)))))
+  (prn "(flatten %s   %s)" input accumulator)
+  (let ((result
+          (with-indentation
+            (cond
+              ((null input) accumulator)
+              ((atom input) (cons input accumulator))
+              (t (flatten
+                   (first input)
+                   (flatten (rest input) accumulator)))))))
+    (prn "⇒ %s" result)
+    result
+    ))
 
 (flatten '(this (is a) (list (with lots) (of (nested stuff)))))
+
+(flatten '(this (is a) list))
+
