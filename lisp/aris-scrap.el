@@ -9,12 +9,12 @@
 ;;   (prn "initial arglist: %s" arglist)
 ;;   (let* ( (arglist (cons :DUMMY arglist))
 ;;           (pos arglist)
-;;           optionals
+;;           optional
 ;;           rest)
 ;;     (while pos
 ;;       (cond
 ;;         ((eq (second pos) '&optional)
-;;           (setq optionals (cddr pos))
+;;           (setq optional (cddr pos))
 ;;           (setcdr pos nil)) ; snip into two separate lists. 
 ;;         ((eq (second pos) '&rest)
 ;;           (setq rest (cdr pos)) 
@@ -23,13 +23,13 @@
 ;;     (pop arglist) ; pop :DUMMY.
 ;;     (prndiv)
 ;;     (prn "required:        %s" arglist)
-;;     (prn "optionals:       %s" optionals)
+;;     (prn "optional:       %s" optional)
 ;;     (prn "rest:            %s" rest)
-;;     (let* ( (optionals (when (or prepend-optional-args optionals)
-;;                    ~/^      `(&optional ,@prepend-optional-args ,@optionals)))
+;;     (let* ( (optional (when (or prepend-optional-args optional)
+;;                    ~/^      `(&optional ,@prepend-optional-args ,@optional)))
 ;;             (arglist `( ,@prepend-required-args
 ;;                         ,@arglist
-;;                         ,@optionals
+;;                         ,@optional
 ;;                         ,@rest)))
 ;;       (prn "final:           %s" arglist)
 ;;       arglist)))
@@ -51,20 +51,23 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (parsed    (parse-arglist arglist))
           (required  (first parsed))
-          (optionals (second parsed))
+          (optional (second parsed))
           (rest      (third parsed)))
     (prndiv)
     (prn "arglist:   %s" arglist)
     (prn "parsed:    %s" parsed)
     (prn "required:  %s" required)
-    (prn "optionals: %s" optionals)
+    (prn "optional: %s" optional)
     (prn "rest:      %s" rest)
-    (let ((res (append prepend-required-args
-                 required
-                 (when (or prepend-optional-args optionals)
-                   `(&optional ,@prepend-optional-args ,@optionals))
-                 (when rest
-                   `(&rest ,@prepend-rest-args ,@rest)))))
+    (let ( (optional
+             (if (or prepend-optional-args optional)
+               `(&optional ,@prepend-optional-args ,@optional)))
+           (rest
+             (if (or prepend-rest-args rest)
+               `(&rest ,@prepend-rest-args ,@rest)))
+           (res `( ,@required
+                   ,@optional
+                   ,@rest)))
       (prn "res:       %s" res)
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
