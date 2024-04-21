@@ -1,28 +1,34 @@
 ;; -*- fill-column: 90; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro defun--db-fun (name arglist &rest body)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Create a new DB in the sym NAME's DB-PROP property."
-;;   (let* ( (optionals (if-let  ((pos (memq '&optional arglist)))
-;;                        `(&optional db-prop ,@(cdr pos))
-;;                        '(&optional db-prop)))
-;;           (arglist (append '(db-sym) arglist optionals)))
-;;     `(defun ,name ,arglist
-;;        (let* ( (db-prop (or db-prop 'db))
-;;                (db (get db-sym db-prop)))
-;;          ,@body))))
-;;        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro defun--db-fun (name arglist &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Create a new DB in the sym NAME's DB-PROP property."
+  (let* ((arglist '(x y &optional z)) (pos arglist) optionals)
+    (while pos
+      (when (eq (second pos) '&optional)
+        (setq optionals (cddr pos))
+        (setcdr pos nil))
+      (pop pos))
+    (prn "arglist %s" arglist)
+    (prn "optionals %s" optionals))
+  (let* ( (arglist (append '(db-sym) arglist optionals)))
+    (prn "arglist is now %s" arglist)
+    `(defun ,name ,arglist
+       (let* ( (db-prop (or db-prop 'db))
+               (db (get db-sym db-prop)))
+         ,@body))))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun--db-fun create-db (&optional test-fun)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   (let* ( (test-fun (or test-fun #'equal))
-;;           (new-table (make-hash-table :test test-fun)))
-;;     (setf db new-table)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun--db-fun create-db (&optional test-fun)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (test-fun (or test-fun #'equal))
+          (new-table (make-hash-table :test test-fun)))
+    (setf db new-table)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (confirm that (hash-table-p (create-db 'foo #'eq 'db)) returns t)
 ;; (confirm that (hash-table-p (create-db 'foo #'equal 'alt)) returns t)
 ;; (confirm that (hash-table-p (get 'foo 'db)) returns t)

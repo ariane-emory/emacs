@@ -117,3 +117,38 @@ This is from Norvig."
 (db-clear 'foo 'alt)
 
 
+(let* ((arglist '(x y &optional z)) (pos arglist))
+  (while pos
+    (prn "%s %s" (car pos) (cadr pos))
+    (pop pos)))
+
+(let* ((arglist '(x y &optional z)) (pos arglist) tail)
+  (while pos
+    (prn "%s %s" (car pos) (cadr pos))
+    (when (eq (cadr pos) '&optional)
+      (setq tail (cadr pos))
+      (setcdr pos nil))
+    (pop pos))
+  (prn "arglist %s" arglist)
+  (prn "tail %s" tail))
+
+(let* ((arglist '(x y &optional z)) 
+        (pos arglist) 
+        tail)
+  (dolist (arg arglist)
+    (when (eq arg '&optional)
+      (setq tail (cdr pos))
+      (setcdr pos nil))
+    (setq pos (cdr pos)))
+  (prn "arglist %s" arglist)
+  (prn "tail %s" tail))
+
+
+(let* ((arglist '(x y &optional z)) (pos arglist) tail)
+  (while pos
+    (when (eq (second pos) '&optional)
+      (setq tail (cddr pos))
+      (setcdr pos nil))
+    (pop pos))
+  (prn "arglist %s" arglist)
+  (prn "tail %s" tail))
