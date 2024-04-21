@@ -9,27 +9,18 @@
 (defmacro defun--db-fun (name arglist &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Create a new DB in the sym NAME's DB-PROP property."
-  (prndiv)
-  (let* ( (arglist (cons :DUMMY arglist))
-          (pos arglist)
-          optionals)
-    (while pos
-      (when (eq (second pos) '&optional) ; no case for &rest yet, avoid it for now.
-        (setq optionals (cddr pos)) ; snip. 
-        (setcdr pos nil))
-      (pop pos))
-    (pop arglist) ; pop :DUMMY.
-    (let* ((arglist `(db-sym ,@arglist &optional db-prop ,@optionals)))
-      `(defun ,name ,arglist
-         (let* ( (db-prop (or db-prop 'db))
-                 (db (get db-sym db-prop)))
-           ,@body)))))
-           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let ((arglist (prepend-new-args '(db-sym) '(db-prop) nil arglist))) ; pop :DUMMY.
+    `(defun ,name ,arglist
+       (let* ( (db-prop (or db-prop 'db))
+               (db (get db-sym db-prop)))
+         ,@body))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun--db-fun create-db (&optional test-fun)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Create a new hashtable on B-SYM's DB-PROP property."
   (let* ( (test-fun (or test-fun #'equal))
           (new-table (make-hash-table :test test-fun)))
     (put db-sym db-prop new-table)))
@@ -52,7 +43,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (db-get 'foo 'bar) returns (nil))
 (confirm that (db-get 'foo 'bar 'alt) returns (nil))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

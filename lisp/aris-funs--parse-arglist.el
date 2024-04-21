@@ -7,20 +7,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun parse-arglist (arglist)
   "Parse an argument list into required, optional, and rest sections."
-  (let ( (section 'required)
+  (let ( (section :required)
          required
          optional
          rest)
     (dolist (arg arglist)
       (cond
-        ((eq arg '&optional) (setq section 'optional))
-        ((eq arg '&rest)     (setq section 'rest))
+        ((eq arg '&optional)
+          (setq section :optional))
+        ((eq arg '&rest)
+          (setq section :rest))
         (t
           (push arg
             (cl-case section
-              (required required)
-              (optional optional)
-              (rest rest))))))
+              (:required required)
+              (:optional optional)
+              (:rest     rest))))))
     `( ,(nreverse required)
        ,(nreverse optional)
        ,(nreverse rest))))

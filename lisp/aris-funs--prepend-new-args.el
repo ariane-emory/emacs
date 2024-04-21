@@ -1,17 +1,23 @@
 ;; -*- fill-column: 90; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'aris-funs--aliases)
 (require 'aris-funs--confirm)
 (require 'aris-funs--parse-arglist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun prepend-new-args (prepend-required-args prepend-optional-args prepend-rest-args arglist)
+(defun prepend-new-args ( prepend-required-args
+                          prepend-optional-args
+                          prepend-rest-args
+                          arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Insert PREPEND-REQUIRED-ARGS, PREPEND-OPTIONAL-ARGS, and PREPEND-REST-ARGS into
+ARGLIST, prepnding them to the required, optional, and rest argument sections, respectively."
   (let* ( (parsed    (parse-arglist arglist))
-          (required  (first parsed))
+          (required  (first  parsed))
           (optional  (second parsed))
-          (rest      (third parsed))
+          (rest      (third  parsed))
           (required
             (when (or prepend-required-args required)
               `(,@prepend-required-args ,@required)))
