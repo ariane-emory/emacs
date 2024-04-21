@@ -3,10 +3,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun create-db (db-sym &optional db-prop)
+(defun create-db (db-sym &optional db-prop test-fun)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (db-prop (or db-prop 'db))
-          (table (make-hash-table :test #'equal)))
+          (test (or test-fun #'equal))
+          (table (make-hash-table :test test)))
     (setf (get db-sym db-prop) table)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (create-db 'foo)) returns t)
