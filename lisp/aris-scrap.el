@@ -7,7 +7,7 @@
 (defun munge-arglist (prepend-required-args prepend-optional-args arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
-  (prn "arglist:   %s" arglist)
+  (prn "initial arglist: %s" arglist)
   (let* ( (arglist (cons :DUMMY arglist))
           (pos arglist)
           optionals
@@ -23,14 +23,14 @@
       (pop pos))
     (pop arglist) ; pop :DUMMY.
     (prndiv)
-    (prn "required:  %s" arglist)
-    (prn "optionals: %s" optionals)
-    (prn "rest:      %s" rest)
+    (prn "required:        %s" arglist)
+    (prn "optionals:       %s" optionals)
+    (prn "rest:            %s" rest)
     (let ((arglist `( ,@prepend-required-args
                       ,@arglist
                       &optional ,@prepend-optional-args ,@optionals
                       ,@rest)))
-      (prn "final:     %s" arglist)
+      (prn "final:           %s" arglist)
       arglist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
