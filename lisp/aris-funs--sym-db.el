@@ -10,19 +10,12 @@
           (pos arglist)
           optionals)
     (while pos
-      (prn "pos %s" pos)
-      (when (eq (second pos) '&optional)
-        (setq optionals (cddr pos))
+      (when (eq (second pos) '&optional) ; no case for &rest yet, avoid it for now.
+        (setq optionals (cddr pos)) ; snip. 
         (setcdr pos nil))
       (pop pos))
-    (pop arglist) ;; pop :DUMMY
-    (prn "arglist is %s" arglist)
-    (prn "optionals is %s" optionals)
-    (let* ( (arglist
-              `(db-sym ,@arglist &optional db-prop ,@optionals)
-              ;; (append '(db-sym) arglist '(&optional db-prop) optionals)
-              ))
-      (prn "arglist is now %s" arglist)
+    (pop arglist) ; pop :DUMMY.
+    (let* ((arglist `(db-sym ,@arglist &optional db-prop ,@optionals)))
       `(defun ,name ,arglist
          (let* ( (db-prop (or db-prop 'db))
                  (db (get db-sym db-prop)))
