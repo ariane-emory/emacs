@@ -51,23 +51,24 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (parsed    (parse-arglist arglist))
           (required  (first parsed))
-          (optional (second parsed))
-          (rest      (third parsed)))
+          (optional  (second parsed))
+          (rest      (third parsed))
+          (required
+            (if (or prepend-required-args required)
+              `(,@prepend-required-args ,@required)))
+          (optional
+            (if (or prepend-optional-args optional)
+              `(&optional ,@prepend-optional-args ,@optional)))
+          (rest
+            (if (or prepend-rest-args rest)
+              `(&rest ,@prepend-rest-args ,@rest))))
     (prndiv)
     (prn "arglist:   %s" arglist)
     (prn "parsed:    %s" parsed)
     (prn "required:  %s" required)
     (prn "optional: %s" optional)
     (prn "rest:      %s" rest)
-    (let ( (optional
-             (if (or prepend-optional-args optional)
-               `(&optional ,@prepend-optional-args ,@optional)))
-           (rest
-             (if (or prepend-rest-args rest)
-               `(&rest ,@prepend-rest-args ,@rest)))
-           (res `( ,@required
-                   ,@optional
-                   ,@rest)))
+    (let ((res (append required optional rest)))
       (prn "res:       %s" res)
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
