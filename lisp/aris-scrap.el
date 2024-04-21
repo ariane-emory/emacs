@@ -84,12 +84,12 @@
     (list required optional rest)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(parse-arglist '(x y)) ;; (nil nil nil)
-(parse-arglist '(x y &optional z &rest rest)) ;; (nil nil nil)
+;; (parse-arglist '(x y)) ;; (nil nil nil)
 (parse-arglist '(x y &optional z)) ;; (nil nil nil)
-(parse-arglist '(x y &rest rest)) ;; (nil nil nil)
-(parse-arglist '()) ;; (nil nil nil)
-(parse-arglist '(&optional z &rest rest)) ;; (nil nil nil)
-(parse-arglist '(&optional z)) ;; (nil nil nil)
-(parse-arglist '(&rest rest)) ;; (nil nil nil)
+;; (parse-arglist '(x y &optional z &rest rest)) ;; (nil nil nil)
+;; (parse-arglist '(x y &rest rest)) ;; (nil nil nil)
+;; (parse-arglist '()) ;; (nil nil nil)
+;; (parse-arglist '(&optional z &rest rest)) ;; (nil nil nil)
+;; (parse-arglist '(&optional z)) ;; (nil nil nil)
+;; (parse-arglist '(&rest rest)) ;; (nil nil nil)
 
