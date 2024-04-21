@@ -46,116 +46,7 @@
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun parse-arglist (arglist)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   (let* ( (arglist (cons :DUMMY arglist))
-;;           (pos arglist)
-;;           required
-;;           optional
-;;           rest)
-;;     (prn "")
-;;     (prn "initial arglist: %s" arglist)
-
-;;     (while pos
-;;       (let* ( (head (first pos))
-;;               (tail (rest pos))
-;;               (next (first tail)))
-;;         (prndiv)
-;;         (prn "arglist:  %s" arglist)
-;;         (prn "pos:      %s" pos)
-;;         (prn "head:     %s" head)
-;;         (prn "tail:     %s" tail)
-;;         (prn "next:     %s" next)
-;;         (prn "required: %s" required)
-;;         (prn "optional: %s" optional)
-;;         (prn "rest:     %s" rest)
-;;         (cond
-;;           ((eq next '&optional)
-
-;;             (prn "SNIP REQUIRED")
-;;             (setcdr pos nil) ; snip
-;;             (setq pos tail)
-;;             (setq required arglist)
-;;             ))
-;;         ;; (cond
-;;         ;;   ((eq (second pos) '&optional)
-;;         ;;     (setq required arglist)
-;;         ;;     (setq optional (cddr pos))
-;;         ;;     (setcdr pos optional)) ; snip into two separate lists. 
-;;         ;;   ((eq (second pos) '&rest)
-;;         ;;     (setq rest (cddr pos)) 
-;;         ;;     (setcdr pos nil))) ; snip into two separate lists. 
-;;         (pop pos)))
-;;     (pop required) ; pop :DUMMY.
-;;     (prndiv)
-;;     ;; (prn "required:        %s" arglist)
-;;     ;; (prn "optional:        %s" optional)
-;;     ;; (prn "rest:            %s" rest)
-;;     (let ((res `'(,required ,optional ,rest)))
-;;       (prn "res: %s" res)
-;;       res)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun parse-arglist (arglist)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   (let* ( (section '&required)
-;;           &required
-;;           &optional
-;;           &rest)
-;;     (prndiv)
-;;     (prn "initial arglist: %s" arglist)
-;;     (dolist (arg arglist)
-;;       (prndiv)
-;;       (prn "arg:       %s" arg)
-;;       (prn "section:   %s" section)
-;;       (prn "&required: %s" &required)
-;;       (prn "&optional: %s" &optional)
-;;       (prn "&rest:     %s" &optional)
-;;       (prn "arg:       %s" arg)
-;;       (cond
-;;         ((eq arg '&optional)
-;;           (prn "switch to opts")
-;;           (setq section '&optional))
-;;         ((eq arg '&rest)
-;;           (prn "switch to rest")
-;;           (setq section '&rest))
-;;         (t
-;;           (prn "push %s %s" arg section)
-;;           (set section (cons arg (eval section))))))
-
-;;     (let ((res `'(,(nreverse &required) ,(nreverse &optional) ,(nreverse &rest))))
-;;       (prn "result: %s" res)
-;;       res)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun parse-arglist (arglist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (section 'required)
-          (required nil)
-          (optional nil)
-          (rest nil))
-    (dolist (arg arglist)
-      (cond
-        ((eq arg '&optional)
-          (setq section 'optional))
-        ((eq arg '&rest)
-          (setq section 'rest))
-        (t
-          (push arg (symbol-value section)))))
-    (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
-      (prn "result: %s" res)
-      res)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
 (defun parse-arglist (arglist)
   "Parse an argument list into required, optional, and rest sections."
   (let ( (section 'required)
@@ -177,28 +68,6 @@
     `( ,(nreverse required)
        ,(nreverse optional)
        ,(nreverse rest))))
-
-
-(defun parse-arglist (arglist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (section 'required)
-          required
-          optional
-          rest)
-    (dolist (arg arglist)
-      (cond
-        ((eq arg '&optional)
-          (setq section 'optional))
-        ((eq arg '&rest)
-          (setq section 'rest))
-        (t
-          (prn "required: %s" required)
-          (prn "optional: %s" optional)
-          (prn "rest: %s"     rest)
-          (push arg (symbol-value section)))))
-    (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
-      (prn "result: %s" res)
-      res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (confirm that (parse-arglist '(x y &optional z)) returns ((x y) (z) nil))
