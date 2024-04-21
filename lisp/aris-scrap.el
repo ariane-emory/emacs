@@ -60,21 +60,6 @@ I wrote this one myself."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flatten4 (lst &optional acc tail)
-  "Return a flat list of the atoms in the input."
-  (let* ( (acc (or acc '(:dummy)))
-          (tail (or tail acc)))
-    (when lst
-      (if (consp (car lst))
-        (flatten4 lst acc tail)
-        (setcdr tail (list (pop lst)))
-        (flatten4 lst acc (cdr tail))))
-    
-    acc
-    ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten3 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
@@ -84,5 +69,21 @@ I wrote this one myself."
 (benchmark-run 1000 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.005622 0 0.0)
 (benchmark-run 1000 (flatten3 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.015327 0 0.0)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun flatten4 (lst &optional acc tail)
+  "Return a flat list of the atoms in the input."
+  (let* ( (acc (or acc '(:dummy)))
+          (tail (or tail acc)))
+    (prn "(flatten4 %s %s %s)" lst acc tail)
+    (debug)
+    (when lst
+      (if (consp (car lst))
+        (flatten4 lst acc tail)
+        (setcdr tail (list (pop lst)))
+        (setq tail (cdr tail)
+          (flatten4 lst acc (cdr tail))))
+      )
+    acc))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+(flatten4 '(this (is a) (list (with lots) (of (nested stuff)))))
