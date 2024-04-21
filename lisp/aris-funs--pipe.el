@@ -254,7 +254,7 @@
                    (set-flag! command-flag))
                  (pcase expr
                    ;; ('nil (error "impossible, expr is %s?" expr))
-                   (`',label (--pipe-prn "Skip past label %s..." label))
+                   ((and `',label (guard (symbolp label)))  (--pipe-prn "Skip past label %s..." label))
                    ;; maybe this should be handled inside the _ case like other flagged 
                    ;; items so as to eval the label:
                    (:go
