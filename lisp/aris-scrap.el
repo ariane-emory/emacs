@@ -59,14 +59,15 @@
     (prn "initial arglist: %s" arglist)
     
     (while pos
-      (let ((head (first pos)))
+      (let ( (head (first pos))
+             (next (second pos)))
         (prndiv)
-        (prn "head:     %s" head)
         (prn "pos:      %s" pos)
+        (prn "head:     %s" head)
+        (prn "next:     %s" next)
         (prn "required: %s" required)
         (prn "optional: %s" optional)
         (prn "rest:     %s" rest)
-        
         ;; (cond
         ;;   ((eq (second pos) '&optional)
         ;;     (setq required arglist)
@@ -85,11 +86,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (parse-arglist '(x y)) ;; (nil nil nil)
-(parse-arglist '(x y &optional z)) ;; (nil nil nil)
-;; (parse-arglist '(x y &optional z &rest rest)) ;; (nil nil nil)
-;; (parse-arglist '(x y &rest rest)) ;; (nil nil nil)
-;; (parse-arglist '()) ;; (nil nil nil)
-;; (parse-arglist '(&optional z &rest rest)) ;; (nil nil nil)
-;; (parse-arglist '(&optional z)) ;; (nil nil nil)
-;; (parse-arglist '(&rest rest)) ;; (nil nil nil)
+  (parse-arglist '(x y &optional z)) ;; (nil nil nil)
+  ;; (parse-arglist '(x y &optional z &rest rest)) ;; (nil nil nil)
+  ;; (parse-arglist '(x y &rest rest)) ;; (nil nil nil)
+  ;; (parse-arglist '()) ;; (nil nil nil)
+  ;; (parse-arglist '(&optional z &rest rest)) ;; (nil nil nil)
+  ;; (parse-arglist '(&optional z)) ;; (nil nil nil)
+  ;; (parse-arglist '(&rest rest)) ;; (nil nil nil)
 
