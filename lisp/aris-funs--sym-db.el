@@ -18,7 +18,10 @@
     (pop arglist) ;; pop :DUMMY
     (prn "arglist is %s" arglist)
     (prn "optionals is %s" optionals)
-    (let* ( (arglist (append '(db-sym) arglist '(&optional db-prop) optionals)))
+    (let* ( (arglist
+              `(db-sym ,@arglist &optional db-prop ,@optionals)
+              ;; (append '(db-sym) arglist '(&optional db-prop) optionals)
+              ))
       (prn "arglist is now %s" arglist)
       `(defun ,name ,arglist
          (let* ( (db-prop (or db-prop 'db))
