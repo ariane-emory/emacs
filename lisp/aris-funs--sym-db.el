@@ -1,16 +1,24 @@
 ;; -*- fill-column: 90; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro defun-db-fun (name args &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(defun ,name ,args
+     (let* ( (db-prop (or db-prop 'db)))
+       ,@body)))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun create-db (db-sym &optional db-prop test-fun)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (db-prop (or db-prop 'db))
-          (test (or test-fun #'equal))
-          (table (make-hash-table :test test)))
+          (test-fun (or test-fun #'equal))
+          (table (make-hash-table :test test-fun)))
     (setf (get db-sym db-prop) table)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (hash-table-p (create-db 'foo)) returns t)
+(confirm that (hash-table-p (create-db 'foo 'sb #'eq)) returns t)
 (confirm that (hash-table-p (create-db 'foo 'alt)) returns t)
 (confirm that (hash-table-p (get 'foo 'db)) returns t)
 (confirm that (hash-table-p (get 'foo 'alt)) returns t)
