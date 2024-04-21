@@ -27,7 +27,7 @@
 ;;     (prn "optionals:       %s" optionals)
 ;;     (prn "rest:            %s" rest)
 ;;     (let* ( (optionals (when (or prepend-optional-args optionals)
-;;                          `(&optional ,@prepend-optional-args ,@optionals)))
+;;                    ~/^      `(&optional ,@prepend-optional-args ,@optionals)))
 ;;             (arglist `( ,@prepend-required-args
 ;;                         ,@arglist
 ;;                         ,@optionals
@@ -133,25 +133,28 @@
 
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun parse-arglist (arglist)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   (let* ( (section 'required)
-;;           (required nil)
-;;           (optional nil)
-;;           (rest nil))
-;;     (dolist (arg arglist)
-;;       (cond
-;;         ((eq arg '&optional)
-;;           (setq section 'optional))
-;;         ((eq arg '&rest)
-;;           (setq section 'rest))
-;;         (t
-;;           (push arg (symbol-value section)))))
-;;     (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
-;;       (prn "result: %s" res)
-;;       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun parse-arglist (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (section 'required)
+          (required nil)
+          (optional nil)
+          (rest nil))
+    (dolist (arg arglist)
+      (cond
+        ((eq arg '&optional)
+          (setq section 'optional))
+        ((eq arg '&rest)
+          (setq section 'rest))
+        (t
+          (push arg (symbol-value section)))))
+    (let ((res `'(,(nreverse required) ,(nreverse optional) ,(nreverse rest))))
+      (prn "result: %s" res)
+      res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
 (defun parse-arglist (arglist)
   "Parse an argument list into required, optional, and rest sections."
@@ -174,6 +177,7 @@
     `( ,(nreverse required)
        ,(nreverse optional)
        ,(nreverse rest))))
+
 
 (confirm that (parse-arglist '(x y &optional z)) returns ((x y) (z) nil))
 (confirm that (parse-arglist '(x y &optional z &rest rest)) returns ((x y) (z) (rest)))
