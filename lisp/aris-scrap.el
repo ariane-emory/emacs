@@ -1,4 +1,4 @@
-;; -*- lexical-binding: nil; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
+;; -*- lexical-binding: t; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-fib-benchmarks)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -63,30 +63,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;q;;;;;;;;;;;;;;;;;;;;;;;;
-(defun-memo bar (x y)
-  (prn "Calculate %s x %s.." x y)
-  (* x y))
-
-(bar 7 8)
-(bar 7 8)
-(bar 7 9)
-
-(symbol-function 'bar)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(progn
-  (dotimes (n 100)
-    (let ((rep-count (1+ n)))
-      (clear-memos 'untyped-memoized-until-fib)
-      (let ((result (benchmark-run rep-count (untyped-memoized-until-fib 1000))))
-        (prn "%3d reps = %.5f seconds." rep-count (first result)))))
-  (print-memos 'untyped-memoized-until-fib))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun flatten (input &optional accumulator)
   "Return a flat list of the atoms in the input. Ex: (flatten '((a) (b (c) dl))) => (a b c d).
@@ -105,15 +81,39 @@ This is from Norvig."
 
 (flatten '(this (is a) (list (with lots) (of (nested stuff)))))
 
-(flatten '(one two))
+(flatten '(one (two three)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun create-db (db-sym &optional db-prop)
+  (let ( (db-prop (or db-prop 'db))
+         (table (make-hash-table :test #'equal)))
+    (setf (get db-sym db-prop) table)))
+(create-db 'foo)
+(create-db 'foo 'alt)
+(get 'foo 'db)
 
-(let ((*pipe--verbose* t))
-  (|> '(1 2 3 4 5 (6 7 8) 9 10) cdr cdr cdr car))
+(defun db-get (db-sym key &optional db-prop)
+  (with-gensyms (db-not-found)
+    (let* ( (db-prop (or db-prop 'db))
+            (db (get db-sym db-prop))
+            (got (gethash key db db-not-found))
+            (found (not (eq got db-not-found)))
+            (val (when found got)))
+      (cons found val))))
+(db-get 'foo 'bar)
+(db-get 'foo 'bar 'alt)
 
-(let ((*pipe--verbose* t))
-  (|> '(this (is a) (list (with lots) (of (nested stuff))))
-    cdr cdr car cdr car car))
+(defun db-put (db-sym key val &optional db-prop)
+  (let* ( (db-prop (or db-prop 'db))
+          (db (get db-sym db-prop)))
+    (setf (gethash key db) val)))
+(db-put 'foo 'bar 777)
+(db-put 'foo 'bar 888 'alt)
 
-(let ((*pipe--verbose* t))
-  (|> '(this (is a) (list (with lots) (of (nested stuff))))
-    rest rest first rest first first))
+(defun db-clear (db-sym &optional db-prop)
+  (let* ( (db-prop (or db-prop 'db))
+          (db (get db-sym db-prop)))
+    (clrhash db)))
+(db-clear 'foo)
+(db-clear 'foo 'alt)
+
+
