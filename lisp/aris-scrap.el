@@ -45,11 +45,27 @@ I wrote this one myself."
       (cons (pop lst) (flatten2 lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun flatten3 (lst)
+  "Return a flat list of the atoms in the input."
+  (let (result)
+    (cl-labels ((iter (input)
+                  (dolist (item input)
+                    (if (listp item)
+                      (iter item)
+                      (push item result)))))
+      (iter lst))
+    (nreverse result)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (flatten1 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 (flatten2 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
+(flatten3 '(this (is a) (list (with lots) (of (nested stuff))))) ;; => (this is a list with lots of nested stuff)
 
-(benchmark-run 100000 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (3.13811 26 2.360741000000001)
-(benchmark-run 100000 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (1.2355470000000002 9 0.8095919999999985)
+(benchmark-run 1000 (flatten1 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.008683 0 0.0)
+(benchmark-run 1000 (flatten2 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.005622 0 0.0)
+(benchmark-run 1000 (flatten3 '(this (is a) (list (with lots) (of (nested stuff)))))) ;; => (0.015327 0 0.0)
 
 
 
