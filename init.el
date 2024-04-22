@@ -607,8 +607,8 @@
 	      (lambda ()
 	        (cond
             ((not (string=
-                    (buffer-name)
-                    (if (boundp 'aris-scratch-buffer-name) aris-scratch-buffer-name "*scratch*")))
+                  (buffer-name)
+                  (if (boundp 'aris-scratch-buffer-name) aris-scratch-buffer-name "*scratch*")))
               nil)
             ((not (buffer-modified-p)) nil)
             (t
@@ -980,3 +980,4 @@
   config-end
   (message "[ARI] Leaving init.el."))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
