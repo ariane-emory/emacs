@@ -610,23 +610,6 @@
       (display-time))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;; My custom packages:
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Require my own custom packages:"
-    (when (file-directory-p aris-trav-dir) (require 'trav))
-    (mapcar 'require
-      '( aris-configure-scratch-buffer
-	       aris-configure-tetris-keymap
-	       aris-configure-global-abbrevs-table 
-	       aris-configure-rainbow-cursor
-	       aris-configure-xwidget-browse-menu
-	       aris-configure-key-bindings
-	       aris-mode-local-caps-lock
-	       aris-funs-monkey-patched
-	       aris-funs-prettify-symbols
-	       xah-lees-configure-emoji-fix))
-
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Diminish some modes:
     ;;   Do this after my custom packages so that Copilot exists.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
