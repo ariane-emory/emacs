@@ -102,3 +102,17 @@
     ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
     ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
     (t (prn "%s" thing))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-class integer (value) nil
+  (val () value)
+  (add (other) (integer (+ value (val other))))
+  (sub (other) (integer (- value (val other))))
+  (mul (other) (integer (* value (val other))))
+  (div (other) (integer (/ value (val other))))
+  (modulo (other) (integer (% value (val other)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(val (mul (integer 2 (add (integer 5) (integer 7)))))
+(val (mul (integer 2) (add (integer 5) (integer 7))))
