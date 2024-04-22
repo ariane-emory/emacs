@@ -5,6 +5,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
+  (cond
+    ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
+    ((eq '\, (car-safe thing)) (prn "This one is special: %s" (cadr thing)))
+    ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" (cadr thing)))
+    ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
+    ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
+    (t (prn "%s" thing))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-class account (name &optional (balance 0.00))
   ((interest-rate .06))
