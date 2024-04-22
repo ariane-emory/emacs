@@ -801,6 +801,54 @@
     (add-hook 'slime-repl-mode-hook (lambda () (variable-pitch-mode 1)))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Use my own custom packages:
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "using my custom packages"
+      (mapc
+        (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
+        '( aris-funs--aliases
+           aris-funs--basic-preds
+           aris-funs--unsorted
+           aris-funs--confirm
+           aris-funs--ignorebang
+           aris-funs--interactive
+           aris-funs--lists
+           aris-funs--stacks
+           aris-funs--alists
+           aris-funs--plists
+           aris-funs--fixmath
+           aris-funs--rgb
+           aris-funs--match-pattern
+           aris-funs--match-pattern2
+           aris-funs--pattern-dispatch
+           aris-funs--pipe
+           aris-funs--prettify-symbols
+           aris-funs--rainbow-cursor
+           aris-funs--setup-lisp
+           aris-funs--with-gensyms
+           aris-funs--parse-arglist
+           aris-funs--prepend-new-args
+           aris-funs--sym-db
+           aris-funs--defunstar
+           aris-funs--maybe
+           aris-funs--error-when-and-error-unless
+           aris-funs--pcase-x
+           aris-funs--div-mod
+           aris-types
+           steve-loshs-funs--if-let
+           peter-norvigs-funs--defun-memo
+           peter-norvigs-funs--objects
+           aris-configure--key-bindings
+           aris-configure--tetris-keymap
+           aris-configure--global-abbrevs-table 
+           aris-configure--xwidget-browse-menu
+           aris-mode--local-caps-lock
+           xah-lees-configure--emoji-fix
+           stallmans-funs--condstar))
+
+      (when (file-directory-p aris-trav-dir) (use-package-with-messages trav)))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; auto-mode-alists:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (with-messages "setting up auto-mode-alist"
