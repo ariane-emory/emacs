@@ -17,16 +17,13 @@
   `(let ,class-vars
      (mapcar #'ensure-generic-fn
        ',(append
-           '(is? class-name ;; delegate
-              )
+           '(is? class-name)
            (mapcar #'first methods)))
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
            (cl-case message
              ,(make-clause `(is? (class) (eq class ',class)))
              ,(make-clause `(class-name () ',class))
-             ;; ,(make-clause `(delegate (message obj args)
-             ;;                  (apply message obj args)))
              ,@(mapcar #'make-clause methods))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
