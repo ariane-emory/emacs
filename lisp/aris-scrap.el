@@ -123,7 +123,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-tree (pred? fun tree)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Replace items matching PRED? in TREE with the result of applying FUN to them."
+  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
   (unless (list? tree) (error "TREE must be a list"))
   (unless (fun? pred?) (error "PRED? must be a function"))
   (unless (fun? fun)   (error "FUN must be a function"))
@@ -143,10 +143,31 @@
           (setq tail new-tail)))
       result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
-  returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+(defun transform-tree (pred? fun tree)
+  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
+  (cond
+    ((listp tree)
+      (mapcar (lambda (item)
+                (if (listp item)
+                  (transform-tree pred? fun item)
+                  (cond
+                    ((funcall pred? item) (funcall fun item))
+                    (t item))))
+        tree))
+    (t tree)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun transform-tree (pred? fun tree)
+  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
+  (if (listp tree)
+    (mapcar (lambda (item)
+              (if (listp item)
+                (transform-tree pred? fun item)
+                (if (funcall pred? item)
+                  (funcall fun item)
+                  item)))
+      tree)
+    tree))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defun op-to-name (op)
   (cl-case op
     ('+ 'add)
@@ -154,8 +175,11 @@
     ('* 'mul)
     ('/ 'div)
     ('% 'rem)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
+  returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(op-to-name '+)
 
 (transform-tree #'symbolp #'op-to-name '(2 + (3 * 4) / 5 % 6)) ;; (2 add (3 mul 4) div 5 rem 6)
 
