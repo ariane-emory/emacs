@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
+k;; -*- lexical-binding: t; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -92,3 +92,13 @@
 (withdraw acct4 "pass" 20.00)
 (withdraw acct4 "guess" 20.00)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(company-quickhelp-mode -1)
+(dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
+  (cond
+    ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
+    ((eq '\, (car-safe thing)) (prn "This one is special: %s" (cadr thing)))
+    ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" (cadr thing)))
+    ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
+    ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
+    (t (prn "%s" thing))))
