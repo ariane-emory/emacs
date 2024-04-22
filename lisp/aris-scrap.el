@@ -81,7 +81,7 @@
   (prn "START: %s" args)
   ;; (prndiv)
   (let ((transformed (transform-tree #'always #'transform-fun args)))
-    `(infix-helper ,@transformed)))
+    `(val (infix-helper ,@transformed))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
