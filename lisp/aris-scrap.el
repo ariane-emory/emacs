@@ -71,20 +71,35 @@
       (integer expr)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(transform-tree #'always #'transform-fun '(2 + (3 * 4)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro infix (&rest args)
   (prndiv)
   (prn "START: %s" args)
-  (prndiv)
+  ;; (prndiv)
   (let ((transformed (transform-tree #'always #'transform-fun args)))
     `(infix-helper ,@transformed)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro infix-helper (head &rest tail)
+  (with-indentation
+    (while tail
+      (prndiv)
+      (prn "HEAD: %s" head)
+      (prn "TAIL: %s" tail)
+      (let ((expr (pop tail)))
+        (prn "EXPR: %s" expr)
+        (if (symbolp expr)
+          (setq head (get-method head expr))
+          (setq head (funcall head expr)))))
+    head))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(transform-tree #'always #'transform-fun '(2 + (3 * 4)))
-
+(infix 3 * 4)
 

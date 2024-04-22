@@ -35,7 +35,7 @@
 (defun get-method (object message)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return the method that implements message for this object."
-  (prn "get %s method for %s" message object)
+  (prn "get-method %s for %s" message object)
   ;;(debug)
   (funcall object message))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
