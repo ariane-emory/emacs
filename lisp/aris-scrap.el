@@ -38,17 +38,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-class password-account (password acct) ()
-  (change-password (pass new-pass)
-    (if (equal pass password)
-      (setf password new-pass)
-      'wrong-password))
-  (otherwise (pass &rest args)
-    (if (equal pass password) (apply message acct args) 'wrong-password) 1))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf acct2 (account "A. User" 2000.00))
 (privcall acct2)
 
@@ -57,3 +46,25 @@
 (symbol-plist 'acct2)
 (symbol-plist 'withdraw)
 (is? acct2 'account)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-class password-account (password acct) ()
+  (change-password (pass new-pass)
+    (if (equal pass password)
+      (setf password new-pass)
+      'wrong-password))
+  (otherwise (pass &rest args)
+    (if (equal pass password)
+      (apply message acct args)
+      :WRONG-PASSWORD)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(setf acct3 (password-account "secret" acct2))
+(withdraw acct3 "guess" 2000.00)
+(withdraw acct3 "secret" 2000.00)
+(is? acct3 'password-account) ;; t
+(is? acct3 'account) ;; nil
+(norvig-class-of acct3)

@@ -15,11 +15,13 @@
   ;; Define constructor and generic functions for methods
   `(let ,class-vars
      (ensure-generic-fn 'is?)
+     (ensure-generic-fn 'norvig-class-of?)
      (mapcar #'ensure-generic-fn ',(mapcar #'first methods))
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
            (cl-case message
              ,(make-clause `(is? (class) (eq class ',class)))
+             ,(make-clause `(norvig-class-of () ',class))
              ,@(mapcar #'make-clause methods))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
