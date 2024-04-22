@@ -54,7 +54,7 @@
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
-      'wrong-password))
+      :WRONG-PASSWORD))
   (otherwise (pass &rest args)
     (if (equal pass password)
       (apply message acct args)
@@ -62,9 +62,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf acct3 (password-account "secret" acct2))
 (withdraw acct3 "guess" 2000.00)
 (withdraw acct3 "secret" 2000.00)
 (is? acct3 'password-account) ;; t
 (is? acct3 'account) ;; nil
 (class-name acct3)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

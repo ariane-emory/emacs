@@ -9,14 +9,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro define-class (class inst-vars class-vars &rest methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari added the `class-name' method as a default method for all objects.
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic functions for methods
   `(let ,class-vars
-     (ensure-generic-fn 'is?)
-     (ensure-generic-fn 'class-name)
-     (mapcar #'ensure-generic-fn ',(mapcar #'first methods))
+     (mapcar #'ensure-generic-fn
+       ',(append
+           '(is? class-name)
+           (mapcar #'first methods)))
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
            (cl-case message
