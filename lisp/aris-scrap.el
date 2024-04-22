@@ -143,6 +143,27 @@
           (setq tail new-tail)))
       result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun transform-tree4 (pred? fun tree)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
+  (unless (list? tree) (error "TREE must be a list"))
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (fun? fun)   (error "FUN must be a function"))
+  (let (result tail)
+    (while tree
+      (let* ((head (pop tree))
+              (new-tail
+                (list
+                  (cond
+                    ((cons? head) (transform-tree4 pred? fun head))
+                    ((funcall pred? head) (funcall fun head))
+                    (t         head)))))
+        (if result
+          (setcdr tail new-tail)
+          (setq result new-tail))
+        (setq tail new-tail)))
+    result))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-tree2 (pred? fun tree)
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
   (cond
@@ -181,6 +202,13 @@
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
 (confirm that (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+(confirm that (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
+  returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(benchmark-run 150000 (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (1.7814210000000001 20 1.0779189999999943
+(benchmark-run 150000 (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (1.77482 20 1.095294999999993
+(benchmark-run 150000 (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (6.318105 79 4.30748100000001
+(benchmark-run 150000 (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (6.041336 75 4.115623999999997
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
