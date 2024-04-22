@@ -1,5 +1,4 @@
 ;; -*- fill-column: 90; lexical-binding: nil; eval: (display-fill-column-indicator-mode 1); -*-
-;; this is the old/active config
 (message "[ARI] Loading init.el...")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -373,9 +372,8 @@
       (use-package zoom :ensure t
         :init
         (setq zoom-size '(95 . 24))
-        ;; ;; :config
-        ;; (zoom-mode 1)
-        )
+        :config
+        (zoom-mode 1))
       
       (use-package-with-message beacon :ensure t
         :init
