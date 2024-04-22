@@ -153,7 +153,7 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Set up package manager and install/require packages:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (require 'aris-configure--packages)
+    (use-package-with-messages aris-configure--packages)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; use aris-funs-setup-lisp early because so many other
@@ -374,7 +374,8 @@
         :init
         (setq zoom-size '(95 . 24))
         :config
-        (zoom-mode 1))
+        ;; (zoom-mode 1)
+        )
       
       (use-package-with-message beacon :ensure t
         :init
