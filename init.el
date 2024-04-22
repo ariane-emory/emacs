@@ -872,35 +872,47 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (with-messages "loading Custom file" (load custom-file))
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Define the after-init hook and hook it up:
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (add-hook 'after-init-hook
-      (lambda ()
-	      "Setup my environment after init."
-	      (interactive)
-	      "Open some files:"
-	      (dolist
-	        (file
-            `( ,(expand-file-name "~/.profile")
-               ,(expand-file-name "aris-configure-key-bindings.el" aris-lisp-dir)
-               ,(expand-file-name "aris-configure-packages.el" aris-lisp-dir)
-               ,(expand-file-name "aris-funs-unsorted.el" aris-lisp-dir)
-               ,(expand-file-name "init.el" aris-config-dir)
-               ,(expand-file-name "custom.el" aris-config-dir)))
-	        (find-file file))
-	      "Shell in .emacs.d:"
-	      (shell "emacs")
-	      "Shells in home:"
-	      (let ((default-directory "~"))
-	        (shell)
-	        (shell "git")
-	        (shell "dcp"))
-	      "Load Custom:"
-	      (load custom-file)
-	      "Load desktop:"
-	      (desktop-read)
-	      ))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "setting after init hook"
+      (add-hook 'after-init-hook
+        (lambda ()
+          (with-messages "running after-init-hook"
+            (with-messages "opening some directories"
+              (dolist (dir `("~/" ,aris-config-dir ,aris-lisp-dir))
+                (eval `(with-message (format "opening '%s" ,dir)
+                         (dired (expand-file-name dir))))))
+
+            (with-messages "opening some files"
+              (dolist (file '("~/.profile" ))
+                (let ((file (expand-file-name file)))
+                  (when (file-regular-p file)
+                    (eval `(with-message (format "opening '%s'" ,file)
+                             (find-file ,file))))))
+              (dolist (file '("init.el" "custom.el" "toxikat-theme.el"))
+                (let ((file (expand-file-name file aris-config-dir)))
+                  (when (file-regular-p file)
+                    (eval `(with-message (format "opening '%s'" ,file)
+                             (find-file ,file))))))
+              (dolist (file (directory-files aris-lisp-dir t "\\`[^.].*\\.el\\'"))
+                (when (and (file-regular-p file) (not (string-suffix-p ".elc" file)))
+                  (eval `(with-messages (format "opening '%s'" ,file)
+                           (find-file ,file))))))
+            
+            (with-messages "starting some shells"
+              (let ((default-directory aris-config-dir))
+                (shell "emacs"))
+              "Shells in home:"
+              (let ((default-directory "~"))
+                (shell)
+                (shell "git")
+                (shell "dcp")))
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	          ;; Load desktop file:
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	          (with-messages "loading desktop" (desktop-read))))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (provide 'aris-emacs-configuration))
