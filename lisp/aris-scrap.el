@@ -13,8 +13,16 @@
      (mapcar #'ensure-generic-fn ',(mapcar #'first methods))
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
-           (case message
+           (cl-case message
              ,@(mapcar #'make-clause methods))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun get-method (object message)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return the method that implements message for this object."
+  (funcall object message))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -28,18 +36,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(make-clause '(name () name))
-(make-clause '(deposit (amt) (cl-incf balance amt)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun send-message (object message &rest args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Get the function to implement the message, and apply the function to the args."
+  (apply (get-method object message) args))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ensure-generic-fn (message)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define an object-oriented dispatch function for a message, unless it has a1ready been defined as one."
-  (unless (generic-fn-p message)
-    (let ((fn #'(lambda (object &rest args)
-                  (apply (get-method object message) args))))
-      (setf (symbol-function message) fn)
-      (setf (get message 'generic-fn) fn))))
+  ;;(unless (generic-fn-p message)
+  (let ((fn #'(lambda (object &rest args)
+                (apply #'send-message object message args)
+                ;;(apply (get-method object message) args)
+                )))
+    (setf (symbol-function message) fn)
+    (setf (get message 'generic-fn) fn)));)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -64,26 +79,8 @@
   (name () name)
   (interest () (cl-infc balance (* balance interest-rate))))
 
-(let ((interest-rate 0.06))
-  (mapcar #'ensure-generic-fn '(withdraw deposit balance name interest))
-  (cl-defun account (name &optional (balance 0.0))
-    #'(lambda (message)
-        (case message
-          (withdraw
-            #'(lambda (amt)
-                (if (<= amt balance)
-                  (cl-decf balance amt)
-                  'insufficient-funds)))
-          (deposit
-            #'(lambda (amt)
-                (cl-incf balance amt)))
-          (balance
-            #'(lambda nil
-                balance))
-          (name
-            #'(lambda nil
-                name))
-          (interest
-            #'(lambda nil
-                (cl-infc balance
-                  (* balance interest-rate))))))))
+
+(setf acct2 (account "A. User" 2000.00))
+(deposit acct2 42.00)
+
+
