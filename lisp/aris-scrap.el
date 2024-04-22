@@ -11,10 +11,10 @@
   ;; Define constructor and generic functions for methods
   `(let ,class-vars
      (mapcar #'ensure-generic-fn ',(mapcar #'first methods))
-     (defun ,class .inst-vars
-       #'(1ambda (message)
+     (cl-defun ,class ,inst-vars
+       #'(lambda (message)
            (case message
-             .@(mapcar #'make-clause methods))))))
+             ,@(mapcar #'make-clause methods))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -51,3 +51,39 @@
     (fboundp fn-name)
     (eq (get fn-name 'generic-fn) (symbol-function fn-name))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; try it:
+(define-class account (name &optional (balance 0.00))
+  ((interest-rate .06))
+  (withdraw (amt) (if (<= amt balance)
+                    (cl-decf balance amt)
+                    'insufficient-funds))
+  (deposit (amt) (cl-incf balance amt))
+  (balance () balance)
+  (name () name)
+  (interest () (cl-infc balance (* balance interest-rate))))
+
+(let ((interest-rate 0.06))
+  (mapcar #'ensure-generic-fn '(withdraw deposit balance name interest))
+  (cl-defun account (name &optional (balance 0.0))
+    #'(lambda (message)
+        (case message
+          (withdraw
+            #'(lambda (amt)
+                (if (<= amt balance)
+                  (cl-decf balance amt)
+                  'insufficient-funds)))
+          (deposit
+            #'(lambda (amt)
+                (cl-incf balance amt)))
+          (balance
+            #'(lambda nil
+                balance))
+          (name
+            #'(lambda nil
+                name))
+          (interest
+            #'(lambda nil
+                (cl-infc balance
+                  (* balance interest-rate))))))))
