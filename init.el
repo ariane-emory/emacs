@@ -1,847 +1,862 @@
 ;; -*- fill-column: 90; lexical-binding: nil; eval: (display-fill-column-indicator-mode 1); -*-
-;; this is the active config
+;; this is the old/active config
+
 (message "[ARI] Loading init.el...")
 
-(defun kats-bisect ()
-  "Bisect for debugging .emacs file errors. Keep this in init.el so it's always available:"
-  (with-current-buffer " *load*"
-    (goto-char (point-max))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-tagbody   
+  (defun bisect ()
+    "Bisect for debugging .emacs file errors. Keep this in init.el so it's always available:"
+    (message "Bisecting...")
+    (go config-end))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Setup config dir paths:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Set the right config directory if we're on Windows:"
-(setq kats-config-dir
-  (expand-file-name
-    (if (eq system-type 'windows-nt)
-      (expand-file-name "AppData\\Roaming\\.emacs.d\\"
-        (getenv "USERPROFILE"))
-      "~/.emacs.d/")))
+  (setq debug-on-error t)
 
-"Set my lisp directory and add it to the load path:"
-(setq kats-lisp-dir (expand-file-name "lisp/" kats-config-dir))
-(add-to-list 'load-path kats-lisp-dir)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Setup config dir paths:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Set the right config directory if we're on Windows:"
+  (setq aris-config-dir
+    (expand-file-name
+      (if (eq system-type 'windows-nt)
+	(expand-file-name "AppData\\Roaming\\.emacs.d\\"
+          (getenv "USERPROFILE"))
+	"~/.emacs.d/")))
 
-"If trav.el's directory exists, add it to the load-path:"
-(setq kats-trav-dir (expand-file-name "trav" kats-lisp-dir))
-(add-to-list 'load-path kats-trav-dir)
+  "Set my lisp directory and add it to the load path:"
+  (setq kats-lisp-dir (expand-file-name "lisp/" aris-config-dir))
+  (add-to-list 'load-path kats-lisp-dir)
 
-(add-to-list 'exec-path "/opt/homebrew/bin/dotnet")
-(add-to-list 'exec-path "/opt/homebrew/bin")
-(add-to-list 'exec-path "/usr/local/bin")
-(add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
-(setenv "PATH" (concat "~/.cargo/bin:" (getenv "PATH")))
-(setenv "PATH" (concat "/opt/homebrew/bin:" (getenv "PATH")))
-(setenv "DOTNET_ROOT" "/usr/local/share/dotnet")
+  "If trav.el's directory exists, add it to the load-path:"
+  (setq kats-trav-dir (expand-file-name "trav" kats-lisp-dir))
+  (add-to-list 'load-path kats-trav-dir)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Load theme:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Load my toxikat theme from kats-config dir:"
-(add-to-list 'custom-theme-load-path kats-config-dir)
-(load-theme 'toxikat t)
+  (add-to-list 'exec-path "/opt/homebrew/bin/dotnet")
+  (add-to-list 'exec-path "/opt/homebrew/bin")
+  (add-to-list 'exec-path "/usr/local/bin")
+  (add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
+  (setenv "PATH" (concat "~/.cargo/bin:" (getenv "PATH")))
+  (setenv "PATH" (concat "/opt/homebrew/bin:" (getenv "PATH")))
+  (setenv "DOTNET_ROOT" "/usr/local/share/dotnet")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Switch to fullscreen and turn off scrollbar:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(scroll-bar-mode -1)
-(sit-for 0.15)
-(or (cdr (assoc 'fullscreen (frame-parameters)))
-  (toggle-frame-fullscreen))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Load theme:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Load my toxikat theme from kats-config dir:"
+  (add-to-list 'custom-theme-load-path aris-config-dir)
+  (load-theme 'toxikat t)
 
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; We're going to use this all over, so use it early:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package aris-funs--with-messages)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Switch to fullscreen and turn off scrollbar:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (sit-for 0.15)
+  (or (cdr (assoc 'fullscreen (frame-parameters)))
+    (toggle-frame-fullscreen))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Set up the environment:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq ansi-color-names-vector ["black" "red3" "green3" "yellow3" "Cyan" "magenta3" "cyan3" "gray90"])
-(setq auto-encryption-mode nil)
-(setq auto-revert-interval 1)
-(setq auto-save-default nil)
-(setq c-backslash-column 140)
-(setq c-backslash-max-column 140)
-(setq c-basic-offset 2)
-(setq c-default-style '((c-mode . "k&r") (c++-mode . "k&r") (java-mode . "java") (awk-mode . "awk") (other . "gnu")))
-(setq c-offsets-alist '((arglist-close . c-lineup-arglist)))
-(setq c-syntactic-indentation-in-macros t)
-(setq completions-format 'vertical)
-(setq create-lockfiles nil)
-(setq cursor-in-non-selected-windows nil)
-(setq custom-file (expand-file-name "custom.el" kats-config-dir))
-(setq default-tab-width 2)
-(setq delete-selection-mode t)
-(setq display-buffer-alist '(("*Buffer List*" display-buffer-same-window (nil)) (".*\\.el" display-buffer-same-window (nil)) ("*Help*" display-buffer-same-window (nil))))
-(setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
-(setq eval-expression-print-length nil)
-(setq eval-expression-print-level nil)
-(setq explicit-shell-file-name "/bin/bash")
-(setq find-file-existing-other-name nil)
-(setq find-function-C-source-directory (expand-file-name "~/Code/3p/emacs/src"))
-(setq follow-mode-line-text " ")
-(setq frame-resize-pixelwise t)
-(setq gc-cons-threshold 3200000)
-(setq global-eldoc-mode nil)
-(setq global-prettify-symbols-mode nil)
-(setq ielm-prompt #("🐈> " 0 3 (field output)))
-(setq image-auto-resize 'fit-window)
-(setq image-dired-cmd-create-thumbnail-program "/opt/homebrew/bin/convert")
-(setq indent-tabs-mode nil)
-(setq inhibit-startup-buffer-menu t)
-(setq inhibit-startup-echo-area-message (substitute-in-file-name "$USER"))
-(setq inhibit-startup-screen t)
-(setq initial-scratch-message "")
-(setq isearch-lax-whitespace nil)
-(setq isearch-wrap-pause 'no)
-(setq js-indent-level 2)
-(setq kats-scratch-buffer-name "scratch")
-(setq large-file-warning-threshold 100000000)
-(setq lisp-indent-offset 2)
-(setq make-backup-files nil)
-(setq max-mini-window-height 0.2)
-(setq message-log-max nil)
-(setq next-screen-context-lines 0)
-(setq ns-pop-up-frames nil)
-(setq print-length nil) 
-(setq print-level nil)
-(setq read-process-output-max 16384)
-(setq ring-bell-function 'ignore)
-(setq scroll-bar-mode nil)
-(setq scroll-preserve-screen-position t)
-(setq source-directory (expand-file-name "~/Code/3p/emacs/src"))
-(setq tab-width 2)
-(setq text-scale-mode-step 1.025)
-(setq tooltip-mode nil)
-(setq tooltip-use-echo-area nil)
-(setq truncate-lines t)
-(setq undo-outer-limit 200000000)
-(setq use-dialog-box nil)
-(setq visible-bell t)
-(setq word-wrap t)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; We're going to use this all over, so use it early:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (use-package aris-funs--with-messages)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Customize other properties/functions/lists:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Confirmation prompts accept y/n instead of yes/no:"
-(fset 'yes-or-no-p 'y-or-n-p)
-"I forget why I do this:"
-(put 'lisp-indent-function 'safe-local-variable 'integerp)
-"Enable the erase-buffer function:"
-(put 'erase-buffer 'disabled nil)
-"Enable the narrow-to-region function:"
-(put 'narrow-to-region 'disabled nil)
+  (with-messages "loading my settings"
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Set up package manager and install/require packages:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Configure the package manager:"
-(require 'kats-configure-packages)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Set up the environment:
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "preparing global variables" 
+      (setq ansi-color-names-vector
+        ["black" "red3" "green3" "yellow3" "Cyan" "magenta3" "cyan3" "gray90"])
+      (setq auto-revert-interval 1)
+      (setq auto-save-default nil)
+      (setq completions-format 'vertical)
+      (setq create-lockfiles nil)
+      (setq cursor-in-non-selected-windows nil)
+      (setq custom-file (expand-file-name "custom.el" aris-config-dir))
+      (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
+      (setq eval-expression-print-length nil)
+      (setq eval-expression-print-level nil)
+      (setq explicit-shell-file-name "/bin/bash")
+      (setq find-file-existing-other-name nil)
+      (setq find-function-C-source-directory
+        (expand-file-name "~/Code/3p/emacs/src"))
+      (setq follow-mode-line-text " ")
+      (setq frame-resize-pixelwise t)
+      (setq gc-cons-threshold 3200000)
+      (setq ielm-prompt #("🐈> " 0 3 (field output)))
+      (setq image-auto-resize 'fit-window)
+      (setq image-dired-cmd-create-thumbnail-program "/opt/homebrew/bin/convert")
+      (setq inhibit-startup-buffer-menu t)
+      (setq inhibit-startup-echo-area-message (substitute-in-file-name "$USER"))
+      (setq inhibit-startup-screen t)
+      (setq initial-scratch-message "")
+      (setq isearch-lax-whitespace nil)
+      (setq isearch-wrap-pause 'no)
+      (setq js-indent-level 2)      
+      (setq large-file-warning-threshold 100000000)
+      (setq lisp-indent-offset 2)
+      (setq make-backup-files nil)
+      (setq max-mini-window-height 0.2)
+      (setq messages-buffer-max-lines t)
+      (setq ns-pop-up-frames nil)
+      (setq next-screen-context-lines 0)
+      (setq ns-pop-up-frames nil)
+      (setq print-length nil) 
+      (setq print-level nil)
+      (setq read-process-output-max 16384)
+      (setq ring-bell-function 'ignore)
+      (setq scroll-preserve-screen-position t)
+      (setq source-directory (expand-file-name "~/Code/3p/emacs/src"))
+      (setq text-scale-mode-step 1.025)
+      (setq tooltip-use-echo-area nil)
+      (setq undo-outer-limit 200000000)
+      (setq use-dialog-box nil)
+      (setq visible-bell t)
+      (setq display-buffer-alist
+	'(("\\*Buffer List\\*" display-buffer-same-window
+	    (nil))
+	   ;; ("\\*Backtrace\\*" display-buffer-same-window
+	   ;;   (nil))
+	   ("\\*Compile-Log\\*" display-buffer-same-window
+	     (nil))
+           ("\\*shell\\*" display-buffer-same-window
+	     (nil))
+	   (".*\\.el" display-buffer-same-window
+	     (nil))
+	   (".*\\.c" display-buffer-same-window
+	     (nil))
+	   (".*\\.h" display-buffer-same-window
+	     (nil))
+	   ("*Help*" display-buffer-same-window
+	     (nil)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; use-packages:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(mapc (lambda (pkg) (eval `(use-package ,pkg :ensure t)))
-  '(use-package ac-inf-ruby adjust-parens coffee-mode company-box 
-     dash devdocs devdocs-browser diminish editorconfig f
-     flycheck-inline flycheck-rust macrostep markdown-mode 
-     paredit platformio-mode rust-mode slime-company
-     swift-mode which-key))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Customize other properties/functions/lists:
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "putting some properties"
+      "Confirmation prompts accept y/n instead of yes/no:"
+      (fset 'yes-or-no-p 'y-or-n-p)
+      "I forget why I do this:"
+      (put 'lisp-indent-function 'safe-local-variable 'integerp)
+      "Enable the erase-buffer function:"
+      (put 'erase-buffer 'disabled nil)
+      "Enable the narrow-to-region function:"
+      (put 'narrow-to-region 'disabled nil))
 
-(use-package abbrev ;; built-in
-  :diminish abbrev-mode
-  :config
-  (setq only-global-abbrevs t))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Set up package manager and install/require packages:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "Configure the package manager:"
+    (require 'kats-configure-packages)
 
-(use-package aggressive-indent :ensure t
-  :diminish aggressive-indent-mode
-  :init
-  (setq aggressive-indent-excluded-modes
-    '(elm-mode haskell-mode inf-ruby-mode makefile-mode makefile-gmake-mode python-mode sql-interactive-mode text-mode yaml-mode Shell-script-mode Shell-script shell-mode customize-mode)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; use-packages:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (mapc (lambda (pkg) (eval `(use-package ,pkg :ensure t)))
+      '(use-package ac-inf-ruby adjust-parens coffee-mode company-box 
+	 dash devdocs devdocs-browser diminish editorconfig f
+	 flycheck-inline flycheck-rust macrostep markdown-mode 
+	 paredit platformio-mode rust-mode slime-company
+	 swift-mode which-key))
 
-(use-package beacon :ensure t
-  :init
-  (setq beacon-blink-delay 0.2)
-  (setq beacon-blink-duration 1)
-  (setq beacon-blink-when-point-moves-horizontally 1)
-  (setq beacon-blink-when-point-moves-vertically 1)
-  (setq beacon-color "#f00")
-  (setq beacon-lighter "")
-  (setq beacon-size 15)
-  :config
-  (beacon-mode 1))
+    (use-package abbrev ;; built-in
+      :diminish abbrev-mode
+      :config
+      (setq only-global-abbrevs t))
 
-(use-package display-line-numbers ;; built-in
-  :init
-  (setq display-line-numbers-widen t)
-  :config
-  (global-display-line-numbers-mode 1))
+    (use-package aggressive-indent :ensure t
+      :diminish aggressive-indent-mode
+      :init
+      (setq aggressive-indent-excluded-modes
+	'(elm-mode haskell-mode inf-ruby-mode makefile-mode makefile-gmake-mode python-mode sql-interactive-mode text-mode yaml-mode Shell-script-mode Shell-script shell-mode customize-mode)))
 
-(use-package display-fill-column-indicator ;; built-in
-  :init
-  (setq fill-column 80))
+    (use-package beacon :ensure t
+      :init
+      (setq beacon-blink-delay 0.2)
+      (setq beacon-blink-duration 1)
+      (setq beacon-blink-when-point-moves-horizontally 1)
+      (setq beacon-blink-when-point-moves-vertically 1)
+      (setq beacon-color "#f00")
+      (setq beacon-lighter "")
+      (setq beacon-size 15)
+      :config
+      (beacon-mode 1))
 
-(use-package eldoc ;; built-in
-  :init
-  (setq eldoc-echo-area-prefer-doc-buffer t)
-  (setq eldoc-idle-delay 0.1))
+    (use-package display-line-numbers ;; built-in
+      :init
+      (setq display-line-numbers-widen t)
+      :config
+      (global-display-line-numbers-mode 1))
 
-(use-package frame ;; built-in
-  :init
-  (setq blink-cursor-blinks -1)
-  (setq blink-cursor-delay 0.0)
-  (setq blink-cursor-interval 0.1))
+    (use-package display-fill-column-indicator ;; built-in
+      :init
+      (setq fill-column 80))
 
-(use-package centered-cursor-mode
-  :ensure t
-  :diminish centered-cursor-mode
-  :config (global-centered-cursor-mode t))
+    (use-package eldoc ;; built-in
+      :init
+      (setq eldoc-echo-area-prefer-doc-buffer t)
+      (setq eldoc-idle-delay 0.1))
 
-(use-package company
-  :ensure t
-  :diminish company-mode
-  :init
-  (setq company-lighter-base "cmp")
-  (setq company-minimum-prefix-length 2)
-  (setq company-tooltip-minimum-width 50)
-  :config
-  (global-company-mode t)
-  :bind 
-  (("C-\\" . company-complete)
-    :map company-active-map
-    ;;("C-g" . company-cancel)
-    ("C-n" . company-select-next)
-    ("C-p" . company-select-previous)
-    ("C-d" . company-show-doc-buffer)
-    ("M-." . company-show-location)
-    ("<prior>" . company-previous-page)
-    ("<next>" . company-next-page)))
+    (use-package frame ;; built-in
+      :init
+      (setq blink-cursor-blinks -1)
+      (setq blink-cursor-delay 0.0)
+      (setq blink-cursor-interval 0.1))
 
-;; (use-package company-quickhelp :ensure t
-;;   :config
-;;   (setq company-quickhelp-delay 0)
-;;   (setq company-quickhelp-mode t)
-;;   :bind
-;;   (:map company-active-map
-;;     ("C-c h" . company-quickhelp-manual-begin)))
+    (use-package centered-cursor-mode
+      :ensure t
+      :diminish centered-cursor-mode
+      :config (global-centered-cursor-mode t))
 
-(use-package company-posframe :ensure t
-  :init
-  (setq company-posframe-lighter "")
-  (setq company-posframe-quickhelp-delay 0.1)
-  (setq company-posframe-quickhelp-show-header nil)
-  :config
-  (company-posframe-mode 1))
+    (use-package company
+      :ensure t
+      :diminish company-mode
+      :init
+      (setq company-lighter-base "cmp")
+      (setq company-minimum-prefix-length 2)
+      (setq company-tooltip-minimum-width 50)
+      :config
+      (global-company-mode t)
+      :bind 
+      (("C-\\" . company-complete)
+	:map company-active-map
+	;;("C-g" . company-cancel)
+	("C-n" . company-select-next)
+	("C-p" . company-select-previous)
+	("C-d" . company-show-doc-buffer)
+	("M-." . company-show-location)
+	("<prior>" . company-previous-page)
+	("<next>" . company-next-page)))
 
-(use-package company-sourcekit :ensure t
-  :init 
-  (add-to-list 'company-backends 'company-sourcekit)
-  (setq sourcekit-available-ports '(8081))  
-  (setq sourcekit-sourcekittendaemon-executable "/usr/local/bin/sourcekittendaemon")
-  (setq sourcekit-verbose t)
-  (setq company-sourcekit-verbose t))
+    ;; (use-package company-quickhelp :ensure t
+    ;;   :config
+    ;;   (setq company-quickhelp-delay 0)
+    ;;   (setq company-quickhelp-mode t)
+    ;;   :bind
+    ;;   (:map company-active-map
+    ;;     ("C-c h" . company-quickhelp-manual-begin)))
 
-(use-package csharp-mode ;; built-indent
-  :init
-  (setq csharp-ts-mode-indent-offset 3))
+    (use-package company-posframe :ensure t
+      :init
+      (setq company-posframe-lighter "")
+      (setq company-posframe-quickhelp-delay 0.1)
+      (setq company-posframe-quickhelp-show-header nil)
+      :config
+      (company-posframe-mode 1))
 
-(use-package copilot
-  :init
-  (add-to-list 'load-path (expand-file-name "copilot.el" kats-lisp-dir))
-  (setq copilot-idle-delay 1)
-  (setq copilot-indent-offset-warning-disable t)
-  (setq copilot-max-char -1)
-  (setq copilot-node-executable "/opt/homebrew/bin/node")
-  (setq global-copilot-mode nil))
+    (use-package company-sourcekit :ensure t
+      :init 
+      (add-to-list 'company-backends 'company-sourcekit)
+      (setq sourcekit-available-ports '(8081))  
+      (setq sourcekit-sourcekittendaemon-executable "/usr/local/bin/sourcekittendaemon")
+      (setq sourcekit-verbose t)
+      (setq company-sourcekit-verbose t))
 
-(use-package desktop ;; built-in
-  :init
-  (setq desktop-auto-save-timeout 5)
-  (setq desktop-load-locked-desktop t)
-  (setq desktop-save t)
-  (setq desktop-save-mode t)
-  (setq desktop-minor-mode-table
-    '((defining-kbd-macro nil)
-       (isearch-mode nil)
-       (vc-mode nil)
-       (vc-dir-mode nil)
-       (erc-track-minor-mode nil)
-       (savehist-mode nil)
-       (company-posframe-mode nil)))
-  (add-hook 'kill-emacs-hook
-    (lambda () (desktop-save kats-config-dir))))
+    (use-package csharp-mode ;; built-indent
+      :init
+      (setq csharp-ts-mode-indent-offset 3))
 
-(use-package default-text-scale :ensure t
-  :bind
-  ( ("s-=" . default-text-scale-increase)
-    ("s--" . default-text-scale-decrease)))
+    (use-package copilot
+      :init
+      (add-to-list 'load-path (expand-file-name "copilot.el" kats-lisp-dir))
+      (setq copilot-idle-delay 1)
+      (setq copilot-indent-offset-warning-disable t)
+      (setq copilot-max-char -1)
+      (setq copilot-node-executable "/opt/homebrew/bin/node")
+      (setq global-copilot-mode nil))
 
-(use-package dired ;; built-in
-  :init
-  (setq dired-listing-switches "-alhG")
-  (setq dired-auto-revert-buffer t)
-  (setq dired-use-ls-dired nil)
-  (setq ls-lisp-dirs-first t)
-  (setq ls-lisp-ignore-case t)
-  (setq ls-lisp-use-insert-directory-program nil)
-  (setq ls-lisp-use-localized-time-format t)
-  (setq ls-lisp-use-string-collate nil)
-  (setq ls-lisp-verbosity '(links))
-  :bind
-  (:map dired-mode-map
-    ("o" .
-      (lambda ()
-        (interactive)
-        (let ((file (dired-get-file-for-visit)))
-          (start-process "default-app" nil "open" file))))
-    ([mouse-2] .
-      (lambda (event)
-        "In Dired, visit the file or directory name you click on in the same window."
-        (interactive "e")
-        (let (window pos file)
-          (save-excursion
-            (setq window (posn-window (event-end event))
-              pos (posn-point (event-end event)))
-            (if (not (windowp window))
-              (error "No file chosen"))
-            (set-buffer (window-buffer window))
-            (goto-char pos)
-            (setq file (dired-get-file-for-visit)))
-          (if (file-directory-p file)
-            (or (and (cdr dired-subdir-alist)
-                  (dired-goto-subdir file))
+    (use-package desktop ;; built-in
+      :init
+      (setq desktop-auto-save-timeout 5)
+      (setq desktop-load-locked-desktop t)
+      (setq desktop-save t)
+      (setq desktop-save-mode t)
+      (setq desktop-minor-mode-table
+	'((defining-kbd-macro nil)
+	   (isearch-mode nil)
+	   (vc-mode nil)
+	   (vc-dir-mode nil)
+	   (erc-track-minor-mode nil)
+	   (savehist-mode nil)
+	   (company-posframe-mode nil)))
+      (add-hook 'kill-emacs-hook
+	(lambda () (desktop-save aris-config-dir))))
+
+    (use-package default-text-scale :ensure t
+      :bind
+      ( ("s-=" . default-text-scale-increase)
+	("s--" . default-text-scale-decrease)))
+
+    (use-package dired ;; built-in
+      :init
+      (setq dired-listing-switches "-alhG")
+      (setq dired-auto-revert-buffer t)
+      (setq dired-use-ls-dired nil)
+      (setq ls-lisp-dirs-first t)
+      (setq ls-lisp-ignore-case t)
+      (setq ls-lisp-use-insert-directory-program nil)
+      (setq ls-lisp-use-localized-time-format t)
+      (setq ls-lisp-use-string-collate nil)
+      (setq ls-lisp-verbosity '(links))
+      :bind
+      (:map dired-mode-map
+	("o" .
+	  (lambda ()
+            (interactive)
+            (let ((file (dired-get-file-for-visit)))
+              (start-process "default-app" nil "open" file))))
+	([mouse-2] .
+	  (lambda (event)
+            "In Dired, visit the file or directory name you click on in the same window."
+            (interactive "e")
+            (let (window pos file)
+              (save-excursion
+		(setq window (posn-window (event-end event))
+		  pos (posn-point (event-end event)))
+		(if (not (windowp window))
+		  (error "No file chosen"))
+		(set-buffer (window-buffer window))
+		(goto-char pos)
+		(setq file (dired-get-file-for-visit)))
+              (if (file-directory-p file)
+		(or (and (cdr dired-subdir-alist)
+                      (dired-goto-subdir file))
+		  (progn
+                    (select-window window)
+                    (dired file)))
+		(select-window window)
+		(find-file (file-name-sans-versions file t))))))))
+
+    (use-package dpaste :ensure t
+      :bind
+      ("C-c d p" . dpaste-region-or-buffer)
+      :init
+      (setq dpaste-poster "Ariane Emory")
+      :config
+      (add-to-list 'dpaste-supported-modes-alist '(rust-mode . "rust"))
+      (add-to-list 'dpaste-supported-modes-alist '(rust-ts-mode . "rust")))
+
+    (use-package flycheck :ensure t
+      :init
+      (setq flycheck-display-errors-delay 1.0)
+      (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+      (setq flycheck-idle-change-delay 1.0))
+
+    (use-package highlight-parentheses :ensure t
+      :diminish highlight-parentheses-mode
+      :init
+      (setq highlight-parentheses-colors '("#ff0" "#fa0" "#f00" "#f0f" "#a0f" "#0af" "#0f0"))
+      :config
+      (global-highlight-parentheses-mode))
+
+    (use-package hl-line :ensure t
+      :config (global-hl-line-mode t))
+
+    (use-package idle-highlight-mode :ensure t
+      :init
+      (setq idle-highlight-exceptions '("defun" "defmacro" "cond" "when" "unless" "let" "if" "progn" "lambda" "defclsas" "provide" "require" "error" "defmethod"))
+      (setq idle-highlight-exceptions-face nil)
+      (setq idle-highlight-idle-time 0.1)
+      (setq idle-highlight-visible-buffers t)
+      :config
+      (global-idle-highlight-mode t))
+
+    (use-package inf-ruby :ensure t
+      :init
+      (setq inf-ruby-default-implementation "brewruby")
+      (setq inf-ruby-implementations
+	'(("ruby" . inf-ruby--irb-command)
+	   ("brewruby" . "/opt/homebrew/opt/ruby/bin/irb --inf-ruby-mode")
+	   ("jruby" . "jruby -S irb --prompt default --noreadline -r irb/completion")
+	   ("rubinius" . "rbx -r irb/completion")
+	   ("yarv" . "irb1.9 -r irb/completion")
+	   ("macruby" . "macirb -r irb/completion")
+	   ("pry" . "pry")))
+      (setq inf-ruby-prompt-read-only nil))
+
+    (use-package lsp-mode :ensure t
+      :bind
+      ( ("C-x C-<next>" . lsp-inlay-hints-mode)
+	("C-x RET" . lsp-inlay-hints-mode)
+	("C-x C-h" . lsp-inlay-hints-mode))
+      :init
+      (require 'lsp-rust)
+      (setq lsp-auto-guess-root t)
+      (setq lsp-diagnostics-provider :flycheck)
+      (setq lsp-eldoc-enable-hover nil)
+      (setq lsp-enable-snippet nil)
+      (setq lsp-enable-symbol-highlighting nil)
+      (setq lsp-headerline-breadcrumb-enable nil)
+      (setq lsp-inlay-hint-enable t)
+      (setq lsp-lens-place-position 'above-line)
+      (setq lsp-log-io t)
+      (setq lsp-prefer-flymake nil)
+      (setq lsp-rust-analyzer-closing-brace-hints t)
+      (setq lsp-rust-analyzer-closing-brace-hints-min-lines 1)
+      (setq lsp-rust-analyzer-diagnostics-enable-experimental t)
+      (setq lsp-rust-analyzer-lens-enable t)
+      (setq lsp-rust-analyzer-lens-implementations-enable nil)
+      (setq lsp-rust-analyzer-lens-references-adt-enable nil)
+      (setq lsp-rust-analyzer-lens-references-enum-variant-enable nil)
+      (setq lsp-rust-analyzer-lens-references-method-enable t)
+      (setq lsp-rust-analyzer-lens-references-trait-enable t)
+      (setq lsp-semantic-tokens-enable nil)
+      (setq lsp-signature-auto-activate nil)
+      (setq lsp-signature-render-documentation nil))
+
+    (use-package lsp-ui :ensure t
+      :init
+      (setq lsp-ui-doc-delay 0.1)
+      (setq lsp-ui-doc-include-signature t)
+      (setq lsp-ui-doc-max-height 16)
+      (setq lsp-ui-doc-max-width 100)
+      (setq lsp-ui-doc-position 'top)
+      (setq lsp-ui-doc-show-with-cursor t)
+      (setq lsp-ui-doc-show-with-mouse nil)
+      (setq lsp-ui-doc-text-scale-level -1)
+      (setq lsp-ui-doc-use-childframe t)
+      (setq lsp-ui-imenu-auto-refresh t)
+      (setq lsp-ui-sideline-delay 1.0)
+      (setq lsp-ui-sideline-diagnostic-max-line-length 70)
+      (setq lsp-ui-sideline-diagnostic-max-lines 4)
+      (setq lsp-ui-sideline-show-code-actions nil)
+      (setq lsp-ui-sideline-show-diagnostics t)
+      (setq lsp-ui-sideline-show-hover nil)
+      (setq lsp-ui-sideline-wait-for-all-symbols t))
+
+    (use-package multiple-cursors :ensure t
+      :bind
+      ( ("C-c C-c" . mc/edit-lines)
+	("M-<mouse-1>". mc/add-cursor-on-click)
+	("M-S-<up>" . mc/mark-previous-lines)
+	("M-S-<down>" . mc/mark-next-lines)))
+
+    (use-package modern-cpp-font-lock :ensure t
+      :hook (c++-mode . modern-c++-font-lock-mode))
+
+    (use-package nov :ensure t
+      :bind
+      (:map nov-mode-map
+	("w" . nov-scroll-down)
+	("e" . previous-line)
+	("r" . nov-scroll-up)
+	("s" . ignore)
+	("d" . next-line)
+	("f" . ignore)
+	("q" . ignore)
+	("t" . ignore)
+	("a" . ignore)
+	("g" . ignore)
+	("z" . ignore)
+	("x" . ignore)
+	("c" . ignore)
+	("v" . ignore)
+	("b" . ignore)
+	("SPC" . ignore)
+	("TAB" . ignore)     
+	("u". nov-scroll-down)
+	("i" . previous-line)
+	("o". nov-scroll-up)
+	("j" . ignore)
+	("k" . next-line)
+	("l" . ignore)
+	("y" . ignore)
+	("p" . ignore)
+	("h" . ignore)
+	("'" . ignore)
+	("n" . ignore)
+	("m" . ignore)
+	("," . ignore)
+	("." . ignore)
+	("/" . ignore)
+	("M-<left>" . nov-previous-document)
+	("M-<right>" . nov-next-document)
+	("." . ignore)
+	("/" . ignore)
+	("DEL" . ignore)
+	("_" . ignore) 
+	("<left>" . ignore)
+	("<right>" . ignore)
+	("s-[" . ignore)
+	("s-]" . ignore)
+	("q" . ignore)
+	("p" . ignore)
+	("t" . ignore)
+	("g" . ignore))
+      :init
+      (setq nov-header-line-format nil)
+      (setq nov-text-width 54)
+      (setq ns-pop-up-frames nil))
+
+    (use-package paren ;; built-in
+      :init
+      (setq show-paren-mode t)
+      (setq source-directory (expand-file-name "~/Code/3p/emacs/src")))
+
+    (use-package persistent-scratch :ensure t
+      :init
+      (setq persistent-scratch-autosave-interval 5)
+      (setq persistent-scratch-autosave-mode t)
+      (setq persistent-scratch-scratch-buffer-p-function
+	(lambda ()
+	  (cond
+            ((not (string=
+                    (buffer-name)
+                    (if (boundp 'kats-scratch-buffer-name) kats-scratch-buffer-name "*scratch*")))
+              nil)
+            ((not (buffer-modified-p)) nil)
+            (t
               (progn
-                (select-window window)
-                (dired file)))
-            (select-window window)
-            (find-file (file-name-sans-versions file t))))))))
+		(not-modified)
+		t)))))
+      :config
+      (persistent-scratch-autosave-mode))
 
-(use-package dpaste :ensure t
-  :bind
-  ("C-c d p" . dpaste-region-or-buffer)
-  :init
-  (setq dpaste-poster "Ariane Emory")
-  :config
-  (add-to-list 'dpaste-supported-modes-alist '(rust-mode . "rust"))
-  (add-to-list 'dpaste-supported-modes-alist '(rust-ts-mode . "rust")))
+    (use-package powerline :ensure t
+      :init
+      (setq powerline-text-scale-factor 0.8))
 
-(use-package flycheck :ensure t
-  :init
-  (setq flycheck-display-errors-delay 1.0)
-  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
-  (setq flycheck-idle-change-delay 1.0))
+    (use-package rainbow-delimiters :ensure t
+      :hook
+      (prog-mode . rainbow-delimiters-mode)
+      (Info-mode . rainbow-delimiters-mode))
 
-(use-package highlight-parentheses :ensure t
-  :diminish highlight-parentheses-mode
-  :init
-  (setq highlight-parentheses-colors '("#ff0" "#fa0" "#f00" "#f0f" "#a0f" "#0af" "#0f0"))
-  :config
-  (global-highlight-parentheses-mode))
+    (use-package rainbow-mode :ensure t
+      :diminish rainbow-mode
+      :hook
+      (prog-mode . rainbow-mode)
+      (text-mode . rainbow-mode)
+      (shell-mode . rainbow-mode)
+      (Info-mode . rainbow-mode))
 
-(use-package hl-line :ensure t
-  :config (global-hl-line-mode t))
+    (use-package rust-mode :ensure t
+      :init
+      (setq rust-cargo-bin (expand-file-name "~/.cargo/bin/cargo"))
+      (setq rust-format-goto-problem nil)
+      (setq rust-format-on-save t)
+      (setq rust-format-show-buffer nil)
+      (setq rust-indent-offset 2)
+      (setq rust-rustfmt-bin (expand-file-name "~/.cargo/bin/rustfmt"))
+      :hook
+      (rust-mode . kats-prettify-symbols-rust))
 
-(use-package idle-highlight-mode :ensure t
-  :init
-  (setq idle-highlight-exceptions '("defun" "defmacro" "cond" "when" "unless" "let" "if" "progn" "lambda" "defclsas" "provide" "require" "error" "defmethod"))
-  (setq idle-highlight-exceptions-face nil)
-  (setq idle-highlight-idle-time 0.1)
-  (setq idle-highlight-visible-buffers t)
-  :config
-  (global-idle-highlight-mode t))
+    (use-package rust-ts-mode :ensure t
+      :init
+      (use-package rust-mode)
+      (setq rust-ts-mode-indent-offset 2)
+      (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
+      :hook
+      (rust-ts-mode . aggressive-indent-mode)
+      (rust-ts-mode . kats-prettify-symbols-rust)
+      (before-save .
+	(lambda ()
+	  (when (eq major-mode 'rust-ts-mode)
+	    (rust-format-buffer)))))
 
-(use-package inf-ruby :ensure t
-  :init
-  (setq inf-ruby-default-implementation "brewruby")
-  (setq inf-ruby-implementations
-    '(("ruby" . inf-ruby--irb-command)
-       ("brewruby" . "/opt/homebrew/opt/ruby/bin/irb --inf-ruby-mode")
-       ("jruby" . "jruby -S irb --prompt default --noreadline -r irb/completion")
-       ("rubinius" . "rbx -r irb/completion")
-       ("yarv" . "irb1.9 -r irb/completion")
-       ("macruby" . "macirb -r irb/completion")
-       ("pry" . "pry")))
-  (setq inf-ruby-prompt-read-only nil))
+    (use-package slime ;; built-in
+      :init
+      (setq slime-kill-without-query-p t)
+      (setq slime-lisp-implementations
+	'((sbcl
+            ("/opt/homebrew/bin/sbcl"))
+	   (clisp
+             ("/opt/homebrew/bin/clisp"))
+	   (ecl
+             ("/opt/homebrew/bin/ecl"))))
+      (setq inferior-lisp-program "/opt/homebrew/bin/sbcl")
+      (setq slime-compilation-finished-hook 'slime-maybe-show-compilation-log)`
+      (setq slime-load-failed-fasl 'never)
+      :config
+      (let ((quicklisp (expand-file-name "~/.quicklisp/slime-helper.el")))
+	(when (file-exists-p quicklisp)
+	  (load quicklisp)))
+      (slime-setup '(slime-fancy slime-company)))
 
-(use-package lsp-mode :ensure t
-  :bind
-  ( ("C-x C-<next>" . lsp-inlay-hints-mode)
-    ("C-x RET" . lsp-inlay-hints-mode)
-    ("C-x C-h" . lsp-inlay-hints-mode))
-  :init
-  (require 'lsp-rust)
-  (setq lsp-auto-guess-root t)
-  (setq lsp-diagnostics-provider :flycheck)
-  (setq lsp-eldoc-enable-hover nil)
-  (setq lsp-enable-snippet nil)
-  (setq lsp-enable-symbol-highlighting nil)
-  (setq lsp-headerline-breadcrumb-enable nil)
-  (setq lsp-inlay-hint-enable t)
-  (setq lsp-lens-place-position 'above-line)
-  (setq lsp-log-io t)
-  (setq lsp-prefer-flymake nil)
-  (setq lsp-rust-analyzer-closing-brace-hints t)
-  (setq lsp-rust-analyzer-closing-brace-hints-min-lines 1)
-  (setq lsp-rust-analyzer-diagnostics-enable-experimental t)
-  (setq lsp-rust-analyzer-lens-enable t)
-  (setq lsp-rust-analyzer-lens-implementations-enable nil)
-  (setq lsp-rust-analyzer-lens-references-adt-enable nil)
-  (setq lsp-rust-analyzer-lens-references-enum-variant-enable nil)
-  (setq lsp-rust-analyzer-lens-references-method-enable t)
-  (setq lsp-rust-analyzer-lens-references-trait-enable t)
-  (setq lsp-semantic-tokens-enable nil)
-  (setq lsp-signature-auto-activate nil)
-  (setq lsp-signature-render-documentation nil))
+    (use-package spaceline :ensure t
+      :init
+      (setq spaceline-minor-modes-separator " ")
+      (setq spaceline-version-control-p nil)
+      :config
+      (require 'powerline)
+      (require 'spaceline)
+      (require 'spaceline-config)
+      (spaceline--theme '((buffer-id) :priority 98) nil nil))
 
-(use-package lsp-ui :ensure t
-  :init
-  (setq lsp-ui-doc-delay 0.1)
-  (setq lsp-ui-doc-include-signature t)
-  (setq lsp-ui-doc-max-height 16)
-  (setq lsp-ui-doc-max-width 100)
-  (setq lsp-ui-doc-position 'top)
-  (setq lsp-ui-doc-show-with-cursor t)
-  (setq lsp-ui-doc-show-with-mouse nil)
-  (setq lsp-ui-doc-text-scale-level -1)
-  (setq lsp-ui-doc-use-childframe t)
-  (setq lsp-ui-imenu-auto-refresh t)
-  (setq lsp-ui-sideline-delay 1.0)
-  (setq lsp-ui-sideline-diagnostic-max-line-length 70)
-  (setq lsp-ui-sideline-diagnostic-max-lines 4)
-  (setq lsp-ui-sideline-show-code-actions nil)
-  (setq lsp-ui-sideline-show-diagnostics t)
-  (setq lsp-ui-sideline-show-hover nil)
-  (setq lsp-ui-sideline-wait-for-all-symbols t))
+    (use-package tab-bar ;; built-in
+      :init
+      (setq tab-bar-close-button-show 'selected)
+      (setq tab-bar-new-button-show nil)
+      (setq tab-bar-new-tab-choice 'list-buffers)
+      (setq tab-bar-show t)
+      :config
+      (tab-bar-mode 1))
 
-(use-package multiple-cursors :ensure t
-  :bind
-  ( ("C-c C-c" . mc/edit-lines)
-    ("M-<mouse-1>". mc/add-cursor-on-click)
-    ("M-S-<up>" . mc/mark-previous-lines)
-    ("M-S-<down>" . mc/mark-next-lines)))
+    (use-package time ;; built-in
+      :config
+      (setq display-time-default-load-average nil)
+      (display-time))
 
-(use-package modern-cpp-font-lock :ensure t
-  :hook (c++-mode . modern-c++-font-lock-mode))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; My custom packages:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "Require my own custom packages:"
+    (when (file-directory-p kats-trav-dir) (require 'trav))
+    (mapcar 'require
+      '( kats-configure-scratch-buffer
+	 kats-configure-tetris-keymap
+	 kats-configure-global-abbrevs-table 
+	 kats-configure-rainbow-cursor
+	 kats-configure-xwidget-browse-menu
+	 kats-configure-key-bindings
+	 kats-mode-local-caps-lock
+	 kats-funs-monkey-patched
+	 kats-funs-prettify-symbols
+	 xah-lees-configure-emoji-fix))
 
-(use-package nov :ensure t
-  :bind
-  (:map nov-mode-map
-    ("w" . nov-scroll-down)
-    ("e" . previous-line)
-    ("r" . nov-scroll-up)
-    ("s" . ignore)
-    ("d" . next-line)
-    ("f" . ignore)
-    ("q" . ignore)
-    ("t" . ignore)
-    ("a" . ignore)
-    ("g" . ignore)
-    ("z" . ignore)
-    ("x" . ignore)
-    ("c" . ignore)
-    ("v" . ignore)
-    ("b" . ignore)
-    ("SPC" . ignore)
-    ("TAB" . ignore)     
-    ("u". nov-scroll-down)
-    ("i" . previous-line)
-    ("o". nov-scroll-up)
-    ("j" . ignore)
-    ("k" . next-line)
-    ("l" . ignore)
-    ("y" . ignore)
-    ("p" . ignore)
-    ("h" . ignore)
-    ("'" . ignore)
-    ("n" . ignore)
-    ("m" . ignore)
-    ("," . ignore)
-    ("." . ignore)
-    ("/" . ignore)
-    ("M-<left>" . nov-previous-document)
-    ("M-<right>" . nov-next-document)
-    ("." . ignore)
-    ("/" . ignore)
-    ("DEL" . ignore)
-    ("_" . ignore) 
-    ("<left>" . ignore)
-    ("<right>" . ignore)
-    ("s-[" . ignore)
-    ("s-]" . ignore)
-    ("q" . ignore)
-    ("p" . ignore)
-    ("t" . ignore)
-    ("g" . ignore))
-  :init
-  (setq nov-header-line-format nil)
-  (setq nov-text-width 54)
-  (setq ns-pop-up-frames nil))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Diminish some modes:
+    ;;   Do this after my custom packages so that Copilot exists.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (mapcar #'diminish
+      '( buffer-face-mode
+	 copilot-mode
+	 shell-mode
+	 shell-script-mode
+	 text-scale-mode))
 
-(use-package paren ;; built-in
-  :init
-  (setq show-paren-mode t)
-  (setq source-directory (expand-file-name "~/Code/3p/emacs/src")))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; auto-mode-alists:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    "Treating T4 templates is pretty close:"
+    (add-to-list 'auto-mode-alist '("\\.tt\\'" . csharp-mode))
 
-(use-package persistent-scratch :ensure t
-  :init
-  (setq persistent-scratch-autosave-interval 5)
-  (setq persistent-scratch-autosave-mode t)
-  (setq persistent-scratch-scratch-buffer-p-function
-    (lambda ()
-      (cond
-        ((not (string=
-                (buffer-name)
-                (if (boundp 'kats-scratch-buffer-name) kats-scratch-buffer-name "*scratch*")))
-          nil)
-        ((not (buffer-modified-p)) nil)
-        (t
-          (progn
-            (not-modified)
-            t)))))
-  :config
-  (persistent-scratch-autosave-mode))
+    "lex/yacc grammars:"
+    (add-to-list 'auto-mode-alist '("\\.lex\\'" . flex-mode))
+    (add-to-list 'auto-mode-alist '("\\.yacc\\'" . bison-mode))
 
-(use-package powerline :ensure t
-  :init
-  (setq powerline-text-scale-factor 0.8))
+    "Treat .ino, .inl, .inc, .cppm files as C++ files:"
+    (add-to-list 'auto-mode-alist '("\\.ino\\'" . c++-mode))
+    (add-to-list 'auto-mode-alist '("\\.cppm\\'" . foo-mode))
+    (add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
+    (add-to-list 'auto-mode-alist '("\\.inc\\'" . c-mode))
 
-(use-package rainbow-delimiters :ensure t
-  :hook
-  (prog-mode . rainbow-delimiters-mode)
-  (Info-mode . rainbow-delimiters-mode))
+    "Treat various files as Lisp files:"
+    (add-to-list 'auto-mode-alist '("\\.lisp\\'" . lisp-mode))
+    (add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
+    (add-to-list 'auto-mode-alist '("\\.scm\\'" . lisp-mode))
 
-(use-package rainbow-mode :ensure t
-  :diminish rainbow-mode
-  :hook
-  (prog-mode . rainbow-mode)
-  (text-mode . rainbow-mode)
-  (shell-mode . rainbow-mode)
-  (Info-mode . rainbow-mode))
+    "Open .epub files in nov.el:"
+    (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
-(use-package rust-mode :ensure t
-  :init
-  (setq rust-cargo-bin (expand-file-name "~/.cargo/bin/cargo"))
-  (setq rust-format-goto-problem nil)
-  (setq rust-format-on-save t)
-  (setq rust-format-show-buffer nil)
-  (setq rust-indent-offset 2)
-  (setq rust-rustfmt-bin (expand-file-name "~/.cargo/bin/rustfmt"))
-  :hook
-  (rust-mode . kats-prettify-symbols-rust))
+    "Open .pl files in prolog-mode:"
+    (add-to-list 'auto-mode-alist '("\\.pl\\'" . prolog-mode))
 
-(use-package rust-ts-mode :ensure t
-  :init
-  (use-package rust-mode)
-  (setq rust-ts-mode-indent-offset 2)
-  (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
-  :hook
-  (rust-ts-mode . aggressive-indent-mode)
-  (rust-ts-mode . kats-prettify-symbols-rust)
-  (before-save .
-    (lambda ()
-      (when (eq major-mode 'rust-ts-mode)
-	(rust-format-buffer)))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Major mode remappings
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))
+    (add-to-list 'major-mode-remap-alist '(c++-mode . c++-ts-mode))
+    (add-to-list 'major-mode-remap-alist '(c-or-c++-mode . c-or-c++-ts-mode))
 
-(use-package slime ;; built-in
-  :init
-  (setq slime-kill-without-query-p t)
-  (setq slime-lisp-implementations
-    '((sbcl
-        ("/opt/homebrew/bin/sbcl"))
-       (clisp
-         ("/opt/homebrew/bin/clisp"))
-       (ecl
-         ("/opt/homebrew/bin/ecl"))))
-  (setq inferior-lisp-program "/opt/homebrew/bin/sbcl")
-  (setq slime-compilation-finished-hook 'slime-maybe-show-compilation-log)`
-  (setq slime-load-failed-fasl 'never)
-  :config
-  (let ((quicklisp (expand-file-name "~/.quicklisp/slime-helper.el")))
-    (when (file-exists-p quicklisp)
-      (load quicklisp)))
-  (slime-setup '(slime-fancy slime-company)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Add various hooks:
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; (defun kats-setup-lisp ()
+    ;;   (kats-prettify-symbols-lisp)
+    ;;   (abbrev-mode 1)
+    ;;   (aggressive-indent-mode 1)
+    ;;   (eldoc-mode 1)
+    ;;   (variable-pitch-mode 1)
+    ;;   (display-fill-column-indicator-mode -1)
+    ;;   (face-remap-add-relative 'font-lock-function-name-face '(:box (:line-width (1 . 1) :color "#ec0" :style pressed-button))) 
+    ;;   (face-remap-add-relative 'font-lock-doc-face '( :family "XITS")))
 
-(use-package spaceline :ensure t
-  :init
-  (setq spaceline-minor-modes-separator " ")
-  (setq spaceline-version-control-p nil)
-  :config
-  (require 'powerline)
-  (require 'spaceline)
-  (require 'spaceline-config)
-  (spaceline--theme '((buffer-id) :priority 98) nil nil))
+    (add-hook 'emacs-lisp-mode-hook
+      (lambda ()
+	(setq-local lexical-binding t)
+	;; (kats-setup-lisp)
+	))
 
-(use-package tab-bar ;; built-in
-  :init
-  (setq tab-bar-close-button-show 'selected)
-  (setq tab-bar-new-button-show nil)
-  (setq tab-bar-new-tab-choice 'list-buffers)
-  (setq tab-bar-show t)
-  :config
-  (tab-bar-mode 1))
+    (add-hook 'lisp-mode-hook
+      (lambda ()
+	(font-lock-add-keywords nil
+	  '( ;; AELisp's special forms are keywords.
+             ("(\\(apply\\_>\\)" . 1)
+             ("(\\(case\\_>\\)"  . 1)
+             ("(\\(decr\\_>\\)"  . 1)
+             ("(\\(incr\\_>\\)"  . 1)
+             ("(\\(letrec\\_>\\)" . 1)
+             ("(\\(pop\\_>\\)"  . 1)
+             ("(\\(push\\_>\\)"  . 1)
+             ("(\\(quote\\_>\\)"  . 1)
+             ("(\\(repeat\\_>\\)"  . 1)
+             ("(\\(setq\\_>\\)"  . 1)
+             ("(\\(until\\_>\\)" . 1))
+	  'prepend)))
 
-(use-package time ;; built-in
-  :config
-  (setq display-time-default-load-average nil)
-  (display-time))
+    (dolist (hook '(c-mode-hook c-ts-mode-hook c++-mode-hook c++-ts-mode-hook))
+      (add-hook hook
+	(lambda ()
+	  (setq-local lsp-semantic-tokens-enable -1)
+	  (c-set-offset 'arglist-close 0)
+	  (lsp)
+	  (lsp-inlay-hints-mode -1)
+	  (lsp-lens-mode -1)
+	  (lsp-semantic-tokens-mode -1)
+	  (eldoc-mode 1)
+	  )))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; My custom packages:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Require my own custom packages:"
-(when (file-directory-p kats-trav-dir) (require 'trav))
-(mapcar 'require
-  '( kats-configure-scratch-buffer
-     kats-configure-tetris-keymap
-     kats-configure-global-abbrevs-table 
-     kats-configure-rainbow-cursor
-     kats-configure-xwidget-browse-menu
-     kats-configure-key-bindings
-     kats-mode-local-caps-lock
-     kats-funs-monkey-patched
-     kats-funs-prettify-symbols
-     xah-lees-configure-emoji-fix))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Diminish some modes:
-;;   Do this after my custom packages so that Copilot exists.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(mapcar #'diminish
-  '( buffer-face-mode
-     copilot-mode
-     shell-mode
-     shell-script-mode
-     text-scale-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; auto-mode-alists:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Treating T4 templates is pretty close:"
-(add-to-list 'auto-mode-alist '("\\.tt\\'" . csharp-mode))
-
-"lex/yacc grammars:"
-(add-to-list 'auto-mode-alist '("\\.lex\\'" . flex-mode))
-(add-to-list 'auto-mode-alist '("\\.yacc\\'" . bison-mode))
-
-"Treat .ino, .inl, .inc, .cppm files as C++ files:"
-(add-to-list 'auto-mode-alist '("\\.ino\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.cppm\\'" . foo-mode))
-(add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.inc\\'" . c-mode))
-
-"Treat various files as Lisp files:"
-(add-to-list 'auto-mode-alist '("\\.lisp\\'" . lisp-mode))
-(add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
-(add-to-list 'auto-mode-alist '("\\.scm\\'" . lisp-mode))
-
-"Open .epub files in nov.el:"
-(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-
-"Open .pl files in prolog-mode:"
-(add-to-list 'auto-mode-alist '("\\.pl\\'" . prolog-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Major mode remappings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))
-(add-to-list 'major-mode-remap-alist '(c++-mode . c++-ts-mode))
-(add-to-list 'major-mode-remap-alist '(c-or-c++-mode . c-or-c++-ts-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Add various hooks:
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun kats-setup-lisp ()
-  (kats-prettify-symbols-lisp)
-  (abbrev-mode 1)
-  (aggressive-indent-mode 1)
-  (eldoc-mode 1)
-  (variable-pitch-mode 1)
-  (display-fill-column-indicator-mode -1)
-  (face-remap-add-relative 'font-lock-function-name-face '(:box (:line-width (1 . 1) :color "#ec0" :style pressed-button))) 
-  (face-remap-add-relative 'font-lock-doc-face '( :family "XITS")))
-
-(add-hook 'emacs-lisp-mode-hook
-  (lambda ()
-    (setq-local lexical-binding t)
-    (kats-setup-lisp)))
-
-(add-hook 'lisp-mode-hook
-  (lambda ()
-    (font-lock-add-keywords nil
-      '( ;; AELisp's special forms are keywords.
-         ("(\\(apply\\_>\\)" . 1)
-         ("(\\(case\\_>\\)"  . 1)
-         ("(\\(decr\\_>\\)"  . 1)
-         ("(\\(incr\\_>\\)"  . 1)
-         ("(\\(letrec\\_>\\)" . 1)
-         ("(\\(pop\\_>\\)"  . 1)
-         ("(\\(push\\_>\\)"  . 1)
-         ("(\\(quote\\_>\\)"  . 1)
-         ("(\\(repeat\\_>\\)"  . 1)
-         ("(\\(setq\\_>\\)"  . 1)
-         ("(\\(until\\_>\\)" . 1))
-      'prepend)))
-
-(dolist (hook '(c-mode-hook c-ts-mode-hook c++-mode-hook c++-ts-mode-hook))
-  (add-hook hook
-    (lambda ()
-      (setq-local lsp-semantic-tokens-enable -1)
-      (c-set-offset 'arglist-close 0)
-      (lsp)
-      (lsp-inlay-hints-mode -1)
-      (lsp-lens-mode -1)
-      (lsp-semantic-tokens-mode -1)
-      (eldoc-mode 1)
-      )))
-
-(dolist
-  (hook
-    '(csharp-mode-hook csharp-ts-mode-hook))
-  (add-hook hook
-    (lambda ()
-      (setq-local c-basic-offset 2)
-      (setq-local fill-column 120)
-      (lsp)
-      (lsp-inlay-hints-mode -1)
-      (lsp-lens-mode -1)
-      (eldoc-mode -1)
-      )))
-
-(add-hook 'rust-ts-mode-hook
-  (lambda ()
-    (lsp)
-    (lsp-semantic-tokens-mode 1)
-    (lsp-inlay-hints-mode -1)
-    (lsp-lens-mode -1)
-    (eldoc-mode 1)
-    (flycheck-rust-setup)
-    ))
-
-(add-hook 'shell-mode-hook
-  (lambda ()
-    (setq-local tab-width 8)
-    (display-line-numbers-mode -1)
-    (face-remap-add-relative 'default '(:foreground "#c90"))))
-
-(add-hook 'xwidget-webkit-mode-hook
-  (lambda ()
-    (setq-local global-hl-line-mode nil)
-    (setq-local beacon-mode nil)
-    (setq-local display-line-numbers-mode nil)
-    (setq-local cursor-type nil)))
-
-(add-hook 'company-completion-started-hook
-  (lambda (&rest _)
-    "Stash the original states of some modes and then disable them during company."
-    (setq-local kats-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
-    (setq-local kats-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
-    (setq-local kats-stashed-beacon-mode (bound-and-true-p beacon-mode))
-    (when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
-    (when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
-    (when (bound-and-true-p beacon-mode) (beacon-mode -1))
-    (setq-local hl-line-mode nil)))
-
-(add-hook 'company-after-completion-hook
-  (lambda (&rest _)
-    "Restore the state of modes that might have been on during company."
-    (when (boundp 'kats-stashed-flycheck-mode)
-      (when kats-stashed-flycheck-mode (flycheck-mode 1))
-      (kill-local-variable 'kats-stashed-flycheck-mode))
-    (when (boundp 'kats-stashed-flycheck-inline-mode)
-      (when kats-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-      (kill-local-variable 'kats-stashed-flycheck-inline-mode))
-    (when (boundp 'kats-stashed-beacon-mode)
-      (when kats-stashed-beacon-mode (beacon-mode 1))
-      (kill-local-variable 'kats-stashed-beacon-mode))))
-
-(add-hook 'find-file-hooks
-  (lambda ()
-    "Hides the DOS end-of-line (EOL) characters in the current buffer."
-    (unless buffer-display-table (setq buffer-display-table (make-display-table)))
-    (aset buffer-display-table ?\^M [])))
-
-(add-hook 'dired-mode-hook
-  (lambda ()
-    (auto-revert-mode 1)
-    (face-remap-add-relative 'default '(:height 1.0 :box nil))))
-
-(add-hook 'comint-exec-hook
-  (lambda ()
-    "Let the shell be killed without warning about running processes."
-    (set-process-query-on-exit-flag (get-buffer-process (current-buffer)) nil)))
-
-(add-hook 'sh-mode-hook
-  (lambda ()
-    "Unbind Shell-script mode's binding for C-c C-t since it interferes with my own global binding to start a steminal / (shell):"
-    (local-unset-key (kbd "C-c C-t"))))
-
-(add-hook 'Info-mode-hook
-  (lambda ()
-    (variable-pitch-mode 1)
-    (face-remap-add-relative 'default '(:height 1.1))))
-
-(add-hook 'nov-mode-hook
-  (lambda ()
-    (setq-local global-centered-cursor-mode nil)
-    (setq-local beacon-mode nil)
-    (setq-local cursor-type nil)
-    (hl-line-mode -1)
-    (follow-mode 1)
-    (display-line-numbers-mode 0)
-    (text-scale-adjust 16)
-    (face-remap-add-relative 'highlight '(:highlight nil))
-    (hl-line-mode -1)))
-
-(add-hook 'org-mode-hook
-  (lambda ()
-    (variable-pitch-mode)
-    (visual-line-mode)
-    (face-remap-add-relative 'default '(:height 1.0))))
-
-(when (featurep 'copilot) (add-hook 'prog-mode-hook 'copilot-mode))
-(add-hook 'Custom-mode-hook (lambda () (face-remap-add-relative 'default '(:family "XITS" :height 1.25))))
-(add-hook 'compilation-mode-hook (lambda () (face-remap-add-relative 'default '(:foreground "#c90"))))
-(add-hook 'emacs-startup-hook (lambda () (message "")))
-(add-hook 'help-mode-hook (lambda () (face-remap-add-relative 'default '(:family "Gill Sans" :height 1.15))))
-(add-hook 'inferior-emacs-lisp-mode-hook 'kats-setup-lisp)
-(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
-(add-hook 'special-mode-hook (lambda () (setq-local truncate-lines nil)))
-(add-hook 'tetris-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
-(add-hook 'slime-repl-mode-hook (lambda () (variable-pitch-mode 1)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Define the after-init hook and hook it up:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'after-init-hook
-  (lambda ()
-    "Setup my environment after init."
-    (interactive)
-    "Open some files:"
     (dolist
-      (file
-        `( ,(expand-file-name "~/.profile")
-           ,(expand-file-name "kats-configure-key-bindings.el" kats-lisp-dir)
-           ,(expand-file-name "kats-configure-packages.el" kats-lisp-dir)
-           ,(expand-file-name "kats-funs-unsorted.el" kats-lisp-dir)
-           ,(expand-file-name "init.el" kats-config-dir)
-           ,(expand-file-name "custom.el" kats-config-dir)))
-      (find-file file))
-    "Shell in .emacs.d:"
-    (shell "emacs")
-    "Shells in home:"
-    (let ((default-directory "~"))
-      (shell)
-      (shell "git")
-      (shell "dcp"))
-    "Load Custom:"
-    (load custom-file)
-    "Load desktop:"
-    (desktop-read)
-    ))
+      (hook
+	'(csharp-mode-hook csharp-ts-mode-hook))
+      (add-hook hook
+	(lambda ()
+	  (setq-local c-basic-offset 2)
+	  (setq-local fill-column 120)
+	  (lsp)
+	  (lsp-inlay-hints-mode -1)
+	  (lsp-lens-mode -1)
+	  (eldoc-mode -1)
+	  )))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'kats-emacs-configuration)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (add-hook 'rust-ts-mode-hook
+      (lambda ()
+	(lsp)
+	(lsp-semantic-tokens-mode 1)
+	(lsp-inlay-hints-mode -1)
+	(lsp-lens-mode -1)
+	(eldoc-mode 1)
+	(flycheck-rust-setup)
+	))
 
+    (add-hook 'shell-mode-hook
+      (lambda ()
+	(setq-local tab-width 8)
+	(display-line-numbers-mode -1)
+	(face-remap-add-relative 'default '(:foreground "#c90"))))
+
+    (add-hook 'xwidget-webkit-mode-hook
+      (lambda ()
+	(setq-local global-hl-line-mode nil)
+	(setq-local beacon-mode nil)
+	(setq-local display-line-numbers-mode nil)
+	(setq-local cursor-type nil)))
+
+    (add-hook 'company-completion-started-hook
+      (lambda (&rest _)
+	"Stash the original states of some modes and then disable them during company."
+	(setq-local kats-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
+	(setq-local kats-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
+	(setq-local kats-stashed-beacon-mode (bound-and-true-p beacon-mode))
+	(when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
+	(when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
+	(when (bound-and-true-p beacon-mode) (beacon-mode -1))
+	(setq-local hl-line-mode nil)))
+
+    (add-hook 'company-after-completion-hook
+      (lambda (&rest _)
+	"Restore the state of modes that might have been on during company."
+	(when (boundp 'kats-stashed-flycheck-mode)
+	  (when kats-stashed-flycheck-mode (flycheck-mode 1))
+	  (kill-local-variable 'kats-stashed-flycheck-mode))
+	(when (boundp 'kats-stashed-flycheck-inline-mode)
+	  (when kats-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
+	  (kill-local-variable 'kats-stashed-flycheck-inline-mode))
+	(when (boundp 'kats-stashed-beacon-mode)
+	  (when kats-stashed-beacon-mode (beacon-mode 1))
+	  (kill-local-variable 'kats-stashed-beacon-mode))))
+
+    (add-hook 'find-file-hooks
+      (lambda ()
+	"Hides the DOS end-of-line (EOL) characters in the current buffer."
+	(unless buffer-display-table (setq buffer-display-table (make-display-table)))
+	(aset buffer-display-table ?\^M [])))
+
+    (add-hook 'dired-mode-hook
+      (lambda ()
+	(auto-revert-mode 1)
+	(face-remap-add-relative 'default '(:height 1.0 :box nil))))
+
+    (add-hook 'comint-exec-hook
+      (lambda ()
+	"Let the shell be killed without warning about running processes."
+	(set-process-query-on-exit-flag (get-buffer-process (current-buffer)) nil)))
+
+    (add-hook 'sh-mode-hook
+      (lambda ()
+	"Unbind Shell-script mode's binding for C-c C-t since it interferes with my own global binding to start a steminal / (shell):"
+	(local-unset-key (kbd "C-c C-t"))))
+
+    (add-hook 'Info-mode-hook
+      (lambda ()
+	(variable-pitch-mode 1)
+	(face-remap-add-relative 'default '(:height 1.1))))
+
+    (add-hook 'nov-mode-hook
+      (lambda ()
+	(setq-local global-centered-cursor-mode nil)
+	(setq-local beacon-mode nil)
+	(setq-local cursor-type nil)
+	(hl-line-mode -1)
+	(follow-mode 1)
+	(display-line-numbers-mode 0)
+	(text-scale-adjust 16)
+	(face-remap-add-relative 'highlight '(:highlight nil))
+	(hl-line-mode -1)))
+
+    (add-hook 'org-mode-hook
+      (lambda ()
+	(variable-pitch-mode)
+	(visual-line-mode)
+	(face-remap-add-relative 'default '(:height 1.0))))
+
+    (when (featurep 'copilot) (add-hook 'prog-mode-hook 'copilot-mode))
+    (add-hook 'Custom-mode-hook (lambda () (face-remap-add-relative 'default '(:family "XITS" :height 1.25))))
+    (add-hook 'compilation-mode-hook (lambda () (face-remap-add-relative 'default '(:foreground "#c90"))))
+    (add-hook 'emacs-startup-hook (lambda () (message "")))
+    (add-hook 'help-mode-hook (lambda () (face-remap-add-relative 'default '(:family "Gill Sans" :height 1.15))))
+    ;; (add-hook 'inferior-emacs-lisp-mode-hook 'kats-setup-lisp)
+    (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+    (add-hook 'special-mode-hook (lambda () (setq-local truncate-lines nil)))
+    (add-hook 'tetris-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
+    (add-hook 'slime-repl-mode-hook (lambda () (variable-pitch-mode 1)))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Define the after-init hook and hook it up:
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (add-hook 'after-init-hook
+      (lambda ()
+	"Setup my environment after init."
+	(interactive)
+	"Open some files:"
+	(dolist
+	  (file
+            `( ,(expand-file-name "~/.profile")
+               ,(expand-file-name "kats-configure-key-bindings.el" kats-lisp-dir)
+               ,(expand-file-name "kats-configure-packages.el" kats-lisp-dir)
+               ,(expand-file-name "kats-funs-unsorted.el" kats-lisp-dir)
+               ,(expand-file-name "init.el" aris-config-dir)
+               ,(expand-file-name "custom.el" aris-config-dir)))
+	  (find-file file))
+	"Shell in .emacs.d:"
+	(shell "emacs")
+	"Shells in home:"
+	(let ((default-directory "~"))
+	  (shell)
+	  (shell "git")
+	  (shell "dcp"))
+	"Load Custom:"
+	(load custom-file)
+	"Load desktop:"
+	(desktop-read)
+	))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (provide 'kats-emacs-configuration))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  config-end
+  (message "[ARI] Leaving init.el."))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
