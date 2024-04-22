@@ -48,15 +48,15 @@
   (let (it)
     (while args
       (let ((expr (pop args)))
-        (cond
-          ((and it (is? it 'integer)) (prn "it (int) = %s" (val it)))
-          (t (prn "it       = %s" it)))
+        (prndiv)
+        (prn "it       = %s" it)
+        ;; (cond
+        ;;   ((and it (is? it 'integer)) (prn "it (int) = %s" (val it)))
+        ;;   (t (prn "it       = %s" it)))
         (prn "expr     = %s" expr)
         (cond
           ((integerp expr) (setq it (integer expr)))
           ((symbolp expr)
-            (prn "get %s for %s" expr (fmt it))
-            (debug)
             (setq it (get-method it expr)))
           (t (error "error"))
           )))))

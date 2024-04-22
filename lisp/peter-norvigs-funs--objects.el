@@ -22,7 +22,10 @@
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
            (cl-case message
-             ,(make-clause `(is? (class) (eq class ',class)))
+             ,(make-clause `(is? (class)
+                              (prn "is? %s" class)
+                              (debug)
+                              (eq class ',class)))
              ,(make-clause `(class-name () ',class))
              ,@(mapcar #'make-clause methods))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,6 +35,8 @@
 (defun get-method (object message)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return the method that implements message for this object."
+  (prn "get %s method for %s" message object)
+  (debug)
   (funcall object message))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
