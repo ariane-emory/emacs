@@ -709,155 +709,81 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Add various hooks:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (add-hook 'emacs-lisp-mode-hook
-      (lambda ()
-	      (setq-local lexical-binding t)
-	      ;; (aris-setup-lisp)
-	      ))
+    (with-messages "adding hooks"
+      (add-hook 'Buffer-menu-mode-hook
+        (lambda ()
+          (face-remap-add-relative 'default 'aris-alt-face)
+          (setq-local truncate-lines t)))
 
-    (add-hook 'lisp-mode-hook
-      (lambda ()
-	      (font-lock-add-keywords nil
-	        '( ;; AELisp's special forms are keywords.
-             ("(\\(apply\\_>\\)" . 1)
-             ("(\\(case\\_>\\)"  . 1)
-             ("(\\(decr\\_>\\)"  . 1)
-             ("(\\(incr\\_>\\)"  . 1)
-             ("(\\(letrec\\_>\\)" . 1)
-             ("(\\(pop\\_>\\)"  . 1)
-             ("(\\(push\\_>\\)"  . 1)
-             ("(\\(quote\\_>\\)"  . 1)
-             ("(\\(repeat\\_>\\)"  . 1)
-             ("(\\(setq\\_>\\)"  . 1)
-             ("(\\(until\\_>\\)" . 1))
-	        'prepend)))
+      (dolist (hook '(c-mode-hook c-ts-mode-hook c++-mode-hook c++-ts-mode-hook))
+        (add-hook hook
+          (lambda ()
+            (c-set-offset 'arglist-close 0)
+	          (setq-local lsp-inlay-hint-enable nil)
+    	      (lsp)
+            ;; (lsp-inlay-hints-mode -1)
+            ;; (lsp-lens-mode -1)
+            ;; (lsp-semantic-tokens-mode -1)
+            ;; (eldoc-mode 1)
+            )))
+      
+      (add-hook 'compilation-mode-hook
+        (lambda () (face-remap-add-relative 'default 'aris-alt-face)))
 
-    (dolist (hook '(c-mode-hook c-ts-mode-hook c++-mode-hook c++-ts-mode-hook))
-      (add-hook hook
-	      (lambda ()
-	        (setq-local lsp-semantic-tokens-enable -1)
-	        (c-set-offset 'arglist-close 0)
+      (dolist
+        (hook '(csharp-mode-hook csharp-ts-mode-hook))
+        (add-hook hook
+          (lambda ()
+            (setq-local c-basic-offset 2)
+            (setq-local fill-column 120)
+            (setq-local lsp-semantic-tokens-enable t)
+            (setq-local lsp-signature-auto-activate t)
+            (setq-local lsp-signature-render-documentation t)
+            (aggressive-indent-mode -1)
+            (eldoc-mode 1)
+            ;; (lsp)
+            )))
+
+      (add-hook 'Custom-mode-hook
+        (lambda () (face-remap-add-relative 'default '(:family "XITS" :height 1.25))))
+
+      (add-hook 'find-file-hooks
+        (lambda ()
+          "Hides the DOS end-of-line (EOL) characters in the current buffer."
+          (unless buffer-display-table
+            (setq buffer-display-table (make-display-table)))
+          (aset buffer-display-table ?\^M [])))
+
+      (add-hook 'help-mode-hook
+        (lambda () (face-remap-add-relative 'default
+                '(:family "Gill Sans" :height 1.15))))
+
+      (add-hook 'Info-mode-hook
+        (lambda ()
+	        (variable-pitch-mode 1)
+	        (face-remap-add-relative 'default '(:height 1.1))))
+
+      (add-hook 'rust-ts-mode-hook
+        (lambda ()
 	        (lsp)
+	        (lsp-semantic-tokens-mode 1)
 	        (lsp-inlay-hints-mode -1)
 	        (lsp-lens-mode -1)
-	        (lsp-semantic-tokens-mode -1)
 	        (eldoc-mode 1)
-	        )))
+	        (flycheck-rust-setup)
+	        ))
 
-    (dolist
-      (hook
-	      '(csharp-mode-hook csharp-ts-mode-hook))
-      (add-hook hook
-	      (lambda ()
-	        (setq-local c-basic-offset 2)
-	        (setq-local fill-column 120)
-	        (lsp)
-	        (lsp-inlay-hints-mode -1)
-	        (lsp-lens-mode -1)
-	        (eldoc-mode -1)
-	        )))
+      (add-hook 'tetris-mode-hook
+        (lambda ()
+          (setq-local global-hl-line-mode nil)
+          (display-line-numbers-mode -1)))
 
-    (add-hook 'rust-ts-mode-hook
-      (lambda ()
-	      (lsp)
-	      (lsp-semantic-tokens-mode 1)
-	      (lsp-inlay-hints-mode -1)
-	      (lsp-lens-mode -1)
-	      (eldoc-mode 1)
-	      (flycheck-rust-setup)
-	      ))
-
-    (add-hook 'shell-mode-hook
-      (lambda ()
-	      (setq-local tab-width 8)
-	      (display-line-numbers-mode -1)
-	      (face-remap-add-relative 'default '(:foreground "#c90"))))
-
-    (add-hook 'xwidget-webkit-mode-hook
-      (lambda ()
-	      (setq-local global-hl-line-mode nil)
-	      (setq-local beacon-mode nil)
-	      (setq-local display-line-numbers-mode nil)
-	      (setq-local cursor-type nil)))
-
-    (add-hook 'company-completion-started-hook
-      (lambda (&rest _)
-	      "Stash the original states of some modes and then disable them during company."
-	      (setq-local aris-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
-	      (setq-local aris-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
-	      (setq-local aris-stashed-beacon-mode (bound-and-true-p beacon-mode))
-	      (when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
-	      (when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
-	      (when (bound-and-true-p beacon-mode) (beacon-mode -1))
-	      (setq-local hl-line-mode nil)))
-
-    (add-hook 'company-after-completion-hook
-      (lambda (&rest _)
-	      "Restore the state of modes that might have been on during company."
-	      (when (boundp 'aris-stashed-flycheck-mode)
-	        (when aris-stashed-flycheck-mode (flycheck-mode 1))
-	        (kill-local-variable 'aris-stashed-flycheck-mode))
-	      (when (boundp 'aris-stashed-flycheck-inline-mode)
-	        (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-	        (kill-local-variable 'aris-stashed-flycheck-inline-mode))
-	      (when (boundp 'aris-stashed-beacon-mode)
-	        (when aris-stashed-beacon-mode (beacon-mode 1))
-	        (kill-local-variable 'aris-stashed-beacon-mode))))
-
-    (add-hook 'find-file-hooks
-      (lambda ()
-	      "Hides the DOS end-of-line (EOL) characters in the current buffer."
-	      (unless buffer-display-table (setq buffer-display-table (make-display-table)))
-	      (aset buffer-display-table ?\^M [])))
-
-    (add-hook 'dired-mode-hook
-      (lambda ()
-	      (auto-revert-mode 1)
-	      (face-remap-add-relative 'default '(:height 1.0 :box nil))))
-
-    (add-hook 'comint-exec-hook
-      (lambda ()
-	      "Let the shell be killed without warning about running processes."
-	      (set-process-query-on-exit-flag (get-buffer-process (current-buffer)) nil)))
-
-    (add-hook 'sh-mode-hook
-      (lambda ()
-	      "Unbind Shell-script mode's binding for C-c C-t since it interferes with my own global binding to start a steminal / (shell):"
-	      (local-unset-key (kbd "C-c C-t"))))
-
-    (add-hook 'Info-mode-hook
-      (lambda ()
-	      (variable-pitch-mode 1)
-	      (face-remap-add-relative 'default '(:height 1.1))))
-
-    (add-hook 'nov-mode-hook
-      (lambda ()
-	      (setq-local global-centered-cursor-mode nil)
-	      (setq-local beacon-mode nil)
-	      (setq-local cursor-type nil)
-	      (hl-line-mode -1)
-	      (follow-mode 1)
-	      (display-line-numbers-mode 0)
-	      (text-scale-adjust 16)
-	      (face-remap-add-relative 'highlight '(:highlight nil))
-	      (hl-line-mode -1)))
-
-    (add-hook 'org-mode-hook
-      (lambda ()
-	      (variable-pitch-mode)
-	      (visual-line-mode)
-	      (face-remap-add-relative 'default '(:height 1.0))))
-
-    (when (featurep 'copilot) (add-hook 'prog-mode-hook 'copilot-mode))
-    (add-hook 'Custom-mode-hook (lambda () (face-remap-add-relative 'default '(:family "XITS" :height 1.25))))
-    (add-hook 'compilation-mode-hook (lambda () (face-remap-add-relative 'default '(:foreground "#c90"))))
-    (add-hook 'emacs-startup-hook (lambda () (message "")))
-    (add-hook 'help-mode-hook (lambda () (face-remap-add-relative 'default '(:family "Gill Sans" :height 1.15))))
-    ;; (add-hook 'inferior-emacs-lisp-mode-hook 'aris-setup-lisp)
-    (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
-    (add-hook 'special-mode-hook (lambda () (setq-local truncate-lines nil)))
-    (add-hook 'tetris-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
-    (add-hook 'slime-repl-mode-hook (lambda () (variable-pitch-mode 1)))
+      (add-hook 'xwidget-webkit-mode-hook
+        (lambda ()
+	        (setq-local global-hl-line-mode nil)
+	        (setq-local beacon-mode nil)
+	        (setq-local display-line-numbers-mode nil)
+	        (setq-local cursor-type nil))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Use my own custom packages:
