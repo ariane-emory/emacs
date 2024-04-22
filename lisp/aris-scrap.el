@@ -49,13 +49,33 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-fun (expr)
-  (if (integerp expr)
-    `(integer ,expr)
-    (if-let ((method-name (op-to-method-name expr)))
-      method-name
-      expr)))
+  (if-let ((method-name (op-to-method-name expr)))
+    `(method-name ,method-name)
+    `(integer ,expr)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (transform-fun 8) ;; => (integer 8)
 (transform-fun 'foo) ;; => foo
 (transform-fun '+) ;; => add
+
+(transform-tree #'always #'transform-fun '(3 + (4 * 5) - y))
+((integer 3)
+  (method-name add)
+  ((integer 4)
+    (method-name mul)
+    (integer 5))
+  (method-name sub)
+  (integer y))
+
+((integer 3)
+  (method-name add)
+  ((integer 4)
+    (method-name mul)
+    (integer 5))
+  (method-name sub)
+  y)
+
