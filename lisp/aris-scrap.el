@@ -97,19 +97,22 @@
         (let ((expr (pop tail)))
           (prn "EXPR: %s" expr)
           (cond
-            ((symbolp expr)
+            ((symbol? expr)
               (prn "EXPR IS SYMBOL!")
               (setq head (get-method head expr)))
+            ((and (list? expr) (not (fun? expr)))
+              (prn "EXPR IS LIST!")
+              (setq head (funcall head (infix-helper expr)))
+              (prn "HEAD: %s" head))
             ((is? expr 'integer)
               (prn "EXPR IS INTEGER!")
               (setq head (funcall head expr)))
             (t
-              (prn "EXPR IS OTHER!")
-              (setq head (funcall head expr))))))
+              (error "EXPR IS OTHER!")))))
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(infix 3 * 4)
+(infix 3 * (4 + 2))
 
 (list? (lambda (x) x))
 (fun? '((lambda (x) x))
