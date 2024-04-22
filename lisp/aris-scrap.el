@@ -105,7 +105,7 @@
               (setq head (funcall head expr)))
             (t
               (prn "EXPR IS OTHER!")
-              (setq head (funcall head expr))) )))
+              (setq head (funcall head expr))))))
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
