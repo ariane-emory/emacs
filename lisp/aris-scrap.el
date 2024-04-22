@@ -93,7 +93,6 @@
 (withdraw acct4 "guess" 20.00)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(company-quickhelp-mode -1)
 (dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
   (cond
     ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
@@ -191,19 +190,20 @@
 (confirm that (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(benchmark-run 150000 (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (1.7814210000000001 20 1.0779189999999943
-(benchmark-run 150000 (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (1.77482 20 1.095294999999993
-(benchmark-run 150000 (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (6.318105 79 4.30748100000001
-(benchmark-run 150000 (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (6.041336 75 4.115623999999997
+(benchmark-run 10000 (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.18669200000000002 2 0.11343100000004824
+(benchmark-run 10000 (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.17632499999999998 2 0.11093299999998862
+(benchmark-run 10000 (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.6470840000000001 8 0.4437550000000101
+(benchmark-run 10000 (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.5794630000000001 7 0.38664099999999735
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun op-to-name (op)
-  (cl-case op
-    (+ 'add)
-    (- 'sub)
-    (* 'mul)
-    (/ 'div)
-    (% 'rem)
-    (otherwise op)))
+  (if (symbolp op)
+    (cl-case op
+      (+ 'add)
+      (- 'sub)
+      (* 'mul)
+      (/ 'div)
+      (% 'rem))
+    (integer op)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(benchmark-run 100000 (transform-tree #'symbolp #'op-to-name '(2 + (3 * 4) / 5 % 6))) ;; => (1.443532 18 0.9447859999999935
-(benchmark-run 100000 (transform-tree #'always #'op-to-name '(2 + (3 * 4) / 5 % 6))) ;; => (1.913227 24 1.2899850000000015
+(benchmark-run 10000 (transform-tree #'symbolp #'op-to-name '(2 + (3 * 4) / 5 % 6))) ;; => (1.443532 18 0.9447859999999935
+(benchmark-run 10000 (transform-tree #'always #'op-to-name '(2 + (3 * 4) / 5 % 6))) ;; => (1.913227 24 1.2899850000000015
