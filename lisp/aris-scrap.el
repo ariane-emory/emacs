@@ -111,8 +111,34 @@
   (sub (other) (integer (- value (val other))))
   (mul (other) (integer (* value (val other))))
   (div (other) (integer (/ value (val other))))
-  (modulo (other) (integer (% value (val other)))))
+  (rem (other) (integer (% value (val other)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (val (mul (integer 2 (add (integer 5) (integer 7)))))
 (val (mul (integer 2) (add (integer 5) (integer 7))))
+(val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
+
+
+(defun transform-tree (pred? fun tree)
+  "Replace items matching PRED? in TREE with the result of applying FUN to them."
+  (unless (list? tree) (error "TREE must be a list"))
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (fun? fun)   (error "FUN must be a function"))
+  (when tree
+    (let (result tail)
+      (while tree
+        (let* ((head (pop tree))
+                (new-tail
+                  (list
+                    (cond
+                      ((cons? head) (transform-tree pred? fun head))
+                      ((funcall pred? head) (funcall fun head))
+                      (else         head)))))
+          (if result
+            (setcdr tail new-tail)
+            (setq result new-tail))
+          (setq tail new-tail)))
+      result)))
+
+(confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
+  returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
