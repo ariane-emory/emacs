@@ -13,17 +13,19 @@
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  ;; Define constructor and generic functions for methods
+  ;; Define constructor and generic function for methods
   `(let ,class-vars
      (mapcar #'ensure-generic-fn
        ',(append
-           '(is? class-name)
+           '(is? class-name delegate)
            (mapcar #'first methods)))
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
            (cl-case message
              ,(make-clause `(is? (class) (eq class ',class)))
              ,(make-clause `(class-name () ',class))
+             ,(make-clause `(delegate (message obj args)
+                              (apply message obj args)))
              ,@(mapcar #'make-clause methods))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

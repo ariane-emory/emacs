@@ -16,24 +16,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Manually tweaked expansion with a private method:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let
-  ((interest-rate 0.06))
-  (ensure-generic-fn 'is?)
-  (mapcar #'ensure-generic-fn '(withdraw deposit balance name privcall interest))
-  (cl-defun account (name &optional (balance 0.0))
-    #'(lambda (message)
-        (cl-flet ((private-method () name))
-          (cl-case message
-            (is? #'(lambda (class) (eq class 'account)))
-            (withdraw #'(lambda (amt)
-                          (if (<= amt balance)
-                            (cl-decf balance amt)
-                            :INSUFFICIENT-FUNDS)))
-            (deposit #'(lambda (amt) (cl-incf balance amt)))
-            (balance #'(lambda nil balance))
-            (name #'(lambda nil name))
-            (privcall #'(lambda nil (private-method)))
-            (interest #'(lambda nil (cl-infc balance (* balance interest-rate)))))))))
+;; (let
+;;   ((interest-rate 0.06))
+;;   (ensure-generic-fn 'is?)
+;;   (mapcar #'ensure-generic-fn '(withdraw deposit balance name privcall interest))
+;;   (cl-defun account (name &optional (balance 0.0))
+;;     #'(lambda (message)
+;;         (cl-flet ((private-method () name))
+;;           (cl-case message
+;;             (is? #'(lambda (class) (eq class 'account)))
+;;             (withdraw #'(lambda (amt)
+;;                           (if (<= amt balance)
+;;                             (cl-decf balance amt)
+;;                             :INSUFFICIENT-FUNDS)))
+;;             (deposit #'(lambda (amt) (cl-incf balance amt)))
+;;             (balance #'(lambda nil balance))
+;;             (name #'(lambda nil name))
+;;             (privcall #'(lambda nil (private-method)))
+;;             (interest #'(lambda nil (cl-infc balance (* balance interest-rate)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
