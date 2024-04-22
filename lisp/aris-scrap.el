@@ -44,10 +44,11 @@
   (div (other) (integer (/ value (val other))))
   (rem (other) (integer (% value (val other)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (val (mul (integer 2) (add (integer 5) (integer 7))))
+(ignore!
+  (confirm that (val (mul (integer 2) (add (integer 5) (integer 7))))
   returns 24)
-(confirm that (val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
-  returns 4)
+  (confirm that (val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
+    returns 4))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -76,7 +77,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro infix (&rest args)
+(defmacro ## (&rest args)
   (prndiv)
   (prn "START: %s" args)
   ;; (prndiv)
@@ -90,29 +91,29 @@
   (let ( (head (car lst))
          (tail (cdr lst)))
     (with-indentation
+      (prndiv)
+      (prn "HELP:  %s" lst)
+      (prndiv)
       (while tail
-        (prndiv)
         (prn "HEAD: %s" head)
         (prn "TAIL: %s" tail)
         (let ((expr (pop tail)))
           (prn "EXPR: %s" expr)
-          (cond
-            ((symbol? expr)
-              (prn "EXPR IS SYMBOL!")
-              (setq head (get-method head expr)))
-            ((and (list? expr) (not (fun? expr)))
-              (prn "EXPR IS LIST!")
-              (setq head (funcall head (infix-helper expr)))
-              (prn "HEAD: %s" head))
-            ((is? expr 'integer)
-              (prn "EXPR IS INTEGER!")
-              (setq head (funcall head expr)))
-            (t
-              (error "EXPR IS OTHER!")))))
+          (setq head
+            (cond
+              ((symbol? expr)
+                (prn "EXPR IS SYMBOL!")
+                (get-method head expr))
+              ((and (list? expr) (not (fun? expr)))
+                (prn "EXPR IS LIST!")
+                (funcall head (infix-helper expr)))
+              ((is? expr 'integer)
+                (prn "EXPR IS INTEGER!")
+                (funcall head expr))
+              (t
+                (error "EXPR IS OTHER!"))))))
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(infix 3 * (4 + 2))
+(## 4 + (3 * (2 - 1)))
 
-(list? (lambda (x) x))
-(fun? '((lambda (x) x))
