@@ -124,9 +124,6 @@
 (defun transform-tree (pred? fun tree)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
-  (unless (list? tree) (error "TREE must be a list"))
-  (unless (fun? pred?) (error "PRED? must be a function"))
-  (unless (fun? fun)   (error "FUN must be a function"))
   (when tree
     (let (result tail)
       (while tree
@@ -146,9 +143,6 @@
 (defun transform-tree4 (pred? fun tree)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
-  (unless (list? tree) (error "TREE must be a list"))
-  (unless (fun? pred?) (error "PRED? must be a function"))
-  (unless (fun? fun)   (error "FUN must be a function"))
   (let (result tail)
     (while tree
       (let* ((head (pop tree))
@@ -188,14 +182,6 @@
             item))))
     tree))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun op-to-name (op)
-  (cl-case op
-    ('+ 'add)
-    ('- 'sub)
-    ('* 'mul)
-    ('/ 'div)
-    ('% 'rem)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
 (confirm that (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
@@ -210,7 +196,14 @@
 (benchmark-run 150000 (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (6.318105 79 4.30748100000001
 (benchmark-run 150000 (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (6.041336 75 4.115623999999997
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(transform-tree #'symbolp #'op-to-name '(2 + (3 * 4) / 5 % 6)) ;; (2 add (3 mul 4) div 5 rem 6)
-
+(defun op-to-name (op)
+  (cl-case op
+    (+ 'add)
+    (- 'sub)
+    (* 'mul)
+    (/ 'div)
+    (% 'rem)
+    (otherwise op)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(benchmark-run 100000 (transform-tree #'symbolp #'op-to-name '(2 + (3 * 4) / 5 % 6))) ;; => (1.443532 18 0.9447859999999935
+(benchmark-run 100000 (transform-tree #'always #'op-to-name '(2 + (3 * 4) / 5 % 6))) ;; => (1.913227 24 1.2899850000000015
