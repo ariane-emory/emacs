@@ -37,7 +37,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun op-to-name (op)
+(defun op-to-method-name (op)
   "If OP is an operator namin one of integer's methods, return the method name."
   (cl-case op
     (+ 'add)
@@ -48,16 +48,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; (transform-tree #'always
-;;   (lambda (x) (pcase (integerp x)
-;;            (integer x)
 
 (defun transform-fun (expr)
-  (pcase expr
-    ((and (cl-type integer) int) (integer int))
-    ((and (let op-name (op-to-name expr)) op-name) op-name)
-    (value value)))
+  (if (integerp expr)
+    `(integer ,expr)
+    (if-let ((method-name (op-to-method-name expr)))
+      method-name
+      expr)))
 
-(transform-fun 8)
-(transform-fun 'foo)
-(transform-fun '+)
+(transform-fun 8) ;; => (integer 8)
+(transform-fun 'foo) ;; => foo
+(transform-fun '+) ;; => add
