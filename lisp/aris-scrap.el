@@ -67,4 +67,4 @@
 (withdraw acct3 "secret" 2000.00)
 (is? acct3 'password-account) ;; t
 (is? acct3 'account) ;; nil
-(norvig-class-of acct3)
+(class-name acct3)
