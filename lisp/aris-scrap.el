@@ -131,18 +131,6 @@
                              ((funcall pred? item) (funcall fun item))
                              (t item)))))))
     (t tree)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun transform-tree3 (pred? fun tree)
-  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
-  (if (listp tree)
-    (mapr tree
-      (lambda (item)
-        (if (listp item)
-          (transform-tree3 pred? fun item)
-          (if (funcall pred? item)
-            (funcall fun item)
-            item))))
-    tree))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
@@ -153,10 +141,8 @@
 (confirm that (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(benchmark-run 10000 (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.18669200000000002 2 0.11343100000004824
-(benchmark-run 10000 (transform-tree4 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.17632499999999998 2 0.11093299999998862
-(benchmark-run 10000 (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.6470840000000001 8 0.4437550000000101
-(benchmark-run 10000 (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.5794630000000001 7 0.38664099999999735
+(benchmark-run 10000 (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.12520199999999998 1 0.059885000000008404
+(benchmark-run 10000 (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.6730539999999999 8 0.46613700000000335(benchmark-run 10000 (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))) ;; => (0.595613 7 0.40057899999999336
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun op-to-name (op)
   (if (symbolp op)
