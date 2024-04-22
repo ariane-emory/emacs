@@ -96,9 +96,9 @@
         (prn "TAIL: %s" tail)
         (let ((expr (pop tail)))
           (prn "EXPR: %s" expr)
-          (if (symbolp expr)
-            (setq head (get-method head expr))
-            (setq head (funcall head expr)))))
+          (cond
+            ((symbolp expr) (setq head (get-method head expr)))
+            (t (setq head (funcall head expr))))))
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
