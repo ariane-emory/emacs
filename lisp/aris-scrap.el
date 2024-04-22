@@ -92,3 +92,63 @@
 (withdraw acct4 "pass" 20.00)
 (withdraw acct4 "guess" 20.00)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun symbolicate (&rest things)
+  "Concatenate together the names of some strings and symbols,
+producing a symbol in the current package."
+  (let* ((length (cl-reduce #'+ things
+                   :key (lambda (x) (length (string x)))))
+          (name (make-array length :element-type 'character)))
+    (let ((index 0))
+      (dolist (thing things (values (intern name)))
+        (let* ((x (string thing))
+                (len (length x)))
+          (cl-replace name x :start1 index)
+          (cl-incf index len))))))
+
+(defun symbolicate (&rest things)
+  "Concatenate together the names of some strings and symbols,
+producing a symbol in the current package."
+  (let* ((length (apply #'+ (mapcar #'length (mapcar #'symbol-name things))))
+          (name (make-string length 0)))
+    (let ((index 0))
+      (dolist (thing things (intern name))
+        (let* ((x (symbol-name thing))
+                (len (length x)))
+          (setq name (replace-regexp-in-string "\\cc" x name nil t index))
+          (setq index (+ index len)))))))
+
+(defun symbolicate (&rest things)
+  "Concatenate together the names of some strings and symbols,
+producing a symbol in the current package."
+  (let* ((length (apply #'+ (mapcar #'(lambda (x)
+                                        (if (symbolp x)
+                                          (length (symbol-name x))
+                                          (length x)))
+                              things)))
+          (name (make-string length 0)))
+    (let ((index 0))
+      (dolist (thing things (intern name))
+        (let* ((x (if (symbolp thing)
+                    (symbol-name thing)
+                    thing))
+                (len (length x)))
+          (setq name (replace-regexp-in-string "\\cc" x name nil t index))
+          (setq index (+ index len)))))))
+
+(defun symbolicate (&rest things)
+  "Concatenate together the names of some strings and symbols,
+producing a symbol in the current package."
+  (intern
+    (apply #'concat
+      (mapcar (lambda (thing)
+                (if (symbolp thing)
+                  (symbol-name thing)
+                  thing))
+        things))))
+
+(symbolicate2 'asd "bar")
+
+(defun symbolicate2 (&rest things)
+  (string-join (mapcar (lambda (x) (format "%s" x)) things)))

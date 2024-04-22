@@ -766,6 +766,13 @@
           (setq-local global-hl-line-mode nil)
           (display-line-numbers-mode -1)))
 
+      (add-hook 'window-buffer-change-functions
+        (lambda (_)
+          (when (string= (buffer-name) "*Messages*")
+            (idle-highlight-mode 1)
+            (read-only-mode -1)
+            (face-remap-add-relative 'default 'aris-alt-face))))
+
       (add-hook 'xwidget-webkit-mode-hook
         (lambda ()
 	        (setq-local global-hl-line-mode nil)
@@ -798,6 +805,7 @@
            aris-funs--prettify-symbols
            aris-funs--rainbow-cursor
            aris-funs--setup-lisp
+           aris-funs--symbolicate
            aris-funs--with-gensyms
            aris-funs--parse-arglist
            aris-funs--prepend-new-args
