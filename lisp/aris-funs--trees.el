@@ -16,7 +16,7 @@
               (new-tail
                 (list
                   (cond
-                    ((cons? head) (transform-tree4 pred? fun head))
+                    ((cons? head) (transform-tree pred? fun head))
                     ((funcall pred? head) (funcall fun head))
                     (t         head)))))
         (if result
