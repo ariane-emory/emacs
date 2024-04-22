@@ -19,9 +19,9 @@
   (setq aris-config-dir
     (expand-file-name
       (if (eq system-type 'windows-nt)
-	(expand-file-name "AppData\\Roaming\\.emacs.d\\"
+	      (expand-file-name "AppData\\Roaming\\.emacs.d\\"
           (getenv "USERPROFILE"))
-	"~/.emacs.d/")))
+	      "~/.emacs.d/")))
 
   "Set my lisp directory and add it to the load path:"
   (setq aris-lisp-dir (expand-file-name "lisp/" aris-config-dir))
@@ -116,22 +116,22 @@
       (setq use-dialog-box nil)
       (setq visible-bell t)
       (setq display-buffer-alist
-	'(("\\*Buffer List\\*" display-buffer-same-window
-	    (nil))
-	   ;; ("\\*Backtrace\\*" display-buffer-same-window
-	   ;;   (nil))
-	   ("\\*Compile-Log\\*" display-buffer-same-window
-	     (nil))
+	      '(("\\*Buffer List\\*" display-buffer-same-window
+	          (nil))
+	         ;; ("\\*Backtrace\\*" display-buffer-same-window
+	         ;;   (nil))
+	         ("\\*Compile-Log\\*" display-buffer-same-window
+	           (nil))
            ("\\*shell\\*" display-buffer-same-window
-	     (nil))
-	   (".*\\.el" display-buffer-same-window
-	     (nil))
-	   (".*\\.c" display-buffer-same-window
-	     (nil))
-	   (".*\\.h" display-buffer-same-window
-	     (nil))
-	   ("*Help*" display-buffer-same-window
-	     (nil)))))
+	           (nil))
+	         (".*\\.el" display-buffer-same-window
+	           (nil))
+	         (".*\\.c" display-buffer-same-window
+	           (nil))
+	         (".*\\.h" display-buffer-same-window
+	           (nil))
+	         ("*Help*" display-buffer-same-window
+	           (nil)))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Customize other properties/functions/lists:
@@ -167,10 +167,10 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (mapc (lambda (pkg) (eval `(use-package ,pkg :ensure t)))
       '(use-package ac-inf-ruby adjust-parens coffee-mode company-box 
-	 dash devdocs devdocs-browser diminish editorconfig f
-	 flycheck-inline flycheck-rust macrostep markdown-mode 
-	 paredit platformio-mode rust-mode slime-company
-	 swift-mode which-key))
+	       dash devdocs devdocs-browser diminish editorconfig f
+	       flycheck-inline flycheck-rust macrostep markdown-mode 
+	       paredit platformio-mode rust-mode slime-company
+	       swift-mode which-key))
 
     (use-package abbrev ;; built-in
       :diminish abbrev-mode
@@ -181,7 +181,7 @@
       :diminish aggressive-indent-mode
       :init
       (setq aggressive-indent-excluded-modes
-	'(elm-mode haskell-mode inf-ruby-mode makefile-mode makefile-gmake-mode python-mode sql-interactive-mode text-mode yaml-mode Shell-script-mode Shell-script shell-mode customize-mode)))
+	      '(elm-mode haskell-mode inf-ruby-mode makefile-mode makefile-gmake-mode python-mode sql-interactive-mode text-mode yaml-mode Shell-script-mode Shell-script shell-mode customize-mode)))
 
     (use-package beacon :ensure t
       :init
@@ -232,14 +232,14 @@
       (global-company-mode t)
       :bind 
       (("C-\\" . company-complete)
-	:map company-active-map
-	;;("C-g" . company-cancel)
-	("C-n" . company-select-next)
-	("C-p" . company-select-previous)
-	("C-d" . company-show-doc-buffer)
-	("M-." . company-show-location)
-	("<prior>" . company-previous-page)
-	("<next>" . company-next-page)))
+	      :map company-active-map
+	      ;;("C-g" . company-cancel)
+	      ("C-n" . company-select-next)
+	      ("C-p" . company-select-previous)
+	      ("C-d" . company-show-doc-buffer)
+	      ("M-." . company-show-location)
+	      ("<prior>" . company-previous-page)
+	      ("<next>" . company-next-page)))
 
     ;; (use-package company-quickhelp :ensure t
     ;;   :config
@@ -285,20 +285,20 @@
       (setq desktop-save t)
       (setq desktop-save-mode t)
       (setq desktop-minor-mode-table
-	'((defining-kbd-macro nil)
-	   (isearch-mode nil)
-	   (vc-mode nil)
-	   (vc-dir-mode nil)
-	   (erc-track-minor-mode nil)
-	   (savehist-mode nil)
-	   (company-posframe-mode nil)))
+	      '((defining-kbd-macro nil)
+	         (isearch-mode nil)
+	         (vc-mode nil)
+	         (vc-dir-mode nil)
+	         (erc-track-minor-mode nil)
+	         (savehist-mode nil)
+	         (company-posframe-mode nil)))
       (add-hook 'kill-emacs-hook
-	(lambda () (desktop-save aris-config-dir))))
+	      (lambda () (desktop-save aris-config-dir))))
 
     (use-package default-text-scale :ensure t
       :bind
       ( ("s-=" . default-text-scale-increase)
-	("s--" . default-text-scale-decrease)))
+	      ("s--" . default-text-scale-decrease)))
 
     (use-package dired ;; built-in
       :init
@@ -313,32 +313,32 @@
       (setq ls-lisp-verbosity '(links))
       :bind
       (:map dired-mode-map
-	("o" .
-	  (lambda ()
+	      ("o" .
+	        (lambda ()
             (interactive)
             (let ((file (dired-get-file-for-visit)))
               (start-process "default-app" nil "open" file))))
-	([mouse-2] .
-	  (lambda (event)
+	      ([mouse-2] .
+	        (lambda (event)
             "In Dired, visit the file or directory name you click on in the same window."
             (interactive "e")
             (let (window pos file)
               (save-excursion
-		(setq window (posn-window (event-end event))
-		  pos (posn-point (event-end event)))
-		(if (not (windowp window))
-		  (error "No file chosen"))
-		(set-buffer (window-buffer window))
-		(goto-char pos)
-		(setq file (dired-get-file-for-visit)))
+		            (setq window (posn-window (event-end event))
+		              pos (posn-point (event-end event)))
+		            (if (not (windowp window))
+		              (error "No file chosen"))
+		            (set-buffer (window-buffer window))
+		            (goto-char pos)
+		            (setq file (dired-get-file-for-visit)))
               (if (file-directory-p file)
-		(or (and (cdr dired-subdir-alist)
+		            (or (and (cdr dired-subdir-alist)
                       (dired-goto-subdir file))
-		  (progn
+		              (progn
                     (select-window window)
                     (dired file)))
-		(select-window window)
-		(find-file (file-name-sans-versions file t))))))))
+		            (select-window window)
+		            (find-file (file-name-sans-versions file t))))))))
 
     (use-package dpaste :ensure t
       :bind
@@ -378,20 +378,20 @@
       :init
       (setq inf-ruby-default-implementation "brewruby")
       (setq inf-ruby-implementations
-	'(("ruby" . inf-ruby--irb-command)
-	   ("brewruby" . "/opt/homebrew/opt/ruby/bin/irb --inf-ruby-mode")
-	   ("jruby" . "jruby -S irb --prompt default --noreadline -r irb/completion")
-	   ("rubinius" . "rbx -r irb/completion")
-	   ("yarv" . "irb1.9 -r irb/completion")
-	   ("macruby" . "macirb -r irb/completion")
-	   ("pry" . "pry")))
+	      '(("ruby" . inf-ruby--irb-command)
+	         ("brewruby" . "/opt/homebrew/opt/ruby/bin/irb --inf-ruby-mode")
+	         ("jruby" . "jruby -S irb --prompt default --noreadline -r irb/completion")
+	         ("rubinius" . "rbx -r irb/completion")
+	         ("yarv" . "irb1.9 -r irb/completion")
+	         ("macruby" . "macirb -r irb/completion")
+	         ("pry" . "pry")))
       (setq inf-ruby-prompt-read-only nil))
 
     (use-package lsp-mode :ensure t
       :bind
       ( ("C-x C-<next>" . lsp-inlay-hints-mode)
-	("C-x RET" . lsp-inlay-hints-mode)
-	("C-x C-h" . lsp-inlay-hints-mode))
+	      ("C-x RET" . lsp-inlay-hints-mode)
+	      ("C-x C-h" . lsp-inlay-hints-mode))
       :init
       (require 'lsp-rust)
       (setq lsp-auto-guess-root t)
@@ -440,9 +440,9 @@
     (use-package multiple-cursors :ensure t
       :bind
       ( ("C-c C-c" . mc/edit-lines)
-	("M-<mouse-1>". mc/add-cursor-on-click)
-	("M-S-<up>" . mc/mark-previous-lines)
-	("M-S-<down>" . mc/mark-next-lines)))
+	      ("M-<mouse-1>". mc/add-cursor-on-click)
+	      ("M-S-<up>" . mc/mark-previous-lines)
+	      ("M-S-<down>" . mc/mark-next-lines)))
 
     (use-package modern-cpp-font-lock :ensure t
       :hook (c++-mode . modern-c++-font-lock-mode))
@@ -450,52 +450,52 @@
     (use-package nov :ensure t
       :bind
       (:map nov-mode-map
-	("w" . nov-scroll-down)
-	("e" . previous-line)
-	("r" . nov-scroll-up)
-	("s" . ignore)
-	("d" . next-line)
-	("f" . ignore)
-	("q" . ignore)
-	("t" . ignore)
-	("a" . ignore)
-	("g" . ignore)
-	("z" . ignore)
-	("x" . ignore)
-	("c" . ignore)
-	("v" . ignore)
-	("b" . ignore)
-	("SPC" . ignore)
-	("TAB" . ignore)     
-	("u". nov-scroll-down)
-	("i" . previous-line)
-	("o". nov-scroll-up)
-	("j" . ignore)
-	("k" . next-line)
-	("l" . ignore)
-	("y" . ignore)
-	("p" . ignore)
-	("h" . ignore)
-	("'" . ignore)
-	("n" . ignore)
-	("m" . ignore)
-	("," . ignore)
-	("." . ignore)
-	("/" . ignore)
-	("M-<left>" . nov-previous-document)
-	("M-<right>" . nov-next-document)
-	("." . ignore)
-	("/" . ignore)
-	("DEL" . ignore)
-	("_" . ignore) 
-	("<left>" . ignore)
-	("<right>" . ignore)
-	("s-[" . ignore)
-	("s-]" . ignore)
-	("q" . ignore)
-	("p" . ignore)
-	("t" . ignore)
-	("g" . ignore))
+	      ("w" . nov-scroll-down)
+	      ("e" . previous-line)
+	      ("r" . nov-scroll-up)
+	      ("s" . ignore)
+	      ("d" . next-line)
+	      ("f" . ignore)
+	      ("q" . ignore)
+	      ("t" . ignore)
+	      ("a" . ignore)
+	      ("g" . ignore)
+	      ("z" . ignore)
+	      ("x" . ignore)
+	      ("c" . ignore)
+	      ("v" . ignore)
+	      ("b" . ignore)
+	      ("SPC" . ignore)
+	      ("TAB" . ignore)     
+	      ("u". nov-scroll-down)
+	      ("i" . previous-line)
+	      ("o". nov-scroll-up)
+	      ("j" . ignore)
+	      ("k" . next-line)
+	      ("l" . ignore)
+	      ("y" . ignore)
+	      ("p" . ignore)
+	      ("h" . ignore)
+	      ("'" . ignore)
+	      ("n" . ignore)
+	      ("m" . ignore)
+	      ("," . ignore)
+	      ("." . ignore)
+	      ("/" . ignore)
+	      ("M-<left>" . nov-previous-document)
+	      ("M-<right>" . nov-next-document)
+	      ("." . ignore)
+	      ("/" . ignore)
+	      ("DEL" . ignore)
+	      ("_" . ignore) 
+	      ("<left>" . ignore)
+	      ("<right>" . ignore)
+	      ("s-[" . ignore)
+	      ("s-]" . ignore)
+	      ("q" . ignore)
+	      ("p" . ignore)
+	      ("t" . ignore)
+	      ("g" . ignore))
       :init
       (setq nov-header-line-format nil)
       (setq nov-text-width 54)
@@ -511,8 +511,8 @@
       (setq persistent-scratch-autosave-interval 5)
       (setq persistent-scratch-autosave-mode t)
       (setq persistent-scratch-scratch-buffer-p-function
-	(lambda ()
-	  (cond
+	      (lambda ()
+	        (cond
             ((not (string=
                     (buffer-name)
                     (if (boundp 'aris-scratch-buffer-name) aris-scratch-buffer-name "*scratch*")))
@@ -520,8 +520,8 @@
             ((not (buffer-modified-p)) nil)
             (t
               (progn
-		(not-modified)
-		t)))))
+		            (not-modified)
+		            t)))))
       :config
       (persistent-scratch-autosave-mode))
 
@@ -562,27 +562,27 @@
       (rust-ts-mode . aggressive-indent-mode)
       (rust-ts-mode . aris-prettify-symbols-rust)
       (before-save .
-	(lambda ()
-	  (when (eq major-mode 'rust-ts-mode)
-	    (rust-format-buffer)))))
+	      (lambda ()
+	        (when (eq major-mode 'rust-ts-mode)
+	          (rust-format-buffer)))))
 
     (use-package slime ;; built-in
       :init
       (setq slime-kill-without-query-p t)
       (setq slime-lisp-implementations
-	'((sbcl
+	      '((sbcl
             ("/opt/homebrew/bin/sbcl"))
-	   (clisp
+	         (clisp
              ("/opt/homebrew/bin/clisp"))
-	   (ecl
+	         (ecl
              ("/opt/homebrew/bin/ecl"))))
       (setq inferior-lisp-program "/opt/homebrew/bin/sbcl")
       (setq slime-compilation-finished-hook 'slime-maybe-show-compilation-log)`
       (setq slime-load-failed-fasl 'never)
       :config
       (let ((quicklisp (expand-file-name "~/.quicklisp/slime-helper.el")))
-	(when (file-exists-p quicklisp)
-	  (load quicklisp)))
+	      (when (file-exists-p quicklisp)
+	        (load quicklisp)))
       (slime-setup '(slime-fancy slime-company)))
 
     (use-package spaceline :ensure t
@@ -609,71 +609,37 @@
       (setq display-time-default-load-average nil)
       (display-time))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; My custom packages:
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     "Require my own custom packages:"
     (when (file-directory-p aris-trav-dir) (require 'trav))
     (mapcar 'require
       '( aris-configure-scratch-buffer
-	 aris-configure-tetris-keymap
-	 aris-configure-global-abbrevs-table 
-	 aris-configure-rainbow-cursor
-	 aris-configure-xwidget-browse-menu
-	 aris-configure-key-bindings
-	 aris-mode-local-caps-lock
-	 aris-funs-monkey-patched
-	 aris-funs-prettify-symbols
-	 xah-lees-configure-emoji-fix))
+	       aris-configure-tetris-keymap
+	       aris-configure-global-abbrevs-table 
+	       aris-configure-rainbow-cursor
+	       aris-configure-xwidget-browse-menu
+	       aris-configure-key-bindings
+	       aris-mode-local-caps-lock
+	       aris-funs-monkey-patched
+	       aris-funs-prettify-symbols
+	       xah-lees-configure-emoji-fix))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Diminish some modes:
     ;;   Do this after my custom packages so that Copilot exists.
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (mapcar #'diminish
       '( buffer-face-mode
-	 copilot-mode
-	 shell-mode
-	 shell-script-mode
-	 text-scale-mode))
+	       copilot-mode
+	       shell-mode
+	       shell-script-mode
+	       text-scale-mode))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;; auto-mode-alists:
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Treating T4 templates is pretty close:"
-    (add-to-list 'auto-mode-alist '("\\.tt\\'" . csharp-mode))
-
-    "lex/yacc grammars:"
-    (add-to-list 'auto-mode-alist '("\\.lex\\'" . flex-mode))
-    (add-to-list 'auto-mode-alist '("\\.yacc\\'" . bison-mode))
-
-    "Treat .ino, .inl, .inc, .cppm files as C++ files:"
-    (add-to-list 'auto-mode-alist '("\\.ino\\'" . c++-mode))
-    (add-to-list 'auto-mode-alist '("\\.cppm\\'" . foo-mode))
-    (add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
-    (add-to-list 'auto-mode-alist '("\\.inc\\'" . c-mode))
-
-    "Treat various files as Lisp files:"
-    (add-to-list 'auto-mode-alist '("\\.lisp\\'" . lisp-mode))
-    (add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
-    (add-to-list 'auto-mode-alist '("\\.scm\\'" . lisp-mode))
-
-    "Open .epub files in nov.el:"
-    (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-
-    "Open .pl files in prolog-mode:"
-    (add-to-list 'auto-mode-alist '("\\.pl\\'" . prolog-mode))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;; Major mode remappings
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))
-    (add-to-list 'major-mode-remap-alist '(c++-mode . c++-ts-mode))
-    (add-to-list 'major-mode-remap-alist '(c-or-c++-mode . c-or-c++-ts-mode))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Add various hooks:
-   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; (defun aris-setup-lisp ()
     ;;   (aris-prettify-symbols-lisp)
     ;;   (abbrev-mode 1)
@@ -686,14 +652,14 @@
 
     (add-hook 'emacs-lisp-mode-hook
       (lambda ()
-	(setq-local lexical-binding t)
-	;; (aris-setup-lisp)
-	))
+	      (setq-local lexical-binding t)
+	      ;; (aris-setup-lisp)
+	      ))
 
     (add-hook 'lisp-mode-hook
       (lambda ()
-	(font-lock-add-keywords nil
-	  '( ;; AELisp's special forms are keywords.
+	      (font-lock-add-keywords nil
+	        '( ;; AELisp's special forms are keywords.
              ("(\\(apply\\_>\\)" . 1)
              ("(\\(case\\_>\\)"  . 1)
              ("(\\(decr\\_>\\)"  . 1)
@@ -705,123 +671,123 @@
              ("(\\(repeat\\_>\\)"  . 1)
              ("(\\(setq\\_>\\)"  . 1)
              ("(\\(until\\_>\\)" . 1))
-	  'prepend)))
+	        'prepend)))
 
     (dolist (hook '(c-mode-hook c-ts-mode-hook c++-mode-hook c++-ts-mode-hook))
       (add-hook hook
-	(lambda ()
-	  (setq-local lsp-semantic-tokens-enable -1)
-	  (c-set-offset 'arglist-close 0)
-	  (lsp)
-	  (lsp-inlay-hints-mode -1)
-	  (lsp-lens-mode -1)
-	  (lsp-semantic-tokens-mode -1)
-	  (eldoc-mode 1)
-	  )))
+	      (lambda ()
+	        (setq-local lsp-semantic-tokens-enable -1)
+	        (c-set-offset 'arglist-close 0)
+	        (lsp)
+	        (lsp-inlay-hints-mode -1)
+	        (lsp-lens-mode -1)
+	        (lsp-semantic-tokens-mode -1)
+	        (eldoc-mode 1)
+	        )))
 
     (dolist
       (hook
-	'(csharp-mode-hook csharp-ts-mode-hook))
+	      '(csharp-mode-hook csharp-ts-mode-hook))
       (add-hook hook
-	(lambda ()
-	  (setq-local c-basic-offset 2)
-	  (setq-local fill-column 120)
-	  (lsp)
-	  (lsp-inlay-hints-mode -1)
-	  (lsp-lens-mode -1)
-	  (eldoc-mode -1)
-	  )))
+	      (lambda ()
+	        (setq-local c-basic-offset 2)
+	        (setq-local fill-column 120)
+	        (lsp)
+	        (lsp-inlay-hints-mode -1)
+	        (lsp-lens-mode -1)
+	        (eldoc-mode -1)
+	        )))
 
     (add-hook 'rust-ts-mode-hook
       (lambda ()
-	(lsp)
-	(lsp-semantic-tokens-mode 1)
-	(lsp-inlay-hints-mode -1)
-	(lsp-lens-mode -1)
-	(eldoc-mode 1)
-	(flycheck-rust-setup)
-	))
+	      (lsp)
+	      (lsp-semantic-tokens-mode 1)
+	      (lsp-inlay-hints-mode -1)
+	      (lsp-lens-mode -1)
+	      (eldoc-mode 1)
+	      (flycheck-rust-setup)
+	      ))
 
     (add-hook 'shell-mode-hook
       (lambda ()
-	(setq-local tab-width 8)
-	(display-line-numbers-mode -1)
-	(face-remap-add-relative 'default '(:foreground "#c90"))))
+	      (setq-local tab-width 8)
+	      (display-line-numbers-mode -1)
+	      (face-remap-add-relative 'default '(:foreground "#c90"))))
 
     (add-hook 'xwidget-webkit-mode-hook
       (lambda ()
-	(setq-local global-hl-line-mode nil)
-	(setq-local beacon-mode nil)
-	(setq-local display-line-numbers-mode nil)
-	(setq-local cursor-type nil)))
+	      (setq-local global-hl-line-mode nil)
+	      (setq-local beacon-mode nil)
+	      (setq-local display-line-numbers-mode nil)
+	      (setq-local cursor-type nil)))
 
     (add-hook 'company-completion-started-hook
       (lambda (&rest _)
-	"Stash the original states of some modes and then disable them during company."
-	(setq-local aris-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
-	(setq-local aris-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
-	(setq-local aris-stashed-beacon-mode (bound-and-true-p beacon-mode))
-	(when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
-	(when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
-	(when (bound-and-true-p beacon-mode) (beacon-mode -1))
-	(setq-local hl-line-mode nil)))
+	      "Stash the original states of some modes and then disable them during company."
+	      (setq-local aris-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
+	      (setq-local aris-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
+	      (setq-local aris-stashed-beacon-mode (bound-and-true-p beacon-mode))
+	      (when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
+	      (when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
+	      (when (bound-and-true-p beacon-mode) (beacon-mode -1))
+	      (setq-local hl-line-mode nil)))
 
     (add-hook 'company-after-completion-hook
       (lambda (&rest _)
-	"Restore the state of modes that might have been on during company."
-	(when (boundp 'aris-stashed-flycheck-mode)
-	  (when aris-stashed-flycheck-mode (flycheck-mode 1))
-	  (kill-local-variable 'aris-stashed-flycheck-mode))
-	(when (boundp 'aris-stashed-flycheck-inline-mode)
-	  (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-	  (kill-local-variable 'aris-stashed-flycheck-inline-mode))
-	(when (boundp 'aris-stashed-beacon-mode)
-	  (when aris-stashed-beacon-mode (beacon-mode 1))
-	  (kill-local-variable 'aris-stashed-beacon-mode))))
+	      "Restore the state of modes that might have been on during company."
+	      (when (boundp 'aris-stashed-flycheck-mode)
+	        (when aris-stashed-flycheck-mode (flycheck-mode 1))
+	        (kill-local-variable 'aris-stashed-flycheck-mode))
+	      (when (boundp 'aris-stashed-flycheck-inline-mode)
+	        (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
+	        (kill-local-variable 'aris-stashed-flycheck-inline-mode))
+	      (when (boundp 'aris-stashed-beacon-mode)
+	        (when aris-stashed-beacon-mode (beacon-mode 1))
+	        (kill-local-variable 'aris-stashed-beacon-mode))))
 
     (add-hook 'find-file-hooks
       (lambda ()
-	"Hides the DOS end-of-line (EOL) characters in the current buffer."
-	(unless buffer-display-table (setq buffer-display-table (make-display-table)))
-	(aset buffer-display-table ?\^M [])))
+	      "Hides the DOS end-of-line (EOL) characters in the current buffer."
+	      (unless buffer-display-table (setq buffer-display-table (make-display-table)))
+	      (aset buffer-display-table ?\^M [])))
 
     (add-hook 'dired-mode-hook
       (lambda ()
-	(auto-revert-mode 1)
-	(face-remap-add-relative 'default '(:height 1.0 :box nil))))
+	      (auto-revert-mode 1)
+	      (face-remap-add-relative 'default '(:height 1.0 :box nil))))
 
     (add-hook 'comint-exec-hook
       (lambda ()
-	"Let the shell be killed without warning about running processes."
-	(set-process-query-on-exit-flag (get-buffer-process (current-buffer)) nil)))
+	      "Let the shell be killed without warning about running processes."
+	      (set-process-query-on-exit-flag (get-buffer-process (current-buffer)) nil)))
 
     (add-hook 'sh-mode-hook
       (lambda ()
-	"Unbind Shell-script mode's binding for C-c C-t since it interferes with my own global binding to start a steminal / (shell):"
-	(local-unset-key (kbd "C-c C-t"))))
+	      "Unbind Shell-script mode's binding for C-c C-t since it interferes with my own global binding to start a steminal / (shell):"
+	      (local-unset-key (kbd "C-c C-t"))))
 
     (add-hook 'Info-mode-hook
       (lambda ()
-	(variable-pitch-mode 1)
-	(face-remap-add-relative 'default '(:height 1.1))))
+	      (variable-pitch-mode 1)
+	      (face-remap-add-relative 'default '(:height 1.1))))
 
     (add-hook 'nov-mode-hook
       (lambda ()
-	(setq-local global-centered-cursor-mode nil)
-	(setq-local beacon-mode nil)
-	(setq-local cursor-type nil)
-	(hl-line-mode -1)
-	(follow-mode 1)
-	(display-line-numbers-mode 0)
-	(text-scale-adjust 16)
-	(face-remap-add-relative 'highlight '(:highlight nil))
-	(hl-line-mode -1)))
+	      (setq-local global-centered-cursor-mode nil)
+	      (setq-local beacon-mode nil)
+	      (setq-local cursor-type nil)
+	      (hl-line-mode -1)
+	      (follow-mode 1)
+	      (display-line-numbers-mode 0)
+	      (text-scale-adjust 16)
+	      (face-remap-add-relative 'highlight '(:highlight nil))
+	      (hl-line-mode -1)))
 
     (add-hook 'org-mode-hook
       (lambda ()
-	(variable-pitch-mode)
-	(visual-line-mode)
-	(face-remap-add-relative 'default '(:height 1.0))))
+	      (variable-pitch-mode)
+	      (visual-line-mode)
+	      (face-remap-add-relative 'default '(:height 1.0))))
 
     (when (featurep 'copilot) (add-hook 'prog-mode-hook 'copilot-mode))
     (add-hook 'Custom-mode-hook (lambda () (face-remap-add-relative 'default '(:family "XITS" :height 1.25))))
@@ -834,37 +800,73 @@
     (add-hook 'tetris-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
     (add-hook 'slime-repl-mode-hook (lambda () (variable-pitch-mode 1)))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; auto-mode-alists:
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "setting up auto-mode-alist"
+      "Treating T4 templates is pretty close:"
+      (add-to-list 'auto-mode-alist '("\\.tt\\'" . csharp-mode))
+
+      "lex/yacc grammars:"
+      (add-to-list 'auto-mode-alist '("\\.lex\\'" . flex-mode))
+      (add-to-list 'auto-mode-alist '("\\.yacc\\'" . bison-mode))
+
+      "Treat .ino, .inl, .inc, .cppm files as C++ files:"
+      (add-to-list 'auto-mode-alist '("\\.ino\\'" . c++-mode))
+      (add-to-list 'auto-mode-alist '("\\.cppm\\'" . foo-mode))
+      (add-to-list 'auto-mode-alist '("\\.inl\\'" . c++-mode))
+      (add-to-list 'auto-mode-alist '("\\.inc\\'" . c-mode))
+
+      "Treat various files as Lisp files:"
+      (add-to-list 'auto-mode-alist '("\\.lisp\\'" . lisp-mode))
+      (add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
+      (add-to-list 'auto-mode-alist '("\\.scm\\'" . lisp-mode))
+
+      "Open .epub files in nov.el:"
+      (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+
+      "Open .pl files in prolog-mode:"
+      (add-to-list 'auto-mode-alist '("\\.pl\\'" . prolog-mode)))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Major mode remappings
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "remapping major modes"
+      (add-to-list 'major-mode-remap-alist '(c-ts-mode . c-mode))
+      (add-to-list 'major-mode-remap-alist '(c++-ts-mode . c++-mode))
+      (add-to-list 'major-mode-remap-alist '(c-or-c++-ts-mode . c-or-c++-mode)))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Define the after-init hook and hook it up:
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (add-hook 'after-init-hook
       (lambda ()
-	"Setup my environment after init."
-	(interactive)
-	"Open some files:"
-	(dolist
-	  (file
+	      "Setup my environment after init."
+	      (interactive)
+	      "Open some files:"
+	      (dolist
+	        (file
             `( ,(expand-file-name "~/.profile")
                ,(expand-file-name "aris-configure-key-bindings.el" aris-lisp-dir)
                ,(expand-file-name "aris-configure-packages.el" aris-lisp-dir)
                ,(expand-file-name "aris-funs-unsorted.el" aris-lisp-dir)
                ,(expand-file-name "init.el" aris-config-dir)
                ,(expand-file-name "custom.el" aris-config-dir)))
-	  (find-file file))
-	"Shell in .emacs.d:"
-	(shell "emacs")
-	"Shells in home:"
-	(let ((default-directory "~"))
-	  (shell)
-	  (shell "git")
-	  (shell "dcp"))
-	"Load Custom:"
-	(load custom-file)
-	"Load desktop:"
-	(desktop-read)
-	))
+	        (find-file file))
+	      "Shell in .emacs.d:"
+	      (shell "emacs")
+	      "Shells in home:"
+	      (let ((default-directory "~"))
+	        (shell)
+	        (shell "git")
+	        (shell "dcp"))
+	      "Load Custom:"
+	      (load custom-file)
+	      "Load desktop:"
+	      (desktop-read)
+	      ))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (provide 'aris-emacs-configuration))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   config-end
