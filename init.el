@@ -355,6 +355,12 @@
     ;; use-packages (ELPA/MELPA/GNU):
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (with-messages "using 3rd party packages"
+      (mapc (lambda (pkg) (eval `(use-package-with-message ,pkg :ensure t)))
+        '( use-package ac-inf-ruby adjust-parens clhs coffee-mode company-box 
+           dash devdocs devdocs-browser diminish editorconfig f
+           flycheck-inline flycheck-rust macrostep markdown-mode 
+           paredit platformio-mode rust-mode swift-mode which-key))
+
       (use-package-with-message aggressive-indent :ensure t :demand
         :diminish aggressive-indent-mode
         :init
@@ -364,16 +370,10 @@
              yaml-mode Shell-script-mode Shell-script shell-mode
              customize-mode)))
 
-      (mapc (lambda (pkg) (eval `(use-package-with-message ,pkg :ensure t)))
-        '( use-package ac-inf-ruby adjust-parens clhs coffee-mode company-box 
-           dash devdocs devdocs-browser diminish editorconfig f
-           flycheck-inline flycheck-rust macrostep markdown-mode 
-           paredit platformio-mode rust-mode swift-mode which-key))
-
       (use-package zoom :ensure t
         :init
         (setq zoom-size '(95 . 24))
-        :config
+        ;; ;; :config
         ;; (zoom-mode 1)
         )
       
@@ -413,43 +413,8 @@
           ("C-d" . company-show-doc-buffer)
           ("M-." . company-show-location)
           ("<prior>" . company-previous-page)
-          ("<next>" . company-next-page))
-        ;; :hook
-        ;; (company-completion-started .
-        ;;   (lambda (&rest _)
-        ;;     "Stash the original states of some modes and then disable them during company."
-        ;;     (setq-local aris-stashed-beacon-mode
-        ;;       (bound-and-true-p beacon-mode))
-        ;;     (setq-local aris-stashed-flycheck-mode
-        ;;       (bound-and-true-p flycheck-mode))
-        ;;     (setq-local aris-stashed-flycheck-inline-mode
-        ;;       (bound-and-true-p flycheck-inline-mode))
-        ;;     (when (bound-and-true-p beacon-mode) (beacon-mode -1))
-        ;;     (when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
-        ;;     (when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
-        ;;     (setq-local hl-line-mode nil)))
-        ;; (company-after-completion-hook .
-        ;;   (lambda (&rest _)
-        ;;     "Restore the state of modes that might have been on during company."
-        ;;     (when (boundp 'aris-stashed-flycheck-mode)
-	      ;;       (when aris-stashed-flycheck-mode (flycheck-mode 1))
-	      ;;       (kill-local-variable 'aris-stashed-flycheck-mode))
-        ;;     (when (boundp 'aris-stashed-flycheck-inline-mode)
-	      ;;       (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-	      ;;       (kill-local-variable 'aris-stashed-flycheck-inline-mode))
-        ;;     (when (boundp 'aris-stashed-beacon-mode)
-	      ;;       (when aris-stashed-beacon-mode (beacon-mode 1))
-	      ;;       (kill-local-variable 'aris-stashed-beacon-mode))))
-        )
+          ("<next>" . company-next-page)))
       
-      ;; (use-package-with-message company-quickhelp :ensure t
-      ;;   :config
-      ;;   (setq company-quickhelp-delay 0)
-      ;;   (setq company-quickhelp-mode t)
-      ;;   :bind
-      ;;   (:map company-active-map
-      ;;     ("C-c h" . company-quickhelp-manual-begin)))
-
       (use-package-with-message company-posframe :ensure t
         :init
         (setq company-posframe-lighter "")
@@ -457,15 +422,6 @@
         (setq company-posframe-quickhelp-show-header nil)
         :config
         (company-posframe-mode 1))
-
-      ;; (use-package-with-message company-sourcekit :ensure t
-      ;;   :init 
-      ;;   (add-to-list 'company-backends 'company-sourcekit)
-      ;;   (setq sourcekit-available-ports '(8081))  
-      ;;   (setq sourcekit-sourcekittendaemon-executable
-      ;;     "/usr/local/bin/sourcekittendaemon")
-      ;;   (setq sourcekit-verbose t)
-      ;;   (setq company-sourcekit-verbose t))
 
       (use-package-with-message copilot :diminish copilot-mode
         :init
@@ -659,43 +615,6 @@
         :init
         (setq nov-header-line-format nil)
         (setq nov-text-width 54))
-
-      (use-package-with-message persistent-scratch :ensure t
-        :init
-        ;; (use-package aris-funs-setup-lisp)
-        ;; (setq aris-scratch-buffer-name "scratch")
-        ;; (when  (boundp 'aris-scratch-buffer-name)
-        ;;   (with-current-buffer (get-buffer "*scratch*")
-        ;;     (rename-buffer "scratch")))
-        ;; (with-current-buffer
-        ;;   (get-buffer
-        ;;     (if (boundp 'aris-scratch-buffer-name)
-        ;;            aris-scratch-buffer-name "*scratch*"))
-        ;;   (emacs-lisp-mode)
-        ;;   (aris-setup-lisp)
-        ;;   ;; (aris-prettify-symbols-lisp)
-        ;;   ;; (prettify-symbols-mode 1)
-        ;;   (variable-pitch-mode -1)
-        ;;   (display-fill-column-indicator-mode 1)
-        ;;   (when (featurep 'trav) (trav-mode 1))
-        ;;   (goto-char (point-max)))
-        ;; (use-package-with-message aris-configure-scratch-buffer :demand)
-        (setq persistent-scratch-autosave-interval 5)
-        ;; (setq persistent-scratch-scratch-buffer-p-function
-        ;;   (lambda ()
-        ;;     (cond
-        ;;       ((not (string=
-        ;;             (buffer-name)
-        ;;             (if (boundp 'aris-scratch-buffer-name)
-        ;;               aris-scratch-buffer-name
-        ;;               "*scratch*")))
-        ;;         nil)
-        ;;       ((not (buffer-modified-p)) nil)
-        ;;       (t
-        ;;         (set-buffer-modified-p nil)
-        ;;         t))))
-        :config
-        (persistent-scratch-autosave-mode))
 
       (use-package-with-message powerline :ensure t
         :init
