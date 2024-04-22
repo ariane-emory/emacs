@@ -278,8 +278,7 @@
       (use-package-with-message elisp-mode
         :bind
         ( ("M-p" . repeat)
-          ("C-c ." . (lambda () (interactive) (pp-macroexpand-last-sexp t)))
-          ("C-x RET" . aris-eval-buffer))
+          ("C-c ." . (lambda () (interactive) (pp-macroexpand-last-sexp t))))
         :hook
         (emacs-lisp-mode .
           (lambda ()
@@ -838,7 +837,7 @@
 
       (add-hook 'help-mode-hook
         (lambda () (face-remap-add-relative 'default
-                '(:family "Gill Sans" :height 1.15))))
+                     '(:family "Gill Sans" :height 1.15))))
 
       (add-hook 'Info-mode-hook
         (lambda ()
@@ -908,6 +907,7 @@
            aris-types
            steve-loshs-funs--if-let
            peter-norvigs-funs--defun-memo
+           peter-norvigs-funs--objects
            aris-configure--key-bindings
            aris-configure--tetris-keymap
            aris-configure--global-abbrevs-table 

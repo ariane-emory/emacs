@@ -7,13 +7,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro define-class (class inst-vars class-vars &rest methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - ari added the `is?' method as a default method for all objects.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic functions for methods
   `(let ,class-vars
      (mapcar #'ensure-generic-fn ',(mapcar #'first methods))
+     (ensure-generic-fn 'is?)
      (cl-defun ,class ,inst-vars
        #'(lambda (message)
            (cl-case message
+             ,(make-clause `(is? (class) (eq class ',class)))
              ,@(mapcar #'make-clause methods))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -73,14 +77,19 @@
   ((interest-rate .06))
   (withdraw (amt) (if (<= amt balance)
                     (cl-decf balance amt)
-                    'insufficient-funds))
+                    :INSUFFICIENT-FUNDS))
   (deposit (amt) (cl-incf balance amt))
   (balance () balance)
   (name () name)
   (interest () (cl-infc balance (* balance interest-rate))))
 
 
+
+
+
 (setf acct2 (account "A. User" 2000.00))
 (deposit acct2 42.00)
-
-
+(withdraw acct2 200.00)
+(symbol-plist 'acct2)
+(symbol-plist 'withdraw)
+(is? acct2 'account)

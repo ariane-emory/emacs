@@ -230,8 +230,10 @@
   ("<M-s-down>" . aris-move-line-down) 
 
   ;; eval buffer:
-  ("C-x C-z" . aris-eval-buffer)
-  ("C-x C-n" . aris-eval-buffer)
+  ;; ("C-x C-z" . aris-eval-buffer)
+  ;; ("C-x C-n" . aris-eval-buffer)
+  ("C-x RET" . aris-eval-buffer)
+  ("C-x m" . aris-eval-buffer)
 
   ;; Copy without unselecting:
   ("s-c" . aris-ns-copy-including-secondary-keep-selection)
