@@ -87,51 +87,20 @@
               (prn "CAR IS %s!" (car expr))
               (setq res (infix-helper expr))
               (prn "RES: %s" res))
+            (res
+              (prn "EXPR IS OTHER %s!" expr)
+              (setq res (funcall res (integer (symbol-value expr)))))
             (t
-              (error "DON'T KNOW WHAT TO DO WITH EXPR: %s" expr))))
+              (setq res (integer (symbol-value expr))))))
         (prndiv))
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(## 2 + 3) ;; => 5
-(## 2 + (3 * 4)) ;; => 14
-(## (3 * 4) + 2) ;; => 14
-(setq y 88)
-;; (## 88 + y)
-;; (## y + 88)
+
+(setq y 80)
+(setq z 2)
+(## (y + 3) + (7 ^ (z + 1))) ;; => 426
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun infix-helper (lst)
-;;   (let ( (head (car lst))
-;;          (tail (cdr lst)))
-;;     (with-indentation
-;;       (prndiv)
-;;       (prn "HELP:  %s" lst)
-;;       (prndiv)
-;;       (while tail
-;;         (prn "HEAD: %s" head)
-;;         (prn "TAIL: %s" tail)
-;;         (let ((expr (pop tail)))
-;;           (prn "EXPR: %s" expr)
-;;           (setq head
-;;             (cond
-;;               ((symbol? expr)
-;;                 (prn "EXPR IS SYMBOL!")
-;;                 (get-method head expr))
-;;               ((and (list? expr) (not (fun? expr)))
-;;                 (prn "EXPR IS LIST!")
-;;                 (funcall head (infix-helper expr)))
-;;               ((is? expr 'integer)
-;;                 (prn "EXPR IS INTEGER!")
-;;                 (funcall head expr))
-;;               (t
-;;                 (error "EXPR IS OTHER!"))))))
-;;       head)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; (## 7 - (6 * (5 + 4)))
-;; (## 7 - (6 * (5 + 4)) % 3) 
-;; (## 7 - (6 * (5 + 4)))
-;; (## 7 - (6 * (5 + 4)) % 3 ^ 2) 
