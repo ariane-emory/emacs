@@ -161,6 +161,196 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (use-package-with-messages aris-funs--setup-lisp :demand)
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; use-packages (built-in):
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (with-messages "using built-in packages" 
+      (use-package-with-message abbrev :diminish abbrev-mode
+        :config
+        (setq only-global-abbrevs t))
+
+      (use-package-with-message comint
+        :bind
+        (:map comint-mode-map
+          ("M-<down>" . comint-next-input)
+          ("M-<up>" . comint-next-input)
+          ("s-<up>" . comint-previous-input)
+          ("s-<down>" . comint-next-input))
+        :hook
+        (comint-exec .
+          (lambda ()
+            "Let the shell be killed without warning about running processes."
+            (set-process-query-on-exit-flag
+              (get-buffer-process (current-buffer)) nil))))
+
+      (use-package-with-message csharp-mode) ;; built-in
+
+      (use-package-with-message delsel
+        :init
+        (delete-selection-mode 1))
+      
+      (use-package-with-message desktop
+        :init
+        (setq desktop-auto-save-timeout 5)
+        (setq desktop-load-locked-desktop t)
+        (setq desktop-dirname aris-config-dir)
+        (setq desktop-save t)
+        (setq desktop-minor-mode-table
+          '((defining-kbd-macro nil)
+             (isearch-mode nil)
+             (vc-mode nil)
+             (vc-dir-mode nil)
+             (erc-track-minor-mode nil)
+             (savehist-mode nil)
+             (company-posframe-mode nil)))
+        :config
+        (desktop-save-mode 1)
+        (add-hook 'kill-emacs-hook
+          (lambda () (desktop-save-in-desktop-dir))))
+      
+      (use-package-with-message dired
+        :init
+        (setq dired-listing-switches "-alhG")
+        (setq dired-auto-revert-buffer t)
+        (setq dired-use-ls-dired nil)
+        (setq ls-lisp-dirs-first t)
+        (setq ls-lisp-ignore-case t)
+        (setq ls-lisp-use-insert-directory-program nil)
+        (setq ls-lisp-use-localized-time-format t)
+        (setq ls-lisp-use-string-collate nil)
+        (setq ls-lisp-verbosity '(links))
+        :hook
+        (dired-mode .
+          (lambda ()
+            (auto-revert-mode 1)
+            (face-remap-add-relative 'default '(:foreground "#c90"))))
+        :bind
+        (:map dired-mode-map
+          ("i" . ignore)
+          ("o" .
+            (lambda ()
+              (interactive)
+              (let ((file (dired-get-file-for-visit)))
+                (start-process "default-app" nil "open" file))))
+          ([mouse-2] .
+            (lambda (event)
+              "In Dired, visit the file or directory name you click on in the same window."
+              (interactive "e")
+              (let (window pos file)
+                (save-excursion
+                  (setq window (posn-window (event-end event))
+                    pos (posn-point (event-end event)))
+                  (if (not (windowp window))
+                    (error "No file chosen"))
+                  (set-buffer (window-buffer window))
+                  (goto-char pos)
+                  (setq file (dired-get-file-for-visit)))
+                (if (file-directory-p file)
+                  (or (and (cdr dired-subdir-alist)
+                        (dired-goto-subdir file))
+                    (progn
+                      (select-window window)
+                      (dired file)))
+                  (select-window window)
+                  (find-file (file-name-sans-versions file t))))))))
+
+      (use-package-with-message display-line-numbers
+        :init
+        (setq display-line-numbers-widen t)
+        :config
+        (global-display-line-numbers-mode 1))
+
+      (use-package-with-message display-fill-column-indicator
+        :hook
+        (prog-mode . display-fill-column-indicator-mode))
+
+      (use-package-with-message eldoc
+        :diminish (eldoc-mode . "ed")
+        :init
+        (setq eldoc-echo-area-prefer-doc-buffer t)
+        (setq eldoc-idle-delay 0.1))
+
+      (use-package-with-message frame
+        :init
+        (setq blink-cursor-blinks -1)
+        (setq blink-cursor-delay 0.0)
+        (setq blink-cursor-interval 0.1))
+      
+      (use-package-with-message elisp-mode
+        :bind
+        ( ("M-p" . repeat)
+          ("C-c ." . (lambda () (interactive) (pp-macroexpand-last-sexp t))))
+        :hook
+        (emacs-lisp-mode .
+          (lambda ()
+            ;;(setq-local lexical-binding t)
+	          (eldoc-mode 1)
+            (company-posframe-mode -1)
+            (aris-setup-lisp))))
+
+      (use-package-with-message face-remap
+        :diminish (buffer-face-mode text-scale-mode))
+
+      (use-package-with-message lisp-mode
+        :hook  
+        (lisp-mode .
+          (lambda ()
+            (aris-setup-lisp)
+            (font-lock-add-keywords nil
+	            '( ;; AELisp's special forms are keywords.
+                 ("(\\(apply\\_>\\)" . 1)
+                 ("(\\(case\\_>\\)"  . 1)
+                 ("(\\(decr\\_>\\)"  . 1)
+                 ("(\\(incr\\_>\\)"  . 1)
+                 ("(\\(letrec\\_>\\)" . 1)
+                 ("(\\(pop\\_>\\)"  . 1)
+                 ("(\\(push\\_>\\)"  . 1)
+                 ("(\\(quote\\_>\\)"  . 1)
+                 ("(\\(repeat\\_>\\)"  . 1)
+                 ("(\\(setq\\_>\\)"  . 1)
+                 ("(\\(until\\_>\\)" . 1))
+	            'prepend))))
+
+      (use-package-with-message paren
+        :init
+        (setq show-paren-mode t)
+        (setq source-directory (expand-file-name "~/Code/3p/emacs/src")))
+
+      (use-package-with-message pp :demand)
+
+      (use-package-with-message sh-script
+        :diminish shell-script-mode)
+
+      (use-package-with-message shell
+        :diminish shell-mode
+        :bind
+        (:map shell-mode-map
+          ("C-c C-f" . describe-function))
+        :hook
+        (shell-mode .
+          (lambda ()
+            (setq-local tab-width 8)
+            (display-line-numbers-mode -1)
+            (face-remap-add-relative 'default 'aris-alt-face))))
+
+      (use-package-with-message simple
+        :config
+        (column-number-mode 1))
+      
+      (use-package-with-message tab-bar
+        :init
+        (setq tab-bar-close-button-show 'selected)
+        (setq tab-bar-new-button-show nil)
+        (setq tab-bar-new-tab-choice 'list-buffers)
+        (setq tab-bar-show t)
+        :config
+        (tab-bar-mode 1))
+
+      (use-package-with-message time
+        :config
+        (setq display-time-default-load-average nil)
+        (display-time)))
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; use-packages:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -170,11 +360,6 @@
 	       flycheck-inline flycheck-rust macrostep markdown-mode 
 	       paredit platformio-mode rust-mode slime-company
 	       swift-mode which-key))
-
-    (use-package abbrev ;; built-in
-      :diminish abbrev-mode
-      :config
-      (setq only-global-abbrevs t))
 
     (use-package aggressive-indent :ensure t
       :diminish aggressive-indent-mode
@@ -193,27 +378,6 @@
       (setq beacon-size 15)
       :config
       (beacon-mode 1))
-
-    (use-package display-line-numbers ;; built-in
-      :init
-      (setq display-line-numbers-widen t)
-      :config
-      (global-display-line-numbers-mode 1))
-
-    (use-package display-fill-column-indicator ;; built-in
-      :init
-      (setq fill-column 80))
-
-    (use-package eldoc ;; built-in
-      :init
-      (setq eldoc-echo-area-prefer-doc-buffer t)
-      (setq eldoc-idle-delay 0.1))
-
-    (use-package frame ;; built-in
-      :init
-      (setq blink-cursor-blinks -1)
-      (setq blink-cursor-delay 0.0)
-      (setq blink-cursor-interval 0.1))
 
     (use-package centered-cursor-mode
       :ensure t
@@ -239,14 +403,6 @@
 	      ("M-." . company-show-location)
 	      ("<prior>" . company-previous-page)
 	      ("<next>" . company-next-page)))
-
-    ;; (use-package company-quickhelp :ensure t
-    ;;   :config
-    ;;   (setq company-quickhelp-delay 0)
-    ;;   (setq company-quickhelp-mode t)
-    ;;   :bind
-    ;;   (:map company-active-map
-    ;;     ("C-c h" . company-quickhelp-manual-begin)))
 
     (use-package company-posframe :ensure t
       :init
@@ -277,67 +433,10 @@
       (setq copilot-node-executable "/opt/homebrew/bin/node")
       (setq global-copilot-mode nil))
 
-    (use-package desktop ;; built-in
-      :init
-      (setq desktop-auto-save-timeout 5)
-      (setq desktop-load-locked-desktop t)
-      (setq desktop-save t)
-      (setq desktop-save-mode t)
-      (setq desktop-minor-mode-table
-	      '((defining-kbd-macro nil)
-	         (isearch-mode nil)
-	         (vc-mode nil)
-	         (vc-dir-mode nil)
-	         (erc-track-minor-mode nil)
-	         (savehist-mode nil)
-	         (company-posframe-mode nil)))
-      (add-hook 'kill-emacs-hook
-	      (lambda () (desktop-save aris-config-dir))))
-
     (use-package default-text-scale :ensure t
       :bind
       ( ("s-=" . default-text-scale-increase)
 	      ("s--" . default-text-scale-decrease)))
-
-    (use-package dired ;; built-in
-      :init
-      (setq dired-listing-switches "-alhG")
-      (setq dired-auto-revert-buffer t)
-      (setq dired-use-ls-dired nil)
-      (setq ls-lisp-dirs-first t)
-      (setq ls-lisp-ignore-case t)
-      (setq ls-lisp-use-insert-directory-program nil)
-      (setq ls-lisp-use-localized-time-format t)
-      (setq ls-lisp-use-string-collate nil)
-      (setq ls-lisp-verbosity '(links))
-      :bind
-      (:map dired-mode-map
-	      ("o" .
-	        (lambda ()
-            (interactive)
-            (let ((file (dired-get-file-for-visit)))
-              (start-process "default-app" nil "open" file))))
-	      ([mouse-2] .
-	        (lambda (event)
-            "In Dired, visit the file or directory name you click on in the same window."
-            (interactive "e")
-            (let (window pos file)
-              (save-excursion
-		            (setq window (posn-window (event-end event))
-		              pos (posn-point (event-end event)))
-		            (if (not (windowp window))
-		              (error "No file chosen"))
-		            (set-buffer (window-buffer window))
-		            (goto-char pos)
-		            (setq file (dired-get-file-for-visit)))
-              (if (file-directory-p file)
-		            (or (and (cdr dired-subdir-alist)
-                      (dired-goto-subdir file))
-		              (progn
-                    (select-window window)
-                    (dired file)))
-		            (select-window window)
-		            (find-file (file-name-sans-versions file t))))))))
 
     (use-package dpaste :ensure t
       :bind
@@ -500,11 +599,6 @@
       (setq nov-text-width 54)
       (setq ns-pop-up-frames nil))
 
-    (use-package paren ;; built-in
-      :init
-      (setq show-paren-mode t)
-      (setq source-directory (expand-file-name "~/Code/3p/emacs/src")))
-
     (use-package persistent-scratch :ensure t
       :init
       (setq persistent-scratch-autosave-interval 5)
@@ -565,25 +659,6 @@
 	        (when (eq major-mode 'rust-ts-mode)
 	          (rust-format-buffer)))))
 
-    (use-package slime ;; built-in
-      :init
-      (setq slime-kill-without-query-p t)
-      (setq slime-lisp-implementations
-	      '((sbcl
-            ("/opt/homebrew/bin/sbcl"))
-	         (clisp
-             ("/opt/homebrew/bin/clisp"))
-	         (ecl
-             ("/opt/homebrew/bin/ecl"))))
-      (setq inferior-lisp-program "/opt/homebrew/bin/sbcl")
-      (setq slime-compilation-finished-hook 'slime-maybe-show-compilation-log)`
-      (setq slime-load-failed-fasl 'never)
-      :config
-      (let ((quicklisp (expand-file-name "~/.quicklisp/slime-helper.el")))
-	      (when (file-exists-p quicklisp)
-	        (load quicklisp)))
-      (slime-setup '(slime-fancy slime-company)))
-
     (use-package spaceline :ensure t
       :init
       (setq spaceline-minor-modes-separator " ")
@@ -593,20 +668,6 @@
       (require 'spaceline)
       (require 'spaceline-config)
       (spaceline--theme '((buffer-id) :priority 98) nil nil))
-
-    (use-package tab-bar ;; built-in
-      :init
-      (setq tab-bar-close-button-show 'selected)
-      (setq tab-bar-new-button-show nil)
-      (setq tab-bar-new-tab-choice 'list-buffers)
-      (setq tab-bar-show t)
-      :config
-      (tab-bar-mode 1))
-
-    (use-package time ;; built-in
-      :config
-      (setq display-time-default-load-average nil)
-      (display-time))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Diminish some modes:
