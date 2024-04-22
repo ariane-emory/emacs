@@ -19,4 +19,4 @@
 (define-key tetris-mode-map "i" 'tetris-rotate-prev)
 (define-key tetris-mode-map "k" 'tetris-move-down)
 
-(provide 'kats-configure-tetris-keymap)
+(provide 'aris-configure-tetris-keymap)

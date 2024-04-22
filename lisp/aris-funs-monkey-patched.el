@@ -137,7 +137,7 @@ background is COLOR. The foreground is computed using
   (interactive)
   (let ((my-scratch-buf
           (get-buffer
-            (if (boundp 'kats-scratch-buffer-name) kats-scratch-buffer-name "*scratch*"))))
+            (if (boundp 'aris-scratch-buffer-name) aris-scratch-buffer-name "*scratch*"))))
     (when (buffer-modified-p my-scratch-buf)
       (let* ((actual-file (or file persistent-scratch-save-file))
               (tmp-file (concat actual-file ".new"))
@@ -160,5 +160,5 @@ background is COLOR. The foreground is computed using
 ;; (defun lsp-ui-sideline--compute-height nil '(height unspecified))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'kats-funs-monkey-patched)
+(provide 'aris-funs-monkey-patched)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

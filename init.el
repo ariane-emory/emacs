@@ -24,12 +24,12 @@
 	"~/.emacs.d/")))
 
   "Set my lisp directory and add it to the load path:"
-  (setq kats-lisp-dir (expand-file-name "lisp/" aris-config-dir))
-  (add-to-list 'load-path kats-lisp-dir)
+  (setq aris-lisp-dir (expand-file-name "lisp/" aris-config-dir))
+  (add-to-list 'load-path aris-lisp-dir)
 
   "If trav.el's directory exists, add it to the load-path:"
-  (setq kats-trav-dir (expand-file-name "trav" kats-lisp-dir))
-  (add-to-list 'load-path kats-trav-dir)
+  (setq aris-trav-dir (expand-file-name "trav" aris-lisp-dir))
+  (add-to-list 'load-path aris-trav-dir)
 
   (add-to-list 'exec-path "/opt/homebrew/bin/dotnet")
   (add-to-list 'exec-path "/opt/homebrew/bin")
@@ -42,7 +42,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Load theme:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Load my toxikat theme from kats-config dir:"
+  "Load my toxikat theme from aris-config dir:"
   (add-to-list 'custom-theme-load-path aris-config-dir)
   (load-theme 'toxikat t)
 
@@ -271,7 +271,7 @@
 
     (use-package copilot
       :init
-      (add-to-list 'load-path (expand-file-name "copilot.el" kats-lisp-dir))
+      (add-to-list 'load-path (expand-file-name "copilot.el" aris-lisp-dir))
       (setq copilot-idle-delay 1)
       (setq copilot-indent-offset-warning-disable t)
       (setq copilot-max-char -1)
@@ -515,7 +515,7 @@
 	  (cond
             ((not (string=
                     (buffer-name)
-                    (if (boundp 'kats-scratch-buffer-name) kats-scratch-buffer-name "*scratch*")))
+                    (if (boundp 'aris-scratch-buffer-name) aris-scratch-buffer-name "*scratch*")))
               nil)
             ((not (buffer-modified-p)) nil)
             (t
@@ -551,7 +551,7 @@
       (setq rust-indent-offset 2)
       (setq rust-rustfmt-bin (expand-file-name "~/.cargo/bin/rustfmt"))
       :hook
-      (rust-mode . kats-prettify-symbols-rust))
+      (rust-mode . aris-prettify-symbols-rust))
 
     (use-package rust-ts-mode :ensure t
       :init
@@ -560,7 +560,7 @@
       (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
       :hook
       (rust-ts-mode . aggressive-indent-mode)
-      (rust-ts-mode . kats-prettify-symbols-rust)
+      (rust-ts-mode . aris-prettify-symbols-rust)
       (before-save .
 	(lambda ()
 	  (when (eq major-mode 'rust-ts-mode)
@@ -613,17 +613,17 @@
     ;; My custom packages:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     "Require my own custom packages:"
-    (when (file-directory-p kats-trav-dir) (require 'trav))
+    (when (file-directory-p aris-trav-dir) (require 'trav))
     (mapcar 'require
-      '( kats-configure-scratch-buffer
-	 kats-configure-tetris-keymap
-	 kats-configure-global-abbrevs-table 
-	 kats-configure-rainbow-cursor
-	 kats-configure-xwidget-browse-menu
-	 kats-configure-key-bindings
-	 kats-mode-local-caps-lock
-	 kats-funs-monkey-patched
-	 kats-funs-prettify-symbols
+      '( aris-configure-scratch-buffer
+	 aris-configure-tetris-keymap
+	 aris-configure-global-abbrevs-table 
+	 aris-configure-rainbow-cursor
+	 aris-configure-xwidget-browse-menu
+	 aris-configure-key-bindings
+	 aris-mode-local-caps-lock
+	 aris-funs-monkey-patched
+	 aris-funs-prettify-symbols
 	 xah-lees-configure-emoji-fix))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -674,8 +674,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Add various hooks:
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;; (defun kats-setup-lisp ()
-    ;;   (kats-prettify-symbols-lisp)
+    ;; (defun aris-setup-lisp ()
+    ;;   (aris-prettify-symbols-lisp)
     ;;   (abbrev-mode 1)
     ;;   (aggressive-indent-mode 1)
     ;;   (eldoc-mode 1)
@@ -687,7 +687,7 @@
     (add-hook 'emacs-lisp-mode-hook
       (lambda ()
 	(setq-local lexical-binding t)
-	;; (kats-setup-lisp)
+	;; (aris-setup-lisp)
 	))
 
     (add-hook 'lisp-mode-hook
@@ -758,9 +758,9 @@
     (add-hook 'company-completion-started-hook
       (lambda (&rest _)
 	"Stash the original states of some modes and then disable them during company."
-	(setq-local kats-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
-	(setq-local kats-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
-	(setq-local kats-stashed-beacon-mode (bound-and-true-p beacon-mode))
+	(setq-local aris-stashed-flycheck-mode (bound-and-true-p flycheck-mode))
+	(setq-local aris-stashed-flycheck-inline-mode (bound-and-true-p flycheck-inline-mode))
+	(setq-local aris-stashed-beacon-mode (bound-and-true-p beacon-mode))
 	(when (bound-and-true-p flycheck-mode) (flycheck-mode -1))
 	(when (bound-and-true-p flycheck-inline-mode) (flycheck-inline-mode -1))
 	(when (bound-and-true-p beacon-mode) (beacon-mode -1))
@@ -769,15 +769,15 @@
     (add-hook 'company-after-completion-hook
       (lambda (&rest _)
 	"Restore the state of modes that might have been on during company."
-	(when (boundp 'kats-stashed-flycheck-mode)
-	  (when kats-stashed-flycheck-mode (flycheck-mode 1))
-	  (kill-local-variable 'kats-stashed-flycheck-mode))
-	(when (boundp 'kats-stashed-flycheck-inline-mode)
-	  (when kats-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
-	  (kill-local-variable 'kats-stashed-flycheck-inline-mode))
-	(when (boundp 'kats-stashed-beacon-mode)
-	  (when kats-stashed-beacon-mode (beacon-mode 1))
-	  (kill-local-variable 'kats-stashed-beacon-mode))))
+	(when (boundp 'aris-stashed-flycheck-mode)
+	  (when aris-stashed-flycheck-mode (flycheck-mode 1))
+	  (kill-local-variable 'aris-stashed-flycheck-mode))
+	(when (boundp 'aris-stashed-flycheck-inline-mode)
+	  (when aris-stashed-flycheck-inline-mode (flycheck-inline-mode 1))
+	  (kill-local-variable 'aris-stashed-flycheck-inline-mode))
+	(when (boundp 'aris-stashed-beacon-mode)
+	  (when aris-stashed-beacon-mode (beacon-mode 1))
+	  (kill-local-variable 'aris-stashed-beacon-mode))))
 
     (add-hook 'find-file-hooks
       (lambda ()
@@ -828,7 +828,7 @@
     (add-hook 'compilation-mode-hook (lambda () (face-remap-add-relative 'default '(:foreground "#c90"))))
     (add-hook 'emacs-startup-hook (lambda () (message "")))
     (add-hook 'help-mode-hook (lambda () (face-remap-add-relative 'default '(:family "Gill Sans" :height 1.15))))
-    ;; (add-hook 'inferior-emacs-lisp-mode-hook 'kats-setup-lisp)
+    ;; (add-hook 'inferior-emacs-lisp-mode-hook 'aris-setup-lisp)
     (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
     (add-hook 'special-mode-hook (lambda () (setq-local truncate-lines nil)))
     (add-hook 'tetris-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
@@ -845,9 +845,9 @@
 	(dolist
 	  (file
             `( ,(expand-file-name "~/.profile")
-               ,(expand-file-name "kats-configure-key-bindings.el" kats-lisp-dir)
-               ,(expand-file-name "kats-configure-packages.el" kats-lisp-dir)
-               ,(expand-file-name "kats-funs-unsorted.el" kats-lisp-dir)
+               ,(expand-file-name "aris-configure-key-bindings.el" aris-lisp-dir)
+               ,(expand-file-name "aris-configure-packages.el" aris-lisp-dir)
+               ,(expand-file-name "aris-funs-unsorted.el" aris-lisp-dir)
                ,(expand-file-name "init.el" aris-config-dir)
                ,(expand-file-name "custom.el" aris-config-dir)))
 	  (find-file file))
@@ -865,7 +865,7 @@
 	))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (provide 'kats-emacs-configuration))
+    (provide 'aris-emacs-configuration))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   config-end
   (message "[ARI] Leaving init.el."))

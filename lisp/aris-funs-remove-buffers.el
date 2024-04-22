@@ -6,10 +6,10 @@
   (when (get-buffer "*scratch*")
     (kill-buffer "*scratch*")))
 
-(defun kats-remove-messages-buffer ()
+(defun aris-remove-messages-buffer ()
   "Get rid of the *Messages* buffer"
   (interactive)
   (when (get-buffer "*Messages*")
     (kill-buffer "*Messages*")))
 
-(provide 'kats-funs-remove-buffers)
+(provide 'aris-funs-remove-buffers)

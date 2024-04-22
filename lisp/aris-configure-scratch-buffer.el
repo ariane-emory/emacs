@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rename '*scratch*' → 'scratch' and setup other details of the scratch buffer:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'kats-funs-remove-buffers)
+(require 'aris-funs-remove-buffers)
 
 (remove-scratch-buffer)
 
@@ -14,5 +14,5 @@
   (end-of-buffer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'kats-configure-scratch-buffer)
+(provide 'aris-configure-scratch-buffer)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

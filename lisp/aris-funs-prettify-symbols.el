@@ -1,4 +1,4 @@
-(defun kats-prettify-symbols ()
+(defun aris-prettify-symbols ()
   (interactive)
   (setq prettify-symbols-alist
     '( ("lambda" . ?λ)
@@ -36,7 +36,7 @@
        (">=" . ?≥)))
   (prettify-symbols-mode 1))
 
-(defun kats-prettify-symbols-lisp ()
+(defun aris-prettify-symbols-lisp ()
   (interactive)
   (setq-local prettify-symbols-alist
     '(
@@ -52,7 +52,7 @@
        (">=" . ?≥)))
   (prettify-symbols-mode 1))
 
-(defun kats-prettify-symbols-c++ ()
+(defun aris-prettify-symbols-c++ ()
   (interactive)
   (setq-local prettify-symbols-alist
     '(
@@ -68,7 +68,7 @@
        (">=" . ?≥)))
   (prettify-symbols-mode 1))
 
-(defun kats-prettify-symbols-rust ()
+(defun aris-prettify-symbols-rust ()
   (interactive)
   (setq-local prettify-symbols-alist
     '(
@@ -84,5 +84,5 @@
   (prettify-symbols-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'kats-funs-prettify-symbols)
+(provide 'aris-funs-prettify-symbols)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

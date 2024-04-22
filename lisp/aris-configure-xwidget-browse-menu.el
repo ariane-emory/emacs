@@ -50,4 +50,4 @@
        "--"
        ["Xwidget Webkit Mode" xwidget-webkit-mode :style toggle :selected xwidget-webkit-mode :help "Xwidget webkit view mode"])))
 
-(provide 'kats-configure-xwidget-browse-menu)
+(provide 'aris-configure-xwidget-browse-menu)

@@ -30,4 +30,4 @@ Warning: overwrites original version in `frame.el'."
     (setq blink-cursor-count (+ 1 blink-cursor-count)))
   (internal-show-cursor nil (not (internal-show-cursor-p))))
 
-(provide 'kats-configure-rainbow-cursor)
+(provide 'aris-configure-rainbow-cursor)

@@ -2,7 +2,7 @@
 
 "Define some random functions:"
 
-(defun kats-dump-key-macro ()
+(defun aris-dump-key-macro ()
   "Dump the last macro into the current buffer as a lambda and position point in order to write a docstring for it."
   (interactive)
   (let ((sym (gensym)))
@@ -26,9 +26,9 @@
     (forward-sexp)
     (forward-char)
     (kill-sexp)
-    (insert "kats-")))
+    (insert "aris-")))
 
-(defun kats-ns-copy-including-secondary-keep-selection ()
+(defun aris-ns-copy-including-secondary-keep-selection ()
   "Copy the region to the clipboard without deactivating the mark."
   (interactive)
   (let ((deactivate-mark nil)) ; Prevent `deactivate-mark` from being set to t
@@ -70,87 +70,87 @@
   (interactive)
   (< (point) (beginning-of-line-text-pos)))
 
-(defvar kats-cycle-position-initial-position nil)
+(defvar aris-cycle-position-initial-position nil)
 
-(defun kats-cycle-position-back ()
+(defun aris-cycle-position-back ()
   "Cycle cursor position backwards between beginning of line text, beginning of line, end of line and the initial position."
   (interactive)
-  (when (not (or (eq last-command 'kats-cycle-position-back) (eq last-command 'kats-cycle-position-forward)))
-    (setq kats-cycle-position-initial-position (point)))
+  (when (not (or (eq last-command 'aris-cycle-position-back) (eq last-command 'aris-cycle-position-forward)))
+    (setq aris-cycle-position-initial-position (point)))
   (cond
     ((bolp)
       (end-of-line)
       ;; (message
       ;;   "1. go to end of line: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     ((or (beginning-of-line-text-p) (before-beginning-of-line-text-p))
       (beginning-of-line)
       ;; (message
       ;;   "2. go to beginning of line from at or before text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     ((and (eolp)
-       (or (< kats-cycle-position-initial-position (beginning-of-line-text-pos))
-         (= kats-cycle-position-initial-position (end-of-line-pos))))
+       (or (< aris-cycle-position-initial-position (beginning-of-line-text-pos))
+         (= aris-cycle-position-initial-position (end-of-line-pos))))
       (beginning-of-line-text) 
       ;; (message
       ;;   "3. go to beginning of line text from eol because initial pos was either at eol or before text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     ((eolp)
-      (goto-char kats-cycle-position-initial-position)
+      (goto-char aris-cycle-position-initial-position)
       ;; (message
       ;;   "4. go to initial position from eol: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     (t
       (beginning-of-line-text)
       ;; (message
       ;;   "5. go to beginning of line text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )))
 
-(defun kats-cycle-position-forward ()
+(defun aris-cycle-position-forward ()
   "Cycle cursor position forwards between beginning of line text, beginning of line, end of line and the initial position."
   (interactive)
-  (when (not (or (eq last-command 'kats-cycle-position-back) (eq last-command 'kats-cycle-position-forward)))
-    (setq kats-cycle-position-initial-position (point)))
+  (when (not (or (eq last-command 'aris-cycle-position-back) (eq last-command 'aris-cycle-position-forward)))
+    (setq aris-cycle-position-initial-position (point)))
   (cond
     ((eolp)
       (beginning-of-line)
       ;; (message
       ;;   "1. go to beginning of line: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     ((and (beginning-of-line-text-p)
-       (or (< kats-cycle-position-initial-position (beginning-of-line-text-pos))
-         (= kats-cycle-position-initial-position (beginning-of-line-text-pos))))
+       (or (< aris-cycle-position-initial-position (beginning-of-line-text-pos))
+         (= aris-cycle-position-initial-position (beginning-of-line-text-pos))))
       (end-of-line) 
       ;; (message
       ;;   "2. go to end of line from beginning of line text because initial pos was either at eol or before text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     ((beginning-of-line-text-p)
-      (goto-char kats-cycle-position-initial-position)
+      (goto-char aris-cycle-position-initial-position)
       ;; (message
       ;;   "3. go to initial position from beginning of line text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     ((before-beginning-of-line-text-p)
       (beginning-of-line-text)
       ;; (message
       ;;   "4. go to beginning of line text from before text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )
     (t
       (end-of-line)
       ;; (message
       ;;   "5. go to end of line text: %d"
-      ;;   kats-cycle-position-initial-position)
+      ;;   aris-cycle-position-initial-position)
       )))
 
-(defun kats-swap-buffers-in-windows ()
+(defun aris-swap-buffers-in-windows ()
   "Swap buffers between two windows, preserving window positions."
   (interactive)
   (unless (= (count-windows) 2)
@@ -168,18 +168,18 @@
   ;; (other-window 1)
   )
 
-(defun kats-delete-line ()
+(defun aris-delete-line ()
   (interactive)
   (delete-line))
 
-(defun kats-move-line-up ()
+(defun aris-move-line-up ()
   "Drag the current line up."
   (interactive)
   (transpose-lines 1)
   (forward-line -2)
   (indent-according-to-mode))
 
-(defun kats-move-line-down ()
+(defun aris-move-line-down ()
   "Drag the current line down."
   (interactive)
   (forward-line 1)
@@ -187,51 +187,51 @@
   (forward-line -1)
   (indent-according-to-mode))
 
-(defun kats-delete-previous-word ()
+(defun aris-delete-previous-word ()
   "Delete the previous word without affecting the kill ring."
   (interactive)
   (let ((start (point))
          (end (progn (backward-word) (point))))
     (delete-region end start)))
 
-(defun kats-delete-line ()
+(defun aris-delete-line ()
   "Delete the curent line without affecting the kill ring."
   (interactive)
   (delete-line))
 
-(defun kats-kill-region-or-line ()
+(defun aris-kill-region-or-line ()
   "Kill the current region if active, otherwise kill the current line."
   (interactive)
   (if (use-region-p)
     (kill-region (region-beginning) (region-end))
     (kill-line)))
 
-(defun kats-kill-whole-line ()
+(defun aris-kill-whole-line ()
   (interactive)
   (beginning-of-line)
   (kill-line))
 
-;; (defun kats-do-nothing ()
+;; (defun aris-do-nothing ()
 ;;   "Do nothing."
 ;;   (interactive))
 
-(defun kats-yank-rectangle ()
+(defun aris-yank-rectangle ()
   "Yank a rectangle with save-excursion"
   (interactive)
   (save-excursion
     (yank-rectangle)))
 
-(defun kats-join-next-line ()
+(defun aris-join-next-line ()
   (interactive)
   (save-excursion
     (move-end-of-line nil) 
     (delete-forward-char 1)))
 
-(defun kats-always (&rest ignored) t)
+(defun aris-always (&rest ignored) t)
 
-(defun kats-never (&rest ignored) nil)
+(defun aris-never (&rest ignored) nil)
 
-(defun kats-truthify(thing)
+(defun aris-truthify(thing)
   (cond
     ((booleanp thing) thing)
     ((functionp thing) (funcall thing))
@@ -239,17 +239,17 @@
     ((functionp (symbol-function thing)) (funcall (symbol-function thing)))
     (t nil)))
 
-(defun kats-start-dired-here ()
+(defun aris-start-dired-here ()
   (interactive)
   (dired "."))
 
-(defalias 'kats-eval-sexp-and-insert-as-comment
+(defalias 'aris-eval-sexp-and-insert-as-comment
   (kmacro "C-M-f C-SPC C-e C-w SPC C-u C-x C-e C-r SPC <right> ; ; SPC = > SPC C-e <right>"))
 
-(defalias 'kats-make-setq
+(defalias 'aris-make-setq
    (kmacro "C-M-a C-e <right> <backspace> <right> s e t q SPC C-M-e <right>"))
 
-(defun kats-close-all-parentheses ()
+(defun aris-close-all-parentheses ()
   (interactive "*")
   (let ((closing nil))
     (save-excursion
@@ -266,20 +266,20 @@
                ((scan-error) nil))))
     (apply #'insert (nreverse closing))))
 
-(defun kats-delete-backwards-char ()
+(defun aris-delete-backwards-char ()
   (interactive)
   (backward-char)
   (delete-char 1))
 
-(defun kats-backwards-comment-sexp ()
+(defun aris-backwards-comment-sexp ()
   "Comment the sexp behind point."
   (interactive)
   (save-excursion
     (backward-sexp)
-    (kats-forwards-comment-sexp)
+    (aris-forwards-comment-sexp)
     ))
 
-(defun kats-forwards-comment-sexp ()
+(defun aris-forwards-comment-sexp ()
   "Comment the sexp at point."
   (interactive)
   (save-excursion
@@ -287,12 +287,12 @@
     (comment-region (point) (mark))
     ))
 
-(defun kats-find-function-at-point ()
+(defun aris-find-function-at-point ()
   "Quickly find-function:"
   (interactive)
   (find-function (function-called-at-point)))
 
-(defun kats-rename-scratch-buffer ()
+(defun aris-rename-scratch-buffer ()
   "Get rid of the *scratch* buffer"
   (interactive)
   (let ((bufname "*scratch*"))
@@ -300,7 +300,7 @@
       (with-current-buffer (get-buffer buffname)
         (rename-buffer "scratch")))))
 
-(defun kats-revert-buffer-no-confirm ()
+(defun aris-revert-buffer-no-confirm ()
   "Revert buffer without confirmation."
   (interactive)
   (revert-buffer t t))
@@ -308,15 +308,15 @@
 (defun re-load ()
   "Re-Load the .emacs file."
   (interactive)
-  (load-file (expand-file-name "init.el" kats-config-dir)))
+  (load-file (expand-file-name "init.el" aris-config-dir)))
 
-(defun kats-remove-dos-eol ()
+(defun aris-remove-dos-eol ()
   "Do not show ^M in files containing mixed UNIX and DOS line endings."
   (interactive)
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M []))
 
-(defun kats-force-kill-buffer ()
+(defun aris-force-kill-buffer ()
   "Kill current buffer unconditionally."
   (interactive)
   (not-modified)
@@ -340,11 +340,11 @@
       (set-background-color original-color)
       (sleep-for 0.1))))
 
-(defun kats-switch-to-last-buffer ()
+(defun aris-switch-to-last-buffer ()
   (interactive)
   (switch-to-buffer nil))
 
-(defun kats-switch-to-previous-buffer ()
+(defun aris-switch-to-previous-buffer ()
   "Switch to previously open buffer. Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer) 1)))
@@ -466,4 +466,4 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(provide 'kats-funs-unsorted)
+(provide 'aris-funs-unsorted)

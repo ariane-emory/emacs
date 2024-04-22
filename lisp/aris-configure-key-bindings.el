@@ -1,8 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Configure my key bindings:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'kats-funs-unsorted)
-(require 'kats-funs-key-binding)
+(require 'aris-funs-unsorted)
+(require 'aris-funs-key-binding)
 
 ;; ================================================================================
 ;; Manually rebind some stuff:
@@ -19,19 +19,19 @@
 ;; Auto-bind a bunch of stuff:
 ;; ================================================================================
 
-(kats-bind-pairs-with-prefix 'describe
+(aris-bind-pairs-with-prefix 'describe
   '(bindings char function key mode symbol variable))
 
-(kats-bind-pairs-with-prefix 'customize
+(aris-bind-pairs-with-prefix 'customize
   '(face group mode theme variable))
 
-(kats-bind-pairs-with-prefix 'rename
+(aris-bind-pairs-with-prefix 'rename
   '(buffer uniquely))
 
-(kats-bind-pairs-with-prefix 'package
+(aris-bind-pairs-with-prefix 'package
   '(install list-packages refresh-contents))
 
-(mapcar 'kats-bind-to-initials-with-prefix
+(mapcar 'aris-bind-to-initials-with-prefix
   '( aggressive-indent-mode
      artist-mode
      auto-revert-mode
@@ -50,10 +50,10 @@
      view-lossage
      whitespace-mode))
 
-(setq kats-auto-bindings
+(setq aris-auto-bindings
   (cl-remove-if #'stringp 
     '(
-       ("C-x C-q" kats-make-setq)
+       ("C-x C-q" aris-make-setq)
 
        "Make kill-emacs much harder to hit accidentally:"
        ("C-x C-c" nil) ;; must be nil, not ignore, since we're turning the sequence into a prefix!
@@ -63,14 +63,14 @@
        ("C-c C-r" raise-sexp)
        
        "Kill and revert buffers without confirmations:"
-       ("C-x C-k" kats-force-kill-buffer)
+       ("C-x C-k" aris-force-kill-buffer)
 
        "Describe these:"
-       ("C-x C-r" kats-revert-buffer-no-confirm)
+       ("C-x C-r" aris-revert-buffer-no-confirm)
        ("C-x C-t" shell)
-       ("C-x C-p" kats-switch-to-last-buffer)
+       ("C-x C-p" aris-switch-to-last-buffer)
        ("C-/" comment-or-uncomment-region)
-       ("C-<backspace>" kats-delete-previous-word)
+       ("C-<backspace>" aris-delete-previous-word)
        ("S-<delete>" ignore)
        ("M-<down-mouse-1>" ignore)
        
@@ -85,22 +85,22 @@
        ("M-s-c" describe-char)
        
        "Cycle position:"
-       ("C-a" kats-cycle-position-back)
-       ("C-e" kats-cycle-position-forward)
+       ("C-a" aris-cycle-position-back)
+       ("C-e" aris-cycle-position-forward)
 
        "Beginning/end of line"
        ("C-M-a" beginning-of-line)
        ("C-M-e" end-of-line)
 
        "Move lines up and down:"
-       ("<M-s-up>" kats-move-line-up) 
-       ("<M-s-down>" kats-move-line-down) 
+       ("<M-s-up>" aris-move-line-up) 
+       ("<M-s-down>" aris-move-line-down) 
 
        "Eval buffer:"
        ("C-x C-z" eval-buffer)
        
        "Copy without unselecting:"
-       ("s-c" kats-ns-copy-including-secondary-keep-selection)
+       ("s-c" aris-ns-copy-including-secondary-keep-selection)
 
        "Close window/frame on s- so that they're hard to hit accidentally.:"
        ("s-w" delete-window)
@@ -121,13 +121,13 @@
        ("s-W" tab-bar-close-tab)
 
        "Local caps lock:"
-       ("M-s-c" kats-local-caps-lock-mode)
+       ("M-s-c" aris-local-caps-lock-mode)
        
        "Swap windows... undecrided whether to keep this or the next one:"
        ("C-c w s s" window-swap-states)
 
        "Swap split windows:"
-       ("C-x C-<tab>" kats-swap-buffers-in-windows)
+       ("C-x C-<tab>" aris-swap-buffers-in-windows)
 
        "Repeat last command:"
        ("C-z" repeat)
@@ -137,13 +137,13 @@
 
        "Join lines:"
        ("C-j" join-line)
-       ("M-j" kats-join-next-line)
+       ("M-j" aris-join-next-line)
 
        "My delete-line:"
-       ("M-k" kats-delete-line)
+       ("M-k" aris-delete-line)
 
        "C-h → backspace to match Cocoa text system defaults (some clobbering default describe- bindings as a result):"
-       ("C-h" kats-delete-backwards-char)
+       ("C-h" aris-delete-backwards-char)
 
        "Some NS-style bindings:"
        ("s-a" mark-whole-buffer)
@@ -159,7 +159,7 @@
        ([help] overwrite-mode :when (lambda () (eq system-type 'darwin)))
 
        "Start dired here:"
-       ("C-x C-j" kats-start-dired-here)
+       ("C-x C-j" aris-start-dired-here)
 
        "Edit filenames in dired:"
        ("s-q" dired-toggle-read-only :map dired-mode-map)
@@ -186,7 +186,7 @@
        "Rectangles:"
        ("M-s-o" open-rectangle)
        ("M-s-p" kill-rectangle)
-       ("M-s-y" kats-yank-rectangle)
+       ("M-s-y" aris-yank-rectangle)
 
        ("M-s-u" rename-uniquely)
        ("M-s-i" ielm)
@@ -194,19 +194,19 @@
        ("M-s-m" widen)
 
        "Mess with sexps:"
-       ("C-c i c" kats-eval-sexp-and-insert-as-comment)
-       ("C-c c s" kats-forwards-comment-sexp)
-       ("C-c b c s" kats-backwards-comment-sexp)
-       ("C-c C-s" kats-forwards-comment-sexp)
+       ("C-c i c" aris-eval-sexp-and-insert-as-comment)
+       ("C-c c s" aris-forwards-comment-sexp)
+       ("C-c b c s" aris-backwards-comment-sexp)
+       ("C-c C-s" aris-forwards-comment-sexp)
 
        "Find function at point:"
-       ("C-c f f" kats-find-function-at-point)
+       ("C-c f f" aris-find-function-at-point)
 
        "Find other file:"
        ("C-c f o f" ff-find-other-file)
 
        "Close parens:"
-       ("C-c a p" kats-close-all-parentheses)
+       ("C-c a p" aris-close-all-parentheses)
        
        "Sort lines:"
        ("C-c o l" sort-lines)
@@ -215,17 +215,17 @@
        ("C-c x b" xwidget-webkit-browse-url)
        
        "Redox thumb kill keys:"
-       ("C-k" kats-kill-region-or-line)
-       ("C-M-s-k" kats-kill-whole-line)
+       ("C-k" aris-kill-region-or-line)
+       ("C-M-s-k" aris-kill-whole-line)
 
        "Forward/back paragraphs:"
        ("C-M-<right>" forward-paragraph)
        ("C-M-<left>" backward-paragraph)
        )))
 
-(mapcar (lambda (x) (apply #'kats-auto-bind x)) kats-auto-bindings)
+(mapcar (lambda (x) (apply #'aris-auto-bind x)) aris-auto-bindings)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'kats-configure-key-bindings)
+(provide 'aris-configure-key-bindings)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

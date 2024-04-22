@@ -10,4 +10,4 @@
 
 (add-to-list 'auto-mode-alist '("\\.log\\'" . auto-revert-log-mode))
 
-(provide 'kats-mode-auto-revert-log)
+(provide 'aris-mode-auto-revert-log)
