@@ -157,4 +157,5 @@
 
 (op-to-name '+)
 
-(transform-tree #'symbolp #'op-to-name '(2 + 3 * 4 / 5 % 6))
+(transform-tree #'symbolp #'op-to-name '(2 + (3 * 4) / 5 % 6)) ;; (2 add (3 mul 4) div 5 rem 6)
+
