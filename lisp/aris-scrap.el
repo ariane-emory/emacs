@@ -41,6 +41,9 @@
     expr))
 
 (defmacro infix (&rest args)
+  (prndiv)
+  (prn "START: %s" args)
+  (prndiv)
   (let ((transformed (transform-tree #'always #'transform-fun args)))
     `(infix-helper ,@transformed)))
 
@@ -49,19 +52,23 @@
     (while args
       (let ((expr (pop args)))
         (prndiv)
-        (prn "it       = %s" it)
-        ;; (cond
-        ;;   ((and it (is? it 'integer)) (prn "it (int) = %s" (val it)))
-        ;;   (t (prn "it       = %s" it)))
-        (prn "expr     = %s" expr)
+        (prn "it        = %s" it)
+        (prn "expr      = %s" expr)
         (cond
-          ((integerp expr) (setq it (integer expr)))
+          ((integerp expr)
+            (if (fun? it)
+              (setq it (funcall it (integer expr)))
+              (setq it (integer expr))))
           ((symbolp expr)
-            (setq it (get-method it expr)))
+            (let ((method (get-method it expr)))
+              (prn "pushing %s onto %s" method it)
+              (setq it method)
+              (prn "pushed method")))
           (t (error "error"))
-          )))))
+          )))
+    (prndiv)
+    (prn "final it  = %s" it)
+    (prndiv)))
 
-;; (infix 4 * 5)
+;; (infix 4 * 5 + 3)
 
-(get-method (integer 4) 'mul)
-(fmt (integer 4))
