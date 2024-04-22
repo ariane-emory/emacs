@@ -1,6 +1,5 @@
 ;; -*- fill-column: 90; lexical-binding: nil; eval: (display-fill-column-indicator-mode 1); -*-
 ;; this is the old/active config
-
 (message "[ARI] Loading init.el...")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
