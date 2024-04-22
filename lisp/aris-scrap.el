@@ -2,19 +2,50 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; try it:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-class account (name &optional (balance 0.00))
   ((interest-rate .06))
-  (withdraw (amt) (if (<= amt balance)
-                    (cl-decf balance amt)
-                    :INSUFFICIENT-FUNDS))
+  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
   (deposit (amt) (cl-incf balance amt))
   (balance () balance)
   (name () name)
   (privcall () :BAR)
   (interest () (cl-infc balance (* balance interest-rate))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Manually tweaked expansion with a private method:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let
+  ((interest-rate 0.06))
+  (ensure-generic-fn 'is?)
+  (mapcar #'ensure-generic-fn '(withdraw deposit balance name privcall interest))
+  (cl-defun account (name &optional (balance 0.0))
+    #'(lambda (message)
+        (cl-flet ((private-method () name))
+          (cl-case message
+            (is? #'(lambda (class) (eq class 'account)))
+            (withdraw #'(lambda (amt)
+                          (if (<= amt balance)
+                            (cl-decf balance amt)
+                            :INSUFFICIENT-FUNDS)))
+            (deposit #'(lambda (amt) (cl-incf balance amt)))
+            (balance #'(lambda nil balance))
+            (name #'(lambda nil name))
+            (privcall #'(lambda nil (private-method)))
+            (interest #'(lambda nil (cl-infc balance (* balance interest-rate)))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-class password-account (password acct) ()
+  (change-password (pass new-pass)
+    (if (equal pass password)
+      (setf password new-pass)
+      'wrong-password))
+  (otherwise (pass &rest args)
+    (if (equal pass password) (apply message acct args) 'wrong-password) 1))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
