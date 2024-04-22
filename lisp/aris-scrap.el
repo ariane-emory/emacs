@@ -97,9 +97,11 @@
         (if (symbolp expr)
           (setq head (get-method head expr))
           (setq head (funcall head expr)))))
-    head))
+    `',head))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (infix 3 * 4)
+
+
 
