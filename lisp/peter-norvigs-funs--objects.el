@@ -24,7 +24,7 @@
            (cl-case message
              ,(make-clause `(is? (class)
                               (prn "is? %s" class)
-                              (debug)
+                              ;;(debug)
                               (eq class ',class)))
              ,(make-clause `(class-name () ',class))
              ,@(mapcar #'make-clause methods))))))

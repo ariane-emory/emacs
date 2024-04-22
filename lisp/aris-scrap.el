@@ -97,8 +97,15 @@
         (let ((expr (pop tail)))
           (prn "EXPR: %s" expr)
           (cond
-            ((symbolp expr) (setq head (get-method head expr)))
-            (t (setq head (funcall head expr))))))
+            ((symbolp expr)
+              (prn "EXPR IS SYMBOL!")
+              (setq head (get-method head expr)))
+            ((is? expr 'integer)
+              (prn "EXPR IS INTEGER!")
+              (setq head (funcall head expr)))
+            (t
+              (prn "EXPR IS OTHER!")
+              (setq head (funcall head expr))) )))
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
