@@ -763,16 +763,6 @@
 	        (variable-pitch-mode 1)
 	        (face-remap-add-relative 'default '(:height 1.1))))
 
-      ;; (add-hook 'rust-ts-mode-hook
-      ;;   (lambda ()
-	    ;;     (lsp)
-	    ;;     (lsp-semantic-tokens-mode 1)
-	    ;;     (lsp-inlay-hints-mode -1)
-	    ;;     (lsp-lens-mode -1)
-	    ;;     (eldoc-mode 1)
-	    ;;     (flycheck-rust-setup)
-	    ;;     ))
-
       (add-hook 'tetris-mode-hook
         (lambda ()
           (setq-local global-hl-line-mode nil)
