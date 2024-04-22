@@ -11,6 +11,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-class integer (value) nil
   (val () value)
+  (fmt () (format "(integer %d)" value))
   (add (other) (integer (+ value (val other))))
   (sub (other) (integer (- value (val other))))
   (mul (other) (integer (* value (val other))))
@@ -33,26 +34,34 @@
     (* 'mul)
     (/ 'div)
     (% 'rem)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-fun (expr)
   (if-let ((method-name (op-to-method-name expr)))
     method-name ; `(method-name ,method-name)
-    (integer expr)
-    ;; expr ;; `(integer ,expr)
-    ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    expr))
 
+(defmacro infix (&rest args)
+  (let ((transformed (transform-tree #'always #'transform-fun args)))
+    `(infix-helper ,@transformed)))
 
-(transform-fun 8) ;; => (integer 8)
-(transform-fun 'foo) ;; => foo
-(transform-fun '+) ;; => add
+(defmacro infix-helper (&rest args)
+  (let (it)
+    (while args
+      (let ((expr (pop args)))
+        (cond
+          ((and it (is? it 'integer)) (prn "it (int) = %s" (val it)))
+          (t (prn "it       = %s" it)))
+        (prn "expr     = %s" expr)
+        (cond
+          ((integerp expr) (setq it (integer expr)))
+          ((symbolp integer)
+            (prn "get %s for %s" expr it)
+            (debug)
+            (setq it (get-method it expr)))
+          (t (error "error"))
+          )))))
 
+;; (infix 4 * 5)
 
-(let ((transformed (transform-tree #'always #'transform-fun '(3 + (4 * 5) - y))))
-  transformed)
-
-
+(get-method (integer 4) 'mul)
+(fmt (integer 4))
