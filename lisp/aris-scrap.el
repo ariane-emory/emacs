@@ -81,27 +81,25 @@
   (prn "START: %s" args)
   ;; (prndiv)
   (let ((transformed (transform-tree #'always #'transform-fun args)))
-    `(val (infix-helper ,@transformed))))
+    `(val (infix-helper ',transformed))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro infix-helper (head &rest tail)
-  (with-indentation
-    (while tail
-      (prndiv)
-      (prn "HEAD: %s" head)
-      (prn "TAIL: %s" tail)
-      (let ((expr (pop tail)))
-        (prn "EXPR: %s" expr)
-        (if (symbolp expr)
-          (setq head (get-method head expr))
-          (setq head (funcall head expr)))))
-    `',head))
-
+(defun infix-helper (lst)
+  (let ( (head (car lst))
+         (tail (cdr lst)))
+    (with-indentation
+      (while tail
+        (prndiv)
+        (prn "HEAD: %s" head)
+        (prn "TAIL: %s" tail)
+        (let ((expr (pop tail)))
+          (prn "EXPR: %s" expr)
+          (if (symbolp expr)
+            (setq head (get-method head expr))
+            (setq head (funcall head expr)))))
+      head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (infix 3 * 4)
-
-
-
