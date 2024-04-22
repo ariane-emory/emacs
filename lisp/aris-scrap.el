@@ -15,11 +15,12 @@
   (sub (other) (integer (- value (val other))))
   (mul (other) (integer (* value (val other))))
   (div (other) (integer (/ value (val other))))
+  (pow (other) (integer (expt value (val other))))
   (rem (other) (integer (% value (val other)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (confirm that (val (mul (integer 2) (add (integer 5) (integer 7))))
-  returns 24)
+    returns 24)
   (confirm that (val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
     returns 4))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -33,6 +34,7 @@
     (- 'sub)
     (* 'mul)
     (/ 'div)
+    (^ 'pow)
     (% 'rem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -88,5 +90,7 @@
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(## 4 + (3 * (2 - 1)) % 3)
-
+(## 7 - (6 * (5 + 4)))
+(## 7 - (6 * (5 + 4)) % 3) 
+(## 7 - (6 * (5 + 4)))
+(## 7 - (6 * (5 + 4)) % 3 ^ 2) 
