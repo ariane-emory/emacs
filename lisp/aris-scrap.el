@@ -5,6 +5,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ignore!
+  (defmacro infix-helper (&rest args)
+    (let (it)
+      (while args
+        (let ((expr (pop args)))
+          (prndiv)
+          (prn "it        = %s" it)
+          (prn "expr      = %s" expr)
+          (cond
+            ((integerp expr)
+              (if (fun? it)
+                (setq it (funcall it (integer expr)))
+                (setq it (integer expr))))
+            ((symbolp expr)
+              (let ((method (get-method it expr)))
+                (prn "pushing %s onto %s" method it)
+                (setq it method)
+                (prn "pushed method")))
+            (t (error "error"))
+            )))
+      (prndiv)
+      (prn "final it  = %s" it)
+      (prndiv))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; my integer class:
@@ -34,41 +60,31 @@
     (* 'mul)
     (/ 'div)
     (% 'rem)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-fun (expr)
   (if-let ((method-name (op-to-method-name expr)))
     method-name ; `(method-name ,method-name)
-    expr))
+    (if (integerp expr)
+      (integer expr)
+      expr)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro infix (&rest args)
   (prndiv)
   (prn "START: %s" args)
   (prndiv)
   (let ((transformed (transform-tree #'always #'transform-fun args)))
     `(infix-helper ,@transformed)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro infix-helper (&rest args)
-  (let (it)
-    (while args
-      (let ((expr (pop args)))
-        (prndiv)
-        (prn "it        = %s" it)
-        (prn "expr      = %s" expr)
-        (cond
-          ((integerp expr)
-            (if (fun? it)
-              (setq it (funcall it (integer expr)))
-              (setq it (integer expr))))
-          ((symbolp expr)
-            (let ((method (get-method it expr)))
-              (prn "pushing %s onto %s" method it)
-              (setq it method)
-              (prn "pushed method")))
-          (t (error "error"))
-          )))
-    (prndiv)
-    (prn "final it  = %s" it)
-    (prndiv)))
 
-;; (infix 4 * 5 + 3)
+
+
+(transform-tree #'always #'transform-fun '(2 + (3 * 4)))
+
 
