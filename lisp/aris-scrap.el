@@ -136,36 +136,35 @@
                     (cond
                       ((cons? head) (transform-tree pred? fun head))
                       ((funcall pred? head) (funcall fun head))
-                      (else         head)))))
+                      (t         head)))))
           (if result
             (setcdr tail new-tail)
             (setq result new-tail))
           (setq tail new-tail)))
       result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun transform-tree (pred? fun tree)
+(defun transform-tree2 (pred? fun tree)
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
   (cond
-    ((listp tree)
-      (mapcar (lambda (item)
-                (if (listp item)
-                  (transform-tree pred? fun item)
-                  (cond
-                    ((funcall pred? item) (funcall fun item))
-                    (t item))))
-        tree))
+    ((listp tree) (mapr tree
+                    (lambda (item)
+                      (cond
+                        ((listp item) (transform-tree2 pred? fun item))
+                        (t (cond
+                             ((funcall pred? item) (funcall fun item))
+                             (t item)))))))
     (t tree)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun transform-tree (pred? fun tree)
+(defun transform-tree3 (pred? fun tree)
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
   (if (listp tree)
-    (mapcar (lambda (item)
-              (if (listp item)
-                (transform-tree pred? fun item)
-                (if (funcall pred? item)
-                  (funcall fun item)
-                  item)))
-      tree)
+    (mapr tree
+      (lambda (item)
+        (if (listp item)
+          (transform-tree3 pred? fun item)
+          (if (funcall pred? item)
+            (funcall fun item)
+            item))))
     tree))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun op-to-name (op)
@@ -177,6 +176,10 @@
     ('% 'rem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
+  returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+(confirm that (transform-tree2 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
+  returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+(confirm that (transform-tree3 #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
