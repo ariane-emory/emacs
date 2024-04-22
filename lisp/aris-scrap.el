@@ -113,13 +113,16 @@
   (div (other) (integer (/ value (val other))))
   (rem (other) (integer (% value (val other)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (val (mul (integer 2) (add (integer 5) (integer 7))))
+  returns 24)
+(confirm that (val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
+  returns 4)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(val (mul (integer 2 (add (integer 5) (integer 7)))))
-(val (mul (integer 2) (add (integer 5) (integer 7))))
-(val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-tree (pred? fun tree)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Replace items matching PRED? in TREE with the result of applying FUN to them."
   (unless (list? tree) (error "TREE must be a list"))
   (unless (fun? pred?) (error "PRED? must be a function"))
@@ -139,6 +142,27 @@
             (setq result new-tail))
           (setq tail new-tail)))
       result)))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (transform-tree #'even? #'double '(1 2 3 4 5 6 7 (8 5 9 5 10)))
   returns (1 4 3 8 5 12 7 (16 5 9 5 20)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun transform-tree! (pred? fun tree)
+  "Destructively transform-tree the cons tree TREE by replacing members matching
+   PRED? with the result of applying FUN to them."
+  (unless (fun? pred?) (error "PRED? must be a function"))
+  (unless (fun? fun)   (error "FUN must be a function"))
+  (unless (cons? tree) (error "TREE must be a non-empty cons tree"))
+  (let ((head (car tree)))
+    (if (cons? head)
+      (transform-tree! pred? fun head)
+      (when (pred? head)
+        (rplaca! tree (fun head)))))
+  (let ((tail (cdr tree)))
+    (if (cons? tail)
+      (transform-tree! pred? fun tail)
+      (when (pred? tail)
+        (rplacd! tree (fun tail)))))
+  tree)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
