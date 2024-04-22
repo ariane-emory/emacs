@@ -120,43 +120,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun transform-tree (pred? fun tree)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
-  (when tree
-    (let (result tail)
-      (while tree
-        (let* ((head (pop tree))
-                (new-tail
-                  (list
-                    (cond
-                      ((cons? head) (transform-tree pred? fun head))
-                      ((funcall pred? head) (funcall fun head))
-                      (t         head)))))
-          (if result
-            (setcdr tail new-tail)
-            (setq result new-tail))
-          (setq tail new-tail)))
-      result)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun transform-tree4 (pred? fun tree)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
-  (let (result tail)
-    (while tree
-      (let* ((head (pop tree))
-              (new-tail
-                (list
-                  (cond
-                    ((cons? head) (transform-tree4 pred? fun head))
-                    ((funcall pred? head) (funcall fun head))
-                    (t         head)))))
-        (if result
-          (setcdr tail new-tail)
-          (setq result new-tail))
-        (setq tail new-tail)))
-    result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun transform-tree2 (pred? fun tree)
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
   (cond
