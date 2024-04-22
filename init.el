@@ -816,6 +816,7 @@
            aris-funs--error-when-and-error-unless
            aris-funs--pcase-x
            aris-funs--div-mod
+           aris-funs--trees
            aris-types
            steve-loshs-funs--if-let
            peter-norvigs-funs--defun-memo

@@ -54,8 +54,8 @@
         (prn "expr     = %s" expr)
         (cond
           ((integerp expr) (setq it (integer expr)))
-          ((symbolp integer)
-            (prn "get %s for %s" expr it)
+          ((symbolp expr)
+            (prn "get %s for %s" expr (fmt it))
             (debug)
             (setq it (get-method it expr)))
           (t (error "error"))
