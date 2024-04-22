@@ -6,33 +6,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ignore!
-  (defmacro infix-helper (&rest args)
-    (let (it)
-      (while args
-        (let ((expr (pop args)))
-          (prndiv)
-          (prn "it        = %s" it)
-          (prn "expr      = %s" expr)
-          (cond
-            ((integerp expr)
-              (if (fun? it)
-                (setq it (funcall it (integer expr)))
-                (setq it (integer expr))))
-            ((symbolp expr)
-              (let ((method (get-method it expr)))
-                (prn "pushing %s onto %s" method it)
-                (setq it method)
-                (prn "pushed method")))
-            (t (error "error"))
-            )))
-      (prndiv)
-      (prn "final it  = %s" it)
-      (prndiv))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; my integer class:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-class integer (value) nil
@@ -65,14 +38,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun transform-fun (expr)
+(defun infix-transform-fun (expr)
   (if-let ((method-name (op-to-method-name expr)))
     method-name ; `(method-name ,method-name)
     (if (integerp expr)
       (integer expr)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(transform-tree #'always #'transform-fun '(2 + (3 * 4)))
+(transform-tree #'always #'infix-transform-fun '(2 + (3 * 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -81,7 +54,7 @@
   (prndiv)
   (prn "START: %s" args)
   ;; (prndiv)
-  (let ((transformed (transform-tree #'always #'transform-fun args)))
+  (let ((transformed (transform-tree #'always #'infix-transform-fun args)))
     `(val (infix-helper ',transformed))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -115,5 +88,5 @@
       head)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(## 4 + (3 * (2 - 1)))
+(## 4 + (3 * (2 - 1)) % 3)
 
