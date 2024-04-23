@@ -81,7 +81,10 @@ may be applied before or after to get your desired result."
 (defmacro alist-put! (key alist value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively set a KEY in ALIST to VALUE by modifying the alist in
-place, adding a new key/value pair if it wasn't already present."
+place, adding a new key/value pair if it wasn't already present.
+
+This could be optimized to be faster, it presently just wraps `alist-put' so it
+ rebuilds the whole alist every."
   `(setf ,alist (alist-put ,key ,alist ,value)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))))
