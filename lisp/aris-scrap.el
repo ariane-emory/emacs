@@ -24,3 +24,20 @@
   (dolist (count counts)
     (prn "%s" count)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(define-class integer (value) nil
+  (val () value)
+  (fmt () (format "(integer %d)" value))
+  (add (other) (integer (+ value (val other))))
+  (sub (other) (integer (- value (val other))))
+  (mul (other) (integer (* value (val other))))
+  (div (other) (integer (/ value (val other))))
+  (pow (other) (integer (expt value (val other))))
+  (rem (other) (integer (% value (val other)))))
+
+
+
+
+(val (integer 666))
+(dir (integer 666))

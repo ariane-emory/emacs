@@ -14,20 +14,16 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
-  `(let ,class-vars
-     (mapcar #'ensure-generic-fn
-       ',(append
-           '(is? class-name)
-           (mapcar #'first methods)))
-     (cl-defun ,class ,inst-vars
-       #'(lambda (message)
-           (cl-case message
-             ,(make-clause `(is? (class)
-                              (prn "is? %s" class)
-                              ;;(debug)
-                              (eq class ',class)))
-             ,(make-clause `(class-name () ',class))
-             ,@(mapcar #'make-clause methods))))))
+  (let ((method-names `(class-name is? dir ,@(mapcar #'first methods))))
+    `(let ,class-vars
+       (mapc #'ensure-generic-fn ',method-names)
+       (cl-defun ,class ,inst-vars
+         #'(lambda (message)
+             (cl-case message
+               ,(make-clause `(class-name () ',class))
+               ,(make-clause `(dir () ',method-names))
+               ,(make-clause `(is? (class) (eq class ',class)))
+               ,@(mapcar #'make-clause methods)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
