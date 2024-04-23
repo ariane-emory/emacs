@@ -82,10 +82,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n:is-object? (thing)
   "t when THING is a Norvige-style object."
-  (cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe thing))))
+  (cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar-safe (cdadddr-safe thing))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(n:is-object? q)
 (n:is-object? r)
-r ;; (closure (t) (foo) :foo)
-
-(cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe r)))
+(n:is-object? nil)
