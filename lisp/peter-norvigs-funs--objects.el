@@ -18,19 +18,19 @@
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  ;; Define constructor and generic function for methods
   (let* ( (user-method-names (mapcar #'first user-methods))
-          ;; manually define AUTO-METHOD-NAMES since `methods' and `responds-to?' both
+          ;; manually define AUTO-METHOD-NAMES since `dir' and `responds-to?' both
           ;; reference METHOD-NAMES:
-          (auto-method-names '(class-name is? methods responds-to?))
+          (auto-method-names '(class-name is? dir responds-to?))
           (method-names (sort (append user-method-names auto-method-names) #'string<))
           (auto-methods `( (class-name () ',class)
                            (is? (class-name) (eq class-name ',class))
-                           (methods () ',method-names)
+                           (dir () ',method-names)
                            (responds-to? (method)
                              (not (null (memq method ',method-names))))))
           (user-method-clauses (mapcar #'n:make-clause user-methods))
           (auto-method-clauses (mapcar #'n:make-clause auto-methods)))
+    ;; Define constructor and generic function for methods:
     `(let ,class-vars
        (dolist (method-name ',method-names)
          (n:ensure-generic-fun method-name))
@@ -46,8 +46,6 @@
 (defun n:get-method (object message)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return the method that implements message for this object."
-  (prn "n:get-method %s for %s" message object)
-  ;;(debug)
   (funcall object message))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
