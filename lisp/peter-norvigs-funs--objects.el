@@ -18,7 +18,7 @@
   (let ((method-names `( class-name is? dir responds-to?
                          ,@(mapcar #'first methods))))
     `(let ,class-vars
-       (mapc #'n:ensure-generic-fn ',method-names)
+       (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (cl-case message
@@ -60,26 +60,26 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n:ensure-generic-fn (message)
+(defun n:ensure-generic-fun (message)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define an object-oriented dispatch function for a message, unless it has a1ready been defined as one."
-  ;;(unless (n:generic-fn-p message)
-  (let ((fn #'(lambda (object &rest args)
-                (apply #'n:send-message object message args)
-                ;;(apply (n:get-method object message) args)
-                )))
-    (setf (symbol-function message) fn)
-    (setf (get message 'generic-fn) fn)));)
+  ;;(unless (n:generic-fun-p message)
+  (let ((fun #'(lambda (object &rest args)
+                 (apply #'n:send-message object message args)
+                 ;;(apply (n:get-method object message) args)
+                 )))
+    (setf (symbol-function message) fun)
+    (setf (get message 'generic-fun) fun)));)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n:generic-fn-p (fn-name)
+(defun n:generic-fun-p (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Is this a generic function?"
   (and
-    (fboundp fn-name)
-    (eq (get fn-name 'generic-fn) (symbol-function fn-name))))
+    (fboundp fun-name)
+    (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
