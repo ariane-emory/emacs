@@ -35,7 +35,9 @@
     `(let ,class-vars
        (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
-         #'(lambda (message) (cl-case message ,@method-clauses))))))
+         #'(lambda (message)
+             (declare (foo t) (norvig-object t) (blah t))
+             (cl-case message ,@method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -86,6 +88,13 @@
   (and
     (fboundp fun-name)
     (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun n:is-object? (thing)
+  "t when THING is a Norvige-style object."
+  (cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe thing))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

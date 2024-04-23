@@ -55,25 +55,26 @@
 (foo 2)
 
 (setq q (n:integer 444))
+(setq r (lambda (foo) :foo))
 
-q
+'(closure ((value . 444)) (message)
+   (progn '(declare (norvig-object t)) nil)
+   (cond
+     ((eql message 'class-name) #'(lambda nil 'n:integer))
+     ((eql message 'is?) #'(lambda (class) (eq class 'n:integer)))
+     ((eql message 'dir) #'(lambda nil '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
+     ((eql message 'responds-to?) #'(lambda (method) (not (null (memq method '(add class-name dir div fmt is? mul pow rem responds-to? sub val))))))
+     ((eql message 'val) #'(lambda nil value))
+     ((eql message 'fmt) #'(lambda nil (format "(n:integer %d)" value)))
+     ((eql message 'add) #'(lambda (other) (n:integer (+ value (val other)))))
+     ((eql message 'sub) #'(lambda (other) (n:integer (- value (val other)))))
+     ((eql message 'mul) #'(lambda (other) (n:integer (* value (val other)))))
+     ((eql message 'div) #'(lambda (other) (n:integer (/ value (val other)))))
+     ((eql message 'rem) #'(lambda (other) (n:integer (% value (val other)))))
+     ((eql message 'pow) #'(lambda (other) (n:integer (expt value (val other)))))))
 
-(closure ((value . 444)) (message)
-  (progn
-    '(declare
-       (norvig-object t))
-    nil)
-  (cond
-    ((eql message 'class-name) #'(lambda nil 'n:integer))
-    ((eql message 'is?) #'(lambda (class) (eq class 'n:integer)))
-    ((eql message 'dir) #'(lambda nil '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
-    ((eql message 'responds-to?) #'(lambda (method) (not (null (memq method '(add class-name dir div fmt is? mul pow rem responds-to? sub val))))))
-    ((eql message 'val) #'(lambda nil value))
-    ((eql message 'fmt) #'(lambda nil (format "(n:integer %d)" value)))
-    ((eql message 'add) #'(lambda (other) (n:integer (+ value (val other)))))
-    ((eql message 'sub) #'(lambda (other) (n:integer (- value (val other)))))
-    ((eql message 'mul) #'(lambda (other) (n:integer (* value (val other)))))
-    ((eql message 'div) #'(lambda (other) (n:integer (/ value (val other)))))
-    ((eql message 'rem) #'(lambda (other) (n:integer (% value (val other)))))
-    ((eql message 'pow) #'(lambda (other) (n:integer (expt value (val other)))))))
+(eq (car-safe q) 'closure)
 
+(cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe q)))
+(n:is-object? q)
+(n:is-object? r)
