@@ -84,7 +84,7 @@ may be applied before or after to get your desired result."
 place, adding a new key/value pair if it wasn't already present.
 
 This could be optimized to be faster, it presently just wraps `alist-put' so it
- rebuilds the whole alist every."
+rebuilds the whole alist every time."
   `(setf ,alist (alist-put ,key ,alist ,value)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))))
