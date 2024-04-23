@@ -57,3 +57,6 @@
 (n:is? q 'n:integer)
 (n:is? r 'n:integer)
 
+
+;; (extract-delegee-argument '(password &delegee (account acct)))
+;;   ⇒ '((password acct) account acct)

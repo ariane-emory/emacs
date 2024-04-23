@@ -69,7 +69,8 @@
 ;; Hypothetical improved delegee syntax:
 ;;   (n:defclass password-account (password &delegee (account acct)) nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:defclass password-account (password acct) nil
+(n:defclass password-account (password acct) ;; <- this class has 2 instance variables.
+  () ;; <- this class has no class variables.
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
