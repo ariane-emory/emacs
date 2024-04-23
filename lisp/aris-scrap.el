@@ -15,18 +15,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((limit 10)
-       (counts '( (0 . 0) (1 . 0) (2 . 0) (3 . 0) (4 . 0)
-                  (5 . 0) (6 . 0) (7 . 0) (8 . 0) (9 . 0))))
-  (dotimes (x 2000000)
-    (let ((roll (myrand limit)))
-      (alist-put! roll counts (1+ (alist-get roll counts 0)))))
-  (dolist (count counts)
-    (prn "%s" count)))
+(ignore!
+  (let ((limit 10)
+         (counts '( (0 . 0) (1 . 0) (2 . 0) (3 . 0) (4 . 0)
+                    (5 . 0) (6 . 0) (7 . 0) (8 . 0) (9 . 0))))
+    (dotimes (x 2000000)
+      (let ((roll (myrand limit)))
+        (alist-put! roll counts (1+ (alist-get roll counts 0)))))
+    (dolist (count counts)
+      (prn "%s" count))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(define-class integer (value) nil
+(n:define-class integer (value) nil
   (val () value)
   (fmt () (format "(integer %d)" value))
   (add (other) (integer (+ value (val other))))

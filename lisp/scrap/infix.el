@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; my integer class:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-class integer (value) nil
+(n:define-class integer (value) nil
   (val () value)
   (fmt () (format "(integer %d)" value))
   (add (other) (integer (+ value (val other))))
@@ -78,7 +78,7 @@
               (setq res (integer expr)))
             ((and (list? expr) (eq (car expr) 'quote))
               (prn "EXPR IS METHOD NAME %s!" (second expr))
-              (setq res (get-method res (second expr))))
+              (setq res (n:get-method res (second expr))))
             ((and (list? expr) res)
               (prn "EXPR IS LIST AND WE'RE HOLDING A METHOD!")
               (setq res (funcall res (infix-helper expr))))

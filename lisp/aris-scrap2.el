@@ -18,7 +18,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-class account (name &optional (balance 0.00))
+(n:define-class account (name &optional (balance 0.00))
   ((interest-rate .06))
   (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
   (deposit (amt) (cl-incf balance amt))
@@ -34,8 +34,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (let
 ;;   ((interest-rate 0.06))
-;;   (ensure-generic-fn 'is?)
-;;   (mapcar #'ensure-generic-fn '(withdraw deposit balance name privcall interest))
+;;   (n:ensure-generic-fn 'is?)
+;;   (mapcar #'n:ensure-generic-fn '(withdraw deposit balance name privcall interest))
 ;;   (cl-defun account (name &optional (balance 0.0))
 ;;     #'(lambda (message)
 ;;         (cl-flet ((private-method () name))
@@ -66,7 +66,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-class password-account (password acct) ()
+(n:define-class password-account (password acct) ()
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
@@ -89,7 +89,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-class limited-account (limit acct) ()
+(n:define-class limited-account (limit acct) ()
   (withdraw (amt)
     (if ( > amt limit)
       :OVER-LIMIT
