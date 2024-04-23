@@ -14,7 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro n:defclass (class inst-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; - ari added (declare (norvig-object t)) to the returned closure.
+  ;; - ari added (declare (norvig-object-class ',class)) to the returned closure.
   ;; - ari modified this function's structure by moving a lot of bindings into the outer
   ;;   `let*' form.
   ;; - ari added the `dir' and `responds-to?' methods as default methods for all objects.
@@ -40,7 +40,7 @@
        (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
-             (declare (norvig-object ',class))
+             (declare (norvig-object-class ',class))
              (cl-case message ,@method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -52,7 +52,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when THING is a Norvig-style object."
   (let ((declarations (cdadar-safe (cdadddr-safe thing))))
-    (cl-some (lambda (form) (equal (car form) 'norvig-object)) declarations)))
+    (cl-some (lambda (form) (equal (car form) 'norvig-object-class)) declarations)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
