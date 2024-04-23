@@ -52,7 +52,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when THING is a Norvig-style object."
   (let ((declarations (cdadar-safe (cdadddr-safe thing))))
-    (cl-some (lambda (form) (equal form '(norvig-object t))) declarations)))
+    (cl-some (lambda (form) (equal (car form) 'norvig-object)) declarations)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
