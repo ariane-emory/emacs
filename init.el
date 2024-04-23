@@ -25,6 +25,9 @@
   (setq aris-lisp-dir (expand-file-name "lisp/" aris-config-dir))
   (add-to-list 'load-path aris-lisp-dir)
 
+  "Set my lisp scraps directory:"
+  (setq aris-scrap-dir (expand-file-name "scrap/" aris-lisp-dir))
+
   "If trav.el's directory exists, add it to the load-path:"
   (setq aris-trav-dir (expand-file-name "trav" aris-lisp-dir))
   (add-to-list 'load-path aris-trav-dir)
