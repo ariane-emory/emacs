@@ -20,8 +20,8 @@
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
   (let* ( (user-method-names (mapcar #'first user-methods))
-          ;; manually define auto-methods-names since `methods' and `responds-to?'
-          ;; both reference METHOD-NAMES:
+          ;; manually define auto-method-names since `methods' and `responds-to?' both
+          ;; reference METHOD-NAMES:
           (auto-method-names '(class-name is? methods responds-to?))
           (method-names (sort (append user-method-names auto-method-names) #'string<))
           (auto-methods `( (class-name () ',class)
@@ -32,7 +32,8 @@
           (user-method-clauses (mapcar #'n:make-clause user-methods))
           (auto-method-clauses (mapcar #'n:make-clause auto-methods)))
     `(let ,class-vars
-       (mapc #'n:ensure-generic-fun ',method-names)
+       (dolist (method-name ',method-names)
+         (n:ensure-generic-fun method-name))
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (cl-case message

@@ -44,3 +44,23 @@
 (responds-to? (n:integer 666) 'rem)
 
 (is? (n:integer 666) 'n:integer)
+
+
+(defun nmapcar (fun lst)
+  "A 'non-consing', destructive version of `mapcar'."
+  (let ((tail lst))
+    (while tail
+      (setcar tail (funcall fun (car tail)))
+      (setq tail (cdr tail))))
+  lst)
+
+
+(benchmark-run 10000
+  (let ((lst '(1 2 3 4 5 6 7 8 9 10)))
+    (nmapcar #'double lst)
+    lst)) ;; => (0.038106999999999995 0 0.0)
+
+(benchmark-run 10000
+  (let ((lst '(1 2 3 4 5 6 7 8 9 10)))
+    (mapcar #'double lst))) ;; => (0.008199000000000001 0 0.0)
+
