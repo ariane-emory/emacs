@@ -75,6 +75,17 @@
 
 (eq (car-safe q) 'closure)
 
+
 (cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe q)))
 (n:is-object? q)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun n:is-object? (thing)
+  "t when THING is a Norvige-style object."
+  (cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe thing))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (n:is-object? r)
+r ;; (closure (t) (foo) :foo)
+
+(cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe r)))
