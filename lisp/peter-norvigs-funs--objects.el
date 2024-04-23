@@ -35,9 +35,7 @@
     `(let ,class-vars
        (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
-         #'(lambda (message)
-             (cl-case message
-               ,@method-clauses))))))
+         #'(lambda (message) (cl-case message ,@method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
