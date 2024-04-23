@@ -765,6 +765,10 @@
 	        (variable-pitch-mode 1)
 	        (face-remap-add-relative 'default '(:height 1.1))))
 
+      (add-hook 'ielm-mode-hook
+        (lambda ()
+          (aris-setup-lisp)))
+      
       (add-hook 'tetris-mode-hook
         (lambda ()
           (setq-local global-hl-line-mode nil)
