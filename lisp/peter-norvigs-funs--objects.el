@@ -12,6 +12,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *n:auto-methods*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '( (class-name () class-name)
+     (dir () method-names)
+     (is? (class) (eq class class-name))
+     (responds-to? (method) (not (null (memq method method-names)))))
+  "Methods possessed by all Norvig-style objects.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro n:defclass (class inst-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari added (declare (norvig-object-class ',class)) to the returned closure.
@@ -22,12 +33,7 @@
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (auto-methods
-            `( (class-name () class-name)
-               (is? (class) (eq class class-name))
-               (dir () method-names)
-               (responds-to? (method) (not (null (memq method method-names))))))
-          (methods (append auto-methods user-methods))
+  (let* ( (methods (append *n:auto-methods* user-methods))
           (method-names (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'n:make-method-clause methods)))
     `(let ( (class-name   ',class)

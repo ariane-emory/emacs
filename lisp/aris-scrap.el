@@ -49,8 +49,6 @@
 (setq q (n:integer 444))
 (setq r (lambda (foo) :foo))
 
-(eq (car-safe q) 'closure)
-
 (n:is-object? q)
 (n:is-object? r)
 (n:is-object? nil)
