@@ -19,10 +19,11 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
-  (let* ( (method-names (sort (append
-                                '(class-name is? dir responds-to?)
-                                (mapcar #'first user-methods))
-                          #'string<))
+  (let* ( (user-method-names (mapcar #'first user-methods))
+          ;; manually define AUTO-METHOD-NAMES since `dir' and `responds-to?' both
+          ;; reference METHOD-NAMES:
+          (auto-method-names '(class-name is? dir responds-to?))
+          (method-names (sort (append auto-method-names user-method-names) #'string<))
           (auto-methods
             `( (class-name () ',class)
                (is? (class) (eq class ',class))
