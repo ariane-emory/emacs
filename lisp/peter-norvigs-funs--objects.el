@@ -20,13 +20,15 @@
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
   (let* ( (user-method-names (mapcar #'first user-methods))
+          (user-method-clauses (mapcar #'n:make-clause user-methods))
           (method-names `( class-name is? methods responds-to?
-                           ,@(mapcar #'first user-methods)))
+                           ,@user-method-names))
           (auto-methods `( (class-name () ',class)
                            (methods () ',method-names)
                            (is? (class) (eq class ',class))
                            (responds-to? (method)
                              (not (null (memq method ',method-names))))))
+          (auto-method-clauses (mapcar #'n:make-clause auto-methods))
           )
     (prn "auto-methods:")
     (prn "%s" (indent-string-lines (pp-to-string auto-methods)))
@@ -35,8 +37,8 @@
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (cl-case message
-               ,@(mapcar #'n:make-clause auto-methods)
-               ,@(mapcar #'n:make-clause user-methods)))))))
+               ,@auto-method-clauses
+               ,@user-method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
