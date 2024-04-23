@@ -34,6 +34,15 @@
 (n:is? q 'n:integer)
 (n:is? r 'n:integer)
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; extracting delegee arg:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (extract-delegee-argument '(password &delegee (account acct)))
-;;   ⇒ '((password acct) account acct)
+;;   ⇒ '((password acct) (account . acct))
+;; (extract-delegee-argument '(password &delegee acct))
+;;   ⇒ '((password acct) (nil . acct)
+;; (extract-delegee-argument '(password &delegee (account acct) &rest things))
+;;   ⇒ '((password acct &rest things) (account . acct))
+;; (extract-delegee-argument '(password &delegee acct &rest things))
+;;   ⇒ '((password acct &rest things) (nil . acct)
+
