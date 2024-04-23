@@ -37,9 +37,6 @@
   (pow (other) (integer (expt value (val other))))
   (rem (other) (integer (% value (val other)))))
 
-
-
-
 (val (integer 666))
 (dir (integer 666))
 
