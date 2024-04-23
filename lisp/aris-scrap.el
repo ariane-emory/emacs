@@ -37,18 +37,17 @@
   (rem (other) (n:integer (%    value (val other))))
   (pow (other) (n:integer (expt value (val other)))))
 
-(let nil
-  (mapc #'n:ensure-generic-fun
-    '(add class-name dir div fmt is? mul pow rem responds-to? sub val))
-  (cl-defun n:integer
-    (value)
+(let ( (class-name   'n:integer)
+       (method-names '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
+  (mapc #'n:ensure-generic-fun method-names)
+  (cl-defun n:integer (value)
     #'(lambda (message)
         (declare (norvig-object-class 'n:integer))
         (cl-case message
-          (class-name #'(lambda nil 'n:integer))
-          (is? #'(lambda (class) (eq class 'n:integer)))
-          (dir #'(lambda nil '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
-          (responds-to? #'(lambda (method) (not (null (memq method '(add class-name dir div fmt is? mul pow rem responds-to? sub val))))))
+          (class-name #'(lambda nil class-name))
+          (is? #'(lambda (class) (eq class class-name)))
+          (dir #'(lambda nil method-names))
+          (responds-to? #'(lambda (method) (not (null (memq method method-names)))))
           (val #'(lambda nil value))
           (fmt #'(lambda nil (format "(n:integer %d)" value)))
           (add #'(lambda (other) (n:integer (+ value (val other)))))
@@ -57,6 +56,31 @@
           (div #'(lambda (other) (n:integer (/ value (val other)))))
           (rem #'(lambda (other) (n:integer (% value (val other)))))
           (pow #'(lambda (other) (n:integer (expt value (val other)))))))))
+
+(let ( (class-name 'n:integer)
+       (method-names '(add class-name dir div fmt is? mul pow rem responds-to? sub val))
+       (foo 77))
+  (mapc #'n:ensure-generic-fun method-names)
+  (cl-defun n:integer (value)
+    #'(lambda (message)
+        (declare (norvig-object-class 'n:integer))
+        (cl-case message
+          (class-name #'(lambda nil class-name))
+          (is? #'(lambda (class) (eq class class-name)))
+          (dir #'(lambda nil method-names))
+          (responds-to? #'(lambda (method) (not (null (memq method method-names)))))
+          (val #'(lambda nil value))
+          (fmt #'(lambda nil (format "(n:integer %d)" value)))
+          (add #'(lambda (other) (n:integer (+ value (val other)))))
+          (sub #'(lambda (other) (n:integer (- value (val other)))))
+          (mul #'(lambda (other) (n:integer (* value (val other)))))
+          (div #'(lambda (other) (n:integer (/ value (val other)))))
+          (rem #'(lambda (other) (n:integer (% value (val other)))))
+          (pow #'(lambda (other) (n:integer (expt value (val other)))))))))
+
+
+
+
 
 (val (n:integer 666))
 (dir (n:integer 666))
@@ -67,37 +91,10 @@
 (is? (n:integer 666) 'n:integer)
 (is? (n:integer 666) 'nope)
 
-(defun foo (bar)
-  "Some function"
-  (declare (i-made-this-up t))
-  'baz)
-
-(foo 2)
-
 (setq q (n:integer 444))
 (setq r (lambda (foo) :foo))
 
-'(closure ((value . 444)) (message)
-   (progn '(declare (norvig-object t)) nil)
-   (cond
-     ((eql message 'class-name) #'(lambda nil 'n:integer))
-     ((eql message 'is?) #'(lambda (class) (eq class 'n:integer)))
-     ((eql message 'dir) #'(lambda nil '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
-     ((eql message 'responds-to?) #'(lambda (method) (not (null (memq method '(add class-name dir div fmt is? mul pow rem responds-to? sub val))))))
-     ((eql message 'val) #'(lambda nil value))
-     ((eql message 'fmt) #'(lambda nil (format "(n:integer %d)" value)))
-     ((eql message 'add) #'(lambda (other) (n:integer (+ value (val other)))))
-     ((eql message 'sub) #'(lambda (other) (n:integer (- value (val other)))))
-     ((eql message 'mul) #'(lambda (other) (n:integer (* value (val other)))))
-     ((eql message 'div) #'(lambda (other) (n:integer (/ value (val other)))))
-     ((eql message 'rem) #'(lambda (other) (n:integer (% value (val other)))))
-     ((eql message 'pow) #'(lambda (other) (n:integer (expt value (val other)))))))
-
 (eq (car-safe q) 'closure)
-
-
-(cl-some (lambda (form) (equal form '(norvig-object t))) (cdadar (cdadddr-safe q)))
-(n:is-object? q)
 
 (n:is-object? q)
 (n:is-object? r)

@@ -29,15 +29,17 @@
           (auto-method-names '(class-name is? dir responds-to?))
           (method-names (sort (append auto-method-names user-method-names) #'string<))
           (auto-methods
-            `( (class-name () ',class)
-               (is? (class) (eq class ',class))
-               (dir () ',method-names)
+            `( (class-name () class-name)
+               (is? (class) (eq class class-name))
+               (dir () method-names)
                (responds-to? (method)
-                 (not (null (memq method ',method-names))))))
+                 (not (null (memq method method-names))))))
           (methods (append auto-methods user-methods))
           (method-clauses (mapcar #'n:make-method-clause methods)))
-    `(let ,class-vars
-       (mapc #'n:ensure-generic-fun ',method-names)
+    `(let ( (class-name ',class)
+            (method-names ',method-names)
+            ,@class-vars)
+       (mapc #'n:ensure-generic-fun method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (declare (norvig-object-class ',class))
