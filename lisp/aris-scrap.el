@@ -27,17 +27,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(n:define-class integer (value) nil
+(n:define-class n:integer (value) nil
   (val () value)
-  (fmt () (format "(integer %d)" value))
-  (add (other) (integer (+ value (val other))))
-  (sub (other) (integer (- value (val other))))
-  (mul (other) (integer (* value (val other))))
-  (div (other) (integer (/ value (val other))))
-  (pow (other) (integer (expt value (val other))))
-  (rem (other) (integer (% value (val other)))))
+  (fmt () (format "(n:integer %d)" value))
+  (add (other) (n:integer (+ value (val other))))
+  (sub (other) (n:integer (- value (val other))))
+  (mul (other) (n:integer (* value (val other))))
+  (div (other) (n:integer (/ value (val other))))
+  (pow (other) (n:integer (expt value (val other))))
+  (rem (other) (n:integer (% value (val other)))))
 
-(val (integer 666))
-(dir (integer 666))
+(val (n:integer 666))
+(dir (n:integer 666))
 
-(responds-to? (integer 666) 'rem)
+(responds-to? (n:integer 666) 'rem)

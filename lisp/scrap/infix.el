@@ -8,26 +8,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; my integer class:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:define-class integer (value) nil
+(n:define-class n:integer (value) nil
   (val () value)
-  (fmt () (format "(integer %d)" value))
-  (add (other) (integer (+ value (val other))))
-  (sub (other) (integer (- value (val other))))
-  (mul (other) (integer (* value (val other))))
-  (div (other) (integer (/ value (val other))))
-  (pow (other) (integer (expt value (val other))))
-  (rem (other) (integer (% value (val other)))))
+  (fmt () (format "(n:integer %d)" value))
+  (add (other) (n:integer (+ value (val other))))
+  (sub (other) (n:integer (- value (val other))))
+  (mul (other) (n:integer (* value (val other))))
+  (div (other) (n:integer (/ value (val other))))
+  (pow (other) (n:integer (expt value (val other))))
+  (rem (other) (n:integer (% value (val other)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (val (mul (integer 2) (add (integer 5) (integer 7))))
+(confirm that (val (mul (n:integer 2) (add (n:integer 5) (n:integer 7))))
   returns 24)
-(confirm that (val (rem (mul (integer 2) (add (integer 5) (integer 7))) (integer 5)))
+(confirm that (val (rem (mul (n:integer 2) (add (n:integer 5) (n:integer 7))) (n:integer 5)))
   returns 4)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun op-to-method-name (op)
-  "If OP is an operator namin one of integer's methods, return the method name."
+  "If OP is an operator naming one of n:integer's methods, return the method name."
   (cl-case op
     (+ ''add)
     (- ''sub)
@@ -72,10 +72,10 @@
           (cond
             ((and (integer? expr) res)
               (prn "EXPR IS INTEGER AND WE'RE HOLDING A METHOD!")
-              (setq res (funcall res (integer expr))))
+              (setq res (funcall res (n:integer expr))))
             ((integer? expr)
               (prn "EXPR IS INTEGER!")
-              (setq res (integer expr)))
+              (setq res (n:integer expr)))
             ((and (list? expr) (eq (car expr) 'quote))
               (prn "EXPR IS METHOD NAME %s!" (second expr))
               (setq res (n:get-method res (second expr))))
@@ -89,9 +89,9 @@
               (prn "RES: %s" res))
             (res
               (prn "EXPR IS OTHER %s!" expr)
-              (setq res (funcall res (integer (symbol-value expr)))))
+              (setq res (funcall res (n:integer (symbol-value expr)))))
             (t
-              (setq res (integer (symbol-value expr))))))
+              (setq res (n:integer (symbol-value expr))))))
         (prndiv))
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
