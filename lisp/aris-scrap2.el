@@ -18,7 +18,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:define-class account (name &optional (balance 0.00))
+(n:defclass account (name &optional (balance 0.00))
   ((interest-rate .06))
   (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
   (deposit (amt) (cl-incf balance amt))
@@ -66,7 +66,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:define-class password-account (password acct) ()
+;; Hypothetical improved delegee syntax:
+;;   (n:defclass password-account (password &delegee (account acct)) nil
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(n:defclass password-account (password acct) nil
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
@@ -89,7 +92,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:define-class limited-account (limit acct) ()
+(n:defclass limited-account (limit acct) nil
   (withdraw (amt)
     (if ( > amt limit)
       :OVER-LIMIT

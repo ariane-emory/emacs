@@ -23,7 +23,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro n:defclass (class inst-vars class-vars &rest user-methods)
+(defmacro n:defclass (class instance-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari added (declare (norvig-object-class ',class)) to the returned closure.
   ;; - ari modified this function's structure by moving a lot of bindings into the outer
@@ -41,7 +41,7 @@
             ,@class-vars)
        ;; Define generic functions for the methods and a constructor for the class:
        (mapc #'n:ensure-generic-fun method-names)
-       (cl-defun ,class ,inst-vars
+       (cl-defun ,class ,instance-vars
          #'(lambda (message)
              (declare (norvig-object-class ',class))
              (cl-case message ,@method-clauses))))))
@@ -67,8 +67,8 @@
   "t when THING is a Norvig-style object of class CLASS.
 
 In contrast to (is? thing class), this function is not a generic function, so it will
-simply return nil if THING is not an object instead of causing an error due to trying
-to send a message to a non-object."
+simply return nil if THING is not an object instead of causing an error due to
+trying to send a message to a non-object."
   (when (n:is-object? thing)
     (n:send-message thing 'is? class)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,12 +129,9 @@ to send a message to a non-object."
   "Define an object-oriented dispatch function for a message, unless it has a1ready been defined as one."
   ;;(unless (n:generic-fun-p message)
   (let ((fun #'(lambda (object &rest args)
-                 (apply #'n:send-message object message args)
-                 ;;(apply (n:get-method object message) args)
-                 )))
+                 (apply #'n:send-message object message args))))
     (setf (symbol-function message) fun)
-    (setf (get message 'generic-fun) fun)))
-;;)
+    (setf (get message 'generic-fun) fun))) ; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
