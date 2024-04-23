@@ -37,51 +37,6 @@
   (rem (other) (n:integer (%    value (val other))))
   (pow (other) (n:integer (expt value (val other)))))
 
-(let ( (class-name   'n:integer)
-       (method-names '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
-  (mapc #'n:ensure-generic-fun method-names)
-  (cl-defun n:integer (value)
-    #'(lambda (message)
-        (declare (norvig-object-class 'n:integer))
-        (cl-case message
-          (class-name #'(lambda nil class-name))
-          (is? #'(lambda (class) (eq class class-name)))
-          (dir #'(lambda nil method-names))
-          (responds-to? #'(lambda (method) (not (null (memq method method-names)))))
-          (val #'(lambda nil value))
-          (fmt #'(lambda nil (format "(n:integer %d)" value)))
-          (add #'(lambda (other) (n:integer (+ value (val other)))))
-          (sub #'(lambda (other) (n:integer (- value (val other)))))
-          (mul #'(lambda (other) (n:integer (* value (val other)))))
-          (div #'(lambda (other) (n:integer (/ value (val other)))))
-          (rem #'(lambda (other) (n:integer (% value (val other)))))
-          (pow #'(lambda (other) (n:integer (expt value (val other)))))))))
-
-(let ( (class-name 'n:integer)
-       (method-names '(add class-name dir div fmt is? mul pow rem responds-to? sub val))
-       (foo 77))
-  (mapc #'n:ensure-generic-fun method-names)
-  (cl-defun n:integer (value)
-    #'(lambda (message)
-        (declare (norvig-object-class 'n:integer))
-        (cl-case message
-          (class-name #'(lambda nil class-name))
-          (is? #'(lambda (class) (eq class class-name)))
-          (dir #'(lambda nil method-names))
-          (responds-to? #'(lambda (method) (not (null (memq method method-names)))))
-          (val #'(lambda nil value))
-          (fmt #'(lambda nil (format "(n:integer %d)" value)))
-          (add #'(lambda (other) (n:integer (+ value (val other)))))
-          (sub #'(lambda (other) (n:integer (- value (val other)))))
-          (mul #'(lambda (other) (n:integer (* value (val other)))))
-          (div #'(lambda (other) (n:integer (/ value (val other)))))
-          (rem #'(lambda (other) (n:integer (% value (val other)))))
-          (pow #'(lambda (other) (n:integer (expt value (val other)))))))))
-
-
-
-
-
 (val (n:integer 666))
 (dir (n:integer 666))
 
