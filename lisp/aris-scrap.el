@@ -83,6 +83,7 @@
 (n:is-object? r)
 (n:is-object? nil)
 
-(n:is? 'n:integer 2)
-(n:is? 'n:integer q)
-(is? q 'n:integer)
+(n:is? 2 'n:integer)
+(n:is? q 'n:integer)
+(n:is? r 'n:integer)
+

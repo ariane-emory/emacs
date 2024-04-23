@@ -57,13 +57,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n:is? (class thing)
+(defun n:is? (thing class)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari added this function.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "t when THING is a Norvig-style object of class CLASS."
-  (and
-    (n:is-object? thing)
+  "t when THING is a Norvig-style object of class CLASS.
+
+In contrast to (is? thing class), this function is not a generic function, so it will
+simply return nil if THING is not an object instead of causing an error due to trying
+to send a message to a non-object."
+  (when (n:is-object? thing)
     (n:send-message thing 'is? class)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
