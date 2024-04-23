@@ -12,7 +12,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *n:auto-methods*
+(defvar *n:automatic-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name () class-name)
      (dir () method-names)
@@ -33,7 +33,7 @@
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (methods (append *n:auto-methods* user-methods))
+  (let* ( (methods (append *n:automatic-methods* user-methods))
           (method-names (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'n:make-method-clause methods)))
     `(let ( (class-name   ',class)
