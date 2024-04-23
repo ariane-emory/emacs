@@ -14,7 +14,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
-  (let ((method-names `(class-name is? dir ,@(mapcar #'first methods))))
+  (let ((method-names `(class-name
+                         is? dir responds-to?
+                         ,@(mapcar #'first methods))))
     `(let ,class-vars
        (mapc #'ensure-generic-fn ',method-names)
        (cl-defun ,class ,inst-vars
@@ -23,6 +25,8 @@
                ,(make-clause `(class-name () ',class))
                ,(make-clause `(dir () ',method-names))
                ,(make-clause `(is? (class) (eq class ',class)))
+               ,(make-clause `(responds-to? (method)
+                                (not (null (memq method ',method-names)))))
                ,@(mapcar #'make-clause methods)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

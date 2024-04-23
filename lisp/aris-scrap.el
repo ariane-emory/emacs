@@ -41,3 +41,5 @@
 
 (val (integer 666))
 (dir (integer 666))
+
+(responds-to? (integer 666) 'rem)
