@@ -11,7 +11,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro n:defclass (class inst-vars class-vars &rest methods)
+(defmacro n:defclass (class inst-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari added the `dir' and `responds-to?' methods as default methods for all objects.
   ;; - ari added the `class-name' method as a default method for all objects.
@@ -19,13 +19,14 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
-  (let* ( (method-names `( class-name is? methods responds-to?
-                           ,@(mapcar #'first methods)))
-          (auto-methods `( ,(n:make-clause `(class-name () ',class))
-                           ,(n:make-clause `(methods () ',method-names))
-                           ,(n:make-clause `(is? (class) (eq class ',class)))
-                           ,(n:make-clause `(responds-to? (method)
-                                              (not (null (memq method ',method-names)))))))
+  (let* ( (user-method-names (mapcar #'first user-methods))
+          (method-names `( class-name is? methods responds-to?
+                           ,@(mapcar #'first user-methods)))
+          (auto-methods `( (class-name () ',class)
+                           (methods () ',method-names)
+                           (is? (class) (eq class ',class))
+                           (responds-to? (method)
+                             (not (null (memq method ',method-names))))))
           )
     (prn "auto-methods:")
     (prn "%s" (indent-string-lines (pp-to-string auto-methods)))
@@ -34,12 +35,8 @@
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (cl-case message
-               ,(n:make-clause `(class-name () ',class))
-               ,(n:make-clause `(methods () ',method-names))
-               ,(n:make-clause `(is? (class) (eq class ',class)))
-               ,(n:make-clause `(responds-to? (method)
-                                  (not (null (memq method ',method-names)))))
-               ,@(mapcar #'n:make-clause methods)))))))
+               ,@(mapcar #'n:make-clause auto-methods)
+               ,@(mapcar #'n:make-clause user-methods)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
