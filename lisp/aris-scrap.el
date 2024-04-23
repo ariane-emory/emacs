@@ -43,4 +43,4 @@
 
 (responds-to? (n:integer 666) 'rem)
 
-
+(is? (n:integer 666) 'n:integer)
