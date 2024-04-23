@@ -12,13 +12,16 @@
   "Replace atoms matching PRED? in TREE with the result of applying FUN to them."
   (let (result tail)
     (while tree
-      (let* ((head (pop tree))
+      (let* ( (head (pop tree))
               (new-tail
                 (list
                   (cond
-                    ((cons? head) (transform-tree pred? fun head))
-                    ((funcall pred? head) (funcall fun head))
-                    (t         head)))))
+                    ((cons? head)
+                      (transform-tree pred? fun head))
+                    ((funcall pred? head)
+                      (funcall fun head))
+                    (t
+                      head)))))
         (if result
           (setcdr tail new-tail)
           (setq result new-tail))
