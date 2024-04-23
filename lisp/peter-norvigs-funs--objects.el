@@ -11,7 +11,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro n:defclass (class inst-vars class-vars &rest methods)
+(defmacro n:defclass (class inst-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari added the `dir' and `responds-to?' methods as default methods for all objects.
   ;; - ari added the `class-name' method as a default method for all objects.
@@ -19,19 +19,24 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
-  (let ((method-names `( class-name is? methods responds-to?
-                         ,@(mapcar #'first methods))))
+  (let* ( (method-names (sort (append
+                                '(class-name is? dir responds-to?)
+                                (mapcar #'first user-methods))
+                          #'string<))
+          (auto-methods
+            `( (class-name () ',class)
+               (is? (class) (eq class ',class))
+               (dir () ',method-names)
+               (responds-to? (method)
+                 (not (null (memq method ',method-names))))))
+          (methods (append auto-methods user-methods))
+          (method-clauses (mapcar #'n:make-clause methods)))
     `(let ,class-vars
        (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (cl-case message
-               ,(n:make-clause `(class-name () ',class))
-               ,(n:make-clause `(dir () ',method-names))
-               ,(n:make-clause `(is? (class) (eq class ',class)))
-               ,(n:make-clause `(responds-to? (method)
-                                  (not (null (memq method ',method-names)))))
-               ,@(mapcar #'n:make-clause methods)))))))
+               ,@method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
