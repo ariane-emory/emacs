@@ -27,7 +27,7 @@
          #'(lambda (message)
              (cl-case message
                ,(n:make-clause `(class-name () ',class))
-               ,(n:make-clause `(methods () ',method-names))
+               ,(n:make-clause `(dir () ',method-names))
                ,(n:make-clause `(is? (class) (eq class ',class)))
                ,(n:make-clause `(responds-to? (method)
                                   (not (null (memq method ',method-names)))))
