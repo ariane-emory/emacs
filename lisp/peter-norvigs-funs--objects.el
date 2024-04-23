@@ -2,12 +2,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Peter Norvig's lambda-based objects:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; - ari renamed 'n:define-class' to 'n:defclass'.
+;; - ari prefixed all this file's funs with 'n:'.
+;; - ari changed 'fn' to 'fun' in this file.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--aliases)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro n:define-class (class inst-vars class-vars &rest methods)
+(defmacro n:defclass (class inst-vars class-vars &rest methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; - ari added the `dir' and `responds-to?' methods as default methods for all objects.
   ;; - ari added the `class-name' method as a default method for all objects.
@@ -26,7 +30,7 @@
                ,(n:make-clause `(dir () ',method-names))
                ,(n:make-clause `(is? (class) (eq class ',class)))
                ,(n:make-clause `(responds-to? (method)
-                                (not (null (memq method ',method-names)))))
+                                  (not (null (memq method ',method-names)))))
                ,@(mapcar #'n:make-clause methods)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -44,7 +48,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n:make-clause (clause)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Translate a message from n:define-class into a case clause.
+  "Translate a message from n:defclass into a case clause.
 
 (n:make-clause '(name () name)) ⇒ (name #'(lambda 0 name))"
   `(,(first clause) #'(lambda ,@(rest clause))))

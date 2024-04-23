@@ -27,15 +27,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(n:define-class n:integer (value) nil
-  (val () value)
-  (fmt () (format "(n:integer %d)" value))
-  (add (other) (n:integer (+ value (val other))))
-  (sub (other) (n:integer (- value (val other))))
-  (mul (other) (n:integer (* value (val other))))
-  (div (other) (n:integer (/ value (val other))))
-  (pow (other) (n:integer (expt value (val other))))
-  (rem (other) (n:integer (% value (val other)))))
+(n:defclass n:integer (value) nil
+  (val ()      value)
+  (fmt ()      (format "(n:integer %d)" value))
+  (add (other) (n:integer (+    value (val other))))
+  (sub (other) (n:integer (-    value (val other))))
+  (mul (other) (n:integer (*    value (val other))))
+  (div (other) (n:integer (/    value (val other))))
+  (rem (other) (n:integer (%    value (val other))))
+  (pow (other) (n:integer (expt value (val other)))))
 
 (val (n:integer 666))
 (dir (n:integer 666))

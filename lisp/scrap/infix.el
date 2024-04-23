@@ -8,15 +8,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; my integer class:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:define-class n:integer (value) nil
-  (val () value)
-  (fmt () (format "(n:integer %d)" value))
-  (add (other) (n:integer (+ value (val other))))
-  (sub (other) (n:integer (- value (val other))))
-  (mul (other) (n:integer (* value (val other))))
-  (div (other) (n:integer (/ value (val other))))
-  (pow (other) (n:integer (expt value (val other))))
-  (rem (other) (n:integer (% value (val other)))))
+(n:defclass n:integer (value) nil
+  (val ()      value)
+  (fmt ()      (format "(n:integer %d)" value))
+  (add (other) (n:integer (+    value (val other))))
+  (sub (other) (n:integer (-    value (val other))))
+  (mul (other) (n:integer (*    value (val other))))
+  (div (other) (n:integer (/    value (val other))))
+  (rem (other) (n:integer (%    value (val other))))
+  (pow (other) (n:integer (expt value (val other)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (val (mul (n:integer 2) (add (n:integer 5) (n:integer 7))))
   returns 24)
