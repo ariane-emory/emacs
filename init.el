@@ -901,6 +901,10 @@
               (dolist (file (directory-files aris-lisp-dir t "\\`[^.].*\\.el\\'"))
                 (when (and (file-regular-p file) (not (string-suffix-p ".elc" file)))
                   (eval `(with-messages (format "opening '%s'" ,file)
+                           (find-file ,file)))))
+              (dolist (file (directory-files aris-scrap-dir t "\\`[^.].*\\.el\\'"))
+                (when (and (file-regular-p file) (not (string-suffix-p ".elc" file)))
+                  (eval `(with-messages (format "opening '%s'" ,file)
                            (find-file ,file))))))
             
             (with-messages "starting some shells"
