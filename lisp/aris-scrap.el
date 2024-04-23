@@ -43,8 +43,36 @@
 ;;   ⇒ '((password acct) (nil . acct)
 ;; (extract-delegee '(password &delegee (account acct) &rest things))
 ;;   ⇒ '((password acct &rest things) (account . acct))
-;; (extract-delegee '(password &delegee acct &rest things))
-;;   ⇒ '((password acct &rest things) (nil . acct)
+;; (extract-delegee '(password &delegee acct &optional thing))
+;;   ⇒ '((password acct &optional thing) (nil . acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (extract-delegee '(password &delegee acct))
+;; (extract-delegee '(password &delegee acct &optional foo))
+
+
+(defun extract-delegee (arglist)
+  "Extract the delegee argument from an arglist ARGLIST, returning a list whose first
+element is the modified arglist and whose second element is the delegee argument.
+
+This adds a new lambda list keyword, &delegee. When used, the &delegee keyword
+follow all required parameters and precede any &optional and &rest parameters.
+The &delegee keyword must be followed by a specifier for the delegee, which may
+be either a symbol (meaning the delegee is bound to that symbol and may be of any class)
+or a list of length two whose first element is the required class of the delegee and whose
+second element is the symbol to bind the delegee to.
+
+Examples of use:
+(extract-delegee '(password &delegee (account acct)))
+  ⇒ '((password acct) (account . acct))
+(extract-delegee '(password &delegee acct))
+  ⇒ '((password acct) (nil . acct)
+(extract-delegee '(password &delegee (account acct) &rest things))
+  ⇒ '((password acct &rest things) (account . acct))
+(extract-delegee '(password &delegee acct &optional thing))
+  ⇒ '((password acct &optional thing) (nil . acct)
+
+Examples of mis-use:
+(extract-delegee '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
+(extract-delegee '(password &delegee &optional foo)) ;; malformed ARGLIST, &delegee immediately followed by &optional.
+(extract-delegee '(password &optional thing &delegee acct)) ;; malformed ARGLIST, &optional preceded belegee."
+  )
