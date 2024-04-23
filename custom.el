@@ -24,7 +24,7 @@
   '(cursor-in-non-selected-windows 'bar)
   '(debug-on-error t)
   '(delete-selection-mode t)
-  '(fill-column 80)
+  '(fill-column 90)
   '(global-eldoc-mode nil)
   '(global-prettify-symbols-mode nil)
   '(indent-tabs-mode nil)
