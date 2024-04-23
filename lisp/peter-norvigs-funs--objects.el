@@ -18,27 +18,26 @@
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
+  ;; Define constructor and generic function for methods
   (let* ( (user-method-names (mapcar #'first user-methods))
           ;; manually define AUTO-METHOD-NAMES since `dir' and `responds-to?' both
           ;; reference METHOD-NAMES:
           (auto-method-names '(class-name is? dir responds-to?))
-          (method-names (sort (append user-method-names auto-method-names) #'string<))
-          (auto-methods `( (class-name () ',class)
-                           (is? (class-name) (eq class-name ',class))
-                           (dir () ',method-names)
-                           (responds-to? (method)
-                             (not (null (memq method ',method-names))))))
-          (user-method-clauses (mapcar #'n:make-clause user-methods))
-          (auto-method-clauses (mapcar #'n:make-clause auto-methods)))
-    ;; Define constructor and generic function for methods:
+          (method-names (sort (append auto-method-names user-method-names) #'string<))
+          (auto-methods
+            `( (class-name () ',class)
+               (is? (class) (eq class ',class))
+               (dir () ',method-names)
+               (responds-to? (method)
+                 (not (null (memq method ',method-names))))))
+          (methods (append auto-methods user-methods))
+          (method-clauses (mapcar #'n:make-clause methods)))
     `(let ,class-vars
-       (dolist (method-name ',method-names)
-         (n:ensure-generic-fun method-name))
+       (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
              (cl-case message
-               ,@auto-method-clauses
-               ,@user-method-clauses))))))
+               ,@method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
