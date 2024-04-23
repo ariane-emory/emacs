@@ -40,7 +40,7 @@
        (mapc #'n:ensure-generic-fun ',method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
-             (declare (norvig-object t))
+             (declare (norvig-object ',class))
              (cl-case message ,@method-clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

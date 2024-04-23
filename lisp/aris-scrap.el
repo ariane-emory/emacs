@@ -37,6 +37,25 @@
   (rem (other) (n:integer (%    value (val other))))
   (pow (other) (n:integer (expt value (val other)))))
 
+(let nil
+  (mapc #'n:ensure-generic-fun '(add class-name dir div fmt is? mul pow rem responds-to? sub val))
+  (cl-defun n:integer (value)
+    #'(lambda (message)
+        (declare (norvig-object 'n:integer))
+        (cl-case message
+          (class-name #'(lambda nil 'n:integer))
+          (is? #'(lambda (class) (eq class 'n:integer)))
+          (dir #'(lambda nil '(add class-name dir div fmt is? mul pow rem responds-to? sub val)))
+          (responds-to? #'(lambda (method) (not (null (memq method '(add class-name dir div fmt is? mul pow rem responds-to? sub val))))))
+          (val #'(lambda nil value))
+          (fmt #'(lambda nil (format "(n:integer %d)" value)))
+          (add #'(lambda (other) (n:integer (+ value (val other)))))
+          (sub #'(lambda (other) (n:integer (- value (val other)))))
+          (mul #'(lambda (other) (n:integer (* value (val other)))))
+          (div #'(lambda (other) (n:integer (/ value (val other)))))
+          (rem #'(lambda (other) (n:integer (% value (val other)))))
+          (pow #'(lambda (other) (n:integer (expt value (val other)))))))))
+
 
 (val (n:integer 666))
 (dir (n:integer 666))
