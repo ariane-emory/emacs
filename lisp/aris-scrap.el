@@ -38,6 +38,7 @@
   (pow (other) (n:integer (expt value (val other)))))
 
 (val (n:integer 666))
-(dir (n:integer 666))
+(methods (n:integer 666))
 
 (responds-to? (n:integer 666) 'rem)
+

@@ -19,7 +19,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   ;; Define constructor and generic function for methods
-  (let ((method-names `( class-name is? dir responds-to?
+  (let ((method-names `( class-name is? methods responds-to?
                          ,@(mapcar #'first methods))))
     `(let ,class-vars
        (mapc #'n:ensure-generic-fun ',method-names)
@@ -27,7 +27,7 @@
          #'(lambda (message)
              (cl-case message
                ,(n:make-clause `(class-name () ',class))
-               ,(n:make-clause `(dir () ',method-names))
+               ,(n:make-clause `(methods () ',method-names))
                ,(n:make-clause `(is? (class) (eq class ',class)))
                ,(n:make-clause `(responds-to? (method)
                                   (not (null (memq method ',method-names)))))
