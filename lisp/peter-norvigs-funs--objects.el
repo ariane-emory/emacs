@@ -22,7 +22,6 @@
   ;; - ari added the `is?' method as a default method for all objects.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  ;; Define constructor and generic function for methods
   (let* ( (auto-methods
             `( (class-name () class-name)
                (is? (class) (eq class class-name))
@@ -35,6 +34,7 @@
     `(let ( (class-name   ',class)
             (method-names ',method-names)
             ,@class-vars)
+       ;; Define generic functions for methods and a constructor:
        (mapc #'n:ensure-generic-fun method-names)
        (cl-defun ,class ,inst-vars
          #'(lambda (message)
