@@ -43,7 +43,9 @@
       `(let ( (class-name   ',class)
               (method-names ',method-names)
               @class-vars)
-         ;; Define generic functions for the methods and a constructor for the class:
+         ;; this only really needs to happen once:
+         (a:ensure-generic-fun 'method-not-found)
+         ;; define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
          (cl-defun ,class ,instance-vars
            (let (self)
@@ -303,25 +305,3 @@ Examples of mis-use:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:generic-fun-p 'dir)
-(a:generic-fun-p 'get-self)
-(a:get-method acct 'method-not-found)
-;; (get-self acct)
-(dir limit-acct)
-(a:send-message limit-acct 'method-not-found "pass" 2)
-(a:get-method limit-acct 'method-not-found)
-
-(a:defclass fooclass (num) ()
-  (foo () (format "FOO! %d" num)))
-
-(a:defclass barclass (num) ()
-  (bar () (format "BAR! %d" num))
-  (method-not-found (&rest args)
-    (apply message acct args)))
-
-(a:defclass bazclass (num) ()
-  (baz () (format "BAZ! %d" num))
-  (method-not-found (&rest args)
-    (apply message acct args)))
-
-(baz (bazclass 3))
