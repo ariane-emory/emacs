@@ -117,6 +117,7 @@
                      (key-length (length (symbol-name key))))
                (when (> key-length max-len)
                  (setq max-len key-length))))
+           (cl-incf max-len)
            ;; print the padded key-value pairs:
            (let (lines)
              (dolist (kvp fmt-values)
@@ -126,14 +127,15 @@
                        (padding (make-string (- max-len key-length) ?\ )))
                  ;; (prn "VAL:          %S" val)
                  ;; (prn "a:is-object?: %S" (a:is-object? val))
-                 (push (format "%s:%s %s" key padding
+                 (push (format "%s:%s%s" key padding
                          (if (not (a:is-object? val))
                            val
-                           (join-string-lines (fmt-as-lines val))))
+                           (join-string-lines
+                             (fmt-as-lines val (+ indent-tail-lines-by max-len)))))
                    lines)))
              (let* ( (lines (nreverse lines))
                      (head-line  (first lines))
-                     (tail-lines (indent-lines (rest lines) (2+ indent-tail-lines-by))))
+                     (tail-lines (indent-lines (rest lines) indent-tail-lines-by)))
                (cons head-line tail-lines))))))
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
