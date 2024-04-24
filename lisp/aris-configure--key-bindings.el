@@ -241,7 +241,10 @@
   ("s-c" . aris-ns-copy-including-secondary-keep-selection)
 
   ;; Close window/frame on s- so that they're hard to hit accidentally:
-  ("s-w" . delete-window)
+  ("s-w" . (lambda () (interactive)
+             (if (one-window-p)
+               (message "Cannot delete the sole window")
+               (delete-window))))
 
   ;; Toggle truncate lines:
   ("C-x C-l" . toggle-truncate-lines)
