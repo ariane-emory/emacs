@@ -6,6 +6,7 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--basic-preds)
 (require 'aris-funs--lists)
+(require 'aris-funs--strings)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - universal `format' method.

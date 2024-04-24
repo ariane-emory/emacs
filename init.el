@@ -806,6 +806,7 @@
            aris-funs--plists
            aris-funs--fixmath
            aris-funs--rgb
+           aris-funs--strings
            aris-funs--match-pattern
            aris-funs--match-pattern2
            aris-funs--pattern-dispatch
