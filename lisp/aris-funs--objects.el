@@ -30,12 +30,13 @@
           (delegee-sym     (first delegee-spec))
           (delegee-class   (second delegee-spec))
           (methods         (append *a:universal-methods* user-methods))
-          (delegate-method (when delegee-sym ; synthesize a `delegate' method.
-                             `(delegate (&rest args) ; wrapped in a list.
+          (delegate-method (when delegee-spec ; synthesize a `delegate' method.
+                             `(delegate (&rest args)
                                 (apply message ,delegee-sym args)))))
-    (if (alist-has? 'method-not-found methods)
-      (setf (car (assoc 'method-not-found methods)) 'otherwise)
-      (setq methods (append methods (list delegate-method))))
+    (when delegee-spec
+      (if (alist-has? 'method-not-found methods)
+        (setf (car (assoc 'method-not-found methods)) 'otherwise)
+        (setq methods (append methods (list delegate-method)))))
     (prndiv)
     (prn "methods:" (pp-to-string methods))
     (prndiv)
