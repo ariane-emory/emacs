@@ -105,9 +105,10 @@
      (field-names  () field-names)
      (fmt          () (join-string-lines (fmt-as-lines self)))
      (fmt-as-lines (&optional indent-tail-lines-by)
-       (let ((fmt-values
-               (cons (cons 'class-name (symbol-name class-name))
-                 (field-values self))))
+       (let ( (indent-tail-lines-by (or indent-tail-lines-by 0))
+              (fmt-values
+                (cons (cons 'class-name (symbol-name class-name))
+                  (field-values self))))
          (let ((max-len 0))
            ;; measure the max key length so we can line things up;
            (dolist (kvp fmt-values)
@@ -128,12 +129,12 @@
                  (push (format "%s:%s %s" key padding
                          (if (not (a:is-object? val))
                            val
-                           (let* ( (lines (fmt-as-lines val))
-                                   (head-line  (first lines))
-                                   (tail-lines (indent-lines (rest lines) (2+ max-len))))
-                             (join-string-lines (cons head-line tail-lines)))))
+                           (join-string-lines (fmt-as-lines val))))
                    lines)))
-             (nreverse lines)))))
+             (let* ( (lines (nreverse lines))
+                     (head-line  (first lines))
+                     (tail-lines (indent-lines (rest lines) (2+ indent-tail-lines-by))))
+               (cons head-line tail-lines))))))
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
   ;; Note that all objects also have a `field-values' method but, since
