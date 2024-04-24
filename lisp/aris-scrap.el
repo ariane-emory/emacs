@@ -32,7 +32,8 @@
 (setq acct (account "A. User" 2000.00))
 (field-values acct) ;; => ("A. User" 2000.0)
 
-(fmt acct)
 (fmt passwd-acct)
+(fmt acct)
+(describe acct)
 
 

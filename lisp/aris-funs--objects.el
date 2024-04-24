@@ -95,10 +95,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '( (class-name   ()       class-name)
+  '( (class-name   () class-name)
+     (describe     ()
+       (dolist (line (string-lines (fmt self)))
+         (prn line)))
+     (dir          () method-names)
+     (field-names  () field-names)
      (fmt ()
        (let ((alist (field-values self)))
-         (prndiv)
          (let ((max-len 0))
            ;; measure the max key length so we can line things up;
            (dolist (kvp alist)
@@ -113,13 +117,12 @@
                        (val (cdr kvp))
                        (key-length (length (symbol-name key)))
                        (padding (make-string (- max-len key-length) ?\ )))
-                 (prn "%s:%s %s" key padding val)))))))
-     (dir          ()       method-names)
-     (field-names  ()       field-names)
+                 (push (format "%s:%s %s" key padding val) lines)))
+             (join-string-lines lines)))))
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
-  ;; Note that all objects also have `fmt' and `field-values' methods but, since
-  ;; they need to access instance variables, they are synthesized in `defclass'.
+  ;; Note that all objects also have a `field-values' method but, since
+  ;; it need to access instance variables, it is synthesized in `defclass'.
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
