@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--trees)
-(require 'peter-norvigs-funs--objects)
+(require 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -14,6 +14,10 @@
 
 (a:defclass bazclass (num &delegee (barclass parent)) ()
   (baz () (format "BAZ! %d" num)))
+
+(a:defclass bazclass (num &delegee (barclass parent) &rest things) ()
+  (baz () (format "BAZ! %d" num)))
+
 
 (foo (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "FOO! 2"
 (bar (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAR! 3"

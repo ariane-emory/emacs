@@ -34,8 +34,9 @@
       (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
-      `(let ( (class-name   ',class)
-              (method-names ',method-names)
+      `(let ( (class-name         ',class)
+              (instance-var-names ',instance-vars)
+              (method-names       ',method-names)
               ,@class-vars)
          ;; define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
@@ -67,6 +68,14 @@
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '(&optional &key &rest &aux)
+  "Keywords that can appear in a lambda list.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -190,14 +199,16 @@ Examples of mis-use:
                    (_ (not (eq '&delegee top))))
         (when (eq top '&optional)
           (setq delegee-is-optional t))
-        (when (memq top '(&key &rest &aux))
-          (error "Malformed ARGLIST, %s before &delegee." top))
+        (let ((ll-keywords-other-than-&optional
+                (cl-remove '&optional *a:lambda-list-keywords*)))
+          (when (memq top ll-keywords-other-than-&optional)
+            (error "Malformed ARGLIST, %s before &delegee." top)))
         (push (pop arglist) new-arglist-segment))
       (pop arglist)
       (unless arglist
         (error "Malformed ARGLIST, nothing after &delegee."))
       (let ((top (pop arglist)))
-        (when (memq top '(&optional &key &rest &aux))
+        (when (memq top *a:lambda-list-keywords*)
           (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
         (unless (or (symbol? top)
                   (and (double? top) (symbol? (first top)) (symbol? (second top))))
