@@ -24,12 +24,12 @@
 (defmacro a:defclass (class instance-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (parsed-arglist (a:extract-delegee-arg instance-vars))
-          (instance-vars  (first parsed-arglist))
+  (let* ( (parsed-arglist  (a:extract-delegee-arg instance-vars))
+          (instance-vars   (first parsed-arglist))
           (delegee-spec    (second parsed-arglist))
           (delegee-sym     (first delegee-spec))
           (delegee-class   (second delegee-spec))
-          (methods        (append *a:universal-methods* user-methods)))
+          (methods         (append *a:universal-methods* user-methods)))
     (when (alist-has? 'method-not-found methods)
       (setf (car (assoc 'method-not-found methods)) 'otherwise)
       (prndiv)
