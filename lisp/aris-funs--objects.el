@@ -218,7 +218,7 @@ Examples of mis-use:
       (unless arglist
         (error "Malformed ARGLIST, nothing after &delegee."))
       (let ((top (pop arglist)))
-        (when (memq top *a:cl-lambda-list-keywords*)
+        (when (memq top *a:defclass-lambda-list-keywords*)
           (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
         (unless (or (symbol? top)
                   (and (double? top) (symbol? (first top)) (symbol? (second top))))
