@@ -9,6 +9,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - universal `describe' method.
+;;  - tests for `field-values'.
 ;;  - ability to specify multiple delegee class possibilities.
 ;;  - &get, &set, &getset.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,8 +29,9 @@
                              `((unless (a:is? ,delegee-sym ',delegee-class)
                                  (error "Delegee is not of class '%s: %S."
                                    ',delegee-class ,delegee-sym)))))
-          ;; synthesize this method and inject it into the `cl-defun' so that it can
-          ;; access intance's fields:
+          ;; synthesize these methods and inject them into the `cl-defun' so 
+          ;; that they can access the instance's fields:
+          
           (field-values-method
             `(field-values ()
                (cl-pairlis field-names 
