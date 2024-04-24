@@ -9,8 +9,7 @@
 (require 'aris-funs--strings)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;;  - universal `format' method.
-;;  - tests for `field-values'.
+;;  - tests for `field-values', `fmt', `fmt-as-lines'.
 ;;  - ability to specify multiple delegee class possibilities.
 ;;  - &get, &set, &getset.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -103,23 +102,26 @@
      (field-names  () field-names)
      (fmt          () (join-string-lines (fmt-as-lines self)))
      (fmt-as-lines ()
-       (let ((alist (field-values self)))
+       (let ((fmt-values
+               (cons (cons 'class-name (symbol-name class-name))
+                 (field-values self))))
          (let ((max-len 0))
            ;; measure the max key length so we can line things up;
-           (dolist (kvp alist)
+           (dolist (kvp fmt-values)
+             ;; (prn "kvp: %s" kvp)
              (let* ( (key (car kvp))
                      (key-length (length (symbol-name key))))
                (when (> key-length max-len)
                  (setq max-len key-length))))
            ;; print the padded key-value pairs:
            (let (lines)
-             (dolist (kvp alist)
+             (dolist (kvp fmt-values)
                (let* ( (key (car kvp))
                        (val (cdr kvp))
                        (key-length (length (symbol-name key)))
                        (padding (make-string (- max-len key-length) ?\ )))
                  (push (format "%s:%s %s" key padding val) lines)))
-             lines))))
+             (nreverse lines)))))
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
   ;; Note that all objects also have a `field-values' method but, since
@@ -190,8 +192,9 @@ trying to send a message to a non-object."
   "Return the method that implements message for this object."
   (a:must-be-object! object)
   ;; (prn "get: Getting method for %s." message)
-  (let ((res (with-indentation (funcall object message))))
-    ;; (prn "get: Got method for %s: %s." message res)
+  ;; (let ((res (with-indentation (funcall object message))))
+  ;;   (prn "get: Got method for %s: %s." message res)
+  (let ((res (funcall object message)))
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -205,8 +208,8 @@ trying to send a message to a non-object."
   (if-let ((method (a:get-method object message)))
     (progn
       ;; (prn "send: Got method for %s." message)
-      (with-indentation
-        (apply method args)))
+      ;; (with-indentation
+      (apply method args)) ; )
     (error "send: No method for %s." message)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

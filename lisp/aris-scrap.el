@@ -36,5 +36,3 @@
 (fmt-as-lines acct)
 (fmt acct)
 (describe acct)
-
-
