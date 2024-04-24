@@ -131,11 +131,11 @@ element is the modified arglist and whose second element is the delegee argument
 a list of the form (CLASS SYMBOL).
 
 This function adds a new lambda list keyword, &delegee. When used, the &delegee
-keyword follow all required parameters and precede any &optional and &rest
-parameters. The &delegee keyword must be followed by a specifier for the delegee,
-which may be either a symbol (meaning the delegee is bound to that symbol and
-may be of any class) or a list of length two whose first element is the required
-class of the delegee and whose second element is the symbol to bind the delegee to.
+keyword must precede any &rest, &key or &auxparameters but may be &optional.
+The &delegee keyword must be followed by a specifier for the delegee, which may
+be either a symbol (meaning the delegee is bound to that symbol andmay be of any
+class) or a list of length two whose first element is the required class of the delegee
+and whose second element is the symbol to bind the delegee to.
 
 Examples of use:
 (a:extract-delegee-arg '(password &delegee (account acct) &rest things)) ⇒
@@ -149,14 +149,15 @@ Examples of use:
 
 Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
-(a:extract-delegee-arg '(password &delegee &optional foo)) ;; malformed ARGLIST, &delegee immediately followed by &optional.
-(a:extract-delegee-arg '(password &optional thing &delegee acct)) ;; malformed ARGLIST, &optional preceded belegee."
+(a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
   (if (not (memq '&delegee arglist))
     (list arglist)
-    (let (new-arglist-segment delegee)
+    (let (new-arglist-segment delegee-is-optional)
       (while-let ( (top (first arglist))
                    (_ (not (eq '&delegee top))))
-        (when (memq top '(&optional &key &rest &aux))
+        (when (eq top '&optional)
+          (setq delegee-is-optional t))
+        (when (memq top '(&key &rest &aux))
           (error "Malformed ARGLIST, %s before &delegee." top))
         (push (pop arglist) new-arglist-segment))
       (pop arglist)
@@ -176,14 +177,22 @@ Examples of mis-use:
       (push (first delegee) new-arglist-segment) ; add delegee's symbol.
       (list (append (nreverse new-arglist-segment) arglist) delegee))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
-  returns ((password acct &rest things) (acct account)))
-(confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
-  returns ((password acct &optional thing) (acct)))
+;; typed delegee:
 (confirm that (a:extract-delegee-arg '(password &delegee (account acct)))
   returns ((password acct) (acct account)))
+;; un-typed delegee:
 (confirm that (a:extract-delegee-arg '(password &delegee acct))
   returns ((password acct) (acct)))
+;; optional delegee case:
+(confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct))
+  returns ((password &optional thing acct) (acct)))
+;; mandatory delegee and an &rest:
+(confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
+  returns ((password acct &rest things) (acct account)))
+;; mandatory delegate and an &optional:
+(confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
+  returns ((password acct &optional thing) (acct)))
+;; 'do nothing' case:
 (confirm that (a:extract-delegee-arg '(password &rest things))
   returns ((password &rest things)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
