@@ -19,5 +19,3 @@
 (bar (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAR! 3"
 (baz (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAZ! 5"
 
-
-

@@ -16,7 +16,7 @@
      (dir          ()       method-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
-  "Methods possessed by all of Ari's variant of Norvig-style objects.")
+  "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -24,18 +24,20 @@
 (defmacro a:defclass (class instance-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (parsed-arglist  (a:extract-delegee-arg instance-vars))
+  (let* ( (methods         (append *a:universal-methods* user-methods))
+          (parsed-arglist  (a:extract-delegee-arg instance-vars))
           (instance-vars   (first parsed-arglist))
           (delegee-spec    (second parsed-arglist))
           (delegee-sym     (first delegee-spec))
           (delegee-class   (second delegee-spec))
-          (methods         (append *a:universal-methods* user-methods)))
-    (when delegee-spec
-      (if-let ((method (assoc 'delegate methods)))
-        (setf (car method) 'otherwise)
-        (setf methods (append methods
-                        `((otherwise (&rest args)
-                            (apply message ,delegee-sym args)))))))
+          (delegee-test    (when delegee-class
+                             `((unless (a:is? ,delegee-sym ',delegee-class)
+                                 (error "Delegee is not of the class '%s: %S."
+                                   ',delegee-class ,delegee-sym))))))
+    (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
+      (setf (car method) 'otherwise))
+    (when (and delegee-spec (not (alist-has? 'otherwise methods)))
+      (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
@@ -44,6 +46,7 @@
          ;; define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
          (cl-defun ,class ,instance-vars
+           ,@delegee-test
            (let (self)
              (setq self
                #'(lambda (message)
@@ -202,13 +205,16 @@ Examples of mis-use:
       (push (first delegee) new-arglist-segment) ; add delegee's symbol.
       (list (append (nreverse new-arglist-segment) arglist) delegee))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; typed delegee:
+;; delegee first case:
+(confirm that (a:extract-delegee-arg '(&delegee (account acct) password))
+  returns ((acct password) (acct account nil)))
+;; typed delegee case:
 (confirm that (a:extract-delegee-arg '(password &delegee (account acct)))
   returns ((password acct) (acct account nil)))
-;; un-typed delegee:
+;; un-typed delegee case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct))
   returns ((password acct) (acct nil nil)))
-;; optional delegee case:
+;; optional delegee case case:
 (confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct))
   returns ((password &optional thing acct) (acct nil t)))
 ;; optional delegee case 2:
@@ -220,10 +226,10 @@ Examples of mis-use:
 ;; optional delegee case 4:
 (confirm that (a:extract-delegee-arg '(password &optional foo &delegee (acct account) bar))
   returns ((password &optional foo account bar) (account acct t)))
-;; mandatory delegee and an &rest:
+;; mandatory delegee and an &rest case:
 (confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
   returns ((password acct &rest things) (acct account nil)))
-;; mandatory delegate and an &optional:
+;; mandatory delegate and an &optional case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
   returns ((password acct &optional thing) (acct nil nil)))
 ;; 'do nothing' case:
@@ -258,7 +264,7 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-password (password &delegee (account acct)) ()
+(a:defclass account-with-password (password &delegee acct) ()
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
