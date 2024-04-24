@@ -5,6 +5,7 @@
 (require 'aris-funs--aliases)
 (require 'aris-funs--basic-preds)
 (require 'aris-funs--lists)
+(require 'aris-funs--alists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -27,10 +28,14 @@
           (methods        (append *a:universal-methods* user-methods))
           (method-names   (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'a:make-method-clause methods)))
-    (prn "methods: %s" methods)
+    (prndiv)
+    (prn "methods:" (pp-to-string methods))
+    (prndiv)
+    (prn "%s" (substring (indent-string-lines (pp-to-string (alist-remove 'otherwise methods))) 0 -3))
+    (prndiv)
     `(let ( (class-name   ',class)
             (method-names ',method-names)
-            ,@class-vars)
+            @class-vars)
        ;; Define generic functions for the methods and a constructor for the class:
        (mapc #'a:ensure-generic-fun method-names)
        (cl-defun ,class ,instance-vars
@@ -264,6 +269,8 @@ Examples of mis-use:
     (if (> amt limit)
       :OVER-LIMIT
       (withdraw acct amt)))
+  (method-not-found (&rest args)
+    (apply message acct args))
   (otherwise (&rest args)
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
