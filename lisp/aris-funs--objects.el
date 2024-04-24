@@ -66,7 +66,7 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
-     (method-names          ()       method-names)
+     (method-names ()       method-names)
      (field-names  ()       field-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names))))
@@ -341,7 +341,7 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:defclass account-with-password (password &delegee acct) ()
   (change-password (pass new-pass)
-    (if (equal pass password)
+    (if (equal pass new-password)
       (setf password new-pass)
       :WRONG-PASSWORD))
   (delegate (pass &rest args)
