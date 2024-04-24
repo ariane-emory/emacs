@@ -127,11 +127,15 @@
                        (padding (make-string (- max-len key-length) ?\ )))
                  ;; (prn "VAL:          %S" val)
                  ;; (prn "a:is-object?: %S" (a:is-object? val))
-                 (push (format "%s:%s%s" key padding
-                         (if (not (a:is-object? val))
-                           val
-                           (join-string-lines
-                             (fmt-as-lines val (+ indent-tail-lines-by max-len)))))
+                 (push
+
+                   (if (not (a:is-object? val))
+                     (format "%s:%s%S" key padding val)
+                     (format "%s:%s%s" key padding
+                       (join-string-lines
+                         (fmt-as-lines val (+ 1 indent-tail-lines-by max-len)))))
+
+                   
                    lines)))
              (let* ( (lines (nreverse lines))
                      (head-line  (first lines))
@@ -450,5 +454,13 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;; (format "%s:%s%s" key padding
+;;   (if (not (a:is-object? val))
+;;     val
+;;     (join-string-lines
+;;       (fmt-as-lines val (+ indent-tail-lines-by max-len)))))
 
 
