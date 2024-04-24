@@ -5,18 +5,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
-  (cond
-    ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
-    ((eq '\, (car-safe thing)) (prn "This one is special: %s" (cadr thing)))
-    ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" (cadr thing)))
-    ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
-    ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
-    (t (prn "%s" thing))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:defclass account (name &optional (balance 0.00))
   ((interest-rate .06))
@@ -26,12 +14,13 @@
   (name () name)
   (interest () (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf acct2 (account "A. User" 2000.00))
-(deposit acct2 42.00)
-(withdraw acct2 200.00)
-(symbol-plist 'acct2)
+(setf normal-acct (account "A. User" 2000.00))
+(a:is? normal-acct 'account)
+(deposit normal-acct 42.00)
+(withdraw normal-acct 200.00)
+(symbol-plist 'normal-acct)
 (symbol-plist 'withdraw)
-(is? acct2 'account)
+(is? normal-acct 'account)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -46,12 +35,12 @@
       (apply message acct args)
       :WRONG-PASSWORD)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf acct3 (account-with-password "secret" acct2))
-(withdraw acct3 "guess" 2000.00)
-(withdraw acct3 "secret" 200.00)
-(is? acct3 'account-with-password) ;; t
-(is? acct3 'account) ;; nil
-(class-name acct3)
+(setf passwd-acct (account-with-password "secret" normal-acct))
+(withdraw passwd-acct "guess" 2000.00)
+(withdraw passwd-acct "secret" 200.00)
+(is? passwd-acct 'account-with-password) ;; t
+(is? passwd-acct 'account) ;; nil
+(class-name passwd-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -64,13 +53,13 @@
   (otherwise (&rest args)
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf acct4
+(setf limit-acct
   (account-with-password "pass"
     (account-with-limit 100.00
       (account "A. Thrifty Spender" 500.00))))
-(withdraw acct4 "pass" 200.00)
-(withdraw acct4 "pass" 20.00)
-(withdraw acct4 "guess" 20.00)
+(withdraw limit-acct "pass" 200.00)
+(withdraw limit-acct "pass" 20.00)
+(withdraw limit-acct "guess" 20.00)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -98,4 +87,16 @@
 ;;             (name #'(lambda nil name))
 ;;             (privcall #'(lambda nil (private-method)))
 ;;             (interest #'(lambda nil (cl-infc balance (* balance interest-rate)))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
+  (cond
+    ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
+    ((eq '\, (car-safe thing)) (prn "This one is special: %s" (cadr thing)))
+    ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" (cadr thing)))
+    ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
+    ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
+    (t (prn "%s" thing))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
