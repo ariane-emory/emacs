@@ -31,7 +31,7 @@
           (delegee-class   (second delegee-spec))
           (methods         (append *a:universal-methods* user-methods))
           (delegate-method (when delegee-spec ; synthesize a `delegate' method.
-                             `(delegate (&rest args)
+                             `(otherwise (&rest args)
                                 (apply message ,delegee-sym args)))))
     (when delegee-spec
       (if-let ((method (assoc 'delegate methods)))
