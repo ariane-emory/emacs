@@ -26,7 +26,7 @@
           (delegee-class   (second delegee-spec))
           (delegee-test    (when delegee-class
                              `((unless (a:is? ,delegee-sym ',delegee-class)
-                                 (error "Delegee is not of the class '%s: %S."
+                                 (error "Delegee is not of class '%s: %S."
                                    ',delegee-class ,delegee-sym))))))
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
@@ -73,7 +73,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:lambda-list-keywords*
+(defvar *a:cl-lambda-list-keywords*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '(&optional &key &rest &aux)
   "Keywords that can appear in a lambda list.")
@@ -180,11 +180,11 @@ class) or a list of length two whose first element is the required class of the 
 and whose second element is the symbol to bind the delegee to.
 
 Examples of use:
-(a:extract-delegee-arg '(password &delegee (account acct) &rest things)) ⇒
+(a:extract-delegee-arg '(password &delegee (acct account) &rest things)) ⇒
  ((password account &rest things) (acct . account))
 (a:extract-delegee-arg '(password &delegee acct &optional thing)) ⇒
  ((password nil &optional thing) (acct))
-(a:extract-delegee-arg '(password &delegee (account acct))) ⇒
+(a:extract-delegee-arg '(password &delegee (acct account))) ⇒
  ((password account) (acct . account))
 (a:extract-delegee-arg '(password &delegee acct)) ⇒
  ((password nil) (acct))
@@ -201,7 +201,7 @@ Examples of mis-use:
         (when (eq top '&optional)
           (setq delegee-is-optional t))
         (let ((ll-keywords-other-than-&optional
-                (cl-remove '&optional *a:lambda-list-keywords*)))
+                (cl-remove '&optional *a:cl-lambda-list-keywords*)))
           (when (memq top ll-keywords-other-than-&optional)
             (error "Malformed ARGLIST, %s before &delegee." top)))
         (push (pop arglist) new-arglist-segment))
@@ -209,7 +209,7 @@ Examples of mis-use:
       (unless arglist
         (error "Malformed ARGLIST, nothing after &delegee."))
       (let ((top (pop arglist)))
-        (when (memq top *a:lambda-list-keywords*)
+        (when (memq top *a:cl-lambda-list-keywords*)
           (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
         (unless (or (symbol? top)
                   (and (double? top) (symbol? (first top)) (symbol? (second top))))
@@ -218,15 +218,15 @@ Examples of mis-use:
         (setq delegee
           (if (symbol? top)
             (list top nil delegee-is-optional)
-            (append (nreverse top) (list delegee-is-optional)))))
+            (append top (list delegee-is-optional)))))
       (push (first delegee) new-arglist-segment) ; add delegee's symbol.
       (list (append (nreverse new-arglist-segment) arglist) delegee))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; delegee first case:
-(confirm that (a:extract-delegee-arg '(&delegee (account acct) password))
+(confirm that (a:extract-delegee-arg '(&delegee (acct account) password))
   returns ((acct password) (acct account nil)))
 ;; typed delegee case:
-(confirm that (a:extract-delegee-arg '(password &delegee (account acct)))
+(confirm that (a:extract-delegee-arg '(password &delegee (acct account)))
   returns ((password acct) (acct account nil)))
 ;; un-typed delegee case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct))
@@ -239,12 +239,12 @@ Examples of mis-use:
   returns ((password &optional acct thing) (acct nil t)))
 ;; optional delegee case 3:
 (confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing))
-  returns ((password &optional account thing) (account acct t)))
+  returns ((password &optional acct thing) (acct account t)))
 ;; optional delegee case 4:
 (confirm that (a:extract-delegee-arg '(password &optional foo &delegee (acct account) bar))
-  returns ((password &optional foo account bar) (account acct t)))
+  returns ((password &optional foo acct bar) (acct account t)))
 ;; mandatory delegee and an &rest case:
-(confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
+(confirm that (a:extract-delegee-arg '(password &delegee (acct account) &rest things))
   returns ((password acct &rest things) (acct account nil)))
 ;; mandatory delegate and an &optional case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
@@ -309,7 +309,7 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-limit (limit &delegee (account acct)) ()
+(a:defclass account-with-limit (limit &delegee (acct account)) ()
   (withdraw (amt)
     (if (> amt limit)
       :OVER-LIMIT
