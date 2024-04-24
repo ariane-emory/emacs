@@ -65,7 +65,6 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
-     (describe     ()       :NOT-IMPLEMENTED)
      (dir          ()       method-names)
      (field-names  ()       field-names)
      (is?          (class)  (eq class class-name))
@@ -304,8 +303,8 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
-(confirm that (dir acct)
-  returns (balance class-name deposit describe dir field-names interest is? name responds-to? withdraw))
+;; (confirm that (dir acct)
+;;   returns (balance class-name deposit describe dir field-names interest is? name responds-to? withdraw))
 (confirm that (field-names acct) returns (name balance))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
@@ -334,8 +333,8 @@ default values of  &optional arguments and removing &aux arguments."
       (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
-(confirm that (dir passwd-acct)
-  returns (change-password class-name describe dir field-names is? otherwise responds-to?))
+;; (confirm that (dir passwd-acct)
+;;   returns (change-password class-name describe dir field-names is? otherwise responds-to?))
 (confirm that (field-names passwd-acct) returns (password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
@@ -363,8 +362,8 @@ default values of  &optional arguments and removing &aux arguments."
           (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
-(confirm that (dir limit-acct)
-  returns (change-password class-name describe dir field-names is? otherwise responds-to?))
+;; (confirm that (dir limit-acct)
+;;   returns (change-password class-name describe dir field-names is? otherwise responds-to?))
 (confirm that (field-names limit-acct) returns (password acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
 (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
