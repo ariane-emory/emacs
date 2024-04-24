@@ -198,14 +198,15 @@ Examples of mis-use:
   (name () name)
   (interest () (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:is-object? (setq normal-acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name normal-acct) returns account)
 (confirm that (a:is? normal-acct 'account) returns t)
-(confirm that (a:is-object? (setf normal-acct (account "A. User" 2000.00))) returns t)
 (confirm that (is? normal-acct 'account) returns t)
 (confirm that (deposit normal-acct 42.00) returns 2042.0)
 (confirm that (deposit normal-acct 82.00) returns 2124.0)
 (confirm that (withdraw normal-acct 200.00) returns 1924.0)
 (confirm that (balance normal-acct) returns 1924.0)
+(makunbound 'normal-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -221,7 +222,7 @@ Examples of mis-use:
       :WRONG-PASSWORD)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object?
-                (setf passwd-acct
+                (setq passwd-acct
                   (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
@@ -230,6 +231,7 @@ Examples of mis-use:
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
+(makunbound 'passwd-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -243,7 +245,7 @@ Examples of mis-use:
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object?
-                (setf limit-acct
+                (setq limit-acct
                   (account-with-password "pass"
                     (account-with-limit 100.00
                       (account "A. Thrifty Spender" 500.00)))))
@@ -254,6 +256,7 @@ Examples of mis-use:
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
 (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
 (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
+(makunbound 'limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
