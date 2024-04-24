@@ -31,7 +31,9 @@
           ;; synthesize this method and inject it into the `cl-defun' so that it can
           ;; access intance's fields:
           (field-values-method
-            `(field-values () (list ,@(mapcar #'(lambda (field) field) field-names))))
+            `(field-values ()
+               (cl-pairlis field-names
+                 (list ,@(mapcar #'(lambda (field) field) field-names)))))
           (methods         (append *a:universal-methods* (list field-values-method) user-methods)))
     (prn "field-values-method:")
     (prn "%s" (pp-to-string field-values-method))
