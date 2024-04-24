@@ -17,6 +17,66 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account (name &optional (balance 0.00))
+  ((interest-rate .06))
+  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
+  (deposit (amt) (cl-incf balance amt))
+  (balance () balance)
+  (name () name)
+  (interest () (cl-infc balance (* balance interest-rate))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setf acct2 (account "A. User" 2000.00))
+(deposit acct2 42.00)
+(withdraw acct2 200.00)
+(symbol-plist 'acct2)
+(symbol-plist 'withdraw)
+(is? acct2 'account)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-password (password &delegee (account acct)) ()
+  (change-password (pass new-pass)
+    (if (equal pass password)
+      (setf password new-pass)
+      :WRONG-PASSWORD))
+  (otherwise (pass &rest args)
+    (if (equal pass password)
+      (apply message acct args)
+      :WRONG-PASSWORD)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setf acct3 (account-with-password "secret" acct2))
+(withdraw acct3 "guess" 2000.00)
+(withdraw acct3 "secret" 200.00)
+(is? acct3 'account-with-password) ;; t
+(is? acct3 'account) ;; nil
+(class-name acct3)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-limit (limit &delegee (account acct)) ()
+  (withdraw (amt)
+    (if ( > amt limit)
+      :OVER-LIMIT
+      (withdraw acct amt)))
+  (otherwise (&rest args)
+    (apply message acct args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setf acct4
+  (account-with-password "pass"
+    (account-with-limit 100.00
+      (account "A. Thrifty Spender" 500.00))))
+(withdraw acct4 "pass" 200.00)
+(withdraw acct4 "pass" 20.00)
+(withdraw acct4 "guess" 20.00)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Manually tweaked expansion with a private method:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,61 +99,3 @@
 ;;             (privcall #'(lambda nil (private-method)))
 ;;             (interest #'(lambda nil (cl-infc balance (* balance interest-rate)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account (name &optional (balance 0.00))
-  ((interest-rate .06))
-  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
-  (deposit (amt) (cl-incf balance amt))
-  (balance () balance)
-  (name () name)
-  (interest () (cl-infc balance (* balance interest-rate))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf acct2 (account "A. User" 2000.00))
-(deposit acct2 42.00)
-(withdraw acct2 200.00)
-(symbol-plist 'acct2)
-(symbol-plist 'withdraw)
-(is? acct2 'account)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass password-account (password &delegee (account acct)) ()
-  (change-password (pass new-pass)
-    (if (equal pass password)
-      (setf password new-pass)
-      :WRONG-PASSWORD))
-  (otherwise (pass &rest args)
-    (if (equal pass password)
-      (apply message acct args)
-      :WRONG-PASSWORD)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf acct3 (password-account "secret" acct2))
-(withdraw acct3 "guess" 2000.00)
-(withdraw acct3 "secret" 200.00)
-(is? acct3 'password-account) ;; t
-(is? acct3 'account) ;; nil
-(class-name acct3)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass limited-account (limit &delegee (account acct)) ()
-  (withdraw (amt)
-    (if ( > amt limit)
-      :OVER-LIMIT
-      (withdraw acct amt)))
-  (otherwise (&rest args)
-    (apply message acct args)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf acct4
-  (password-account "pass"
-    (limited-account 100.00
-      (account "A. Thrifty Spender" 500.00))))
-(withdraw acct4 "pass" 200.00)
-(withdraw acct4 "pass" 20.00)
-(withdraw acct4 "guess" 20.00)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
