@@ -110,8 +110,12 @@ Examples of mis-use:
       (list (nreverse new-arglist) delegee)
       )))
 
-(extract-delegee '(password &delegee (account acct) &rest things))
-(extract-delegee '(password &delegee acct &optional thing))
-(extract-delegee '(password &delegee (account acct)))
-(extract-delegee '(password &delegee acct))
+(confirm that (extract-delegee '(password &delegee (account acct) &rest things))
+  returns ((password acct &rest things) (account . acct)))
+(confirm that (extract-delegee '(password &delegee acct &optional thing))
+  returns ((password acct &optional thing) (nil . acct)))
+(confirm that (extract-delegee '(password &delegee (account acct)))
+  returns ((password acct) (account . acct)))
+(confirm that (extract-delegee '(password &delegee acct))
+  returns ((password acct) (nil . acct)))
 
