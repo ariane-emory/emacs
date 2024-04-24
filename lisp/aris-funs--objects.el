@@ -33,7 +33,7 @@
           ;; that they can access the instance's fields:
           (field-values-method
             `(field-values ()
-               (cl-pairlis field-names (list ,@field-names))))
+               (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@field-names)))))
           (synthesized-methods
             (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
