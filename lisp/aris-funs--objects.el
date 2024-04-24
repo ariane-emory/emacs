@@ -29,11 +29,12 @@
                              `((unless (a:is? ,delegee-sym ',delegee-class)
                                  (error "Delegee is not of class '%s: %S."
                                    ',delegee-class ,delegee-sym)))))
-          ;; synthesize these methods and inject them into the `cl-defun' so 
+          ;; synthesize these method(s) and inject them into the `cl-defun' so 
           ;; that they can access the instance's fields:
           (field-values-method
             `(field-values ()
                (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@field-names)))))
+          ;; end of synthesized method(s).
           (synthesized-methods
             (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
@@ -95,9 +96,7 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   () class-name)
-     (describe     ()
-       (dolist (line (string-lines (fmt self)))
-         (prn line)))
+     (describe     () (mapc #'prn (fmt-as-lines self)) nil)
      (dir          () method-names)
      (field-names  () field-names)
      (fmt          () (join-string-lines (fmt-as-lines self)))
