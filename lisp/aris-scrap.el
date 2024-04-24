@@ -24,3 +24,7 @@
 (baz (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAZ! 5"
 
 
+(field-names acct)
+(field-names passwd-acct)
+
+(describe acct)

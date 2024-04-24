@@ -15,11 +15,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro a:defclass (class instance-vars class-vars &rest user-methods)
+(defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let* ( (methods         (append *a:universal-methods* user-methods))
-          (parsed-arglist  (a:extract-delegee-arg instance-vars))
+          (field-names     (a:extract-field-names arglist))
+          (parsed-arglist  (a:extract-delegee-arg arglist))
           (instance-vars   (first parsed-arglist))
           (delegee-spec    (second parsed-arglist))
           (delegee-sym     (first delegee-spec))
@@ -35,7 +36,7 @@
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
-              (field-names  ',instance-vars)
+              (field-names  ',field-names)
               (method-names ',method-names)
               ,@class-vars)
          ;; define generic functions for the methods and a constructor for the class:
@@ -64,8 +65,9 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
-     (field-names  ()       field-names)
+     (describe     ()       :NOT-IMPLEMENTED)
      (dir          ()       method-names)
+     (field-names  ()       field-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
@@ -303,7 +305,8 @@ default values of  &optional arguments and removing &aux arguments."
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
 (confirm that (dir acct)
-  returns (balance class-name deposit dir field-names interest is? name responds-to? withdraw))
+  returns (balance class-name deposit describe dir field-names interest is? name responds-to? withdraw))
+(confirm that (field-names acct) returns (name balance))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
 (confirm that (deposit acct 42.00) returns 2042.0)
@@ -332,7 +335,8 @@ default values of  &optional arguments and removing &aux arguments."
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
 (confirm that (dir passwd-acct)
-  returns (change-password class-name dir field-names is? otherwise responds-to?))
+  returns (change-password class-name describe dir field-names is? otherwise responds-to?))
+(confirm that (field-names passwd-acct) returns (password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
@@ -360,7 +364,8 @@ default values of  &optional arguments and removing &aux arguments."
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (dir limit-acct)
-  returns (change-password class-name dir field-names is? otherwise responds-to?))
+  returns (change-password class-name describe dir field-names is? otherwise responds-to?))
+(confirm that (field-names limit-acct) returns (password acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
 (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
