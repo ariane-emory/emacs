@@ -24,9 +24,8 @@
 (defmacro a:defclass (class instance-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (instance-vars  (first (a:extract-delegee-arg instance-vars)))
-          (methods        (append *a:universal-methods* user-methods))
-          (method-clauses (mapcar #'a:make-method-clause methods)))
+  (let ( (instance-vars  (first (a:extract-delegee-arg instance-vars)))
+         (methods        (append *a:universal-methods* user-methods)))
     ;; (when (alist-has? 'method-not-found methods)
     ;;   (setf (car (assoc 'method-not-found methods)) 'otherwise)
     ;;   (prndiv)
@@ -39,7 +38,8 @@
     ;;           methods))
     ;;       0 -3))
     ;;   (prndiv))
-    (let ((method-names (sort (mapcar #'first methods) #'string<)))
+    (let ( (method-names   (sort (mapcar #'first methods) #'string<))
+           (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
               (method-names ',method-names)
               @class-vars)
