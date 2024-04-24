@@ -34,8 +34,8 @@
                              `(delegate (&rest args)
                                 (apply message ,delegee-sym args)))))
     (when delegee-spec
-      (if (alist-has? 'delegate methods)
-        (setf (car (assoc 'delegate methods)) 'otherwise)
+      (if-let ((method (assoc 'delegate methods)))
+        (setf (car method) 'otherwise)
         (setq methods (append methods (list delegate-method)))))
     (prndiv)
     (prn "methods:" (pp-to-string methods))
