@@ -216,10 +216,8 @@ Examples of mis-use:
                    (_ (not (eq '&delegee top))))
         (when (eq top '&optional)
           (setq delegee-is-optional t))
-        (let ((ll-keywords-other-than-&optional
-                (cl-remove '&optional *a:cl-lambda-list-keywords*)))
-          (when (memq top ll-keywords-other-than-&optional)
-            (error "Malformed ARGLIST, %s before &delegee." top)))
+        (when (memq top *a:cl-lambda-list-keywords-other-than-&optional*)
+          (error "Malformed ARGLIST, %s before &delegee." top))
         (push (pop arglist) new-arglist-segment))
       (pop arglist)
       (unless arglist
