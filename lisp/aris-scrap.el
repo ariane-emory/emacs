@@ -32,3 +32,9 @@
 (setq acct (account "A. User" 2000.00))
 (field-values acct) ;; => ("A. User" 2000.0)
 
+
+(defun foo (count)
+  (when (> count 0)
+    (message "%s" count)
+    (foo (1- count))))
+(foo 7)
