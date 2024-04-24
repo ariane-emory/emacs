@@ -246,7 +246,9 @@ Examples of mis-use:
   (interest ()    (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
-(confirm that (class-name acct) returns account)
+(confirm that (class-name acct) returns account) 
+(confirm that (dir acct)
+  returns (balance class-name deposit dir interest is? name responds-to? withdraw))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
 (confirm that (deposit acct 42.00) returns 2042.0)
@@ -274,6 +276,8 @@ Examples of mis-use:
       (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
+(confirm that (dir passwd-acct)
+  returns (change-password class-name dir is? otherwise responds-to?))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
@@ -300,6 +304,8 @@ Examples of mis-use:
           (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
+(confirm that (dir limit-acct)
+  returns (change-password class-name dir is? otherwise responds-to?))
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
 (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
