@@ -188,6 +188,74 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--objects)
+;; Tests:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account (name &optional (balance 0.00))
+  ((interest-rate .06))
+  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
+  (deposit (amt) (cl-incf balance amt))
+  (balance () balance)
+  (name () name)
+  (interest () (cl-infc balance (* balance interest-rate))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:is-object? (setf normal-acct (account "A. User" 2000.00))) returns t)
+(confirm that (class-name normal-acct) returns account)
+(confirm that (a:is? normal-acct 'account) returns t)
+(confirm that (is? normal-acct 'account) returns t)
+(confirm that (deposit normal-acct 42.00) returns 2042.0)
+(confirm that (deposit normal-acct 82.00) returns 2124.0)
+(confirm that (withdraw normal-acct 200.00) returns 1924.0)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-password (password &delegee (account acct)) ()
+  (change-password (pass new-pass)
+    (if (equal pass password)
+      (setf password new-pass)
+      :WRONG-PASSWORD))
+  (otherwise (pass &rest args)
+    (if (equal pass password)
+      (apply message acct args)
+      :WRONG-PASSWORD)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:is-object?
+                (setf passwd-acct
+                  (account-with-password "secret" (account "A. User" 2000.00))))
+  returns t)
+(confirm that (class-name passwd-acct) returns account-with-password)
+(confirm that (a:is? passwd-acct 'account-with-password) returns t)
+(confirm that (is? passwd-acct 'account-with-password) returns t)
+(confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
+(confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
+(confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-limit (limit &delegee (account acct)) ()
+  (withdraw (amt)
+    (if (> amt limit)
+      :OVER-LIMIT
+      (withdraw acct amt)))
+  (otherwise (&rest args)
+    (apply message acct args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:is-object?
+                (setf limit-acct
+                  (account-with-password "pass"
+                    (account-with-limit 100.00
+                      (account "A. Thrifty Spender" 500.00)))))
+  returns t)
+(confirm that (class-name limit-acct) returns account-with-password)
+(confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
+(confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
+(confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
+(confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
+(confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(provide 'aris-funs--objects)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

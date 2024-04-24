@@ -5,67 +5,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account (name &optional (balance 0.00))
-  ((interest-rate .06))
-  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
-  (deposit (amt) (cl-incf balance amt))
-  (balance () balance)
-  (name () name)
-  (interest () (cl-infc balance (* balance interest-rate))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf normal-acct (account "A. User" 2000.00))
-(a:is? normal-acct 'account)
-(deposit normal-acct 42.00)
-(withdraw normal-acct 200.00)
-(symbol-plist 'normal-acct)
-(symbol-plist 'withdraw)
-(is? normal-acct 'account)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-password (password &delegee (account acct)) ()
-  (change-password (pass new-pass)
-    (if (equal pass password)
-      (setf password new-pass)
-      :WRONG-PASSWORD))
-  (otherwise (pass &rest args)
-    (if (equal pass password)
-      (apply message acct args)
-      :WRONG-PASSWORD)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf passwd-acct (account-with-password "secret" normal-acct))
-(withdraw passwd-acct "guess" 2000.00)
-(withdraw passwd-acct "secret" 200.00)
-(is? passwd-acct 'account-with-password) ;; t
-(is? passwd-acct 'account) ;; nil
-(class-name passwd-acct)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-limit (limit &delegee (account acct)) ()
-  (withdraw (amt)
-    (if ( > amt limit)
-      :OVER-LIMIT
-      (withdraw acct amt)))
-  (otherwise (&rest args)
-    (apply message acct args)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setf limit-acct
-  (account-with-password "pass"
-    (account-with-limit 100.00
-      (account "A. Thrifty Spender" 500.00))))
-(withdraw limit-acct "pass" 200.00)
-(withdraw limit-acct "pass" 20.00)
-(withdraw limit-acct "guess" 20.00)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Manually tweaked expansion with a private method:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
