@@ -101,7 +101,8 @@
          (prn line)))
      (dir          () method-names)
      (field-names  () field-names)
-     (fmt ()
+     (fmt          () (join-string-lines (fmt-as-lines self)))
+     (fmt-as-lines ()
        (let ((alist (field-values self)))
          (let ((max-len 0))
            ;; measure the max key length so we can line things up;
@@ -118,7 +119,7 @@
                        (key-length (length (symbol-name key)))
                        (padding (make-string (- max-len key-length) ?\ )))
                  (push (format "%s:%s %s" key padding val) lines)))
-             (join-string-lines lines)))))
+             lines))))
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
   ;; Note that all objects also have a `field-values' method but, since

@@ -33,6 +33,7 @@
 (field-values acct) ;; => ("A. User" 2000.0)
 
 (fmt passwd-acct)
+(fmt-as-lines acct)
 (fmt acct)
 (describe acct)
 
