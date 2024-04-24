@@ -103,20 +103,15 @@ Examples of mis-use:
             (cons (first top) (second top)))))
 
       (prn "delegee:    %s" delegee)
+      (push (cdr delegee) new-arglist)
       (while arglist
         (push (pop arglist) new-arglist))
-      (setq new-arglist (append new-arglist (list (cdr delegee))))
-      (list new-arglist delegee)
+      (prn "new-arglist: %s" new-arglist)
+      (list (nreverse new-arglist) delegee)
       )))
 
 (extract-delegee '(password &delegee (account acct) &rest things))
+(extract-delegee '(password &delegee acct &optional thing))
+(extract-delegee '(password &delegee (account acct)))
+(extract-delegee '(password &delegee acct))
 
-
-;; (extract-delegee '(password &delegee acct &optional thing))
-;; ;; ((password &optional thing acct) (nil . acct))
-
-;; (extract-delegee '(password &delegee (account acct)))
-;; ;; ((password acct) (account . acct))
-
-;; (extract-delegee '(password &delegee acct))
-;; ;; ((password acct) (nil . acct))
