@@ -212,14 +212,14 @@ Examples of mis-use:
   (if (not (memq '&delegee arglist))
     (list arglist nil)
     (let (new-arglist-segment delegee-is-optional)
-      (while-let ( (top (first arglist))
-                   (_ (not (eq '&delegee top))))
-        (when (eq top '&optional)
+      (while-let ( (popped (pop arglist))
+                   (_ (not (eq popped '&delegee))))
+        (when (eq popped '&optional)
           (setq delegee-is-optional t))
-        (when (memq top *a:cl-lambda-list-keywords-other-than-&optional*)
+        (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
           (error "Malformed ARGLIST, %s before &delegee." top))
-        (push (pop arglist) new-arglist-segment))
-      (pop arglist)
+        (push popped new-arglist-segment))
+      ;;(pop arglist)
       (unless arglist
         (error "Malformed ARGLIST, nothing after &delegee."))
       (let ((top (pop arglist)))
@@ -266,6 +266,26 @@ Examples of mis-use:
 ;; 'do nothing' case:
 (confirm that (a:extract-delegee-arg '(password &rest things))
   returns ((password &rest things) nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun a:extract-field-names (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Reduce an 'a:defclass' arglist to a list of field names, stripping out the
+default values of  &optional arguments and removing &aux arguments."
+  (let (without-aux-args)
+    (while-let ( (popped (pop arglist))
+                 (_ (not (eq '&aux popped))))
+      (unless (memq popped *a:defclass-lambda-list-keywords*)
+        (push (if (consp popped) (first popped) popped) without-aux-args)))
+    (nreverse without-aux-args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (a:extract-field-names
+    '( acct &delegee (acct account) &optional baz &rest things
+       &key (foo 42) &aux bar (baz quux)))
+  returns (acct acct baz things foo))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
