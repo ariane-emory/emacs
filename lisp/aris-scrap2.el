@@ -17,18 +17,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account (name &optional (balance 0.00))
-  ((interest-rate .06))
-  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
-  (deposit (amt) (cl-incf balance amt))
-  (balance () balance)
-  (name () name)
-  (privcall () :BAR)
-  (interest () (cl-infc balance (* balance interest-rate))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Manually tweaked expansion with a private method:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -53,6 +41,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account (name &optional (balance 0.00))
+  ((interest-rate .06))
+  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
+  (deposit (amt) (cl-incf balance amt))
+  (balance () balance)
+  (name () name)
+  (privcall () :BAR)
+  (interest () (cl-infc balance (* balance interest-rate))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf acct2 (account "A. User" 2000.00))
 (privcall acct2)
@@ -66,10 +66,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Hypothetical improved delegee syntax:
-;;   (a:defclass password-account (password &delegee (account acct)) nil
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass password-account (password &delegee (account acct)) nil
+(a:defclass password-account (password &delegee (account acct)) ()
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
@@ -92,7 +89,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass limited-account (limit acct) nil
+(a:defclass limited-account (limit &delegee (account acct)) ()
   (withdraw (amt)
     (if ( > amt limit)
       :OVER-LIMIT
@@ -106,7 +103,7 @@
 (setf acct4
   (password-account "pass"
     (limited-account 100.00
-      (account "A. Thrifty Spender" 500.00)))) 
+      (account "A. Thrifty Spender" 500.00))))
 (withdraw acct4 "pass" 200.00)
 (withdraw acct4 "pass" 20.00)
 (withdraw acct4 "guess" 20.00)
