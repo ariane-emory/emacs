@@ -153,6 +153,7 @@ Examples of mis-use:
   (if (not (memq '&delegee arglist))
     (list arglist)
     (let (new-arglist-segment delegee-is-optional)
+      ;; ^ delegee-is-optional isn't actually used for anything yet.
       (while-let ( (top (first arglist))
                    (_ (not (eq '&delegee top))))
         (when (eq top '&optional)
