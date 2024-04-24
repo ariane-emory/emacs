@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; fill-column: 90; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--trees)
-(require 'peter-norvigs-funs--objects)
+(require 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -48,15 +48,9 @@
   (deposit (amt) (cl-incf balance amt))
   (balance () balance)
   (name () name)
-  (privcall () :BAR)
   (interest () (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf acct2 (account "A. User" 2000.00))
-(privcall acct2)
-
 (deposit acct2 42.00)
 (withdraw acct2 200.00)
 (symbol-plist 'acct2)
@@ -76,9 +70,6 @@
       (apply message acct args)
       :WRONG-PASSWORD)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf acct3 (password-account "secret" acct2))
 (withdraw acct3 "guess" 2000.00)
 (withdraw acct3 "secret" 200.00)
@@ -88,29 +79,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
-
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (a:defclass limited-account (limit &delegee (account acct)) ()
-;;   (withdraw (amt)
-;;     (if ( > amt limit)
-;;       :OVER-LIMIT
-;;       (withdraw acct amt)))
-;;   (otherwise (&rest args)
-;;     (apply message acct args)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setf acct4
-;;   (password-account "pass"
-;;     (limited-account 100.00
-;;       (account "A. Thrifty Spender" 500.00))))
-;; (withdraw acct4 "pass" 200.00)
-;; (withdraw acct4 "pass" 20.00)
-;; (withdraw acct4 "guess" 20.00)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass limited-account (limit &delegee (account acct)) ()
+  (withdraw (amt)
+    (if ( > amt limit)
+      :OVER-LIMIT
+      (withdraw acct amt)))
+  (otherwise (&rest args)
+    (apply message acct args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setf acct4
+  (password-account "pass"
+    (limited-account 100.00
+      (account "A. Thrifty Spender" 500.00))))
+(withdraw acct4 "pass" 200.00)
+(withdraw acct4 "pass" 20.00)
+(withdraw acct4 "guess" 20.00)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
