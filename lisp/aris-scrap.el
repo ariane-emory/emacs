@@ -63,16 +63,30 @@ second element is the symbol to bind the delegee to.
 
 Examples of use:
 (extract-delegee '(password &delegee (account acct)))
-  ⇒ '((password acct) (account . acct))
+  ⇒ '((password acct) (account acct))
 (extract-delegee '(password &delegee acct))
-  ⇒ '((password acct) (nil . acct)
+  ⇒ '((password acct) (nil acct)
 (extract-delegee '(password &delegee (account acct) &rest things))
-  ⇒ '((password acct &rest things) (account . acct))
+  ⇒ '((password acct &rest things) (account acct))
 (extract-delegee '(password &delegee acct &optional thing))
-  ⇒ '((password acct &optional thing) (nil . acct)
+  ⇒ '((password acct &optional thing) (nil acct)
 
 Examples of mis-use:
 (extract-delegee '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (extract-delegee '(password &delegee &optional foo)) ;; malformed ARGLIST, &delegee immediately followed by &optional.
 (extract-delegee '(password &optional thing &delegee acct)) ;; malformed ARGLIST, &optional preceded belegee."
-  )
+  (if (not (memq '&delegee arglist))
+    arglist
+    (let (new-arglist delegee)
+      (while (not (eq '&delegee (first arglist)))
+        (push (pop arglist) new-arglist))
+      (prn "at this point, new-arglist = %s" new-arglist)
+      (prn "and arglist = %s"                arglist)
+      )))
+
+(extract-delegee '(password &delegee (account acct)))
+;; (extract-delegee '(password &delegee acct))
+;; (extract-delegee '(password &delegee (account acct) &rest things))
+;; (extract-delegee '(password &delegee acct &optional thing))
+(pair? '(1 . 2))
+
