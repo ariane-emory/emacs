@@ -18,7 +18,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:defclass account (name &optional (balance 0.00))
+(a:defclass account (name &optional (balance 0.00))
   ((interest-rate .06))
   (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
   (deposit (amt) (cl-incf balance amt))
@@ -34,8 +34,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (let
 ;;   ((interest-rate 0.06))
-;;   (n:ensure-generic-fn 'is?)
-;;   (mapcar #'n:ensure-generic-fn '(withdraw deposit balance name privcall interest))
+;;   (a:ensure-generic-fn 'is?)
+;;   (mapcar #'a:ensure-generic-fn '(withdraw deposit balance name privcall interest))
 ;;   (cl-defun account (name &optional (balance 0.0))
 ;;     #'(lambda (message)
 ;;         (cl-flet ((private-method () name))
@@ -67,10 +67,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Hypothetical improved delegee syntax:
-;;   (n:defclass password-account (password &delegee (account acct)) nil
+;;   (a:defclass password-account (password &delegee (account acct)) nil
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:defclass password-account (password acct) ;; <- this class has 2 instance variables.
-  () ;; <- this class has no class variables.
+(a:defclass password-account (password &delegee (account acct)) nil
   (change-password (pass new-pass)
     (if (equal pass password)
       (setf password new-pass)
@@ -85,7 +84,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setf acct3 (password-account "secret" acct2))
 (withdraw acct3 "guess" 2000.00)
-(withdraw acct3 "secret" 2000.00)
+(withdraw acct3 "secret" 200.00)
 (is? acct3 'password-account) ;; t
 (is? acct3 'account) ;; nil
 (class-name acct3)
@@ -93,7 +92,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(n:defclass limited-account (limit acct) nil
+(a:defclass limited-account (limit acct) nil
   (withdraw (amt)
     (if ( > amt limit)
       :OVER-LIMIT

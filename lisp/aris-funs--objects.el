@@ -22,7 +22,8 @@
 (defmacro a:defclass (class instance-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (methods (append *a:universal-methods* user-methods))
+  (let* ( (instance-vars (first (a:extract-delegee-arg instance-vars)))
+          (methods (append *a:universal-methods* user-methods))
           (method-names (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'a:make-method-clause methods)))
     `(let ( (class-name   ',class)
@@ -118,6 +119,70 @@ trying to send a message to a non-object."
   (and
     (fboundp fun-name)
     (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun a:extract-delegee-arg (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Extract the delegee argument from an arglist ARGLIST, returning a list whose first
+element is the modified arglist and whose second element is the delegee argument as
+a list of the form (CLASS SYMBOL).
+
+This function adds a new lambda list keyword, &delegee. When used, the &delegee
+keyword follow all required parameters and precede any &optional and &rest
+parameters. The &delegee keyword must be followed by a specifier for the delegee,
+which may be either a symbol (meaning the delegee is bound to that symbol and
+may be of any class) or a list of length two whose first element is the required
+class of the delegee and whose second element is the symbol to bind the delegee to.
+
+Examples of use:
+(a:extract-delegee-arg '(password &delegee (account acct) &rest things)) ⇒
+ ((password account &rest things) (acct . account))
+(a:extract-delegee-arg '(password &delegee acct &optional thing)) ⇒
+ ((password nil &optional thing) (acct))
+(a:extract-delegee-arg '(password &delegee (account acct))) ⇒
+ ((password account) (acct . account))
+(a:extract-delegee-arg '(password &delegee acct)) ⇒
+ ((password nil) (acct))
+
+Examples of mis-use:
+(a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
+(a:extract-delegee-arg '(password &delegee &optional foo)) ;; malformed ARGLIST, &delegee immediately followed by &optional.
+(a:extract-delegee-arg '(password &optional thing &delegee acct)) ;; malformed ARGLIST, &optional preceded belegee."
+  (if (not (memq '&delegee arglist))
+    (list arglist)
+    (let (new-arglist-segment delegee)
+      (while-let ( (top (first arglist))
+                   (_ (not (eq '&delegee top))))
+        (push (pop arglist) new-arglist-segment))
+      (pop arglist)
+      (unless arglist
+        (error "Malformed ARGLIST, nothing after &delegee."))
+      (let ((top (pop arglist)))
+        (when (memq top '(&optional &rest))
+          (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
+        (unless (or (symbol? top)
+                  (and (double? top) (symbol? (first top)) (symbol? (second top))))
+          (error (concat "Malformed ARGLIST, &delegee must be followed by a "
+                   "symbol or a list of length two.")))
+        (setq delegee
+          (if (symbol? top)
+            (list top)
+            (nreverse top))))
+      (push (first delegee) new-arglist-segment) ; add delegee's symbol.
+      (list (append (nreverse new-arglist-segment) arglist) delegee))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
+  returns ((password acct &rest things) (acct account)))
+(confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
+  returns ((password acct &optional thing) (acct)))
+(confirm that (a:extract-delegee-arg '(password &delegee (account acct)))
+  returns ((password acct) (acct account)))
+(confirm that (a:extract-delegee-arg '(password &delegee acct))
+  returns ((password acct) (acct)))
+(confirm that (a:extract-delegee-arg '(password &rest things))
+  returns ((password &rest things)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
