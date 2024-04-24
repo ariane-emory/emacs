@@ -104,7 +104,7 @@
      (dir          () method-names)
      (field-names  () field-names)
      (fmt          () (join-string-lines (fmt-as-lines self)))
-     (fmt-as-lines ()
+     (fmt-as-lines (&optional indent-tail-lines-by)
        (let ((fmt-values
                (cons (cons 'class-name (symbol-name class-name))
                  (field-values self))))

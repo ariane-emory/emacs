@@ -49,7 +49,8 @@
 (fmt-as-lines passwd-acct)
 
 (describe acct)
-;; (describe passwd-acct)
+(describe passwd-acct)
+(describe limit-acct)
 
 
 
