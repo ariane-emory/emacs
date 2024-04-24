@@ -32,7 +32,7 @@
           ;; access intance's fields:
           (field-values-method
             `(field-values ()
-               (cl-pairlis field-names
+               (cl-pairlis field-names 
                  (list ,@field-names))))
           (methods         (append *a:universal-methods* (list field-values-method) user-methods)))
     (prn "field-values-method:")
