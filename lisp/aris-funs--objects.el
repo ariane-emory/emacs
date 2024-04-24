@@ -82,6 +82,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords-other-than-&optional*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cl-remove '&optional *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in a lambda list other than &optional.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:defclass-lambda-list-keywords*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cons '&delegee *a:cl-lambda-list-keywords*)
@@ -204,7 +212,6 @@ Examples of mis-use:
   (if (not (memq '&delegee arglist))
     (list arglist nil)
     (let (new-arglist-segment delegee-is-optional)
-      ;; ^ delegee-is-optional isn't actually used for anything yet.
       (while-let ( (top (first arglist))
                    (_ (not (eq '&delegee top))))
         (when (eq top '&optional)
