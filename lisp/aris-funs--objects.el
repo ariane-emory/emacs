@@ -26,18 +26,18 @@
   "Define a class for object-oriented programming."
   (let ( (instance-vars  (first (a:extract-delegee-arg instance-vars)))
          (methods        (append *a:universal-methods* user-methods)))
-    ;; (when (alist-has? 'method-not-found methods)
-    ;;   (setf (car (assoc 'method-not-found methods)) 'otherwise)
-    ;;   (prndiv)
-    ;;   (prn "methods:" (pp-to-string methods))
-    ;;   (prndiv)
-    ;;   (prn "%s"
-    ;;     (substring
-    ;;       (indent-string-lines
-    ;;         (pp-to-string
-    ;;           methods))
-    ;;       0 -3))
-    ;;   (prndiv))
+    (when (alist-has? 'method-not-found methods)
+      (setf (car (assoc 'method-not-found methods)) 'otherwise)
+      (prndiv)
+      (prn "methods:" (pp-to-string methods))
+      (prndiv)
+      (prn "%s"
+        (substring
+          (indent-string-lines
+            (pp-to-string
+              methods))
+          0 -3))
+      (prndiv))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
@@ -254,7 +254,7 @@ Examples of mis-use:
     (if (equal pass password)
       (setf password new-pass)
       :WRONG-PASSWORD))
-  (otherwise (pass &rest args)
+  (method-not-found (pass &rest args)
     (if (equal pass password)
       (apply message acct args)
       :WRONG-PASSWORD)))
@@ -280,7 +280,7 @@ Examples of mis-use:
     (if (> amt limit)
       :OVER-LIMIT
       (withdraw acct amt)))
-  (otherwise (&rest args)
+  (method-not-found (&rest args)
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
@@ -305,4 +305,23 @@ Examples of mis-use:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:generic-fun-p 'dir)
 (a:generic-fun-p 'get-self)
+(a:get-method acct 'method-not-found)
 ;; (get-self acct)
+(dir limit-acct)
+(a:send-message limit-acct 'method-not-found "pass" 2)
+(a:get-method limit-acct 'method-not-found)
+
+(a:defclass fooclass (num) ()
+  (foo () (format "FOO! %d" num)))
+
+(a:defclass barclass (num) ()
+  (bar () (format "BAR! %d" num))
+  (method-not-found (&rest args)
+    (apply message acct args)))
+
+(a:defclass bazclass (num) ()
+  (baz () (format "BAZ! %d" num))
+  (method-not-found (&rest args)
+    (apply message acct args)))
+
+(baz (bazclass 3))
