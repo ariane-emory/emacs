@@ -193,6 +193,9 @@ Examples of mis-use:
 ;; optional delegee case 3:
 (confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing))
   returns ((password &optional account thing) (account acct t)))
+;; optional delegee case 4:
+(confirm that (a:extract-delegee-arg '(password &optional foo &delegee (acct account) bar))
+  returns ((password &optional foo account bar) (account acct t)))
 ;; mandatory delegee and an &rest:
 (confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
   returns ((password acct &rest things) (acct account nil)))
