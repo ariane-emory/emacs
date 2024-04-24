@@ -30,8 +30,8 @@
                              `((unless (a:is? ,delegee-sym ',delegee-class)
                                  (error "Delegee is not of class '%s: %S."
                                    ',delegee-class ,delegee-sym)))))
-          ;; synthesize these method(s) and inject them into the `cl-defun' so 
-          ;; that they can access the instance's fields:
+          ;; synthesize this method and inject it into the `cl-defun' in our expansion so
+          ;; that it can access the instance's fields:
           (field-values-method
             `(field-values ()
                (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@field-names)))))
@@ -39,27 +39,6 @@
           (synthesized-methods
             (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
-    
-    ;; (prndiv)
-    ;; (prn "defclass %s:" class)
-    ;; (prndiv)
-    ;; (prn "*a:universal-methods*:")
-    ;; (prndiv)
-    ;; (prn "%s" (indent-string-lines (substring (pp-to-string *a:universal-methods*) 0 -1)))
-    ;; (prndiv)
-    ;; (prn "synthesized-methods:")
-    ;; (prndiv)
-    ;; (prn "%s" (indent-string-lines (substring (pp-to-string synthesized-methods) 0 -1)))
-    ;; (prndiv)
-    ;; (prn "user-methods:")
-    ;; (prndiv)
-    ;; (prn "%s" (indent-string-lines (substring (pp-to-string user-methods) 0 -1)))
-    ;; (prndiv)
-    ;; (prn "methods:")
-    ;; (prndiv)
-    ;; (prn "%s" (indent-string-lines (substring (pp-to-string methods) 0 -3)) 0 -1)
-    ;; (prndiv)
-
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
     (when (and delegee-spec (not (alist-has? 'otherwise methods)))
@@ -75,11 +54,40 @@
          (cl-defun ,class ,fields
            ,@delegee-test
            (let (self)
-             ;; bind self lexically so object can reference itself:
+             ;; bind SELF lexically so object can reference itself:
              (setq self
                #'(lambda (message)
                    (declare (aos-class ',class))
                    (cl-case message ,@method-clauses)))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:universal-methods*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '( (class-name   ()       class-name)
+     (method-names          ()       method-names)
+     (field-names  ()       field-names)
+     (is?          (class)  (eq class class-name))
+     (responds-to? (method) (not (null (memq method method-names))))
+     (prepr        ()       (prn (strepr self)))
+     (strepr       ()       (trim-trailing-whitespace (pp-to-string (repr self))))
+     (repr         ()
+       (cons (cons 'class (class-name self)) 
+         (mapr (field-values self)
+           (lambda (kvp)
+             (let ((key (car kvp)) (val (cdr kvp)))
+               (cons key (if (a:is-object? val) (repr val) val)))))))
+     ;; (repr         ()
+     ;;   (let ((alist (field-values self)))
+     ;;     (dolist (kvp alist)
+     ;;       (when (a:is-object? (cdr kvp))
+     ;;         (setcdr kvp (repr (cdr kvp)))))
+     ;;     (cons (cons 'class (class-name self)) alist)))
+     )
+  ;; Note that all objects also have a `field-values' method but, since
+  ;; it need to access instance variables, it is synthesized in `defclass'.
+  "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -90,53 +98,6 @@
 
 (a:make-clause '(name () name)) ⇒ (name #'(lambda 0 name))"
   `(,(first clause) #'(lambda ,@(rest clause))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:universal-methods*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '( (class-name   ()      class-name)
-     (dir          ()      method-names)
-     (field-names  ()      field-names)
-     (is?          (class) (eq class class-name))
-     (prepr        ()      (prn (strepr self)))
-     (repr         ()
-       (let ((alist (field-values self)))
-         (dolist (kvp alist)
-           (when (a:is-object? (cdr kvp))
-             (setcdr kvp (repr (cdr kvp)))))
-         (cons (cons 'class (class-name self)) alist)))
-     (strepr      () (trim-trailing-whitespace (pp-to-string (repr self))))
-     (responds-to? (method) (not (null (memq method method-names)))))
-  ;; Note that all objects also have a `field-values' method but, since
-  ;; it need to access instance variables, it is synthesized in `defclass'.
-  "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:cl-lambda-list-keywords*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '(&optional &key &rest &aux)
-  ;; we're not concerned with &body for now but in the future we should forbidd it.
-  "Keywords that can appear in a lambda list.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:cl-lambda-list-keywords-other-than-&optional*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-remove '&optional *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a lambda list other than &optional.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:defclass-lambda-list-keywords*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cons '&delegee *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a:defclass' lambda list.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -223,6 +184,31 @@ trying to send a message to a non-object."
     (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'a:generic-fun? 'a:generic-fun-p)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '(&optional &key &rest &aux)
+  ;; we're not concerned with &body for now but in the future we should forbidd it.
+  "Keywords that can appear in a lambda list.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords-other-than-&optional*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cl-remove '&optional *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in a lambda list other than &optional.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:defclass-lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cons '&delegee *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in a:defclass' lambda list.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -346,8 +332,8 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
-;; (confirm that (dir acct)
-;;   returns (balance class-name deposit fmt dir field-names interest is? name responds-to? withdraw))
+;; (confirm that (method-names acct)
+;;   returns (balance class-name deposit fmt method-names field-names interest is? name responds-to? withdraw))
 (confirm that (field-names acct) returns (name balance))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
@@ -376,8 +362,8 @@ default values of  &optional arguments and removing &aux arguments."
       (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
-;; (confirm that (dir passwd-acct)
-;;   returns (change-password class-name fmt dir field-names is? otherwise responds-to?))
+;; (confirm that (method-names passwd-acct)
+;;   returns (change-password class-name fmt method-names field-names is? otherwise responds-to?))
 (confirm that (field-names passwd-acct) returns (password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
@@ -405,8 +391,8 @@ default values of  &optional arguments and removing &aux arguments."
           (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
-;; (confirm that (dir limit-acct)
-;;   returns (change-password class-name fmt dir field-names is? otherwise responds-to?))
+;; (confirm that (method-names limit-acct)
+;;   returns (change-password class-name fmt method-names field-names is? otherwise responds-to?))
 (confirm that (field-names limit-acct) returns (password acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
 (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
