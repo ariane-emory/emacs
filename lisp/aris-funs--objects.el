@@ -126,7 +126,7 @@
                  ;; (prn "a:is-object?: %S" (a:is-object? val))
                  (push (format "%s:%s %s" key padding
                          (if (a:is-object? val)
-                           "foo"
+                           (fmt val)
                            val)
                          )
                    lines)))
