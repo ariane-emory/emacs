@@ -181,9 +181,9 @@ because we're gong to be stshing stuff in their symbol properties."
       (and
         already-bound
         (not (let ((existing-group-label (get symbol :PD-GROUP)))
-             (--pd-prn "BIND: '%s already has group label '%s."
-               symbol existing-group-label)
-             (or (not existing-group-label) (eq existing-group-label symbol))))))      
+               (--pd-prn "BIND: '%s already has group label '%s."
+                 symbol existing-group-label)
+               (or (not existing-group-label) (eq existing-group-label symbol))))))      
     (--pd-prn "BIND: '%s isn't bound or was bound by us, we can %sbind it."
       symbol (if already-bound "re" "")))
   ;; Attach our handler function to SYMBOL's function cell:
@@ -202,7 +202,7 @@ because we're gong to be stshing stuff in their symbol properties."
       (eq symbol group-label))
     (--pd-prn "BIND: Marked '%s with group label '%s, its plist is now:"
       symbol group-label)
-    (dolist (line (butlast (split-string (pp-to-string plist ) "\n")))
+    (dolist (line (butlast (split-string (pp-to-string plist) "\n")))
       (--pd-prn "      %s" line))
     ;; Finally, return SYMBOL's modified plist:
     ;;plist

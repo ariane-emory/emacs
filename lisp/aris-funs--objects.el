@@ -11,9 +11,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '( (class-name () class-name)
-     (dir () method-names)
-     (is? (class) (eq class class-name))
+  '( (class-name   ()       class-name)
+     (dir          ()       method-names)
+     (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
   "Methods possessed by all of Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,10 +23,11 @@
 (defmacro a:defclass (class instance-vars class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (instance-vars (first (a:extract-delegee-arg instance-vars)))
-          (methods (append *a:universal-methods* user-methods))
-          (method-names (sort (mapcar #'first methods) #'string<))
+  (let* ( (instance-vars  (first (a:extract-delegee-arg instance-vars)))
+          (methods        (append *a:universal-methods* user-methods))
+          (method-names   (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'a:make-method-clause methods)))
+    (prn "methods: %s" methods)
     `(let ( (class-name   ',class)
             (method-names ',method-names)
             ,@class-vars)
@@ -214,10 +215,10 @@ Examples of mis-use:
 (a:defclass account (name &optional (balance 0.00))
   ((interest-rate .06))
   (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
-  (deposit (amt) (cl-incf balance amt))
-  (balance () balance)
-  (name () name)
-  (interest () (cl-infc balance (* balance interest-rate))))
+  (deposit  (amt) (cl-incf balance amt))
+  (balance  ()    balance)
+  (name     ()    name)
+  (interest ()    (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object? (setq normal-acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name normal-acct) returns account)
@@ -242,9 +243,10 @@ Examples of mis-use:
       (apply message acct args)
       :WRONG-PASSWORD)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:is-object?
-                (setq passwd-acct
-                  (account-with-password "secret" (account "A. User" 2000.00))))
+(confirm that
+  (a:is-object?
+    (setq passwd-acct
+      (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
@@ -265,11 +267,12 @@ Examples of mis-use:
   (otherwise (&rest args)
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:is-object?
-                (setq limit-acct
-                  (account-with-password "pass"
-                    (account-with-limit 100.00
-                      (account "A. Thrifty Spender" 500.00)))))
+(confirm that
+  (a:is-object?
+    (setq limit-acct
+      (account-with-password "pass"
+        (account-with-limit 100.00
+          (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
