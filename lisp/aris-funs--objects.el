@@ -33,7 +33,7 @@
           (field-values-method
             `(field-values ()
                (cl-pairlis field-names
-                 (list ,@(mapcar #'(lambda (field) field) field-names)))))
+                 (list ,@field-names))))
           (methods         (append *a:universal-methods* (list field-values-method) user-methods)))
     (prn "field-values-method:")
     (prn "%s" (pp-to-string field-values-method))
