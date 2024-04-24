@@ -78,17 +78,17 @@ Examples of mis-use:
 (extract-delegee '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (extract-delegee '(password &delegee &optional foo)) ;; malformed ARGLIST, &delegee immediately followed by &optional.
 (extract-delegee '(password &optional thing &delegee acct)) ;; malformed ARGLIST, &optional preceded belegee."
-  (prndiv)
+  ;; (prndiv)
   (if (not (memq '&delegee arglist))
     arglist
     (let (new-arglist delegee)
       (while-let ( (top (first arglist))
                    (_ (not (eq '&delegee top))))
-        (prn "top:         %s" top)
+        ;; (prn "top:         %s" top)
         (push (pop arglist) new-arglist))
       (pop arglist)
-      (prn "new-arglist: %s" new-arglist)
-      (prn "arglist:     %s" arglist)
+      ;; (prn "new-arglist: %s" new-arglist)
+      ;; (prn "arglist:     %s" arglist)
       (unless arglist
         (error "Malformed ARGLIST, nothing after &delegee."))
       (let ((top (pop arglist)))
@@ -105,11 +105,11 @@ Examples of mis-use:
             (list top)
             (nreverse top))))
 
-      (prn "delegee:    %s" delegee)
+      ;; (prn "delegee:    %s" delegee)
       (push (first delegee) new-arglist)
       (while arglist
         (push (pop arglist) new-arglist))
-      (prn "new-arglist: %s" new-arglist)
+      ;; (prn "new-arglist: %s" new-arglist)
       (list (nreverse new-arglist) delegee))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (extract-delegee '(password &delegee (account acct) &rest things))
@@ -121,3 +121,4 @@ Examples of mis-use:
 (confirm that (extract-delegee '(password &delegee acct))
   returns ((password acct) (acct)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+

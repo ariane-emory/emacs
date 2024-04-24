@@ -824,6 +824,7 @@
            aris-funs--pcase-x
            aris-funs--div-mod
            aris-funs--trees
+           aris-funs--objects
            aris-types
            steve-loshs-funs--if-let
            peter-norvigs-funs--defun-memo
