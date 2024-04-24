@@ -96,7 +96,10 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   () class-name)
-     (describe     () (mapc #'prn (fmt-as-lines self)) nil)
+     (describe     ()
+       (prndiv)
+       (mapc #'prn (fmt-as-lines self))
+       (prndiv))
      (dir          () method-names)
      (field-names  () field-names)
      (fmt          () (join-string-lines (fmt-as-lines self)))
@@ -121,7 +124,12 @@
                        (padding (make-string (- max-len key-length) ?\ )))
                  (prn "VAL:          %S" val)
                  (prn "a:is-object?: %S" (a:is-object? val))
-                 (push (format "%s:%s %s" key padding val) lines)))
+                 (push (format "%s:%s %s" key padding
+                         (if (a:is-object? val)
+                           "foo"
+                           val)
+                         )
+                   lines)))
              (nreverse lines)))))
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
