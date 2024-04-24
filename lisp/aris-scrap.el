@@ -52,7 +52,8 @@
 
 (defun extract-delegee (arglist)
   "Extract the delegee argument from an arglist ARGLIST, returning a list whose first
-element is the modified arglist and whose second element is the delegee argument.
+element is the modified arglist and whose second element is the delegee argument as
+a pair of the form (SYMBOL . CLASS).
 
 This adds a new lambda list keyword, &delegee. When used, the &delegee keyword
 follow all required parameters and precede any &optional and &rest parameters.
@@ -62,14 +63,14 @@ or a list of length two whose first element is the required class of the delegee
 second element is the symbol to bind the delegee to.
 
 Examples of use:
-(extract-delegee '(password &delegee (account acct)))
-  ⇒ '((password acct) (account . acct))
-(extract-delegee '(password &delegee acct))
-  ⇒ '((password acct) (nil . acct)
-(extract-delegee '(password &delegee (account acct) &rest things))
-  ⇒ '((password acct &rest things) (account . acct))
-(extract-delegee '(password &delegee acct &optional thing))
-  ⇒ '((password acct &optional thing) (nil . acct)
+(extract-delegee '(password &delegee (account acct) &rest things)) ⇒
+ ((password account &rest things) (acct . account))
+(extract-delegee '(password &delegee acct &optional thing)) ⇒
+ ((password nil &optional thing) (acct))
+(extract-delegee '(password &delegee (account acct))) ⇒
+ ((password account) (acct . account))
+(extract-delegee '(password &delegee acct)) ⇒
+ ((password nil) (acct))
 
 Examples of mis-use:
 (extract-delegee '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
@@ -99,8 +100,8 @@ Examples of mis-use:
               "symbol or a list of length two.")))
         (setq delegee
           (if (symbol? top)
-            (cons nil top)
-            (cons (first top) (second top)))))
+            (cons top nil)
+            (cons (second top) (first top)))))
 
       (prn "delegee:    %s" delegee)
       (push (cdr delegee) new-arglist)
@@ -111,11 +112,11 @@ Examples of mis-use:
       )))
 
 (confirm that (extract-delegee '(password &delegee (account acct) &rest things))
-  returns ((password acct &rest things) (account . acct)))
+  returns ((password account &rest things) (acct . account)))
 (confirm that (extract-delegee '(password &delegee acct &optional thing))
-  returns ((password acct &optional thing) (nil . acct)))
+  returns ((password nil &optional thing) (acct)))
 (confirm that (extract-delegee '(password &delegee (account acct)))
-  returns ((password acct) (account . acct)))
+  returns ((password account) (acct . account)))
 (confirm that (extract-delegee '(password &delegee acct))
-  returns ((password acct) (nil . acct)))
+  returns ((password nil) (acct)))
 
