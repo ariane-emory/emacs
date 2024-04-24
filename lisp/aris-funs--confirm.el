@@ -14,8 +14,9 @@
   (unless (eq? 'returns returns) (error "expected 'returns as 3rd argument"))
   `(let ((result ,expr))
      (unless (equal result ',expected)
-       (warn "FAILED TO CONFIRM: %S != %S, got %S." ',expr ',expected result))))
-       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       (warn "FAILED TO CONFIRM: %S != %S, got %S." ',expr ',expected result))
+     result))
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

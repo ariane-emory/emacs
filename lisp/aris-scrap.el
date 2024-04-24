@@ -63,13 +63,13 @@ second element is the symbol to bind the delegee to.
 
 Examples of use:
 (extract-delegee '(password &delegee (account acct)))
-  ⇒ '((password acct) (account acct))
+  ⇒ '((password acct) (account . acct))
 (extract-delegee '(password &delegee acct))
-  ⇒ '((password acct) (nil acct)
+  ⇒ '((password acct) (nil . acct)
 (extract-delegee '(password &delegee (account acct) &rest things))
-  ⇒ '((password acct &rest things) (account acct))
+  ⇒ '((password acct &rest things) (account . acct))
 (extract-delegee '(password &delegee acct &optional thing))
-  ⇒ '((password acct &optional thing) (nil acct)
+  ⇒ '((password acct &optional thing) (nil . acct)
 
 Examples of mis-use:
 (extract-delegee '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
@@ -82,15 +82,40 @@ Examples of mis-use:
                    (_ (not (eq '&delegee top))))
         (prn "top:         %s" top)
         (push (pop arglist) new-arglist))
+      (pop arglist)
       (prn "new-arglist: %s" new-arglist)
       (prn "arglist:     %s" arglist)
-      (when (not (eq '&delegee (pop arglist)))
-        (error "Malformed arglist, &delegee not followed by delegee specifier."))
+      (unless arglist
+        (error "Malformed ARGLIST, nothing after &delegee."))
+      (let ((top (pop arglist)))
+        (when (memq top '(&optional &rest))
+          (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
+        (unless (or
+                  (symbol? top)
+                  (and (double? top) (symbol? (first top)) (symbol? (second top))))
+          (error
+            (concat "Malformed ARGLIST, &delegee must be followed by a "
+              "symbol or a list of length two.")))
+        (setq delegee
+          (if (symbol? top)
+            (cons nil top)
+            (cons (first top) (second top)))))
+
+      (prn "delegee:      %s" delegee)
+      (while arglist
+        (push (pop arglist) new-arglist))
+      (setq new-arglist (append (nreverse new-arglist) (list (cdr delegee))))
+      (list new-arglist delegee)
       )))
 
-(extract-delegee '(password &delegee (account acct)))
-;; (extract-delegee '(password &delegee acct))
-;; (extract-delegee '(password &delegee (account acct) &rest things))
-;; (extract-delegee '(password &delegee acct &optional thing))
 
 
+
+(confirm that (extract-delegee '(password &delegee (account acct)))
+  returns ((password acct) (account . acct)))
+(confirm that (extract-delegee '(password &delegee acct))
+  returns ((password acct) (nil . acct)))
+(confirm that (extract-delegee '(password &delegee (account acct) &rest things))
+  returns '((password acct &rest things) (account . acct)))
+(confirm that (extract-delegee '(password &delegee acct &optional thing))
+   returns '((password acct &optional thing) (nil . acct))
