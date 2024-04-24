@@ -13,6 +13,7 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
+     ;; (self         ()       self)
      (dir          ()       method-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
@@ -46,9 +47,10 @@
          ;; Define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
          (cl-defun ,class ,instance-vars
-           #'(lambda (message)
-               (declare (norvig-object-class ',class))
-               (cl-case message ,@method-clauses)))))))
+           (let (self)
+             (setq self #'(lambda (message)
+                            (declare (norvig-object-class ',class))
+                            (cl-case message ,@method-clauses)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -133,6 +135,8 @@ trying to send a message to a non-object."
   (and
     (fboundp fun-name)
     (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'a:generic-fun? 'a:generic-fun-p)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -232,15 +236,15 @@ Examples of mis-use:
   (name     ()    name)
   (interest ()    (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:is-object? (setq normal-acct (account "A. User" 2000.00))) returns t)
-(confirm that (class-name normal-acct) returns account)
-(confirm that (a:is? normal-acct 'account) returns t)
-(confirm that (is? normal-acct 'account) returns t)
-(confirm that (deposit normal-acct 42.00) returns 2042.0)
-(confirm that (deposit normal-acct 82.00) returns 2124.0)
-(confirm that (withdraw normal-acct 200.00) returns 1924.0)
-(confirm that (balance normal-acct) returns 1924.0)
-(makunbound 'normal-acct)
+(confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
+(confirm that (class-name acct) returns account)
+(confirm that (a:is? acct 'account) returns t)
+(confirm that (is? acct 'account) returns t)
+(confirm that (deposit acct 42.00) returns 2042.0)
+(confirm that (deposit acct 82.00) returns 2124.0)
+(confirm that (withdraw acct 200.00) returns 1924.0)
+(confirm that (balance acct) returns 1924.0)
+;; (makunbound 'acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -266,7 +270,7 @@ Examples of mis-use:
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
-(makunbound 'passwd-acct)
+;; (makunbound 'passwd-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -292,10 +296,13 @@ Examples of mis-use:
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
 (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
 (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
-(makunbound 'limit-acct)
+;; (makunbound 'limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (self acct)
+(a:generic-fun-p 'dir)
+(a:generic-fun-p 'get-self)
