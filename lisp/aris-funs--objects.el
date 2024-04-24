@@ -276,7 +276,6 @@ Examples of mis-use:
 (confirm that (deposit acct 82.00) returns 2124.0)
 (confirm that (withdraw acct 200.00) returns 1924.0)
 (confirm that (balance acct) returns 1924.0)
-(field-names acct)
 ;; (makunbound 'acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -340,3 +339,16 @@ Examples of mis-use:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+'(acct &delegee (account acct) &optional baz &rest things &key (foo 42) &aux foo (bar baz))
+
+(defun a:extract-field-names (arglist)
+  "Reduce an argument list to a list of field names, stripping out the default
+values of  &optional arguments and removing &aux arguments.
+
+Example:
+(a:extract-field-names
+  '(acct &delegee (account acct) &optional baz &rest things &key (foo 42) &aud foo (bar baz))) ⇒
+'(acct acct  baz  things &key foo)"
+  :NOT-IMPLEMENTED-YET)
