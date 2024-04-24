@@ -42,12 +42,19 @@
 
 (a:is-object? (alist-get 'acct (field-values passwd-acct)))
 
-(fmt passwd-acct)
-(fmt-as-lines acct)
-(fmt acct)
-(fmt passwd-acct)
-(fmt-as-lines passwd-acct)
+;; (fmt passwd-acct)
+;; (fmt-as-lines acct)
+;; (fmt acct)
+;; (fmt passwd-acct)
+;; (fmt-as-lines passwd-acct)
 
-(describe acct)
-(describe limit-acct)
-(describe passwd-acct)
+;; (describe acct)
+;; (describe limit-acct)
+;; (describe passwd-acct)
+
+(repr acct)
+(repr passwd-acct)
+(repr limit-acct)
+
+
+
