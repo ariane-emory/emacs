@@ -78,15 +78,19 @@ Examples of mis-use:
   (if (not (memq '&delegee arglist))
     arglist
     (let (new-arglist delegee)
-      (while (not (eq '&delegee (first arglist)))
+      (while-let ( (top (first arglist))
+                   (_ (not (eq '&delegee top))))
+        (prn "top:         %s" top)
         (push (pop arglist) new-arglist))
-      (prn "at this point, new-arglist = %s" new-arglist)
-      (prn "and arglist = %s"                arglist)
+      (prn "new-arglist: %s" new-arglist)
+      (prn "arglist:     %s" arglist)
+      (when (not (eq '&delegee (pop arglist)))
+        (error "Malformed arglist, &delegee not followed by delegee specifier."))
       )))
 
 (extract-delegee '(password &delegee (account acct)))
 ;; (extract-delegee '(password &delegee acct))
 ;; (extract-delegee '(password &delegee (account acct) &rest things))
 ;; (extract-delegee '(password &delegee acct &optional thing))
-(pair? '(1 . 2))
+
 
