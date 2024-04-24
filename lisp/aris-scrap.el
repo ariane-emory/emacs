@@ -56,5 +56,5 @@
 (repr passwd-acct)
 (repr limit-acct)
 
-
-
+(prepr limit-acct)
+(strepr limit-acct)

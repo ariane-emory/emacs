@@ -96,58 +96,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '( (class-name   () class-name)
-     ;; (describe     ()
-     ;;   (prndiv)
-     ;;   (mapc #'prn (fmt-as-lines self))
-     ;;   (prndiv))
-     (dir          () method-names)
-     (field-names  () field-names)
-     ;; (fmt          () (join-string-lines (fmt-as-lines self)))
-     ;; (fmt-as-lines (&optional indent-tail-lines-by)
-     ;;   (let ( (indent-tail-lines-by (or indent-tail-lines-by 0))
-     ;;          (fmt-values
-     ;;            (cons (cons 'class-name (symbol-name class-name))
-     ;;              (field-values self))))
-     ;;     (let ((max-len 0))
-     ;;       ;; measure the max key length so we can line things up;
-     ;;       (dolist (kvp fmt-values)
-     ;;         ;; (prn "kvp: %s" kvp)
-     ;;         (let* ( (key (car kvp))
-     ;;                 (key-length (length (symbol-name key))))
-     ;;           (when (> key-length max-len)
-     ;;             (setq max-len key-length))))
-     ;;       (cl-incf max-len)
-     ;;       ;; print the padded key-value pairs:
-     ;;       (let (lines)
-     ;;         (dolist (kvp fmt-values)
-     ;;           (let* ( (key (car kvp))
-     ;;                   (val (cdr kvp))
-     ;;                   (key-length (length (symbol-name key)))
-     ;;                   (padding (make-string (- max-len key-length) ?\ )))
-     ;;             ;; (prn "VAL:          %S" val)
-     ;;             ;; (prn "a:is-object?: %S" (a:is-object? val))
-     ;;             (push
-     ;;               (if (not (a:is-object? val))
-     ;;                 (format "%s:%s%S" key padding val)
-     ;;                 (format "%s:%s%s" key padding
-     ;;                   (join-string-lines
-     ;;                     (fmt-as-lines val (+ 1 indent-tail-lines-by max-len)))))     
-     ;;               lines)))
-     ;;         (let* ( (lines (nreverse lines))
-     ;;                 (head-line  (first lines))
-     ;;                 (tail-lines (indent-lines (rest lines) indent-tail-lines-by)))
-     ;;           (cons head-line tail-lines))))))
-     (is?  (class)  (eq class class-name))
-     (prepr ()
-       (prn (repr self)))
-     (repr ()
+  '( (class-name   ()      class-name)
+     (dir          ()      method-names)
+     (field-names  ()      field-names)
+     (is?          (class) (eq class class-name))
+     (prepr        ()      (prn (strepr self)))
+     (repr         ()
        (let ((alist (field-values self)))
          (dolist (kvp alist)
            (when (a:is-object? (cdr kvp))
              (setcdr kvp (repr (cdr kvp)))))
-
-         (cons (cons 'class (class-name self)) alist)))     
+         (cons (cons 'class (class-name self)) alist)))
+     (strepr      () (trim-trailing-whitespace (pp-to-string (repr self))))
      (responds-to? (method) (not (null (memq method method-names)))))
   ;; Note that all objects also have a `field-values' method but, since
   ;; it need to access instance variables, it is synthesized in `defclass'.
