@@ -43,8 +43,6 @@
       `(let ( (class-name   ',class)
               (method-names ',method-names)
               @class-vars)
-         ;; this only really needs to happen once:
-         (a:ensure-generic-fun 'method-not-found)
          ;; define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
          (cl-defun ,class ,instance-vars
@@ -102,7 +100,7 @@ trying to send a message to a non-object."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return the method that implements message for this object."
   (a:must-be-object! object)
-  (with-indentaion
+  (with-indentation
     (prn "get: Getting method for %s." message)
     (let ((res (funcall object message)))
       (prn "get: Got method for %s: %s." message res)
@@ -119,7 +117,7 @@ trying to send a message to a non-object."
   (if-let ((method (a:get-method object message)))
     (progn
       (prn "send: Got method for %s." message)
-      (with-indentaion
+      (with-indentation
         (apply method args)))
     (error "send: No method for %s." message)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
