@@ -25,6 +25,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let* ( (parsed-arglist (a:extract-delegee-arg instance-vars))
+          (delegee-spec    (second parsed-arglist))
+          (delegee-sym     (first delegee-spec))
+          (delegee-class   (second delegee-spec))
           (instance-vars  (first parsed-arglist))
           (methods        (append *a:universal-methods* user-methods)))
     (when (alist-has? 'method-not-found methods)
