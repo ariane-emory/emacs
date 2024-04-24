@@ -128,7 +128,7 @@ trying to send a message to a non-object."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Extract the delegee argument from an arglist ARGLIST, returning a list whose first
 element is the modified arglist and whose second element is the delegee argument as
-a list of the form (CLASS SYMBOL).
+a list of the form (CLASS SYMBOL IS-OPTIONAL).
 
 This function adds a new lambda list keyword, &delegee. When used, the &delegee
 keyword must precede any &rest, &key or &auxparameters but may be &optional.
@@ -151,7 +151,7 @@ Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
   (if (not (memq '&delegee arglist))
-    (list arglist)
+    (list arglist nil nil)
     (let (new-arglist-segment delegee-is-optional)
       ;; ^ delegee-is-optional isn't actually used for anything yet.
       (while-let ( (top (first arglist))
@@ -173,29 +173,35 @@ Examples of mis-use:
                    "symbol or a list of length two.")))
         (setq delegee
           (if (symbol? top)
-            (list top)
-            (nreverse top))))
+            (list top nil delegee-is-optional)
+            (append (nreverse top) (list delegee-is-optional)))))
       (push (first delegee) new-arglist-segment) ; add delegee's symbol.
       (list (append (nreverse new-arglist-segment) arglist) delegee))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; typed delegee:
 (confirm that (a:extract-delegee-arg '(password &delegee (account acct)))
-  returns ((password acct) (acct account)))
+  returns ((password acct) (acct account nil)))
 ;; un-typed delegee:
 (confirm that (a:extract-delegee-arg '(password &delegee acct))
-  returns ((password acct) (acct)))
+  returns ((password acct) (acct nil nil)))
 ;; optional delegee case:
 (confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct))
-  returns ((password &optional thing acct) (acct)))
+  returns ((password &optional thing acct) (acct nil t)))
+;; optional delegee case 2:
+(confirm that (a:extract-delegee-arg '(password &optional &delegee acct thing))
+  returns ((password &optional acct thing) (acct nil t)))
+;; optional delegee case 3:
+(confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing))
+  returns ((password &optional account thing) (account acct t)))
 ;; mandatory delegee and an &rest:
 (confirm that (a:extract-delegee-arg '(password &delegee (account acct) &rest things))
-  returns ((password acct &rest things) (acct account)))
+  returns ((password acct &rest things) (acct account nil)))
 ;; mandatory delegate and an &optional:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
-  returns ((password acct &optional thing) (acct)))
+  returns ((password acct &optional thing) (acct nil nil)))
 ;; 'do nothing' case:
 (confirm that (a:extract-delegee-arg '(password &rest things))
-  returns ((password &rest things)))
+  returns ((password &rest things) nil nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
