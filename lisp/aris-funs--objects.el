@@ -10,6 +10,7 @@
 ;; TODO:
 ;;  - universal `describe' method.
 ;;  - ability to specify multiple delegee class possibilities.
+;;  - &get, &set, &getset.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
