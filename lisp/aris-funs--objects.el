@@ -29,24 +29,13 @@
           (delegee-spec    (second parsed-arglist))
           (delegee-sym     (first delegee-spec))
           (delegee-class   (second delegee-spec))
-          (methods         (append *a:universal-methods* user-methods))
-          (delegate-method (when delegee-spec ; synthesize a `delegate' method.
-                             `(otherwise (&rest args)
-                                (apply message ,delegee-sym args)))))
+          (methods         (append *a:universal-methods* user-methods)))
     (when delegee-spec
       (if-let ((method (assoc 'delegate methods)))
         (setf (car method) 'otherwise)
-        (setq methods (append methods (list delegate-method)))))
-    (prndiv)
-    (prn "methods:" (pp-to-string methods))
-    (prndiv)
-    (prn "%s"
-      (substring
-        (indent-string-lines
-          (pp-to-string
-            methods))
-        0 -3))
-    (prndiv)
+        (setf methods (append methods
+                        `((otherwise (&rest args)
+                            (apply message ,delegee-sym args)))))))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
