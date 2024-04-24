@@ -8,7 +8,7 @@
 (require 'aris-funs--lists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;;  - universal `describe' method.
+;;  - universal `format' method.
 ;;  - tests for `field-values'.
 ;;  - ability to specify multiple delegee class possibilities.
 ;;  - &get, &set, &getset.
@@ -31,61 +31,38 @@
                                    ',delegee-class ,delegee-sym)))))
           ;; synthesize these methods and inject them into the `cl-defun' so 
           ;; that they can access the instance's fields:
-          (describe-method
-            '(describe ()
-               (let ((alist (field-values self)))
-                 (prndiv)
-                 (let ((max-len 0))
-                   (dolist (kvp alist)
-                     (let* ( (key (car kvp))
-                             (symbol-length (length (symbol-name key))))
-                       (when (> symbol-length max-len)
-                         (setq max-len symbol-length))))
-                   (dolist (kvp alist)
-                     (let* ( (key (car kvp))
-                             (val (cdr kvp))
-                             (symbol-length (length (symbol-name key)))
-                             (padding (make-string (- max-len symbol-length) ?\ )))
-                       (prn "%s:%s %s" key padding val))))
-                 (prndiv))))
           (field-values-method
             `(field-values ()
                (cl-pairlis field-names 
                  (list ,@field-names))))
           (synthesized-methods
-            (list describe-method field-values-method))
+            (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods
                      user-methods)))
-    (prndiv)
-    (prn "defclass %s:" class)
-    (prndiv)
-    (prn "*a:universal-methods*:")
-    (prndiv)
-    (prn "%s" (indent-string-lines (substring (pp-to-string *a:universal-methods*) 0 -1)))
-    (prndiv)
-    (prn "synthesized-methods:")
-    (prndiv)
-    (prn "%s" (indent-string-lines (substring (pp-to-string synthesized-methods) 0 -1)))
-    (prndiv)
-    (prn "user-methods:")
-    (prndiv)
-    (prn "%s" (indent-string-lines (substring (pp-to-string user-methods) 0 -1)))
-    (prndiv)
-    (prn "methods:")
-    (prndiv)
-    (prn "%s" (indent-string-lines (substring (pp-to-string methods) 0 -3)) 0 -1)
-    (prndiv)
-    ;; (prn "field-values-method:")
-    ;; (prn "%s" (pp-to-string field-values-method))
+    ;; (prndiv)
+    ;; (prn "defclass %s:" class)
+    ;; (prndiv)
+    ;; (prn "*a:universal-methods*:")
+    ;; (prndiv)
+    ;; (prn "%s" (indent-string-lines (substring (pp-to-string *a:universal-methods*) 0 -1)))
+    ;; (prndiv)
+    ;; (prn "synthesized-methods:")
+    ;; (prndiv)
+    ;; (prn "%s" (indent-string-lines (substring (pp-to-string synthesized-methods) 0 -1)))
+    ;; (prndiv)
+    ;; (prn "user-methods:")
+    ;; (prndiv)
+    ;; (prn "%s" (indent-string-lines (substring (pp-to-string user-methods) 0 -1)))
+    ;; (prndiv)
+    ;; (prn "methods:")
+    ;; (prndiv)
+    ;; (prn "%s" (indent-string-lines (substring (pp-to-string methods) 0 -3)) 0 -1)
+    ;; (prndiv)
 
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
     (when (and delegee-spec (not (alist-has? 'otherwise methods)))
       (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
-
-    ;; (prn "methods:    ")
-    ;; (prn "%s" (pp-to-string methods))
-
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
@@ -97,6 +74,7 @@
          (cl-defun ,class ,fields
            ,@delegee-test
            (let (self)
+             ;; bind self lexically so object can reference itself:
              (setq self
                #'(lambda (message)
                    (declare (aos-class ',class))
@@ -118,11 +96,29 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
+     (fmt ()
+       (let ((alist (field-values self)))
+         (prndiv)
+         (let ((max-len 0))
+           ;; measure the max key length so we can line things up;
+           (dolist (kvp alist)
+             (let* ( (key (car kvp))
+                     (key-length (length (symbol-name key))))
+               (when (> key-length max-len)
+                 (setq max-len key-length))))
+           ;; print the padded key-value pairs:
+           (dolist (kvp alist)
+             (let* ( (key (car kvp))
+                     (val (cdr kvp))
+                     (key-length (length (symbol-name key)))
+                     (padding (make-string (- max-len key-length) ?\ )))
+               (prn "%s:%s %s" key padding val))))
+         (prndiv)))
      (dir          ()       method-names)
      (field-names  ()       field-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
-  ;; Note that all objects also have `describe' and `field-values' methods but, since
+  ;; Note that all objects also have `fmt' and `field-values' methods but, since
   ;; they need to access instance variables, they are synthesized in `defclass'.
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -359,7 +355,7 @@ default values of  &optional arguments and removing &aux arguments."
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
 ;; (confirm that (dir acct)
-;;   returns (balance class-name deposit describe dir field-names interest is? name responds-to? withdraw))
+;;   returns (balance class-name deposit fmt dir field-names interest is? name responds-to? withdraw))
 (confirm that (field-names acct) returns (name balance))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
@@ -371,62 +367,62 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (a:defclass account-with-password (password &delegee acct) ()
-;;   (change-password (pass new-pass)
-;;     (if (equal pass password)
-;;       (setf password new-pass)
-;;       :WRONG-PASSWORD))
-;;   (delegate (pass &rest args)
-;;     (if (equal pass password)
-;;       (apply message acct args)
-;;       :WRONG-PASSWORD)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (a:is-object?
-;;     (setq passwd-acct
-;;       (account-with-password "secret" (account "A. User" 2000.00))))
-;;   returns t)
-;; (confirm that (class-name passwd-acct) returns account-with-password)
-;; ;; (confirm that (dir passwd-acct)
-;; ;;   returns (change-password class-name describe dir field-names is? otherwise responds-to?))
-;; (confirm that (field-names passwd-acct) returns (password acct))
-;; (confirm that (a:is? passwd-acct 'account-with-password) returns t)
-;; (confirm that (is? passwd-acct 'account-with-password) returns t)
-;; (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
-;; (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
-;; (confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
-;; ;; (makunbound 'passwd-acct)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-password (password &delegee acct) ()
+  (change-password (pass new-pass)
+    (if (equal pass password)
+      (setf password new-pass)
+      :WRONG-PASSWORD))
+  (delegate (pass &rest args)
+    (if (equal pass password)
+      (apply message acct args)
+      :WRONG-PASSWORD)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (a:is-object?
+    (setq passwd-acct
+      (account-with-password "secret" (account "A. User" 2000.00))))
+  returns t)
+(confirm that (class-name passwd-acct) returns account-with-password)
+;; (confirm that (dir passwd-acct)
+;;   returns (change-password class-name fmt dir field-names is? otherwise responds-to?))
+(confirm that (field-names passwd-acct) returns (password acct))
+(confirm that (a:is? passwd-acct 'account-with-password) returns t)
+(confirm that (is? passwd-acct 'account-with-password) returns t)
+(confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
+(confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
+(confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
+;; (makunbound 'passwd-acct)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (a:defclass account-with-limit (limit &delegee (acct account)) ()
-;;   (withdraw (amt)
-;;     (if (> amt limit)
-;;       :OVER-LIMIT
-;;       (withdraw acct amt)))
-;;   (delegate (&rest args)
-;;     (apply message acct args)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (a:is-object?
-;;     (setq limit-acct
-;;       (account-with-password "pass"
-;;         (account-with-limit 100.00
-;;           (account "A. Thrifty Spender" 500.00)))))
-;;   returns t)
-;; (confirm that (class-name limit-acct) returns account-with-password)
-;; ;; (confirm that (dir limit-acct)
-;; ;;   returns (change-password class-name describe dir field-names is? otherwise responds-to?))
-;; (confirm that (field-names limit-acct) returns (password acct))
-;; (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
-;; (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
-;; (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
-;; (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
-;; (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
-;; ;; (makunbound 'limit-acct)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-limit (limit &delegee (acct account)) ()
+  (withdraw (amt)
+    (if (> amt limit)
+      :OVER-LIMIT
+      (withdraw acct amt)))
+  (delegate (&rest args)
+    (apply message acct args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (a:is-object?
+    (setq limit-acct
+      (account-with-password "pass"
+        (account-with-limit 100.00
+          (account "A. Thrifty Spender" 500.00)))))
+  returns t)
+(confirm that (class-name limit-acct) returns account-with-password)
+;; (confirm that (dir limit-acct)
+;;   returns (change-password class-name fmt dir field-names is? otherwise responds-to?))
+(confirm that (field-names limit-acct) returns (password acct))
+(confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
+(confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
+(confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
+(confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
+(confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
+;; (makunbound 'limit-acct)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

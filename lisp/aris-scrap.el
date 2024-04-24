@@ -26,13 +26,13 @@
 (field-names acct)
 (field-names passwd-acct)
 
-;; (describe acct)
+;; (format acct)
 
 
 (setq acct (account "A. User" 2000.00))
 (field-values acct) ;; => ("A. User" 2000.0)
 
-(describe acct)
-
+(fmt acct)
+(fmt passwd-acct)
 
 
