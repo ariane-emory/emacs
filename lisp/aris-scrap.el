@@ -50,17 +50,19 @@
 ;; (extract-delegee '(password &delegee acct &optional foo))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun extract-delegee (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Extract the delegee argument from an arglist ARGLIST, returning a list whose first
 element is the modified arglist and whose second element is the delegee argument as
-a pair of the form (SYMBOL . CLASS).
+a list of the form (CLASS SYMBOL).
 
-This adds a new lambda list keyword, &delegee. When used, the &delegee keyword
-follow all required parameters and precede any &optional and &rest parameters.
-The &delegee keyword must be followed by a specifier for the delegee, which may
-be either a symbol (meaning the delegee is bound to that symbol and may be of any class)
-or a list of length two whose first element is the required class of the delegee and whose
-second element is the symbol to bind the delegee to.
+This function adds a new lambda list keyword, &delegee. When used, the &delegee
+keyword follow all required parameters and precede any &optional and &rest
+parameters. The &delegee keyword must be followed by a specifier for the delegee,
+which may be either a symbol (meaning the delegee is bound to that symbol and
+may be of any class) or a list of length two whose first element is the required
+class of the delegee and whose second element is the symbol to bind the delegee to.
 
 Examples of use:
 (extract-delegee '(password &delegee (account acct) &rest things)) ⇒
@@ -100,23 +102,22 @@ Examples of mis-use:
               "symbol or a list of length two.")))
         (setq delegee
           (if (symbol? top)
-            (cons top nil)
-            (cons (second top) (first top)))))
+            (list top)
+            (nreverse top))))
 
       (prn "delegee:    %s" delegee)
-      (push (cdr delegee) new-arglist)
+      (push (first delegee) new-arglist)
       (while arglist
         (push (pop arglist) new-arglist))
       (prn "new-arglist: %s" new-arglist)
-      (list (nreverse new-arglist) delegee)
-      )))
-
+      (list (nreverse new-arglist) delegee))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (extract-delegee '(password &delegee (account acct) &rest things))
-  returns ((password account &rest things) (acct . account)))
+  returns ((password acct &rest things) (acct account)))
 (confirm that (extract-delegee '(password &delegee acct &optional thing))
-  returns ((password nil &optional thing) (acct)))
+  returns ((password acct &optional thing) (acct)))
 (confirm that (extract-delegee '(password &delegee (account acct)))
-  returns ((password account) (acct . account)))
+  returns ((password acct) (acct account)))
 (confirm that (extract-delegee '(password &delegee acct))
-  returns ((password nil) (acct)))
-
+  returns ((password acct) (acct)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
