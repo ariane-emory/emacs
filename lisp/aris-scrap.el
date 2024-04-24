@@ -23,8 +23,11 @@
 (bar (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAR! 3"
 (baz (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAZ! 5"
 
-
 (field-names acct)
 (field-names passwd-acct)
 
-(describe acct)
+;; (describe acct)
+
+
+(setq acct (account "A. User" 2000.00))
+(field-values acct) ;; => ("A. User" 2000.0)

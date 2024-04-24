@@ -18,21 +18,29 @@
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (methods         (append *a:universal-methods* user-methods))
-          (field-names     (a:extract-field-names arglist))
+  (let* ( (field-names     (a:extract-field-names arglist))
           (parsed-arglist  (a:extract-delegee-arg arglist))
-          (instance-vars   (first parsed-arglist))
+          (fields          (first parsed-arglist))
+          (synthesized     `(field-values () (list ,@(mapcar #'(lambda (field) field) field-names))))
           (delegee-spec    (second parsed-arglist))
           (delegee-sym     (first delegee-spec))
           (delegee-class   (second delegee-spec))
-          (delegee-test    (when delegee-class
+          (delegee-test    (when delegee-class ; wrapped in a list. v
                              `((unless (a:is? ,delegee-sym ',delegee-class)
                                  (error "Delegee is not of class '%s: %S."
-                                   ',delegee-class ,delegee-sym))))))
+                                   ',delegee-class ,delegee-sym)))))
+          (methods         (append *a:universal-methods* (list synthesized) user-methods)))
+    (prn "synthesized:")
+    (prn "%s" (pp-to-string synthesized))
+
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
     (when (and delegee-spec (not (alist-has? 'otherwise methods)))
       (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
+
+    (prn "methods:    ")
+    (prn "%s" (pp-to-string methods))
+
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
@@ -41,7 +49,7 @@
               ,@class-vars)
          ;; define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
-         (cl-defun ,class ,instance-vars
+         (cl-defun ,class ,fields
            ,@delegee-test
            (let (self)
              (setq self
@@ -69,6 +77,8 @@
      (field-names  ()       field-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
+  ;; Note that all objects also have `describe' and `field-values' methods but, since
+  ;; they need to access instance variables, they are synthesized in `defclass'.
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -134,9 +144,9 @@ trying to send a message to a non-object."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return the method that implements message for this object."
   (a:must-be-object! object)
-  (prn "get: Getting method for %s." message)
+  ;; (prn "get: Getting method for %s." message)
   (let ((res (with-indentation (funcall object message))))
-    (prn "get: Got method for %s: %s." message res)
+    ;; (prn "get: Got method for %s: %s." message res)
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -146,10 +156,10 @@ trying to send a message to a non-object."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the function to implement the message, and apply the function to the args."
   (a:must-be-object! object)
-  (prn "send: Getting method for %s..." message)
+  ;; (prn "send: Getting method for %s..." message)
   (if-let ((method (a:get-method object message)))
     (progn
-      (prn "send: Got method for %s." message)
+      ;; (prn "send: Got method for %s." message)
       (with-indentation
         (apply method args)))
     (error "send: No method for %s." message)))
