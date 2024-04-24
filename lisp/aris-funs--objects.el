@@ -28,11 +28,17 @@
           (methods        (append *a:universal-methods* user-methods))
           (method-names   (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'a:make-method-clause methods)))
-    (prndiv)
-    (prn "methods:" (pp-to-string methods))
-    (prndiv)
-    (prn "%s" (substring (indent-string-lines (pp-to-string (alist-remove 'otherwise methods))) 0 -3))
-    (prndiv)
+    (when (alist-has? 'method-not-found methods)
+      (prndiv)
+      (prn "methods:" (pp-to-string methods))
+      (prndiv)
+      (prn "%s"
+        (substring
+          (indent-string-lines
+            (pp-to-string
+              (alist-remove 'otherwise methods)))
+          0 -3))
+      (prndiv))
     `(let ( (class-name   ',class)
             (method-names ',method-names)
             @class-vars)
