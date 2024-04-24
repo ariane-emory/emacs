@@ -34,8 +34,8 @@
                              `(delegate (&rest args)
                                 (apply message ,delegee-sym args)))))
     (when delegee-spec
-      (if (alist-has? 'method-not-found methods)
-        (setf (car (assoc 'method-not-found methods)) 'otherwise)
+      (if (alist-has? 'delegate methods)
+        (setf (car (assoc 'delegate methods)) 'otherwise)
         (setq methods (append methods (list delegate-method)))))
     (prndiv)
     (prn "methods:" (pp-to-string methods))
@@ -274,7 +274,7 @@ Examples of mis-use:
     (if (equal pass password)
       (setf password new-pass)
       :WRONG-PASSWORD))
-  (method-not-found (pass &rest args)
+  (delegate (pass &rest args)
     (if (equal pass password)
       (apply message acct args)
       :WRONG-PASSWORD)))
@@ -302,7 +302,7 @@ Examples of mis-use:
     (if (> amt limit)
       :OVER-LIMIT
       (withdraw acct amt)))
-  (method-not-found (&rest args)
+  (delegate (&rest args)
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
