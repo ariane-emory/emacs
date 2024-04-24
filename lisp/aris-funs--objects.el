@@ -32,7 +32,22 @@
           ;; synthesize these methods and inject them into the `cl-defun' so 
           ;; that they can access the instance's fields:
           (describe-method
-            '(describe () (field-values self)))
+            '(describe ()
+               (let ((alist (field-values self)))
+                 (prndiv)
+                 (let ((max-len 0))
+                   (dolist (kvp alist)
+                     (let* ( (key (car kvp))
+                             (symbol-length (length (symbol-name key))))
+                       (when (> symbol-length max-len)
+                         (setq max-len symbol-length))))
+                   (dolist (kvp alist)
+                     (let* ( (key (car kvp))
+                             (val (cdr kvp))
+                             (symbol-length (length (symbol-name key)))
+                             (padding (make-string (- max-len symbol-length) ?\ )))
+                       (prn "%s:%s %s" key padding val))))
+                 (prndiv))))
           (field-values-method
             `(field-values ()
                (cl-pairlis field-names 

@@ -34,20 +34,5 @@
 
 (describe acct)
 
-(let ((alist '((name . "A. User") (balance . 2000.0))))
-  (prndiv)
-  (let ((max-len 0))
-    (dolist (kvp alist)
-      (let* ( (key (car kvp))
-              (symbol-length (length (symbol-name key))))
-        (when (> symbol-length max-len)
-          (setq max-len symbol-length))))
-    (dolist (kvp alist)
-      (let* ( (key (car kvp))
-              (val (cdr kvp))
-              (symbol-length (length (symbol-name key)))
-              (padding (make-string (- max-len symbol-length) ?\ )))
-        (prn "%s:%s %s" key padding val))))
-  (prndiv))
 
 
