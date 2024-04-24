@@ -77,14 +77,7 @@
          (mapr (field-values self)
            (lambda (kvp)
              (let ((key (car kvp)) (val (cdr kvp)))
-               (cons key (if (a:is-object? val) (repr val) val)))))))
-     ;; (repr         ()
-     ;;   (let ((alist (field-values self)))
-     ;;     (dolist (kvp alist)
-     ;;       (when (a:is-object? (cdr kvp))
-     ;;         (setcdr kvp (repr (cdr kvp)))))
-     ;;     (cons (cons 'class (class-name self)) alist)))
-     )
+               (cons key (if (a:is-object? val) (repr val) val))))))))
   ;; Note that all objects also have a `field-values' method but, since
   ;; it need to access instance variables, it is synthesized in `defclass'.
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
