@@ -125,9 +125,10 @@
                  ;; (prn "VAL:          %S" val)
                  ;; (prn "a:is-object?: %S" (a:is-object? val))
                  (push (format "%s:%s %s" key padding
-                         (if (a:is-object? val)
-                           (fmt val)
-                           val)
+                         (if (not (a:is-object? val))
+                           val
+                           (let ((lines (fmt-as-lines val))
+                             (join-string-lines lines)))
                          )
                    lines)))
              (nreverse lines)))))
