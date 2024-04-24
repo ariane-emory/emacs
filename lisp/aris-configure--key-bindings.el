@@ -64,7 +64,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (bind-keys*
   ("M-s-g" . goto-char)
-  ;; Ignore there:
+
+  ;; Ignore these:
+  ("C-x C-n" . ignore)
   ("C-x C-<left>" . ignore)
   ("C-x C-<right>" . ignore)
   ("C-x C-<up>" . ignore)

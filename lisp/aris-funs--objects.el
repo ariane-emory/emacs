@@ -13,7 +13,6 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
-     ;; (self         ()       self)
      (dir          ()       method-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
@@ -48,9 +47,10 @@
          (mapc #'a:ensure-generic-fun method-names)
          (cl-defun ,class ,instance-vars
            (let (self)
-             (setq self #'(lambda (message)
-                            (declare (norvig-object-class ',class))
-                            (cl-case message ,@method-clauses)))))))))
+             (setq self
+               #'(lambda (message)
+                   (declare (aos-class ',class))
+                   (cl-case message ,@method-clauses)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -59,7 +59,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when THING is a Norvig-style object."
   (let ((declarations (cdadar-safe (cdadddr-safe thing))))
-    (cl-some (lambda (form) (equal (car form) 'norvig-object-class)) declarations)))
+    (cl-some (lambda (form) (equal (car form) 'aos-class)) declarations)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -303,6 +303,6 @@ Examples of mis-use:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (self acct)
 (a:generic-fun-p 'dir)
 (a:generic-fun-p 'get-self)
+;; (get-self acct)
