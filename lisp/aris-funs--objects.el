@@ -7,6 +7,7 @@
 (require 'aris-funs--basic-preds)
 (require 'aris-funs--lists)
 (require 'aris-funs--strings)
+(require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - tests for `field-values', `fmt', `fmt-as-lines'.
@@ -129,9 +130,8 @@
                            val
                            (let* ( (lines (fmt-as-lines val))
                                    (head-line  (first lines))
-                                   (tail-lines (rest lines))))
-                           (join-string-lines (cons head-line tail-lines)))
-                         )
+                                   (tail-lines (indent-lines (rest lines) (2+ max-len))))
+                             (join-string-lines (cons head-line tail-lines)))))
                    lines)))
              (nreverse lines)))))
      (is?          (class)  (eq class class-name))

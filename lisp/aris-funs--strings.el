@@ -40,9 +40,9 @@
 (cl-defun indent-string-lines (str &optional (n 2) (char ?\ ))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Indent each line in a multiline string with N CHARs."
-  (let ( (lines  (string-lines str))
-         (indent (make-string n char)))
-    (mapconcat (lambda (line) (concat indent line)) lines "\n")))
+  (let* ( (lines          (string-lines str))
+          (indented-lines (indent-lines lines n char)))
+    (string-join indented-lines "\n")))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (indent-string-lines "foo\nbar\nbaz") returns "  foo\n  bar\n  baz")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
