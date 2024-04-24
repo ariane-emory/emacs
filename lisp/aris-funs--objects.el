@@ -26,28 +26,29 @@
   "Define a class for object-oriented programming."
   (let* ( (instance-vars  (first (a:extract-delegee-arg instance-vars)))
           (methods        (append *a:universal-methods* user-methods))
-          (method-names   (sort (mapcar #'first methods) #'string<))
           (method-clauses (mapcar #'a:make-method-clause methods)))
-    (when (alist-has? 'method-not-found methods)
-      (prndiv)
-      (prn "methods:" (pp-to-string methods))
-      (prndiv)
-      (prn "%s"
-        (substring
-          (indent-string-lines
-            (pp-to-string
-              (alist-remove 'otherwise methods)))
-          0 -3))
-      (prndiv))
-    `(let ( (class-name   ',class)
-            (method-names ',method-names)
-            @class-vars)
-       ;; Define generic functions for the methods and a constructor for the class:
-       (mapc #'a:ensure-generic-fun method-names)
-       (cl-defun ,class ,instance-vars
-         #'(lambda (message)
-             (declare (norvig-object-class ',class))
-             (cl-case message ,@method-clauses))))))
+    ;; (when (alist-has? 'method-not-found methods)
+    ;;   (setf (car (assoc 'method-not-found methods)) 'otherwise)
+    ;;   (prndiv)
+    ;;   (prn "methods:" (pp-to-string methods))
+    ;;   (prndiv)
+    ;;   (prn "%s"
+    ;;     (substring
+    ;;       (indent-string-lines
+    ;;         (pp-to-string
+    ;;           methods))
+    ;;       0 -3))
+    ;;   (prndiv))
+    (let ((method-names (sort (mapcar #'first methods) #'string<)))
+      `(let ( (class-name   ',class)
+              (method-names ',method-names)
+              @class-vars)
+         ;; Define generic functions for the methods and a constructor for the class:
+         (mapc #'a:ensure-generic-fun method-names)
+         (cl-defun ,class ,instance-vars
+           #'(lambda (message)
+               (declare (norvig-object-class ',class))
+               (cl-case message ,@method-clauses)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -275,8 +276,6 @@ Examples of mis-use:
     (if (> amt limit)
       :OVER-LIMIT
       (withdraw acct amt)))
-  (method-not-found (&rest args)
-    (apply message acct args))
   (otherwise (&rest args)
     (apply message acct args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
