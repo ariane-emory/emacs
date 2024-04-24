@@ -127,8 +127,10 @@
                  (push (format "%s:%s %s" key padding
                          (if (not (a:is-object? val))
                            val
-                           (let ((lines (fmt-as-lines val))
-                             (join-string-lines lines)))
+                           (let* ( (lines (fmt-as-lines val))
+                                   (head-line  (first lines))
+                                   (tail-lines (rest lines))))
+                           (join-string-lines (cons head-line tail-lines)))
                          )
                    lines)))
              (nreverse lines)))))
