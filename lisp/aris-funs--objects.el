@@ -34,9 +34,9 @@
       (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
-      `(let ( (class-name         ',class)
-              (instance-var-names ',instance-vars)
-              (method-names       ',method-names)
+      `(let ( (class-name   ',class)
+              (field-names  ',instance-vars)
+              (method-names ',method-names)
               ,@class-vars)
          ;; define generic functions for the methods and a constructor for the class:
          (mapc #'a:ensure-generic-fun method-names)
@@ -64,6 +64,7 @@
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()       class-name)
+     (field-names  ()       field-names)
      (dir          ()       method-names)
      (is?          (class)  (eq class class-name))
      (responds-to? (method) (not (null (memq method method-names)))))
@@ -268,13 +269,14 @@ Examples of mis-use:
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
 (confirm that (dir acct)
-  returns (balance class-name deposit dir interest is? name responds-to? withdraw))
+  returns (balance class-name deposit dir field-names interest is? name responds-to? withdraw))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
 (confirm that (deposit acct 42.00) returns 2042.0)
 (confirm that (deposit acct 82.00) returns 2124.0)
 (confirm that (withdraw acct 200.00) returns 1924.0)
 (confirm that (balance acct) returns 1924.0)
+(field-names acct)
 ;; (makunbound 'acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -297,7 +299,7 @@ Examples of mis-use:
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
 (confirm that (dir passwd-acct)
-  returns (change-password class-name dir is? otherwise responds-to?))
+  returns (change-password class-name dir field-names is? otherwise responds-to?))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
@@ -325,7 +327,7 @@ Examples of mis-use:
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (dir limit-acct)
-  returns (change-password class-name dir is? otherwise responds-to?))
+  returns (change-password class-name dir field-names is? otherwise responds-to?))
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
 (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
