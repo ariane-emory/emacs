@@ -39,3 +39,8 @@
     ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
     (t (prn "%s" thing))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(let ((foo (gensym "foo-")))
+  (set foo 888)
+  (makunbound foo))

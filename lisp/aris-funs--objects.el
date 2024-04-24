@@ -198,9 +198,9 @@ Examples of mis-use:
   (name () name)
   (interest () (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:is-object? (setf normal-acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name normal-acct) returns account)
 (confirm that (a:is? normal-acct 'account) returns t)
+(confirm that (a:is-object? (setf normal-acct (account "A. User" 2000.00))) returns t)
 (confirm that (is? normal-acct 'account) returns t)
 (confirm that (deposit normal-acct 42.00) returns 2042.0)
 (confirm that (deposit normal-acct 82.00) returns 2124.0)
