@@ -119,6 +119,8 @@
                        (val (cdr kvp))
                        (key-length (length (symbol-name key)))
                        (padding (make-string (- max-len key-length) ?\ )))
+                 (prn "VAL:          %S" val)
+                 (prn "a:is-object?: %S" (a:is-object? val))
                  (push (format "%s:%s %s" key padding val) lines)))
              (nreverse lines)))))
      (is?          (class)  (eq class class-name))
