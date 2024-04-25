@@ -223,16 +223,15 @@ Examples of use:
 Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
-  (prndiv)
-  (prn "arglist:       %s" arglist)
-  (let ((keys '(arglist delegee-sym delegee-classes delegee-is-optional)))
+  (let ((alist
+          (make-empty-alist '(arglist delegee-sym delegee-classes delegee-is-optional))))
     (if (not (memq '&delegee arglist))
-      (cl-pairlis keys (list arglist nil nil nil))
+      (alist-put! 'arglist alist arglist)
       (let (new-arglist-segment delegee-is-optional)
         (while-let ( (popped (pop arglist))
                      (_ (not (eq popped '&delegee))))
           (when (eq popped '&optional)
-            (setq delegee-is-optional t))
+            (alist-put! 'delegee-is-optional alist t))
           (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
             (error "Malformed ARGLIST, %s before &delegee." top))
           (push popped new-arglist-segment))
@@ -249,24 +248,13 @@ Examples of mis-use:
                 (cl-every #'symbol? popped)))
             (error (concat "Malformed ARGLIST, &delegee must be followed by a "
                      "symbol or a list of 2 or more symbols.")))
-
-          (setq delegee
-            (if (symbol? popped)
-              (list popped nil delegee-is-optional)
-              (list (first popped) (rest popped) delegee-is-optional)
-              ;; (append popped (list delegee-is-optional))
-              ))
-          (prn "delegee:  %s" delegee))
-        (push (first delegee) new-arglist-segment) ; add delegee's symbol.
-
-        (setq return
-          (cl-pairlis keys
-            (cons
-              (append (reverse new-arglist-segment) arglist)
-              delegee)))
-        (prn "return:   ")
-        (prn "%s" (trim-trailing-whitespace (pp-to-string return)))
-        return))))
+          (let ((delegee-sym (if (symbol? popped) popped (first popped))))
+            (alist-put! 'delegee-sym alist delegee-sym)
+            (push delegee-sym new-arglist-segment))
+          (alist-put! 'delegee-classes alist (when (not (symbol? popped)) (rest popped))))
+        (alist-put! 'arglist alist (append (reverse new-arglist-segment) arglist))
+        ;; returning alist-put! call's value would be fine, but for clarity:
+        alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
