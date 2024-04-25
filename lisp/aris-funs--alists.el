@@ -230,7 +230,7 @@ Examples:
   (mapr
     alist
     (lambda (pair)
-      (message "pair %s"pair)
+      ;; (message "pair %s"pair)
       (cond
         ((-cons-pair? pair)
           (cons (car pair) (list (cdr pair))))
