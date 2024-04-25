@@ -10,8 +10,9 @@
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;;  - defclass doesn't respect specifications of multiple delegee class possibilities,
+;;  - `defclass' doesn't respect specifications of multiple delegee class possibilities,
 ;;    and only pays attention to the first variant.
+;;  - `a:extract-delegee-arg' and `a:extract-field-names' could probably be combined.
 ;;  - &get, &set, &getset.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -20,9 +21,9 @@
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (field-names     (a:extract-field-names arglist))
-          (parsed-arglist  (a:extract-delegee-arg arglist))
+  (let* ( (parsed-arglist  (a:extract-delegee-arg arglist))
           (fields          (alist-get 'arglist parsed-arglist))
+          (field-names     (a:extract-field-names fields))
           (delegee-sym     (alist-get 'delegee-sym parsed-arglist))
           (delegee-class   (first (alist-get 'delegee-classes parsed-arglist)))
           (delegee-test    (when delegee-class ; wrapped in a list. v
