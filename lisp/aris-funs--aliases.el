@@ -26,6 +26,7 @@
 (defalias 'nil?            'null)
 (defalias 'number?         'numberp)
 (defalias 'proper?         'proper-list-p)
+(defalias 'proper-list?    'proper-list-p)
 (defalias 'rplaca!         'rplaca)
 (defalias 'rplacd!         'rplacd)
 (defalias 'setcar!         'rplaca)
