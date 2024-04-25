@@ -70,7 +70,7 @@
   (prn "kapow"))
 
 (with-messages "doing the other thing" 
-  (prn "pow")
+  (prn "Pow and %s, %s." "kablam" 3)
   (with-indentation
     (prn "zowie"))
   (prn "kapow"))
