@@ -90,8 +90,10 @@ list keywords excluding &aux.")
                    `((unless ; warapped in a list for splicing.
                        (and (a:is-object? ,.delegee-sym)
                          (memq (class-name ,.delegee-sym) ',.delegee-classes))
-                       (error "Delegee class is not of one of %s: %S."
-                         ',.delegee-classes (a:maybe-repr ,.delegee-sym)))))))
+                       (error "Delegee class is not %s%s: %S."
+                         (if (rest ',.delegee-classes) "one of " "")
+                         (apply #'pp-things-to-string :or ',.delegee-classes)
+                         (a:maybe-repr ,.delegee-sym)))))))
           ;; `let' class variables:
           `(let ( (class-name   ',class)
                   (field-names  ',.field-names)
