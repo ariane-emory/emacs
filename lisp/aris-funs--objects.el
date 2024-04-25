@@ -68,19 +68,19 @@ list keywords excluding &aux.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let* ( (parsed-arglist  (a:extract-delegee-arg arglist))
-          (arglist         (alist-get 'arglist     parsed-arglist))
-          (field-names     (alist-get 'field-names parsed-arglist))
-          (delegee-sym     (alist-get 'delegee-sym parsed-arglist))
-          (delegee-classes (alist-get 'delegee-classes parsed-arglist))
-          (delegee-test    (when delegee-classes
+          (arglist         (alist-get 'arglist         parsed-arglist))
+          (field-names     (alist-get 'field-names     parsed-arglist))
+          (.delegee-sym     (alist-get 'delegee-sym     parsed-arglist))
+          (.delegee-classes (alist-get 'delegee-classes parsed-arglist))
+          (delegee-test    (when .delegee-classes
                              `((unless
-                                 (and (a:is-object? ,delegee-sym)
-                                   (memq (class-name ,delegee-sym) ',delegee-classes))
+                                 (and (a:is-object? ,.delegee-sym)
+                                   (memq (class-name ,.delegee-sym) ',.delegee-classes))
                                  (error "Delegee class is not of one of %s: %S."
-                                   ',delegee-classes (let ((bad-val ,delegee-sym))
-                                                       (if (a:is-object? bad-val)
-                                                         (repr bad-val)
-                                                         bad-val)))))))
+                                   ',.delegee-classes (let ((bad-val ,.delegee-sym))
+                                                        (if (a:is-object? bad-val)
+                                                          (repr bad-val)
+                                                          bad-val)))))))
           ;; synthesize this method and inject it into the `cl-defun' in our expansion so
           ;; that it can access the instance's arglist:
           (field-values-method
@@ -91,8 +91,8 @@ list keywords excluding &aux.")
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
-    (when (and delegee-sym (not (alist-has? 'otherwise methods)))
-      (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
+    (when (and .delegee-sym (not (alist-has? 'otherwise methods)))
+      (nconc methods `((otherwise (&rest args) (apply message ,.delegee-sym args)))))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
