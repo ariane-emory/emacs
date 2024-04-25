@@ -34,8 +34,7 @@
             `(field-values ()
                (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@field-names)))))
           ;; end of synthesized method(s).
-          (synthesized-methods
-            (list field-values-method))
+          (synthesized-methods (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
@@ -47,8 +46,9 @@
               (field-names  ',field-names)
               (method-names ',method-names)
               ,@class-vars)
-         ;; define generic functions for the methods and a constructor for the class:
+         ;; define generic functions for the methods:
          (mapc #'a:ensure-generic-fun method-names)
+         ;; define a constructor for the class:
          (cl-defun ,class ,arglist
            ,@delegee-test
            (let (self)
