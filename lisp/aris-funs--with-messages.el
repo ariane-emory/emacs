@@ -90,14 +90,8 @@ last expression in `body' and printing a variant message afterwards."
           (end-message-fmt-args 
             (list
               (cond 
-                (is-double-message
-                  (--wm-capitalize second-message-string)
-                  ;; (list (downcase second-message-string-head) second-message-string-tail)
-                  )
-                ((not 1st-is-just-kw)
-                  (--wm-capitalize message-string)
-                  ;; (list (downcase message-string-head) message-string-tail)
-                  ))))
+                (is-double-message  (--wm-capitalize second-message-string))
+                ((not 1st-is-just-kw) (--wm-capitalize message-string)))))
           (end-message-expr
             (when end-message-fmt-args
               (list `(apply #'message "%s%s%s."
