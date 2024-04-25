@@ -325,8 +325,9 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
-;; (confirm that (method-names acct)
-;;   returns (balance class-name deposit fmt method-names field-names interest is? name responds-to? withdraw))
+(confirm that (method-names acct) returns
+  ( balance class-name deposit field-names field-values interest is? method-names name
+    prepr repr responds-to? strepr withdraw))
 (confirm that (field-names acct) returns (name balance))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
@@ -359,12 +360,12 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (a:is-object?
-    (setq passwd-acct
-      (account-with-password "secret" (account "A. User" 2000.00))))
+    (setq passwd-acct (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
-;; (confirm that (method-names passwd-acct)
-;;   returns (change-password class-name fmt method-names field-names is? otherwise responds-to?))
+(confirm that (method-names passwd-acct) returns
+  ( change-password check-password class-name field-names field-values is? method-names
+    otherwise prepr repr responds-to? strepr))
 (confirm that (field-names passwd-acct) returns (password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
@@ -378,8 +379,8 @@ default values of  &optional arguments and removing &aux arguments."
       (balance . 500.0)
       (name . "A. User"))
     (password . "secret")))
-;; (confirm that (strepr passwd-acct) returns
-;;   "((class . account-with-password)\n (acct\n  (class . account)\n  (balance . 500.0)\n  (name . \"A. User\"))\n (password . \"secret\"))")
+(confirm that (strepr passwd-acct) returns
+  "((class . account-with-password)\n  (acct\n    (class . account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
 ;; (makunbound 'passwd-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -399,8 +400,9 @@ default values of  &optional arguments and removing &aux arguments."
           (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
-;; (confirm that (method-names limit-acct)
-;;   returns (change-password class-name fmt method-names field-names is? otherwise responds-to?))
+(confirm that (method-names limit-acct) returns
+  ( change-password check-password class-name field-names field-values is? method-names
+    otherwise prepr repr responds-to? strepr))
 (confirm that (field-names limit-acct) returns (password acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
 (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
@@ -417,8 +419,8 @@ default values of  &optional arguments and removing &aux arguments."
         (name . "A. Thrifty Spender"))
       (limit . 100.0))
     (password . "pass")))
-;; (confirm that (strepr limit-acct) returns
-;;   "((class . account-with-password)\n (acct\n  (class . account-with-limit)\n  (acct\n   (class . account)\n   (balance . 480.0)\n   (name . \"A. Thrifty Spender\"))\n  (limit . 100.0))\n (password . \"pass\"))")
+(confirm that (strepr limit-acct) returns
+  "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
 ;; (makunbound 'limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -426,13 +428,3 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;; (format "%s:%s%s" key padding
-;;   (if (not (a:is-object? val))
-;;     val
-;;     (join-string-lines
-;;       (fmt-as-lines val (+ indent-tail-lines-by max-len)))))
-
-
