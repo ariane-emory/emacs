@@ -74,3 +74,6 @@
   (with-indentation
     (prn "zowie"))
   (prn "kapow"))
+(pprn "nice")
+(pprn "nice!")
+(pprn "nice... %s!" 2)
