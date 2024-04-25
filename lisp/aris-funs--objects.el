@@ -69,7 +69,7 @@ list keywords excluding &aux.")
   "Define a class for object-oriented programming."
   (let* ( (parsed-arglist  (a:extract-delegee-arg arglist))
           (.arglist         (alist-get 'arglist         parsed-arglist))
-          (field-names     (alist-get 'field-names     parsed-arglist))
+          (.field-names     (alist-get 'field-names     parsed-arglist))
           (.delegee-sym     (alist-get 'delegee-sym     parsed-arglist))
           (.delegee-classes (alist-get 'delegee-classes parsed-arglist))
           (delegee-test    (when .delegee-classes
@@ -85,7 +85,7 @@ list keywords excluding &aux.")
           ;; that it can access the instance's arglist:
           (field-values-method
             `(field-values ()
-               (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@field-names)))))
+               (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@.field-names)))))
           ;; end of synthesized method(s).
           (synthesized-methods (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
@@ -96,7 +96,7 @@ list keywords excluding &aux.")
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
       `(let ( (class-name   ',class)
-              (field-names  ',field-names)
+              (field-names  ',.field-names)
               (method-names ',method-names)
               ,@class-vars)
          ;; define generic functions for the methods:
