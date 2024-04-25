@@ -183,9 +183,10 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:cl-lambda-list-keywords*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '(&optional &key &rest &aux)
+  '(&optional &key &rest)
   ;; we're not concerned with &body for now but in the future we should forbidd it.
-  "Keywords that can appear in a lambda list.")
+  "Keywords that can appear in a `defclass' lambda list, which are CL's lambda
+list keywords excluding &aux.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -193,7 +194,7 @@ trying to send a message to a non-object."
 (defvar *a:cl-lambda-list-keywords-other-than-&optional*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cl-remove '&optional *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a lambda list other than &optional.")
+  "Keywords that can appear in a lambda list other than &optional and &aux.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -208,9 +209,7 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun a:extract-delegee-arg (arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Extract the delegee argument from an arglist ARGLIST, returning a list whose first
-element is the modified arglist and whose second element is the delegee argument as
-a list of the form (CLASS SYMBOL IS-OPTIONAL).
+  "Extract the delegee argument from an arglist ARGLIST, returning an alist.
 
 This function adds a new lambda list keyword, &delegee. When used, the &delegee
 keyword must precede any &rest, &key or &aux parameters but may be &optional.
@@ -225,6 +224,8 @@ Examples of use:
 Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
+  (when (memq '&aux arglist)
+    (error "Malformed ARGLIST, &aux is not supported."))
   (let ((alist
           (make-empty-alist arglist delegee-sym delegee-classes delegee-is-optional)))
     (if (not (memq '&delegee arglist))
