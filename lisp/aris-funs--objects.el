@@ -247,18 +247,23 @@ Examples of mis-use:
         ;;(pop arglist)
         (unless arglist
           (error "Malformed ARGLIST, nothing after &delegee."))
-        (let ((top (pop arglist)))
-          (when (memq top *a:defclass-lambda-list-keywords*)
-            (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
-          (unless (or (symbol? top)
-                    (and (double? top) (symbol? (first top)) (symbol? (second top))))
+        (let ((popped (pop arglist)))
+          (when (memq popped *a:defclass-lambda-list-keywords*)
+            (error "Malformed ARGLIST, &delegee immediately followed by %s." popped))
+          (unless
+            (or (symbol? popped)
+              (and (proper-list? popped)
+                (length> popped 1)
+                (cl-every #'symbol? popped)))
             (error (concat "Malformed ARGLIST, &delegee must be followed by a "
-                     "symbol or a list of length two.")))
+                     "symbol or a list of 2 or more symbols.")))
 
           (setq delegee
-            (if (symbol? top)
-              (list top nil delegee-is-optional)
-              (append top (list delegee-is-optional))))
+            (if (symbol? popped)
+              (list popped nil delegee-is-optional)
+              (list (first popped) (rest popped) delegee-is-optional)
+              ;; (append popped (list delegee-is-optional))
+              ))
           (prn "delegee:  %s" delegee))
         (push (first delegee) new-arglist-segment) ; add delegee's symbol.
 
@@ -274,37 +279,70 @@ Examples of mis-use:
 ;; mandatory delegate and an &optional case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
   returns
-  ((arglist password acct &optional thing)
+  ( (arglist password acct &optional thing)
     (delegee-sym . acct)
     (delegee-classes)
     (delegee-is-optional)))
-;; ;; delegee first case:
-;; (confirm that (a:extract-delegee-arg '(&delegee (acct account) password))
-;;   returns ((acct password) (acct account nil)))
-;; ;; typed delegee case:
-;; (confirm that (a:extract-delegee-arg '(password &delegee (acct account)))
-;;   returns ((password acct) (acct account nil)))
-;; ;; un-typed delegee case:
-;; (confirm that (a:extract-delegee-arg '(password &delegee acct))
-;;   returns ((password acct) (acct nil nil)))
-;; ;; optional delegee case case:
-;; (confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct))
-;;   returns ((password &optional thing acct) (acct nil t)))
-;; ;; optional delegee case 2:
-;; (confirm that (a:extract-delegee-arg '(password &optional &delegee acct thing))
-;;   returns ((password &optional acct thing) (acct nil t)))
-;; ;; optional delegee case 3:
-;; (confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing))
-;;   returns ((password &optional acct thing) (acct account t)))
-;; ;; optional delegee case 4:
-;; (confirm that (a:extract-delegee-arg '(password &optional foo &delegee (acct account) bar))
-;;   returns ((password &optional foo acct bar) (acct account t)))
-;; ;; mandatory delegee and an &rest case:
-;; (confirm that (a:extract-delegee-arg '(password &delegee (acct account) &rest things))
-;;   returns ((password acct &rest things) (acct account nil)))
-;; ;; 'do nothing' case:
-;; (confirm that (a:extract-delegee-arg '(password &rest things))
-;;   returns ((password &rest things) nil))
+;; typed delegee first case:
+(confirm that (a:extract-delegee-arg '(&delegee (acct account) password)) returns
+  ( (arglist acct password)
+    (delegee-sym . acct)
+    (delegee-classes account)
+    (delegee-is-optional)))
+;; typed delegee with two classes first case:
+(confirm that (a:extract-delegee-arg '(&delegee (acct account account2) password)) returns
+  ( (arglist acct password)
+    (delegee-sym . acct)
+    (delegee-classes account account2)
+    (delegee-is-optional)))
+;; typed delegee case:
+(confirm that (a:extract-delegee-arg '(password &delegee (acct account))) returns
+  ( (arglist password acct)
+    (delegee-sym . acct)
+    (delegee-classes account)
+    (delegee-is-optional)))
+;; un-typed delegee case:
+(confirm that (a:extract-delegee-arg '(password &delegee acct)) returns
+  ( (arglist password acct)
+    (delegee-sym . acct)
+    (delegee-classes)
+    (delegee-is-optional)))
+;; optional delegee case case:
+(confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct)) returns
+  ( (arglist password &optional thing acct)
+    (delegee-sym . acct)
+    (delegee-classes)
+    (delegee-is-optional . t)))
+;; optional delegee case 2:
+(confirm that (a:extract-delegee-arg '(password &optional &delegee acct thing)) returns
+  ( (arglist password &optional acct thing)
+    (delegee-sym . acct)
+    (delegee-classes)
+    (delegee-is-optional . t)))
+;; optional delegee case 3:
+(confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing)) returns
+  ( (arglist password &optional acct thing)
+    (delegee-sym . acct)
+    (delegee-classes account)
+    (delegee-is-optional . t)))
+;; optional delegee case 4:
+(confirm that (a:extract-delegee-arg '(password &optional foo &delegee (acct account) bar)) returns
+  ( (arglist password &optional foo acct bar)
+    (delegee-sym . acct)
+    (delegee-classes account)
+    (delegee-is-optional . t)))
+;; mandatory delegee and an &rest case:
+(confirm that (a:extract-delegee-arg '(password &delegee (acct account) &rest things)) returns
+  ( (arglist password acct &rest things)
+    (delegee-sym . acct)
+    (delegee-classes account)
+    (delegee-is-optional)))
+;; 'do nothing' case:
+(confirm that (a:extract-delegee-arg '(password &rest things)) returns
+  ( (arglist password &rest things)
+    (delegee-sym)
+    (delegee-classes)
+    (delegee-is-optional)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
