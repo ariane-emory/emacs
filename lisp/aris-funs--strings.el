@@ -70,7 +70,7 @@
     (when (and connective (length> things 1))
       (let ((last (car (last things))))
         (setq things (nconc (butlast things 2) (list connective last))))))
-  (apply #'concat (mapcar (lambda (x) (format "%s" x)) (nconc things (list ".")))))
+  (apply #'concat (mapcar (lambda (x) (format "%s" x)) things)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (pp-things :and 1 "foo" 'bar) returns "1, foo and bar.")
 (confirm that (pp-things :or 1 "foo" 'bar) returns "1, foo or bar.")
@@ -81,6 +81,18 @@
 (confirm that (pp-things :and 1) returns "1.")
 (confirm that (pp-things :or 1) returns "1.")
 (confirm that (pp-things 1) returns "1.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro empty-string-unless (test &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "If TEST is true, return the result of evaluating BODY as a string.
+Otherwise, return an empty string."
+  `(if ,test (progn ,@body) ""))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (empty-string-unless t "foo" "bar") returns "bar")
+(confirm that (empty-string-unless nil "foo" "bar") returns "")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
