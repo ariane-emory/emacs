@@ -255,31 +255,29 @@ Examples of mis-use:
             (error (concat "Malformed ARGLIST, &delegee must be followed by a "
                      "symbol or a list of length two.")))
 
-          (setq fake-delegee
-            (if (symbol? top)
-              (list top nil delegee-is-optional)
-              (append top (list delegee-is-optional))))
-          (prn "fake-delegee:  %s" fake-delegee)
-          
           (setq delegee
             (if (symbol? top)
               (list top nil delegee-is-optional)
-              (append top (list delegee-is-optional)))))
+              (append top (list delegee-is-optional))))
+          (prn "delegee:  %s" delegee))
         (push (first delegee) new-arglist-segment) ; add delegee's symbol.
 
-        (setq fake-return
+        (setq return
           (cl-pairlis keys
             (cons
               (append (reverse new-arglist-segment) arglist)
-              fake-delegee)))
-        (prn "fake-return:   ")
-        (prn "%s" (trim-trailing-whitespace (pp-to-string fake-return)))
-        
-        (list (append (nreverse new-arglist-segment) arglist) delegee)))))
+              delegee)))
+        (prn "return:   ")
+        (prn "%s" (trim-trailing-whitespace (pp-to-string return)))
+        return))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
-  returns ((password acct &optional thing) (acct nil nil)))
+  returns
+  ((arglist password acct &optional thing)
+    (delegee-sym . acct)
+    (delegee-classes)
+    (delegee-is-optional)))
 ;; ;; delegee first case:
 ;; (confirm that (a:extract-delegee-arg '(&delegee (acct account) password))
 ;;   returns ((acct password) (acct account nil)))
