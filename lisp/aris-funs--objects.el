@@ -338,8 +338,8 @@ default values of  &optional arguments and removing &aux arguments."
   ((class . account)
     (balance . 1924.0)
     (name . "A. User")))
-;; (confirm that (strepr acct) returns
-;;   "((class . account)\n (balance . 1924.0)\n (name . \"A. User\"))")
+(confirm that (strepr acct) returns
+  "((class . account)\n  (balance . 1924.0)\n  (name . \"A. User\"))")
 ;; (makunbound 'acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
