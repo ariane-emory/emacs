@@ -10,8 +10,56 @@
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;;  - `defclass' doesn't respect specifications of multiple delegee class possibilities,
-;;    and only pays attention to the first variant.
+;;  - Come up with something!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '(&optional &key &rest)
+  ;; we're not concerned with &body for now but in the future we should forbidd it.
+  "Keywords that can appear in a `defclass' lambda list, which are CL's lambda
+list keywords excluding &aux.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords-other-than-&optional*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cl-remove '&optional *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in a lambda list other than &optional and &aux.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:defclass-lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cons '&delegee *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in a:defclass' lambda list.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:universal-methods*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '( (class-name   ()        class-name)
+     (method-names ()        method-names)
+     (field-names  ()        field-names)
+     (is?          (class)   (eq class class-name))
+     (responds-to? (message) (not (null (memq message method-names))))
+     (prepr        ()        (prn (strepr self)))
+     (strepr       ()        (trim-trailing-whitespace (pp-to-string (repr self))))
+     (repr         ()
+       (cons (cons 'class (class-name self)) 
+         (mapr (field-values self)
+           (lambda (kvp)
+             (let ((key (car kvp)) (val (cdr kvp)))
+               (cons key (if (a:is-object? val) (repr val) val))))))))
+  ;; Note that all objects also have a `field-values' method but, since it needs to
+  ;; access instance variables, it is synthesized in `defclass' in order to resolve them
+  ;; in the right lexical scope.
+  "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -23,11 +71,13 @@
           (arglist         (alist-get 'arglist     parsed-arglist))
           (field-names     (alist-get 'field-names parsed-arglist))
           (delegee-sym     (alist-get 'delegee-sym parsed-arglist))
-          (delegee-class   (first (alist-get 'delegee-classes parsed-arglist)))
-          (delegee-test    (when delegee-class ; wrapped in a list. v
-                             `((unless (a:is? ,delegee-sym ',delegee-class)
-                                 (error "Delegee is not of class '%s: %S."
-                                   ',delegee-class ,delegee-sym)))))
+          (delegee-classes (alist-get 'delegee-classes parsed-arglist))
+          (delegee-test    (when delegee-classes
+                             `((unless
+                                 (and (a:is-object? ,delegee-sym)
+                                   (memq (class-name ,delegee-sym) ',delegee-classes))
+                                 (error "Delegee class is not of one of '%s: %S."
+                                   ',delegee-classes ,delegee-sym)))))
           ;; synthesize this method and inject it into the `cl-defun' in our expansion so
           ;; that it can access the instance's arglist:
           (field-values-method
@@ -57,29 +107,6 @@
                #'(lambda (message)
                    (declare (aos-class ',class))
                    (cl-case message ,@method-clauses)))))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:universal-methods*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '( (class-name   ()       class-name)
-     (method-names ()       method-names)
-     (field-names  ()       field-names)
-     (is?          (class)  (eq class class-name))
-     (responds-to? (method) (not (null (memq method method-names))))
-     (prepr        ()       (prn (strepr self)))
-     (strepr       ()       (trim-trailing-whitespace (pp-to-string (repr self))))
-     (repr         ()
-       (cons (cons 'class (class-name self)) 
-         (mapr (field-values self)
-           (lambda (kvp)
-             (let ((key (car kvp)) (val (cdr kvp)))
-               (cons key (if (a:is-object? val) (repr val) val))))))))
-  ;; Note that all objects also have a `field-values' method but, since it needs to
-  ;; access instance variables, it is synthesized in `defclass' in order to resolve them
-  ;; in the right lexical scope.
-  "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -128,7 +155,7 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun a:get-method (object message)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return the method that implements message for this object."
+  "Return the method that implements MESSAGE for OBJECT."
   (a:must-be-object! object)
   ;; (prn "get: Getting method for %s." message)
   ;; (let ((res (with-indentation (funcall object message))))
@@ -141,7 +168,7 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun a:send-message (object message &rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Get the function to implement the message, and apply the function to the args."
+  "Get the method from OBJECT to handle MESSAGE, and apply the method to ARGS ."
   (a:must-be-object! object)
   ;; (prn "send: Getting method for %s..." message)
   (if-let ((method (a:get-method object message)))
@@ -159,7 +186,7 @@ trying to send a message to a non-object."
   ;; - ari commented out a couple of lines such that this will always re-bind the named
   ;;   function.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Define an object-oriented dispatch function for a message, unless it has a1ready been defined as one."
+  "Define a generic dispatch function for MESSAGE, unless it has a1ready been defined as one."
   ;;(unless (a:generic-fun-p message)
   (let ((fun #'(lambda (object &rest args)
                  (apply #'a:send-message object message args))))
@@ -171,38 +198,12 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun a:generic-fun-p (fun-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Is this a generic function?"
+  "t when the symbol FUN-NAME it bound to a generic function."
   (and
     (fboundp fun-name)
     (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'a:generic-fun? 'a:generic-fun-p)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:cl-lambda-list-keywords*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '(&optional &key &rest)
-  ;; we're not concerned with &body for now but in the future we should forbidd it.
-  "Keywords that can appear in a `defclass' lambda list, which are CL's lambda
-list keywords excluding &aux.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:cl-lambda-list-keywords-other-than-&optional*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-remove '&optional *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a lambda list other than &optional and &aux.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:defclass-lambda-list-keywords*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cons '&delegee *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a:defclass' lambda list.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
