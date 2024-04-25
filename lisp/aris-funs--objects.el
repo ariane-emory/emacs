@@ -81,17 +81,18 @@ list keywords excluding &aux.")
         (when-let ((method (or (assoc 'delegate methods)
                              (assoc 'method-not-found methods))))
           (setf (car method) 'otherwise))
-        (when (and .delegee-sym (not (alist-has? 'otherwise methods)))
+        (when (and .delegee-sym (not (assoc 'otherwise methods)))
           (nconc methods `((otherwise (&rest args) (apply message ,.delegee-sym args)))))
         (let ( (method-names   (sort (mapcar #'first methods) #'string<))
                (method-clauses (mapcar #'a:make-method-clause methods))
                (delegee-test
                  (when .delegee-classes
-                   `((unless
+                   `((unless ; warapped in a list for splicing.
                        (and (a:is-object? ,.delegee-sym)
                          (memq (class-name ,.delegee-sym) ',.delegee-classes))
                        (error "Delegee class is not of one of %s: %S."
                          ',.delegee-classes (a:maybe-repr ,.delegee-sym)))))))
+          ;; `let' class variables:
           `(let ( (class-name   ',class)
                   (field-names  ',.field-names)
                   (method-names ',method-names)
@@ -104,6 +105,7 @@ list keywords excluding &aux.")
                (let (self)
                  ;; bind SELF lexically so object can reference itself:
                  (setq self
+                   ;; the object itself:
                    #'(lambda (message)
                        (declare (aos-class ',class))
                        (cl-case message ,@method-clauses)))))))))))

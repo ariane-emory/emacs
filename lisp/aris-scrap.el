@@ -79,3 +79,42 @@
 (pprn "nice")
 (pprn "nice!")
 (pprn "nice... %s!" 2)
+
+(defun pp-things (&rest things)
+  (let (pieces)
+    (dolist (thing things)
+      (push (format "%s" thing) pieces))
+    (setq pieces (nconc (intercalate ", " pieces) (list ".")))
+    (apply #'concat pieces)))
+
+
+(cl-defun pp-things (&rest things &key con)
+  "Con should be either 'and or 'or."
+  (let (pieces)
+    (dolist (thing things)
+      (push (format "%s" thing) pieces))
+    (setq pieces (nconc (intercalate ", " pieces) (list ".")))
+    (apply #'concat pieces)))
+
+
+Okay, that's a little closer, but I'm still missing one step, I think:
+
+(cl-defun pp-things (&rest things &key ((:con con) nil) &allow-other-keys)
+  "Con should be either 'and or 'or."
+  (unless (or (null con) (memq con '(and or)))
+    (error "Invalid value for :con argument. Should be 'and or 'or."))
+  (let (pieces)
+    (dolist (thing things)
+      (push (format "%s" thing) pieces))
+    (setq pieces (nconc (nreverse (intercalate ", " pieces)) con (list ".")))
+    (apply #'concat pieces)))
+
+
+
+(pp-things 1 "foo" 'bar :con 'and) ;; "1, foo, and, bar."
+;; This one works right:
+(pp-things 1 "foo" 'bar) ;; "1, foo, bar."
+
+;; This one doesn't quite:
+(pp-things 1 "foo" 'bar :con 'and) "1, foo, bar, :con, and."
+;; Wanted: "1, foo, and bar."

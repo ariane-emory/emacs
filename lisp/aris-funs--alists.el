@@ -18,7 +18,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun alist-has? (key alist)
-  "Check if ALIST contains KEY."
+  "t when ALIST contains KEY."
   (let ((entry (assoc key alist)))
     (not (null entry))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,6 +26,18 @@
   (confirm that (alist-has? 'a my-alist) returns t)
   (confirm that (alist-has? 'b my-alist) returns t)
   (confirm that (alist-has? 'c my-alist) returns nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun alist-lacks? (key alist)
+  "t unless ALIST contains KEY."
+  (not (alist-has? key alist)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((my-alist '((a . t) (b . nil))))
+  (confirm that (alist-lacks? 'a my-alist) returns nil)
+  (confirm that (alist-lacks? 'b my-alist) returns nil)
+  (confirm that (alist-lacks? 'c my-alist) returns t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
