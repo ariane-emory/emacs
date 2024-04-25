@@ -224,7 +224,7 @@ Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
   (let ((alist
-          (make-empty-alist '(arglist delegee-sym delegee-classes delegee-is-optional))))
+          (make-alist '(arglist delegee-sym delegee-classes delegee-is-optional))))
     (if (not (memq '&delegee arglist))
       (alist-put! 'arglist alist arglist)
       (let (new-arglist-segment delegee-is-optional)
@@ -235,7 +235,6 @@ Examples of mis-use:
           (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
             (error "Malformed ARGLIST, %s before &delegee." top))
           (push popped new-arglist-segment))
-        ;;(pop arglist)
         (unless arglist
           (error "Malformed ARGLIST, nothing after &delegee."))
         (let ((popped (pop arglist)))

@@ -375,12 +375,15 @@ to achieve your preferred structure."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-empty-alist (keys)
+(defun make-alist (keys &optional values)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Create an alist with KEYS as keys and nil as values."
-  (mapcar #'list keys))
+  "Create an alist with KEYS as keys and VALUES, if supplied, as values."
+  (if values
+    (cl-pairlis keys values)
+    (mapcar #'list keys)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (make-empty-alist '(a b c)) returns ((a) (b) (c)))
+(confirm that (make-alist '(a b c)) returns ((a) (b) (c)))
+(confirm that (make-alist '(a b c) '(1 2 3)) returns ((a . 1) (b . 2) (c . 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
