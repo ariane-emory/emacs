@@ -76,22 +76,15 @@ last expression in `body' and printing a variant message afterwards."
           (second-message-string (when is-double-message (cadr args)))
           (message-string
             (if (stringp message-string) message-string (eval message-string)))
-          (message-string-head (substring message-string 0 1))
-          (message-string-tail (substring message-string 1))
-          (second-message-string-head
-            (when is-double-message(substring second-message-string 0 1)))
-          (second-message-string-tail
-            (when is-double-message(substring second-message-string 1)))
           (start-message-string
-            (format "%s%s%s"
-              (upcase message-string-head)
-              message-string-tail
+            (format "%s%s"
+              (--wm-capitalize message-string)
               (if 1st-is-just-kw "." "...")))
           (end-message-fmt-args 
             (list
               (cond 
                 (is-double-message  (--wm-capitalize second-message-string))
-                ((not 1st-is-just-kw) (--wm-capitalize message-string)))))
+                ((not 1st-is-just-kw) (--wm-uncapitalize message-string)))))
           (end-message-expr
             (when end-message-fmt-args
               (list `(apply #'message "%s%s%s."

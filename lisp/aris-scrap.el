@@ -68,3 +68,9 @@
   (with-indentation
     (prn "zowie"))
   (prn "kapow"))
+
+(with-messages "doing the other thing" 
+  (prn "pow")
+  (with-indentation
+    (prn "zowie"))
+  (prn "kapow"))
