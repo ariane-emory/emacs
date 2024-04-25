@@ -334,18 +334,26 @@ default values of  &optional arguments and removing &aux arguments."
 (confirm that (deposit acct 82.00) returns 2124.0)
 (confirm that (withdraw acct 200.00) returns 1924.0)
 (confirm that (balance acct) returns 1924.0)
+(confirm that (repr acct) returns
+  ((class . account)
+    (balance . 1924.0)
+    (name . "A. User")))
+;; (confirm that (strepr acct) returns
+;;   "((class . account)\n (balance . 1924.0)\n (name . \"A. User\"))")
 ;; (makunbound 'acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:defclass account-with-password (password &delegee acct) ()
-  (change-password (pass new-pass)
-    (if (equal pass new-password)
-      (setf password new-pass)
+  (check-password (attempted-password)
+    (equal attempted-password password))
+  (change-password (attempted-password new-password)
+    (if (check-password self attempted-password)
+      (setf password new-password)
       :WRONG-PASSWORD))
-  (delegate (pass &rest args)
-    (if (equal pass password)
+  (delegate (attempted-password &rest args)
+    (if (check-password self attempted-password)
       (apply message acct args)
       :WRONG-PASSWORD)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -363,6 +371,15 @@ default values of  &optional arguments and removing &aux arguments."
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
+(confirm that (repr passwd-acct) returns
+  ((class . account-with-password)
+    (acct
+      (class . account)
+      (balance . 500.0)
+      (name . "A. User"))
+    (password . "secret")))
+;; (confirm that (strepr passwd-acct) returns
+;;   "((class . account-with-password)\n (acct\n  (class . account)\n  (balance . 500.0)\n  (name . \"A. User\"))\n (password . \"secret\"))")
 ;; (makunbound 'passwd-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -372,9 +389,7 @@ default values of  &optional arguments and removing &aux arguments."
   (withdraw (amt)
     (if (> amt limit)
       :OVER-LIMIT
-      (withdraw acct amt)))
-  (delegate (&rest args)
-    (apply message acct args)))
+      (withdraw acct amt))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (a:is-object?
@@ -392,6 +407,18 @@ default values of  &optional arguments and removing &aux arguments."
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
 (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
 (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
+(confirm that (repr limit-acct) returns
+  ((class . account-with-password)
+    (acct
+      (class . account-with-limit)
+      (acct
+        (class . account)
+        (balance . 480.0)
+        (name . "A. Thrifty Spender"))
+      (limit . 100.0))
+    (password . "pass")))
+;; (confirm that (strepr limit-acct) returns
+;;   "((class . account-with-password)\n (acct\n  (class . account-with-limit)\n  (acct\n   (class . account)\n   (balance . 480.0)\n   (name . \"A. Thrifty Spender\"))\n  (limit . 100.0))\n (password . \"pass\"))")
 ;; (makunbound 'limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
