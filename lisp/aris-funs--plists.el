@@ -12,14 +12,15 @@
   (unless (list? vals) (error "VALS must be a list."))
   (unless (>= (length keys) (length vals)) (error "KEYS must be at least as long as VALS."))
   (when keys
-    (let* ( (result (list (pop keys) (pop vals)))
-            (tail (cdr result)))
+    (let* ( (res  (list (pop keys) (pop vals)))
+            (tail (cdr res)))
       (while keys
         (let ((new-tail (list (pop keys) (pop vals))))
           (setq tail (cdr (rplacd! tail new-tail)))))
-      result)))
+      res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (make-plist '(d a c b) '(4 1 3 2)) returns (d 4 a 1 c 3 b 2))
+(confirm that (make-plist '(d a c b) '(4 1 3))   returns (d 4 a 1 c 3 b nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -33,7 +34,7 @@
   (confirm that (plist-put! plist 'a 10) returns (d 4 a 10 c 3 b 2))
   (confirm that (plist-put! plist 'b 20) returns (d 4 a 10 c 3 b 20))
   (confirm that plist returns (d 4 a 10 c 3 b 20)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,7 +44,7 @@
 does not modify the original."
   (let (new-plist (old-plist plist))
     (while old-plist
-      (let ((k (car old-plist))
+      (let ( (k (car  old-plist))
              (v (cadr old-plist)))
         (unless (eq k key)
           (plist-put! new-plist k v))
@@ -54,7 +55,7 @@ does not modify the original."
   (confirm that (plist-remove plist 'a) returns (d 4 c 3 b 2))
   (confirm that (plist-remove (plist-remove plist 'c) 'b) returns (d 4 a 1))
   (confirm that plist returns (d 4 a 1 c 3 b 2)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -67,7 +68,7 @@ does not modify the original."
   (confirm that (plist-remove! plist 'a) returns (d 4 c 3 b 2))
   (confirm that (plist-remove! plist 'b) returns (d 4 c 3))
   (confirm that plist returns (d 4 c 3)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -82,7 +83,7 @@ does not modify the original."
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (confirm that (plist-sort plist) returns (a 1 b 2 c 3 d 4))
   (confirm that plist returns (d 4 a 1 c 3 b 2)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -95,7 +96,7 @@ does not modify the original."
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (confirm that (plist-sort! plist) returns (a 1 b 2 c 3 d 4))
   (confirm that plist returns (a 1 b 2 c 3 d 4)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -104,18 +105,18 @@ does not modify the original."
   "Extracts the keys from a plist PLIST."
   (unless (listp plist) (error "PLIST must be a list"))
   (when plist
-    (let* ( (result (list (car plist)))
-            (tail result))
+    (let* ( (res (list (car plist)))
+            (tail res))
       (setq plist (cddr plist))
       (while plist
         (let ((new-tail (list (pop plist))))
           (setq tail (setcdr tail new-tail)))
         (pop plist))
-      result)))
+      res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (confirm that (plist-keys plist) returns (d a c b)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -125,10 +126,10 @@ does not modify the original."
   (unless (list? plist)          (error "PLIST must be a list"))
   (unless (even? (length plist)) (error "PLIST must have an even number of elements"))
   (plist-keys (cdr plist)))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (plist-vals plist))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -138,17 +139,17 @@ does not modify the original."
 is odd, the last cons in the resulting alist's value cell will be nil."
   (unless (list? plist)          (error "PLIST must be a list"))
   (when plist
-    (let* ( (result (list (cons (car plist) (cadr plist))))
-            (tail   result)
-            (plist  (cddr plist)))
+    (let* ( (res   (list (cons (car plist) (cadr plist))))
+            (tail  res)
+            (plist (cddr plist)))
       (while plist
         (let ((new-alist-item (list (cons (pop plist) (pop plist)))))
           (setq tail (rplacd! tail new-alist-item))))
-      result)))
+      res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((plist (make-plist '(d a c b) '(4 1 3 2))))
   (confirm that (plist-to-alist plist) returns ((d . 4) (a . 1) (c . 3) (b . 2))))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
