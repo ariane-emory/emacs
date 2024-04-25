@@ -80,19 +80,20 @@ may be applied before or after to get your desired result."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro alist-put! (key alist value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively set a KEY in ALIST to VALUE by modifying the alist in
-place, adding a new key/value pair if it wasn't already present.
-
-This could be optimized to be faster, it presently just wraps `alist-put' so it
-rebuilds the whole alist every time."
-  `(setf ,alist (alist-put ,key ,alist ,value)))
+  "Destructively set a KEY in ALIST to VALUE by modifying the alist in place, adding a new key/value pair if it wasn't already present."
+  `(progn
+     (let ((entry (assoc ,key ,alist)))
+       (if entry
+         (setcdr entry ,value)
+         (setf ,alist (cons (cons ,key ,value) ,alist))))
+     ,alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5)))))
-  (confirm that (alist-put! 'b alist 20)
-    returns ((a . 1) (b . 20) (c . 3) (d (e . 4) (f . 5))))
-  (confirm that (alist-get 'd alist) returns ((e . 4) (f . 5)))
-  (confirm that (alist-put! 'e (alist-get 'd alist) 40) returns ((e . 40) (f . 5)))
-  (confirm that alist returns ((a . 1) (b . 20) (c . 3) (d (e . 40) (f . 5)))))
+(setq alist '((a . 1) (b . 2) (c . 3) (d (e . 4) (f . 5))))
+(confirm that (alist-put! 'b alist 20)
+  returns ((a . 1) (b . 20) (c . 3) (d (e . 4) (f . 5))))
+(confirm that (alist-get 'd alist) returns ((e . 4) (f . 5)))
+(confirm that (alist-put! 'e (alist-get 'd alist) 40) returns ((e . 40) (f . 5)))
+(confirm that alist returns ((a . 1) (b . 20) (c . 3) (d (e . 40) (f . 5))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
