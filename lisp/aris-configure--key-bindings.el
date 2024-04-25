@@ -243,7 +243,7 @@
   ;; Close window/frame on s- so that they're hard to hit accidentally:
   ("s-w" . (lambda () (interactive)
              (if (one-window-p)
-               (message "Cannot delete the sole window")
+               (message "Cannot delete the sole window.")
                (delete-window))))
 
   ;; Toggle truncate lines:
