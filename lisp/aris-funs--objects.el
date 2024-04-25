@@ -67,49 +67,49 @@ list keywords excluding &aux.")
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let* ( (parsed-arglist  (a:extract-delegee-arg arglist))
-          (.arglist         (alist-get 'arglist         parsed-arglist))
-          (.field-names     (alist-get 'field-names     parsed-arglist))
-          (.delegee-sym     (alist-get 'delegee-sym     parsed-arglist))
-          (.delegee-classes (alist-get 'delegee-classes parsed-arglist))
-          (delegee-test    (when .delegee-classes
-                             `((unless
-                                 (and (a:is-object? ,.delegee-sym)
-                                   (memq (class-name ,.delegee-sym) ',.delegee-classes))
-                                 (error "Delegee class is not of one of %s: %S."
-                                   ',.delegee-classes (let ((bad-val ,.delegee-sym))
-                                                        (if (a:is-object? bad-val)
-                                                          (repr bad-val)
-                                                          bad-val)))))))
-          ;; synthesize this method and inject it into the `cl-defun' in our expansion so
-          ;; that it can access the instance's arglist:
-          (field-values-method
-            `(field-values ()
-               (sort-symbol-keyed-alist (cl-pairlis field-names (list ,@.field-names)))))
-          ;; end of synthesized method(s).
-          (synthesized-methods (list field-values-method))
-          (methods (append *a:universal-methods* synthesized-methods user-methods)))
-    (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
-      (setf (car method) 'otherwise))
-    (when (and .delegee-sym (not (alist-has? 'otherwise methods)))
-      (nconc methods `((otherwise (&rest args) (apply message ,.delegee-sym args)))))
-    (let ( (method-names   (sort (mapcar #'first methods) #'string<))
-           (method-clauses (mapcar #'a:make-method-clause methods)))
-      `(let ( (class-name   ',class)
-              (field-names  ',.field-names)
-              (method-names ',method-names)
-              ,@class-vars)
-         ;; define generic functions for the methods:
-         (mapc #'a:ensure-generic-fun method-names)
-         ;; define a constructor for the class:
-         (cl-defun ,class ,.arglist
-           ,@delegee-test
-           (let (self)
-             ;; bind SELF lexically so object can reference itself:
-             (setq self
-               #'(lambda (message)
-                   (declare (aos-class ',class))
-                   (cl-case message ,@method-clauses)))))))))
+  (let ((parsed-arglist  (a:extract-delegee-arg arglist)))
+    (let-alist parsed-arglist
+      (let* ( ;; synthesize this method and inject it into the `cl-defun' in our
+              ;; expansion so that it can access the instance's arglist:
+              (field-values-method
+                `(field-values ()
+                   (sort-symbol-keyed-alist
+                     (cl-pairlis field-names (list ,@.field-names)))))
+              ;; end of synthesized method(s).
+              (synthesized-methods (list field-values-method))
+              (methods (append *a:universal-methods* synthesized-methods user-methods)))
+        (when-let ((method (or (assoc 'delegate methods)
+                             (assoc 'method-not-found methods))))
+          (setf (car method) 'otherwise))
+        (when (and .delegee-sym (not (alist-has? 'otherwise methods)))
+          (nconc methods `((otherwise (&rest args) (apply message ,.delegee-sym args)))))
+        (let ( (method-names   (sort (mapcar #'first methods) #'string<))
+               (method-clauses (mapcar #'a:make-method-clause methods))
+               (delegee-test
+                 (when .delegee-classes
+                   `((unless
+                       (and (a:is-object? ,.delegee-sym)
+                         (memq (class-name ,.delegee-sym) ',.delegee-classes))
+                       (error "Delegee class is not of one of %s: %S."
+                         ',.delegee-classes (let ((bad-val ,.delegee-sym))
+                                              (if (a:is-object? bad-val)
+                                                (repr bad-val)
+                                                bad-val))))))))
+          `(let ( (class-name   ',class)
+                  (field-names  ',.field-names)
+                  (method-names ',method-names)
+                  ,@class-vars)
+             ;; define generic functions for the methods:
+             (mapc #'a:ensure-generic-fun method-names)
+             ;; define a constructor for the class:
+             (cl-defun ,class ,.arglist
+               ,@delegee-test
+               (let (self)
+                 ;; bind SELF lexically so object can reference itself:
+                 (setq self
+                   #'(lambda (message)
+                       (declare (aos-class ',class))
+                       (cl-case message ,@method-clauses)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
