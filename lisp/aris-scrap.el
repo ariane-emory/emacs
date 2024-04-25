@@ -62,3 +62,9 @@
 (field-values passwd-acct)
 
 (change-password passwd-acct "this" "that")
+
+(with-messages "doing the thing" "it is done"
+  (prn "pow")
+  (with-indentation
+    (prn "zowie"))
+  (prn "kapow"))

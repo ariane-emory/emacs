@@ -58,6 +58,14 @@ This variable is not meant to be customized but can be safely dynamically shadow
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun --wm-uncapitalize (string)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Downcase the first character of STRING."
+  (concat (downcase (substring string 0 1)) (substring string 1)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-messages (&rest args)
   "Print `message-string' before evaluating `body', returning the result of the
 last expression in `body' and printing a variant message afterwards."
@@ -79,15 +87,20 @@ last expression in `body' and printing a variant message afterwards."
               (upcase message-string-head)
               message-string-tail
               (if 1st-is-just-kw "." "...")))
-          (end-message-fmt-args
-            (cond 
-              (is-double-message
-                (list (downcase second-message-string-head) second-message-string-tail))
-              ((not 1st-is-just-kw)
-                (list (downcase message-string-head) message-string-tail))))
+          (end-message-fmt-args 
+            (list
+              (cond 
+                (is-double-message
+                  (--wm-capitalize second-message-string)
+                  ;; (list (downcase second-message-string-head) second-message-string-tail)
+                  )
+                ((not 1st-is-just-kw)
+                  (--wm-capitalize message-string)
+                  ;; (list (downcase message-string-head) message-string-tail)
+                  ))))
           (end-message-expr
             (when end-message-fmt-args
-              (list `(apply #'message "%s%s%s%s."
+              (list `(apply #'message "%s%s%s."
                        indent-string
                        (if ,is-double-message
                          ""
