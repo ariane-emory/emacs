@@ -17,7 +17,7 @@
 (a:defclass fooclass (num) ()
   (foo () (format "FOO! %d" num)))
 
-(a:defclass barclass (num &delegee (parent bazclass)) ()
+(a:defclass barclass (num &delegee (parent fooclass)) ()
   (bar () (format "BAR! %d" num)))
 
 (a:defclass bazclass (num &delegee (parent fooclass barclass) &rest things) ()
@@ -27,7 +27,7 @@
 (setq bar  (barclass 4 foo))
 (setq baz  (bazclass 7 foo))
 (setq baz2 (bazclass 6 bar))
-(setq bad-bar (barclass 9 baz)) ;; this shouldn't work...
+;; (setq bad-bar (barclass 9 baz)) ;; this shouldn't work...
 
 (foo (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "FOO! 2"
 (bar (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAR! 3"
