@@ -89,7 +89,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "If TEST is true, return the result of evaluating BODY as a string.
 Otherwise, return an empty string."
-  `(if ,test (progn ,@body) ""))
+  `(if ,test (format "%s" (progn ,@body)) ""))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (empty-string-unless t "foo" "bar") returns "bar")
 (confirm that (empty-string-unless nil "foo" "bar") returns "")
