@@ -10,7 +10,8 @@
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;;  - ability to specify multiple delegee class possibilities.
+;;  - defclass doesn't respect specifications of multiple delegee class possibilities,
+;;    and only pays attention to the first variant.
 ;;  - &get, &set, &getset.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -224,7 +225,7 @@ Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
   (let ((alist
-          (make-alist '(arglist delegee-sym delegee-classes delegee-is-optional))))
+          (make-empty-alist arglist delegee-sym delegee-classes delegee-is-optional)))
     (if (not (memq '&delegee arglist))
       (alist-put! 'arglist alist arglist)
       (let (new-arglist-segment delegee-is-optional)
