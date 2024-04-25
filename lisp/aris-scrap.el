@@ -97,24 +97,50 @@
     (apply #'concat pieces)))
 
 
-Okay, that's a little closer, but I'm still missing one step, I think:
-
-(cl-defun pp-things (&rest things &key ((:con con) nil) &allow-other-keys)
+;;(cl-defun pp-things (&rest things &key (con nil) &allow-other-keys)
+(cl-defun pp-things (&rest things &key (con nil) &allow-other-keys)
   "Con should be either 'and or 'or."
   (unless (or (null con) (memq con '(and or)))
     (error "Invalid value for :con argument. Should be 'and or 'or."))
   (let (pieces)
     (dolist (thing things)
       (push (format "%s" thing) pieces))
-    (setq pieces (nconc (nreverse (intercalate ", " pieces)) con (list ".")))
+    (setq pieces (nreverse (intercalate ", " pieces)))
+    (prn "things: %s" things)
+    (prn "con: %s" con)
+    (if con
+      (setq pieces (nconc pieces))
+      (setq pieces (nconc pieces (cdr con))))
+    (setq pieces (nconc pieces (list ".")))
     (apply #'concat pieces)))
 
 
 
-(pp-things 1 "foo" 'bar :con 'and) ;; "1, foo, and, bar."
-;; This one works right:
+
+
+(cl-defun pp-things (&rest things)
+  "Con should be either 'and or 'or."
+  (let (connective)
+    (when (memq (car things) '(and or))
+      (setq connective (format " %s " (car things)))
+      (setq things (cdr things)))
+    (setq things (intercalate ", " things))
+    (when (and connective (length> things 1))
+      (let ((last (car (last things))))
+        (setq things (nconc (butlast things 2) (list connective last))))))
+  (apply #'concat (mapcar (lambda (x) (format "%s" x)) (nconc things (list "."))))
+  ;; (apply #'concat (mapcar (lambda (x) (format "%s" x)) things))
+  )
+
+(pp-things 'and 1 "foo" 'bar) ;; "1, foo and bar."
+(pp-things 'or 1 "foo" 'bar) ;; "1, foo or bar."
 (pp-things 1 "foo" 'bar) ;; "1, foo, bar."
 
-;; This one doesn't quite:
-(pp-things 1 "foo" 'bar :con 'and) "1, foo, bar, :con, and."
-;; Wanted: "1, foo, and bar."
+(pp-things 'and 1 "foo") ;; "1 and foo."
+(pp-things 'or 1 "foo") ;; "1 or foo."
+(pp-things 1 "foo") ;; "1, foo."
+
+(pp-things 'and 1) ;; "1."
+(pp-things 1) ;; "1."
+(pp-things 'or 1) ;; "1."
+
