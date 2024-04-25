@@ -105,7 +105,7 @@ list keywords excluding &aux.")
              (cl-defun ,class ,.arglist
                ,@delegee-test
                (let (self)
-                 ;; bind SELF lexically so object can reference itself:
+                 ;; bind SELF lexically so that the object can reference itself:
                  (setq self
                    ;; the object itself:
                    #'(lambda (message)
