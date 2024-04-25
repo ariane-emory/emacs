@@ -231,32 +231,40 @@ Examples of use:
 Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
 (a:extract-delegee-arg '(password &rest thing &delegee acct)) ;; malformed ARGLIST, &rest precedes &delegee."
-  (if (not (memq '&delegee arglist))
-    (list arglist nil)
-    (let (new-arglist-segment delegee-is-optional)
-      (while-let ( (popped (pop arglist))
-                   (_ (not (eq popped '&delegee))))
-        (when (eq popped '&optional)
-          (setq delegee-is-optional t))
-        (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
-          (error "Malformed ARGLIST, %s before &delegee." top))
-        (push popped new-arglist-segment))
-      ;;(pop arglist)
-      (unless arglist
-        (error "Malformed ARGLIST, nothing after &delegee."))
-      (let ((top (pop arglist)))
-        (when (memq top *a:defclass-lambda-list-keywords*)
-          (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
-        (unless (or (symbol? top)
-                  (and (double? top) (symbol? (first top)) (symbol? (second top))))
-          (error (concat "Malformed ARGLIST, &delegee must be followed by a "
-                   "symbol or a list of length two.")))
-        (setq delegee
-          (if (symbol? top)
-            (list top nil delegee-is-optional)
-            (append top (list delegee-is-optional)))))
-      (push (first delegee) new-arglist-segment) ; add delegee's symbol.
-      (list (append (nreverse new-arglist-segment) arglist) delegee))))
+  (let ((keys '(arglist delegee-sym delegee-classes delegee-is-optional)))
+    (if (not (memq '&delegee arglist))
+      (list arglist nil)
+      (let (new-arglist-segment delegee-is-optional)
+        (while-let ( (popped (pop arglist))
+                     (_ (not (eq popped '&delegee))))
+          (when (eq popped '&optional)
+            (setq delegee-is-optional t))
+          (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
+            (error "Malformed ARGLIST, %s before &delegee." top))
+          (push popped new-arglist-segment))
+        ;;(pop arglist)
+        (unless arglist
+          (error "Malformed ARGLIST, nothing after &delegee."))
+        (let ((top (pop arglist)))
+          (when (memq top *a:defclass-lambda-list-keywords*)
+            (error "Malformed ARGLIST, &delegee immediately followed by %s." top))
+          (unless (or (symbol? top)
+                    (and (double? top) (symbol? (first top)) (symbol? (second top))))
+            (error (concat "Malformed ARGLIST, &delegee must be followed by a "
+                     "symbol or a list of length two.")))
+
+          (setq fake-delegee
+            (if (symbol? top)
+              (list top nil delegee-is-optional)
+              (append top (list delegee-is-optional))))
+          (prn "fake-delegee: %s" fake-delegee)
+          
+          (setq delegee
+            (if (symbol? top)
+              (list top nil delegee-is-optional)
+              (append top (list delegee-is-optional)))))
+        (push (first delegee) new-arglist-segment) ; add delegee's symbol.
+        (list (append (nreverse new-arglist-segment) arglist) delegee)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; delegee first case:
 (confirm that (a:extract-delegee-arg '(&delegee (acct account) password))
