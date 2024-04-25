@@ -59,5 +59,31 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun pp-things-to-string (&rest things)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Pretty print THINGS as a string."
+  (let (connective (connectives '((:and . and) (:or . or))))
+    (when-let ((entry (assoc (car things) connectives)))
+      (setq connective (format " %s " (cdr entry)))
+      (setq things (cdr things)))
+    (setq things (intercalate ", " things))
+    (when (and connective (length> things 1))
+      (let ((last (car (last things))))
+        (setq things (nconc (butlast things 2) (list connective last))))))
+  (apply #'concat (mapcar (lambda (x) (format "%s" x)) (nconc things (list ".")))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (pp-things :and 1 "foo" 'bar) returns "1, foo and bar.")
+(confirm that (pp-things :or 1 "foo" 'bar) returns "1, foo or bar.")
+(confirm that (pp-things 1 "foo" 'bar) returns "1, foo, bar.")
+(confirm that (pp-things :and 1 "foo") returns "1 and foo.")
+(confirm that (pp-things :or 1 "foo") returns "1 or foo.")
+(confirm that (pp-things 1 "foo") returns "1, foo.")
+(confirm that (pp-things :and 1) returns "1.")
+(confirm that (pp-things :or 1) returns "1.")
+(confirm that (pp-things 1) returns "1.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--strings)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

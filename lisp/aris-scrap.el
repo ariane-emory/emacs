@@ -120,27 +120,25 @@
 
 (cl-defun pp-things (&rest things)
   "Con should be either 'and or 'or."
-  (let (connective)
-    (when (memq (car things) '(and or))
-      (setq connective (format " %s " (car things)))
+  (let (connective (connectives '((:and . and) (:or . or))))
+    (when-let ((entry (assoc (car things) connectives)))
+      (setq connective (format " %s " (cdr entry)))
       (setq things (cdr things)))
     (setq things (intercalate ", " things))
     (when (and connective (length> things 1))
       (let ((last (car (last things))))
         (setq things (nconc (butlast things 2) (list connective last))))))
-  (apply #'concat (mapcar (lambda (x) (format "%s" x)) (nconc things (list "."))))
-  ;; (apply #'concat (mapcar (lambda (x) (format "%s" x)) things))
-  )
+  (apply #'concat (mapcar (lambda (x) (format "%s" x)) (nconc things (list ".")))))
 
-(pp-things 'and 1 "foo" 'bar) ;; "1, foo and bar."
-(pp-things 'or 1 "foo" 'bar) ;; "1, foo or bar."
+(pp-things :and 1 "foo" 'bar) ;; "1, foo and bar."
+(pp-things :or 1 "foo" 'bar) ;; "1, foo or bar."
 (pp-things 1 "foo" 'bar) ;; "1, foo, bar."
 
-(pp-things 'and 1 "foo") ;; "1 and foo."
-(pp-things 'or 1 "foo") ;; "1 or foo."
+(pp-things 'and 1 "foo") ;; "and, 1, foo."
+(pp-things 'or 1 "foo") ;; "or, 1, foo."
 (pp-things 1 "foo") ;; "1, foo."
 
-(pp-things 'and 1) ;; "1."
+(pp-things 'and 1) ;; "and, 1."
 (pp-things 1) ;; "1."
-(pp-things 'or 1) ;; "1."
+(pp-things 'or 1) ;; "or, 1."
 
