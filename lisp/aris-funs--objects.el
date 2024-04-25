@@ -12,8 +12,6 @@
 ;; TODO:
 ;;  - `defclass' doesn't respect specifications of multiple delegee class possibilities,
 ;;    and only pays attention to the first variant.
-;;  - `a:extract-delegee-arg' and `a:extract-field-names' could probably be combined.
-;;  - &get, &set, &getset.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -78,19 +76,21 @@
            (lambda (kvp)
              (let ((key (car kvp)) (val (cdr kvp)))
                (cons key (if (a:is-object? val) (repr val) val))))))))
-  ;; Note that all objects also have a `field-values' method but, since
-  ;; it need to access instance variables, it is synthesized in `defclass'.
+  ;; Note that all objects also have a `field-values' method but, since it needs to
+  ;; access instance variables, it is synthesized in `defclass' in order to resolve them
+  ;; in the right lexical scope.
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:make-method-clause (clause)
+(defun a:make-method-clause (expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Translate a message from a:defclass into a case clause.
+  "Translate an element of a:defclass METHODS argument into a case clause.
 
-(a:make-clause '(name () name)) ⇒ (name #'(lambda 0 name))"
-  `(,(first clause) #'(lambda ,@(rest clause))))
+Example:
+(a:make-clause '(name (x &rest ys) name)) ⇒ (name #'(lambda (x &rest ys) name))"
+  `(,(first expr) #'(lambda ,@(rest expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -229,137 +229,122 @@ Examples of mis-use:
     (error "Malformed ARGLIST, &aux is not supported."))
   (let ((alist (make-empty-alist
                  arglist field-names delegee-sym delegee-classes delegee-is-optional)))
-    (if (not (memq '&delegee arglist))
-      (progn 
-        (alist-put! 'arglist alist arglist)
-        (alist-put! 'field-names alist
-          (a:extract-field-names (alist-get 'arglist alist))))
-      (let (new-arglist-segment delegee-is-optional)
-        (while-let ( (popped (pop arglist))
-                     (_ (not (eq popped '&delegee))))
-          (when (eq popped '&optional)
-            (alist-put! 'delegee-is-optional alist t))
-          (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
-            (error "Malformed ARGLIST, %s before &delegee." top))
-          (push popped new-arglist-segment))
-        (unless arglist
-          (error "Malformed ARGLIST, nothing after &delegee."))
-        (let ((popped (pop arglist)))
-          (when (memq popped *a:defclass-lambda-list-keywords*)
-            (error "Malformed ARGLIST, &delegee immediately followed by %s." popped))
-          (unless
-            (or (symbol? popped)
-              (and (proper-list? popped)
-                (length> popped 1)
-                (cl-every #'symbol? popped)))
-            (error (concat "Malformed ARGLIST, &delegee must be followed by a "
-                     "symbol or a list of 2 or more symbols.")))
-          (let ((delegee-sym (if (symbol? popped) popped (first popped))))
-            (alist-put! 'delegee-sym alist delegee-sym)
-            (push delegee-sym new-arglist-segment))
-          (alist-put! 'delegee-classes alist (when (not (symbol? popped)) (rest popped))))
-        (alist-put! 'arglist alist (append (reverse new-arglist-segment) arglist))
-        (alist-put! 'field-names alist
-          (a:extract-field-names (alist-get 'arglist alist)))
-        alist))))
+    (cl-flet ((extract-field-names (arglist)
+                (mapcar (lambda (x) (or (car-safe x) x))
+                  (cl-remove-if (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
+                    arglist))))
+      (if (not (memq '&delegee arglist))
+        (progn 
+          (alist-put! 'arglist alist arglist)
+          (alist-put! 'field-names alist
+            (extract-field-names (alist-get 'arglist alist))))
+        (let (new-arglist-segment delegee-is-optional)
+          (while-let ( (popped (pop arglist))
+                       (_ (not (eq popped '&delegee))))
+            (when (eq popped '&optional)
+              (alist-put! 'delegee-is-optional alist t))
+            (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
+              (error "Malformed ARGLIST, %s before &delegee." top))
+            (push popped new-arglist-segment))
+          (unless arglist
+            (error "Malformed ARGLIST, nothing after &delegee."))
+          (let ((popped (pop arglist)))
+            (when (memq popped *a:defclass-lambda-list-keywords*)
+              (error "Malformed ARGLIST, &delegee immediately followed by %s." popped))
+            (unless
+              (or (symbol? popped)
+                (and (proper-list? popped)
+                  (length> popped 1)
+                  (cl-every #'symbol? popped)))
+              (error (concat "Malformed ARGLIST, &delegee must be followed by a "
+                       "symbol or a list of 2 or more symbols.")))
+            (let ((delegee-sym (if (symbol? popped) popped (first popped))))
+              (alist-put! 'delegee-sym alist delegee-sym)
+              (push delegee-sym new-arglist-segment))
+            (alist-put! 'delegee-classes alist (when (not (symbol? popped)) (rest popped))))
+          (alist-put! 'arglist alist (nconc (reverse new-arglist-segment) arglist))
+          (alist-put! 'field-names alist
+            (extract-field-names (alist-get 'arglist alist)))
+          alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
-(confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing)) returns
-  ((arglist password acct &optional thing)
-    (field-names password acct thing)
-    (delegee-sym . acct)
-    (delegee-classes)
-    (delegee-is-optional)))
+(confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
+  returns ( (arglist password acct &optional thing)
+            (field-names password acct thing)
+            (delegee-sym . acct)
+            (delegee-classes)
+            (delegee-is-optional)))
 ;; typed delegee first case:
-(confirm that (a:extract-delegee-arg '(&delegee (acct account) password)) returns
-  ((arglist acct password)
-    (field-names acct password)
-    (delegee-sym . acct)
-    (delegee-classes account)
-    (delegee-is-optional)))
+(confirm that (a:extract-delegee-arg '(&delegee (acct account) password))
+  returns ( (arglist acct password)
+            (field-names acct password)
+            (delegee-sym . acct)
+            (delegee-classes account)
+            (delegee-is-optional)))
 ;; typed delegee with two classes first case:
-(confirm that (a:extract-delegee-arg '(&delegee (acct account account2) password)) returns
-  ((arglist acct password)
-    (field-names acct password)
-    (delegee-sym . acct)
-    (delegee-classes account account2)
-    (delegee-is-optional)))
+(confirm that (a:extract-delegee-arg '(&delegee (acct account account2) password))
+  returns ( (arglist acct password)
+            (field-names acct password)
+            (delegee-sym . acct)
+            (delegee-classes account account2)
+            (delegee-is-optional)))
 ;; typed delegee case:
-(confirm that (a:extract-delegee-arg '(password &delegee (acct account))) returns
-  ((arglist password acct)
-    (field-names password acct)
-    (delegee-sym . acct)
-    (delegee-classes account)
-    (delegee-is-optional)))
+(confirm that (a:extract-delegee-arg '(password &delegee (acct account)))
+  returns ( (arglist password acct)
+            (field-names password acct)
+            (delegee-sym . acct)
+            (delegee-classes account)
+            (delegee-is-optional)))
 ;; un-typed delegee case:
-(confirm that (a:extract-delegee-arg '(password &delegee acct)) returns
-  ((arglist password acct)
-    (field-names password acct)
-    (delegee-sym . acct)
-    (delegee-classes)
-    (delegee-is-optional)))
+(confirm that (a:extract-delegee-arg '(password &delegee acct))
+  returns ( (arglist password acct)
+            (field-names password acct)
+            (delegee-sym . acct)
+            (delegee-classes)
+            (delegee-is-optional)))
 ;; optional delegee case case:
-(confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct)) returns
-  ((arglist password &optional thing acct)
-    (field-names password thing acct)
-    (delegee-sym . acct)
-    (delegee-classes)
-    (delegee-is-optional . t)))
+(confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct))
+  returns ( (arglist password &optional thing acct)
+            (field-names password thing acct)
+            (delegee-sym . acct)
+            (delegee-classes)
+            (delegee-is-optional . t)))
 ;; optional delegee case 2:
-(confirm that (a:extract-delegee-arg '(password &optional &delegee acct thing)) returns
-  ((arglist password &optional acct thing)
-    (field-names password acct thing)
-    (delegee-sym . acct)
-    (delegee-classes)
-    (delegee-is-optional . t)))
+(confirm that (a:extract-delegee-arg '(password &optional &delegee acct thing))
+  returns ( (arglist password &optional acct thing)
+            (field-names password acct thing)
+            (delegee-sym . acct)
+            (delegee-classes)
+            (delegee-is-optional . t)))
 ;; optional delegee case 3:
-(confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing)) returns
-  ((arglist password &optional acct thing)
-    (field-names password acct thing)
-    (delegee-sym . acct)
-    (delegee-classes account)
-    (delegee-is-optional . t)))
+(confirm that (a:extract-delegee-arg '(password &optional &delegee (acct account) thing))
+  returns ( (arglist password &optional acct thing)
+            (field-names password acct thing)
+            (delegee-sym . acct)
+            (delegee-classes account)
+            (delegee-is-optional . t)))
 ;; optional delegee case 4:
 (confirm that
-  (a:extract-delegee-arg '(password &optional (foo 5) &delegee (acct account) bar)) returns
-  ((arglist password &optional
-     (foo 5)
-     acct bar)
-    (field-names password foo acct bar)
-    (delegee-sym . acct)
-    (delegee-classes account)
-    (delegee-is-optional . t)))
+  (a:extract-delegee-arg '(password &optional (foo 5) &delegee (acct account) bar))
+  returns ( (arglist password &optional (foo 5) acct bar)
+            (field-names password foo acct bar)
+            (delegee-sym . acct)
+            (delegee-classes account)
+            (delegee-is-optional . t)))
 ;; mandatory delegee and an &rest case:
-(confirm that (a:extract-delegee-arg '(password &delegee (acct account) &rest things)) returns
-  ((arglist password acct &rest things)
-    (field-names password acct things)
-    (delegee-sym . acct)
-    (delegee-classes account)
-    (delegee-is-optional)))
+(confirm that (a:extract-delegee-arg '(password &delegee (acct account) &rest things))
+  returns ( (arglist password acct &rest things)
+            (field-names password acct things)
+            (delegee-sym . acct)
+            (delegee-classes account)
+            (delegee-is-optional)))
 ;; 'do nothing' case:
-(confirm that (a:extract-delegee-arg '(password &rest things)) returns
-  ((arglist password &rest things)
-    (field-names password things)
-    (delegee-sym)
-    (delegee-classes)
-    (delegee-is-optional)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:extract-field-names (arglist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Reduce an 'a:defclass' arglist to a list of field names, stripping out the
-default values of  &optional arguments and removing &aux arguments."
-  (mapcar (lambda (x) (or (car-safe x) x))
-    (cl-remove-if (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
-      arglist)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (a:extract-field-names
-    '( &delegee (acct account) &optional baz &rest things
-       &key (foo 42)))
-  returns (acct baz things foo))
+(confirm that (a:extract-delegee-arg '(password &rest things))
+  returns ( (arglist password &rest things)
+            (field-names password things)
+            (delegee-sym)
+            (delegee-classes)
+            (delegee-is-optional)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
