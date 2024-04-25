@@ -22,9 +22,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let* ( (parsed-arglist  (a:extract-delegee-arg arglist))
-          (arglist         (alist-get 'arglist parsed-arglist))
-          (field-names     (a:extract-field-names arglist))
-          (field-names2    (alist-get 'field-names parsed-arglist))
+          (arglist         (alist-get 'arglist     parsed-arglist))
+          (field-names     (alist-get 'field-names parsed-arglist))
           (delegee-sym     (alist-get 'delegee-sym parsed-arglist))
           (delegee-class   (first (alist-get 'delegee-classes parsed-arglist)))
           (delegee-test    (when delegee-class ; wrapped in a list. v
@@ -40,8 +39,6 @@
           (synthesized-methods
             (list field-values-method))
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
-    (prn "field-names:  %s" field-names)
-    (prn "field-names2: %s" field-names2)
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
     (when (and delegee-sym (not (alist-has? 'otherwise methods)))
@@ -233,7 +230,10 @@ Examples of mis-use:
   (let ((alist (make-empty-alist
                  arglist field-names delegee-sym delegee-classes delegee-is-optional)))
     (if (not (memq '&delegee arglist))
-      (alist-put! 'arglist alist arglist)
+      (progn 
+        (alist-put! 'arglist alist arglist)
+        (alist-put! 'field-names alist
+          (a:extract-field-names (alist-get 'arglist alist))))
       (let (new-arglist-segment delegee-is-optional)
         (while-let ( (popped (pop arglist))
                      (_ (not (eq popped '&delegee))))
@@ -260,9 +260,7 @@ Examples of mis-use:
           (alist-put! 'delegee-classes alist (when (not (symbol? popped)) (rest popped))))
         (alist-put! 'arglist alist (append (reverse new-arglist-segment) arglist))
         (alist-put! 'field-names alist
-          (mapcar (lambda (x) (or (car-safe x) x))
-            (cl-remove-if (lambda (x) (memq x *a:cl-lambda-list-keywords*))
-              (alist-get 'arglist alist))))
+          (a:extract-field-names (alist-get 'arglist alist)))
         alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
@@ -323,8 +321,7 @@ Examples of mis-use:
     (delegee-is-optional . t)))
 ;; optional delegee case 4:
 (confirm that
-  (a:extract-delegee-arg '(password &optional (foo 5) &delegee (acct account) bar))
-  returns
+  (a:extract-delegee-arg '(password &optional (foo 5) &delegee (acct account) bar)) returns
   ((arglist password &optional
      (foo 5)
      acct bar)
@@ -342,7 +339,7 @@ Examples of mis-use:
 ;; 'do nothing' case:
 (confirm that (a:extract-delegee-arg '(password &rest things)) returns
   ((arglist password &rest things)
-    (field-names)
+    (field-names password things)
     (delegee-sym)
     (delegee-classes)
     (delegee-is-optional)))
@@ -354,18 +351,15 @@ Examples of mis-use:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Reduce an 'a:defclass' arglist to a list of field names, stripping out the
 default values of  &optional arguments and removing &aux arguments."
-  (let (without-aux-args)
-    (while-let ( (popped (pop arglist))
-                 (_ (not (eq '&aux popped))))
-      (unless (memq popped *a:defclass-lambda-list-keywords*)
-        (push (if (consp popped) (first popped) popped) without-aux-args)))
-    (nreverse without-aux-args)))
+  (mapcar (lambda (x) (or (car-safe x) x))
+    (cl-remove-if (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
+      arglist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (a:extract-field-names
-    '( acct &delegee (acct account) &optional baz &rest things
-       &key (foo 42) &aux bar (baz quux)))
-  returns (acct acct baz things foo))
+    '( &delegee (acct account) &optional baz &rest things
+       &key (foo 42)))
+  returns (acct baz things foo))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
