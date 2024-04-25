@@ -69,8 +69,8 @@ list keywords excluding &aux.")
   "Define a class for object-oriented programming."
   (let ((parsed-arglist  (a:extract-delegee-arg arglist)))
     (let-alist parsed-arglist
-      (let* ( ;; synthesize this method and inject it into the `cl-defun' in our
-              ;; expansion so that it can access the instance's arglist:
+      (let* ( ;; synthesize this method so we can inject it into the `cl-defun' in 
+              ;; our expansion so that it can access the instance's arglist:
               (field-values-method
                 `(field-values ()
                    (sort-symbol-keyed-alist
@@ -91,7 +91,7 @@ list keywords excluding &aux.")
                        (and (a:is-object? ,.delegee-sym)
                          (memq (class-name ,.delegee-sym) ',.delegee-classes))
                        (error "Delegee class is not %s%s: %S."
-                         (if (rest ',.delegee-classes) "one of " "")
+                         (empty-string-unless (rest ',.delegee-classes) "one of ")
                          (apply #'pp-things-to-string :or ',.delegee-classes)
                          (a:maybe-repr ,.delegee-sym)))))))
           ;; `let' class variables:
