@@ -68,7 +68,7 @@ list keywords excluding &aux.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let* ( (parsed-arglist  (a:extract-delegee-arg arglist))
-          (arglist         (alist-get 'arglist         parsed-arglist))
+          (.arglist         (alist-get 'arglist         parsed-arglist))
           (field-names     (alist-get 'field-names     parsed-arglist))
           (.delegee-sym     (alist-get 'delegee-sym     parsed-arglist))
           (.delegee-classes (alist-get 'delegee-classes parsed-arglist))
@@ -102,7 +102,7 @@ list keywords excluding &aux.")
          ;; define generic functions for the methods:
          (mapc #'a:ensure-generic-fun method-names)
          ;; define a constructor for the class:
-         (cl-defun ,class ,arglist
+         (cl-defun ,class ,.arglist
            ,@delegee-test
            (let (self)
              ;; bind SELF lexically so object can reference itself:
