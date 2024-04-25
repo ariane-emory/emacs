@@ -72,15 +72,15 @@
         (setq things (nconc (butlast things 2) (list connective last))))))
   (apply #'concat (mapcar (lambda (x) (format "%s" x)) things)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (pp-things :and 1 "foo" 'bar) returns "1, foo and bar.")
-(confirm that (pp-things :or 1 "foo" 'bar) returns "1, foo or bar.")
-(confirm that (pp-things 1 "foo" 'bar) returns "1, foo, bar.")
-(confirm that (pp-things :and 1 "foo") returns "1 and foo.")
-(confirm that (pp-things :or 1 "foo") returns "1 or foo.")
-(confirm that (pp-things 1 "foo") returns "1, foo.")
-(confirm that (pp-things :and 1) returns "1.")
-(confirm that (pp-things :or 1) returns "1.")
-(confirm that (pp-things 1) returns "1.")
+(confirm that (pp-things-to-string :and 1 "foo" 'bar) returns "1, foo and bar")
+(confirm that (pp-things-to-string :or 1 "foo" 'bar) returns "1, foo or bar")
+(confirm that (pp-things-to-string 1 "foo" 'bar) returns "1, foo, bar")
+(confirm that (pp-things-to-string :and 1 "foo") returns "1 and foo")
+(confirm that (pp-things-to-string :or 1 "foo") returns "1 or foo")
+(confirm that (pp-things-to-string 1 "foo") returns "1, foo")
+(confirm that (pp-things-to-string :and 1) returns "1")
+(confirm that (pp-things-to-string :or 1) returns "1")
+(confirm that (pp-things-to-string 1) returns "1")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
