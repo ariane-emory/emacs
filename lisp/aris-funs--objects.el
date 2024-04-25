@@ -21,10 +21,9 @@
   "Define a class for object-oriented programming."
   (let* ( (field-names     (a:extract-field-names arglist))
           (parsed-arglist  (a:extract-delegee-arg arglist))
-          (fields          (first parsed-arglist))
-          (delegee-spec    (second parsed-arglist))
-          (delegee-sym     (first delegee-spec))
-          (delegee-class   (second delegee-spec))
+          (fields          (alist-get 'arglist parsed-arglist))
+          (delegee-sym     (alist-get 'delegee-sym parsed-arglist))
+          (delegee-class   (first (alist-get 'delegee-classes parsed-arglist)))
           (delegee-test    (when delegee-class ; wrapped in a list. v
                              `((unless (a:is? ,delegee-sym ',delegee-class)
                                  (error "Delegee is not of class '%s: %S."
@@ -40,7 +39,7 @@
           (methods (append *a:universal-methods* synthesized-methods user-methods)))
     (when-let ((method (or (assoc 'delegate methods) (assoc 'method-not-found methods))))
       (setf (car method) 'otherwise))
-    (when (and delegee-spec (not (alist-has? 'otherwise methods)))
+    (when (and delegee-sym (not (alist-has? 'otherwise methods)))
       (nconc methods `((otherwise (&rest args) (apply message ,delegee-sym args)))))
     (let ( (method-names   (sort (mapcar #'first methods) #'string<))
            (method-clauses (mapcar #'a:make-method-clause methods)))
@@ -212,21 +211,14 @@ element is the modified arglist and whose second element is the delegee argument
 a list of the form (CLASS SYMBOL IS-OPTIONAL).
 
 This function adds a new lambda list keyword, &delegee. When used, the &delegee
-keyword must precede any &rest, &key or &auxparameters but may be &optional.
+keyword must precede any &rest, &key or &aux parameters but may be &optional.
 The &delegee keyword must be followed by a specifier for the delegee, which may
-be either a symbol (meaning the delegee is bound to that symbol andmay be of any
-class) or a list of length two whose first element is the required class of the delegee
-and whose second element is the symbol to bind the delegee to.
+be either a symbol (meaning the delegee is bound to that symbol and may be of any
+class) or a list whose first element is the symbol to bind the delegee to and whose tail
+is a list of possible classes for the delegee.
 
 Examples of use:
-(a:extract-delegee-arg '(password &delegee (acct account) &rest things)) ⇒
- ((password account &rest things) (acct . account))
-(a:extract-delegee-arg '(password &delegee acct &optional thing)) ⇒
- ((password nil &optional thing) (acct))
-(a:extract-delegee-arg '(password &delegee (acct account))) ⇒
- ((password account) (acct . account))
-(a:extract-delegee-arg '(password &delegee acct)) ⇒
- ((password nil) (acct))
+(see unit tests)
 
 Examples of mis-use:
 (a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
@@ -366,117 +358,117 @@ default values of  &optional arguments and removing &aux arguments."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; Tests:
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (a:defclass account (name &optional (balance 0.00))
-;;   ((interest-rate .06))
-;;   (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
-;;   (deposit  (amt) (cl-incf balance amt))
-;;   (balance  ()    balance)
-;;   (name     ()    name)
-;;   (interest ()    (cl-infc balance (* balance interest-rate))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
-;; (confirm that (class-name acct) returns account) 
-;; (confirm that (method-names acct) returns
-;;   ( balance class-name deposit field-names field-values interest is? method-names name
-;;     prepr repr responds-to? strepr withdraw))
-;; (confirm that (field-names acct) returns (name balance))
-;; (confirm that (a:is? acct 'account) returns t)
-;; (confirm that (is? acct 'account) returns t)
-;; (confirm that (deposit acct 42.00) returns 2042.0)
-;; (confirm that (deposit acct 82.00) returns 2124.0)
-;; (confirm that (withdraw acct 200.00) returns 1924.0)
-;; (confirm that (balance acct) returns 1924.0)
-;; (confirm that (repr acct) returns
-;;   ((class . account)
-;;     (balance . 1924.0)
-;;     (name . "A. User")))
-;; (confirm that (strepr acct) returns
-;;   "((class . account)\n  (balance . 1924.0)\n  (name . \"A. User\"))")
-;; ;; (makunbound 'acct)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tests:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account (name &optional (balance 0.00))
+  ((interest-rate .06))
+  (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
+  (deposit  (amt) (cl-incf balance amt))
+  (balance  ()    balance)
+  (name     ()    name)
+  (interest ()    (cl-infc balance (* balance interest-rate))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
+(confirm that (class-name acct) returns account) 
+(confirm that (method-names acct) returns
+  ( balance class-name deposit field-names field-values interest is? method-names name
+    prepr repr responds-to? strepr withdraw))
+(confirm that (field-names acct) returns (name balance))
+(confirm that (a:is? acct 'account) returns t)
+(confirm that (is? acct 'account) returns t)
+(confirm that (deposit acct 42.00) returns 2042.0)
+(confirm that (deposit acct 82.00) returns 2124.0)
+(confirm that (withdraw acct 200.00) returns 1924.0)
+(confirm that (balance acct) returns 1924.0)
+(confirm that (repr acct) returns
+  ((class . account)
+    (balance . 1924.0)
+    (name . "A. User")))
+(confirm that (strepr acct) returns
+  "((class . account)\n  (balance . 1924.0)\n  (name . \"A. User\"))")
+;; (makunbound 'acct)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (a:defclass account-with-password (password &delegee acct) ()
-;;   (check-password (attempted-password)
-;;     (equal attempted-password password))
-;;   (change-password (attempted-password new-password)
-;;     (if (check-password self attempted-password)
-;;       (setf password new-password)
-;;       :WRONG-PASSWORD))
-;;   (delegate (attempted-password &rest args)
-;;     (if (check-password self attempted-password)
-;;       (apply message acct args)
-;;       :WRONG-PASSWORD)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (a:is-object?
-;;     (setq passwd-acct (account-with-password "secret" (account "A. User" 2000.00))))
-;;   returns t)
-;; (confirm that (class-name passwd-acct) returns account-with-password)
-;; (confirm that (method-names passwd-acct) returns
-;;   ( change-password check-password class-name field-names field-values is? method-names
-;;     otherwise prepr repr responds-to? strepr))
-;; (confirm that (field-names passwd-acct) returns (password acct))
-;; (confirm that (a:is? passwd-acct 'account-with-password) returns t)
-;; (confirm that (is? passwd-acct 'account-with-password) returns t)
-;; (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
-;; (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
-;; (confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
-;; (confirm that (repr passwd-acct) returns
-;;   ((class . account-with-password)
-;;     (acct
-;;       (class . account)
-;;       (balance . 500.0)
-;;       (name . "A. User"))
-;;     (password . "secret")))
-;; (confirm that (strepr passwd-acct) returns
-;;   "((class . account-with-password)\n  (acct\n    (class . account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
-;; ;; (makunbound 'passwd-acct)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-password (password &delegee acct) ()
+  (check-password (attempted-password)
+    (equal attempted-password password))
+  (change-password (attempted-password new-password)
+    (if (check-password self attempted-password)
+      (setf password new-password)
+      :WRONG-PASSWORD))
+  (delegate (attempted-password &rest args)
+    (if (check-password self attempted-password)
+      (apply message acct args)
+      :WRONG-PASSWORD)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (a:is-object?
+    (setq passwd-acct (account-with-password "secret" (account "A. User" 2000.00))))
+  returns t)
+(confirm that (class-name passwd-acct) returns account-with-password)
+(confirm that (method-names passwd-acct) returns
+  ( change-password check-password class-name field-names field-values is? method-names
+    otherwise prepr repr responds-to? strepr))
+(confirm that (field-names passwd-acct) returns (password acct))
+(confirm that (a:is? passwd-acct 'account-with-password) returns t)
+(confirm that (is? passwd-acct 'account-with-password) returns t)
+(confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
+(confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
+(confirm that (withdraw passwd-acct "secret" 1500.00) returns :INSUFFICIENT-FUNDS)
+(confirm that (repr passwd-acct) returns
+  ((class . account-with-password)
+    (acct
+      (class . account)
+      (balance . 500.0)
+      (name . "A. User"))
+    (password . "secret")))
+(confirm that (strepr passwd-acct) returns
+  "((class . account-with-password)\n  (acct\n    (class . account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
+;; (makunbound 'passwd-acct)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (a:defclass account-with-limit (limit &delegee (acct account)) ()
-;;   (withdraw (amt)
-;;     (if (> amt limit)
-;;       :OVER-LIMIT
-;;       (withdraw acct amt))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (a:is-object?
-;;     (setq limit-acct
-;;       (account-with-password "pass"
-;;         (account-with-limit 100.00
-;;           (account "A. Thrifty Spender" 500.00)))))
-;;   returns t)
-;; (confirm that (class-name limit-acct) returns account-with-password)
-;; (confirm that (method-names limit-acct) returns
-;;   ( change-password check-password class-name field-names field-values is? method-names
-;;     otherwise prepr repr responds-to? strepr))
-;; (confirm that (field-names limit-acct) returns (password acct))
-;; (confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
-;; (confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
-;; (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
-;; (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
-;; (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
-;; (confirm that (repr limit-acct) returns
-;;   ((class . account-with-password)
-;;     (acct
-;;       (class . account-with-limit)
-;;       (acct
-;;         (class . account)
-;;         (balance . 480.0)
-;;         (name . "A. Thrifty Spender"))
-;;       (limit . 100.0))
-;;     (password . "pass")))
-;; (confirm that (strepr limit-acct) returns
-;;   "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
-;; ;; (makunbound 'limit-acct)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:defclass account-with-limit (limit &delegee (acct account)) ()
+  (withdraw (amt)
+    (if (> amt limit)
+      :OVER-LIMIT
+      (withdraw acct amt))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (a:is-object?
+    (setq limit-acct
+      (account-with-password "pass"
+        (account-with-limit 100.00
+          (account "A. Thrifty Spender" 500.00)))))
+  returns t)
+(confirm that (class-name limit-acct) returns account-with-password)
+(confirm that (method-names limit-acct) returns
+  ( change-password check-password class-name field-names field-values is? method-names
+    otherwise prepr repr responds-to? strepr))
+(confirm that (field-names limit-acct) returns (password acct))
+(confirm that (a:is? limit-acct 'account-with-password) returns t) ; because of ordering
+(confirm that (is? limit-acct 'account-with-password) returns t); because of ordering
+(confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
+(confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
+(confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
+(confirm that (repr limit-acct) returns
+  ((class . account-with-password)
+    (acct
+      (class . account-with-limit)
+      (acct
+        (class . account)
+        (balance . 480.0)
+        (name . "A. Thrifty Spender"))
+      (limit . 100.0))
+    (password . "pass")))
+(confirm that (strepr limit-acct) returns
+  "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
+;; (makunbound 'limit-acct)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
