@@ -76,8 +76,11 @@ list keywords excluding &aux.")
                              `((unless
                                  (and (a:is-object? ,delegee-sym)
                                    (memq (class-name ,delegee-sym) ',delegee-classes))
-                                 (error "Delegee class is not of one of '%s: %S."
-                                   ',delegee-classes ,delegee-sym)))))
+                                 (error "Delegee class is not of one of %s: %S."
+                                   ',delegee-classes (let ((bad-val ,delegee-sym))
+                                                       (if (a:is-object? bad-val)
+                                                         (repr bad-val)
+                                                         bad-val)))))))
           ;; synthesize this method and inject it into the `cl-defun' in our expansion so
           ;; that it can access the instance's arglist:
           (field-values-method
