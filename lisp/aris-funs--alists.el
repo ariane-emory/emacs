@@ -416,8 +416,11 @@ to achieve your preferred structure."
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defmacro make-empty-alist (&rest keys)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Create an alist with KEYS as keys and nil for initial values."
-;;   (copy-list `',(mapcar #'list keys)))
+;;   "Create an alist with KEYS as keys and nil for initial values.
+
+;; Probably do not use this: this makes the alist a mutable compile-time
+;; constant, which is probably not a good idea."
+;;  `',(mapcar #'list keys))
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (benchmark-run 10000
 ;;   (progn
