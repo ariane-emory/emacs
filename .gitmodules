@@ -4,3 +4,6 @@
 [submodule "lisp/trav-el"]
 	path = lisp/trav-el
 	url = git@github.com:ariane-emory/trav-el.git
+[submodule "util/tree-sitter-module"]
+	path = util/tree-sitter-module
+	url = git@github.com:casouri/tree-sitter-module.git
