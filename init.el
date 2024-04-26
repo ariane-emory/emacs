@@ -374,6 +374,7 @@
              customize-mode)))
 
       (use-package zoom :ensure t
+        :diminish zoom-mode
         :init
         (setq zoom-size '(95 . 24))
         :config
