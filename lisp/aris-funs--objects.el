@@ -253,43 +253,40 @@ Examples of mis-use:
                   (cl-remove-if
                     (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
                     arglist))))
-      (alist-put! 'field-names alist (extract-field-names arglist))
-      (if (not (memq '&delegee arglist))
-        (progn 
-          (alist-put! 'arglist alist arglist)
-          (alist-put! 'field-names alist
-            (extract-field-names (alist-get 'arglist alist))))
-        (let (new-arglist-segment delegee-is-optional)
-          (while-let ( (popped (pop arglist))
-                       (_ (not (eq popped '&delegee))))
-            (when (eq popped '&optional)
-              (alist-put! 'delegee-is-optional alist t))
-            (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
-              (error "Malformed ARGLIST, %s before &delegee." top))
-            (push popped new-arglist-segment))
-          (unless arglist
-            (error "Malformed ARGLIST, nothing after &delegee."))
-          (let ((popped (pop arglist)))
-            (when (memq popped *a:defclass-lambda-list-keywords*)
-              (error "Malformed ARGLIST, &delegee immediately followed by %s."
-                popped))
-            (unless
-              (or (symbol? popped)
-                (and (proper-list? popped)
-                  (length> popped 1)
-                  (cl-every #'symbol? popped)))
-              (error (concat "Malformed ARGLIST, &delegee must be followed by a "
-                       "symbol or a list of 2 or more symbols.")))
-            (let ((delegee-sym (if (symbol? popped) popped (first popped))))
-              (alist-put! 'delegee-sym alist delegee-sym)
-              (push delegee-sym new-arglist-segment))
-            (alist-put! 'delegee-classes alist
-              (when (not (symbol? popped)) (rest popped))))
-          (alist-put! 'arglist alist
-            (nconc (reverse new-arglist-segment) arglist))
-          ;; (alist-put! 'field-names alist
-          ;;   (extract-field-names (alist-get 'arglist alist)))
-          alist)))))
+      (alist-put! 'field-names alist (extract-field-names arglist)))
+    (if (not (memq '&delegee arglist))
+      (alist-put! 'arglist alist arglist)
+      (let (new-arglist-segment delegee-is-optional)
+        (while-let ( (popped (pop arglist))
+                     (_ (not (eq popped '&delegee))))
+          (when (eq popped '&optional)
+            (alist-put! 'delegee-is-optional alist t))
+          (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
+            (error "Malformed ARGLIST, %s before &delegee." top))
+          (push popped new-arglist-segment))
+        (unless arglist
+          (error "Malformed ARGLIST, nothing after &delegee."))
+        (let ((popped (pop arglist)))
+          (when (memq popped *a:defclass-lambda-list-keywords*)
+            (error "Malformed ARGLIST, &delegee immediately followed by %s."
+              popped))
+          (unless
+            (or (symbol? popped)
+              (and (proper-list? popped)
+                (length> popped 1)
+                (cl-every #'symbol? popped)))
+            (error (concat "Malformed ARGLIST, &delegee must be followed by a "
+                     "symbol or a list of 2 or more symbols.")))
+          (let ((delegee-sym (if (symbol? popped) popped (first popped))))
+            (alist-put! 'delegee-sym alist delegee-sym)
+            (push delegee-sym new-arglist-segment))
+          (alist-put! 'delegee-classes alist
+            (when (not (symbol? popped)) (rest popped))))
+        (alist-put! 'arglist alist
+          (nconc (reverse new-arglist-segment) arglist))
+        ;; (alist-put! 'field-names alist
+        ;;   (extract-field-names (alist-get 'arglist alist)))
+        alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
 (confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
