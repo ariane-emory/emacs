@@ -333,7 +333,7 @@
         (shell-mode .
           (lambda ()
             (setq-local tab-width 8)
-            ;; (display-line-numbers-mode -1)
+            (display-line-numbers-mode -1)
             (face-remap-add-relative 'default 'aris-alt-face))))
 
       (use-package-with-message simple
