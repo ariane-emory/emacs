@@ -405,8 +405,26 @@ to achieve your preferred structure."
   "Create an alist with KEYS as keys and nil for initial values."
   `(make-alist ',keys))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (make-empty-alist a b c) returns ((a) (b) (c)))
+(benchmark-run 10000
+  (progn
+    (confirm that (make-empty-alist a b c) returns ((a) (b) (c)))
+    (confirm that (make-empty-alist a b c (d e)) returns ((a) (b) (c) ((d e))))))
+;; (0.013897 0 0.0)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro make-empty-alist (&rest keys)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Create an alist with KEYS as keys and nil for initial values."
+;;   `',(mapcar #'list keys))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (benchmark-run 10000
+;;   (progn
+;;     (confirm that (make-empty-alist a b c) returns ((a) (b) (c)))
+;;     (confirm that (make-empty-alist a b c (d e)) returns ((a) (b) (c) ((d e))))))
+;; ;; (0.007895 0 0.0)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

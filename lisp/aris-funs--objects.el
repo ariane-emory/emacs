@@ -255,7 +255,7 @@ Examples of mis-use:
           arglist)))
     (if (not (memq '&delegee arglist))
       (alist-put! 'arglist alist arglist)
-      (let (new-arglist-segment delegee-is-optional)
+      (let (new-arglist-segment)
         (while-let ( (popped (pop arglist))
                      (_ (not (eq popped '&delegee))))
           (when (eq popped '&optional)
