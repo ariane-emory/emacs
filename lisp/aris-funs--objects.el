@@ -248,12 +248,11 @@ Examples of mis-use:
     (error "Malformed ARGLIST, &aux is not supported."))
   (let ((alist (make-empty-alist arglist field-names
                  delegee-sym delegee-classes delegee-is-optional)))
-    (cl-flet ((extract-field-names (arglist)
-                (mapcar (lambda (x) (or (car-safe x) x))
-                  (cl-remove-if
-                    (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
-                    arglist))))
-      (alist-put! 'field-names alist (extract-field-names arglist)))
+    (alist-put! 'field-names alist
+      (mapcar (lambda (x) (or (car-safe x) x))
+        (cl-remove-if
+          (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
+          arglist)))
     (if (not (memq '&delegee arglist))
       (alist-put! 'arglist alist arglist)
       (let (new-arglist-segment delegee-is-optional)
