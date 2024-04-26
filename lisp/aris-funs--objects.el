@@ -283,8 +283,6 @@ Examples of mis-use:
             (when (not (symbol? popped)) (rest popped))))
         (alist-put! 'arglist alist
           (nconc (reverse new-arglist-segment) arglist))
-        ;; (alist-put! 'field-names alist
-        ;;   (extract-field-names (alist-get 'arglist alist)))
         alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:

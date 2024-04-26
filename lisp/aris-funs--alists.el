@@ -417,7 +417,7 @@ to achieve your preferred structure."
 ;; (defmacro make-empty-alist (&rest keys)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Create an alist with KEYS as keys and nil for initial values."
-;;   `',(mapcar #'list keys))
+;;   (copy-list `',(mapcar #'list keys)))
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (benchmark-run 10000
 ;;   (progn
