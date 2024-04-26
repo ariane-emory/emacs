@@ -24,7 +24,11 @@
   '(cursor-in-non-selected-windows 'bar)
   '(debug-on-error t)
   '(delete-selection-mode t)
+  '(display-line-numbers-grow-only nil)
+  '(display-line-numbers-width 3)
   '(fill-column 90)
+  '(geiser-chez-binary "/opt/homebrew/bin/chez")
+  '(geiser-default-implementation 'chez)
   '(global-eldoc-mode nil)
   '(global-prettify-symbols-mode nil)
   '(indent-tabs-mode nil)
@@ -34,7 +38,7 @@
   '(max-lisp-eval-depth 1000)
   '(message-log-max 25000)
   '(package-selected-packages
-     '(zoom huecycle dirvish spaceline slime-company rainbow-mode rainbow-delimiters powerline persistent-scratch nov modern-cpp-font-lock multiple-cursors lsp-ui lsp-mode idle-highlight-mode highlight-parentheses dpaste default-text-scale company-posframe centered-cursor-mode beacon which-key swift-mode rust-mode platformio-mode paredit markdown-mode flycheck-rust flycheck-inline f editorconfig diminish devdocs-browser devdocs company-box coffee-mode clhs adjust-parens ac-inf-ruby aggressive-indent))
+     '(geiser-chez zoom huecycle dirvish spaceline slime-company rainbow-mode rainbow-delimiters powerline persistent-scratch nov modern-cpp-font-lock multiple-cursors lsp-ui lsp-mode idle-highlight-mode highlight-parentheses dpaste default-text-scale company-posframe centered-cursor-mode beacon which-key swift-mode rust-mode platformio-mode paredit markdown-mode flycheck-rust flycheck-inline f editorconfig diminish devdocs-browser devdocs company-box coffee-mode clhs adjust-parens ac-inf-ruby aggressive-indent))
   '(pp-use-max-width nil)
   '(safe-local-variable-values
      '((c-backslash-max-column . 80)

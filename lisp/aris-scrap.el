@@ -129,3 +129,23 @@
     (nreverse res))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let (res)  
+  (cl-block switch
+    (cl-tagbody
+      (cl-case 1
+        (0 (go g1471))
+        (1 (go g1472))
+        (2 (go g1473))
+        (3 (go g1474)))
+      (break)
+      g1471
+      (push "none" res)
+      (break)
+      g1472
+      (push "one " res)
+      g1473
+      (push "too " res)
+      g1474
+      (push "many" res)))
+  (nreverse res))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

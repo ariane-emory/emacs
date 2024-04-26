@@ -683,8 +683,8 @@
         :init
         (setq slime-kill-without-query-p t)
         (setq slime-lisp-implementations
-          '((sbcl
-	            ("/opt/homebrew/bin/sbcl"))
+          '( (sbcl
+	             ("/opt/homebrew/bin/sbcl"))
              (clisp
 	             ("/opt/homebrew/bin/clisp"))
              (ecl
