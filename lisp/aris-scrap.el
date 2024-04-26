@@ -66,3 +66,26 @@
 (change-password passwd-acct "this" "that")
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro switch (value &rest body)
+  "Steele's `switch' from 'The Evolution of Lisp'."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let* ( (newbody (cl-mapcar #'(lambda (clause)
+                                  `(,(gensym) ,@(rest clause)))
+                     body))
+          (switcher (cl-mapcar #'(lambda (clause newclause)
+                                   `(,(first clause) (go ,(first newclause))))
+                      body newbody)))
+    `(cl-block switch
+       (cl-tagbody (cl-case ,value ,@switcher)
+         (break)
+         ,@(apply #'nconc newbody)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro break () '(return-from switch))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(switch 1
+  (0 (princ "none") (break))
+  (1 (princ "one "))
+  (2 (princ "too "))
+  (3 (princ "many")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
