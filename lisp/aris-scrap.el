@@ -81,11 +81,51 @@
          (break)
          ,@(apply #'nconc newbody)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro break () '(return-from switch))
+(defmacro break () '(cl-return-from switch))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(switch 1
-  (0 (princ "none") (break))
-  (1 (princ "one "))
-  (2 (princ "too "))
-  (3 (princ "many")))
+(confirm that
+  (let (res)
+    (switch 0
+      (0 (push "none" res) (break))
+      (1 (push "one " res))
+      (2 (push "too " res))
+      (3 (push "many" res)))
+    (nreverse res))
+  returns ("none"))
+(confirm that
+  (let (res)
+    (switch 1
+      (0 (push "none" res) (break))
+      (1 (push "one " res))
+      (2 (push "too " res))
+      (3 (push "many" res)))
+    (nreverse res))
+  returns ("one " "too " "many"))
+(confirm that
+  (let (res)
+    (switch 2
+      (0 (push "none" res) (break))
+      (1 (push "one " res))
+      (2 (push "too " res))
+      (3 (push "many" res)))
+    (nreverse res))
+  returns ("too " "many"))
+(confirm that
+  (let (res)
+    (switch 3
+      (0 (push "none" res) (break))
+      (1 (push "one " res))
+      (2 (push "too " res))
+      (3 (push "many" res)))
+    (nreverse res))
+  returns ("many"))
+(confirm that
+  (let (res)
+    (switch 4
+      (0 (push "none" res) (break))
+      (1 (push "one " res))
+      (2 (push "too " res))
+      (3 (push "many" res)))
+    (nreverse res))
+  returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
