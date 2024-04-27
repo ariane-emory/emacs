@@ -83,7 +83,7 @@ list keywords excluding &aux.")
                   `((parent () ;; wrapped in a list for splicing.
                       ,.parent-sym))))
               ;; end of synthesized method(s).
-              (synthesized-methods (list field-values-method))
+              (synthesized-methods `(,field-values-method ,@parent-method))
               (methods
                 (append *a:universal-methods*
                   synthesized-methods user-methods)))
@@ -425,10 +425,14 @@ Examples of mis-use:
 (confirm that (class-name passwd-acct) returns account-with-password)
 (confirm that (method-names passwd-acct) returns
   ( change-password check-password class-name field-names field-values is?
-    method-names otherwise prepr repr responds-to? strepr))
+    method-names otherwise parent prepr repr responds-to? strepr))
 (confirm that (field-names passwd-acct) returns (password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
+(confirm that (repr (parent passwd-acct))
+  returns ((class . account)
+            (balance . 2000.0)
+            (name . "A. User")))
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
 (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
 (confirm that (withdraw passwd-acct "secret" 1500.00)
@@ -463,10 +467,15 @@ Examples of mis-use:
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (method-names limit-acct) returns
   ( change-password check-password class-name field-names field-values is?
-    method-names otherwise prepr repr responds-to? strepr))
+    method-names otherwise parent prepr repr responds-to? strepr))
 (confirm that (field-names limit-acct) returns (password acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
+(confirm that (repr (parent limit-acct))
+  returns ((class . account-with-limit)
+            (acct (class . account)
+              (balance . 500.0) (name . "A. Thrifty Spender"))
+            (limit . 100.0)))
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
 (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
 (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
