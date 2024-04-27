@@ -829,6 +829,7 @@
            aris-funs--objects
            aris-types
            steve-loshs-funs--if-let
+           guy-steeles-funs--switch
            peter-norvigs-funs--defun-memo
            peter-norvigs-funs--objects
            aris-configure--key-bindings
