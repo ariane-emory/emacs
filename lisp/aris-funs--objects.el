@@ -107,7 +107,9 @@ list keywords excluding &aux.")
           (nconc
             methods
             `((otherwise (&rest args) (apply message ,.parent-sym args)))))
-        (let ( (method-names   (cl-sort (mapcar #'first methods) #'string<))
+        (let ( (method-names (cl-sort
+                               (cl-remove 'otherwise (mapcar #'first methods))
+                               #'string<))
                (method-clauses (mapcar #'a:make-method-clause methods))
                (parent-test
                  (when .parent-classes
@@ -443,8 +445,8 @@ Examples of mis-use:
 (confirm that (responds-to? passwd-acct 'balance) returns t)
 (confirm that (method-names passwd-acct) returns
   ( balance change-password check-password class-name class-names deposit
-    field-names field-values interest is? method-names name otherwise parent
-    prepr repr responds-to? strepr withdraw))
+    field-names field-values interest is? method-names name parent prepr repr
+    responds-to? strepr withdraw))
 (confirm that (field-names passwd-acct) returns (balance name password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
@@ -488,8 +490,8 @@ Examples of mis-use:
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (method-names limit-acct) returns 
   ( balance change-password check-password class-name class-names deposit
-    field-names field-values interest is? method-names name otherwise parent
-    prepr repr responds-to? strepr withdraw))
+    field-names field-values interest is? method-names name parent prepr repr
+    responds-to? strepr withdraw))
 (confirm that (field-names limit-acct) returns
   (password balance name limit acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
