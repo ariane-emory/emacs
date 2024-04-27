@@ -47,7 +47,7 @@ list keywords excluding &aux.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()      class-name)
      (class-names  ()      (if-let ((par (parent self)))
-                             (append (list class-name) (class-names par))
+                             (cons class-name (class-names par))
                              (list class-name)))
      (method-names ()      (cl-sort
                              (copy-sequence
