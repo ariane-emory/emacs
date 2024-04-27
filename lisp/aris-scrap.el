@@ -65,3 +65,15 @@
 
 (change-password passwd-acct "this" "that")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(a:defclass up-to-gen (from &optional to step) ()
+  (next () (catch 'stop
+             (let ((next (+ from step)))
+               (if (< next to)
+                 (setq from next)
+                 (throw 'stop nil))))))
+
+(let ((gen (up-to-gen 1 10 2)))
+  (while-let ((n (next gen)))
+    (prn n)))
