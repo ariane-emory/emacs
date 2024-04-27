@@ -149,12 +149,13 @@
           (switcher (cl-mapcar
                       #'(lambda (clause newclause) `(,(first clause) (go ,(first newclause))))
                       body newbody))
-          (switch (gensym "switch-")))
+          (switch (gensym "switch-"))
+          (foo (apply #'nconc newbody)))
     `(cl-block ,switch
        (cl-macrolet ((break () '(cl-return-from ,switch)))
          (cl-tagbody (cl-case ,value ,@switcher)
            (break)
-           ,@(apply #'nconc newbody))))))
+           ,@foo)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defmacro break () '(cl-return-from switch))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
