@@ -55,12 +55,16 @@ list keywords excluding &aux.")
                                  (cl-union method-names (method-names par))
                                  method-names))
                              #'string<))
-     (field-names  ()      (if-let ((par (parent self)))
-                             (cl-union field-names (field-names par))
-                             field-names))
+     (field-names  ()      (cl-sort
+                             (copy-sequence
+                               (if-let ((par (parent self)))
+                                 (cl-union field-names (field-names par))
+                                 field-names))
+                             #'string<))
      (is?          (class) (or
                              (eq class class-name)
-                             (a:is? (parent self) class)))
+                             (when-let ((par (parent self)))
+                               (is? par class))))
      (responds-to? (msg)   (or
                              (not (null (memq msg method-names)))
                              (when-let ((par (parent self)))
@@ -401,7 +405,7 @@ Examples of mis-use:
   ( balance class-name class-names deposit field-names field-values interest is?
     method-names name parent prepr repr responds-to? strepr withdraw))
 (confirm that (responds-to? acct 'withdraw) returns t)
-(confirm that (field-names acct) returns (name balance))
+(confirm that (field-names acct) returns (balance name))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
 (confirm that (parent acct) returns nil)
@@ -445,7 +449,7 @@ Examples of mis-use:
   ( balance change-password check-password class-name class-names deposit
     field-names field-values interest is? method-names name parent prepr repr
     responds-to? strepr withdraw))
-(confirm that (field-names passwd-acct) returns (balance name password acct))
+(confirm that (field-names passwd-acct) returns (acct balance name password))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (a:is? passwd-acct 'account) returns t)
@@ -491,9 +495,10 @@ Examples of mis-use:
     field-names field-values interest is? method-names name parent prepr repr
     responds-to? strepr withdraw))
 (confirm that (field-names limit-acct) returns
-  (password balance name limit acct))
+  (acct balance limit name password))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
+(confirm that (is? limit-acct 'account) returns t)
 (confirm that (repr (parent limit-acct))
   returns ((class . account-with-limit)
             (acct (class . account)
