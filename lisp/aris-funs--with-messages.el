@@ -81,10 +81,9 @@ last expression in `body' and printing a variant message afterwards."
               (--wm-capitalize message-string)
               (if 1st-is-just-kw "." "...")))
           (end-message-fmt-args 
-            (list
-              (cond 
-                (is-double-message  (--wm-capitalize second-message-string))
-                ((not 1st-is-just-kw) (--wm-uncapitalize message-string)))))
+            (cond 
+              (is-double-message  (list (--wm-capitalize second-message-string)))
+              ((not 1st-is-just-kw) (list (--wm-uncapitalize message-string)))))
           (end-message-expr
             (when end-message-fmt-args
               (list `(apply #'message "%s%s%s."
