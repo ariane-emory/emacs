@@ -379,7 +379,8 @@ to achieve your preferred structure."
 (defun sort-symbol-keyed-alist (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Sort ALIST, all of whose keys must be symbols, alphabetically by its keys."
-  (sort alist (lambda (a b) (string< (symbol-name (car a)) (symbol-name (car b))))))
+  (cl-sort (copy-sequence alist)
+    (lambda (a b) (string< (symbol-name (car a)) (symbol-name (car b))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (sort-symbol-keyed-alist '((c . 3) (b . 2) (a . 1)))
   returns ((a . 1) (b . 2) (c . 3)))

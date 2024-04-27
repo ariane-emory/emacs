@@ -4,6 +4,7 @@
 (require 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:defclass up-to-gen (from &optional to step) ()
   (next () (catch 'stop
@@ -35,10 +36,10 @@
 (a:defclass fooclass (num) ()
   (foo () (format "FOO! %d" num)))
 
-(a:defclass barclass (num &delegee (parent fooclass fakeclass)) ()
+(a:defclass barclass (num &parent (parent fooclass fakeclass)) ()
   (bar () (format "BAR! %d" num)))
 
-(a:defclass bazclass (num &delegee (parent fooclass barclass) &rest things) ()
+(a:defclass bazclass (num &parent (parent fooclass barclass) &rest things) ()
   (baz () (format "BAZ! %d" num)))
 
 (setq foo  (fooclass 8))
@@ -71,4 +72,6 @@
 
 (change-password passwd-acct "this" "that")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
