@@ -85,8 +85,8 @@ list keywords excluding &aux.")
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let ((parsed-arglist (a:extract-parent-arg arglist)))
-    (let-alist parsed-arglist
+  (let ((parsed-args (a:parse-defclass-args arglist)))
+    (let-alist parsed-args
       (let* ( ;; synthesize this method so we can inject it into the `cl-defun'
               ;; in the expansion so that it can access the instance's arglist:
               (field-values-method
@@ -241,7 +241,7 @@ trying to send a message to a non-object."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:extract-parent-arg (arglist)
+(defun a:parse-defclass-args (arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Extract the parent argument from an arglist ARGLIST, returning an alist.
 
@@ -256,9 +256,9 @@ Examples of use:
 (see unit tests)
 
 Examples of mis-use:
-(a:extract-parent-arg '(password &parent) ;; malformed ARGLIST, nothing after &parent.
+(a:parse-defclass-args '(password &parent) ;; malformed ARGLIST, nothing after &parent.
 ;; malformed ARGLIST, &rest precedes &parent:
-(a:extract-parent-arg '(password &rest thing &parent acct))"
+(a:parse-defclass-args '(password &rest thing &parent acct))"
   (when (memq '&aux arglist)
     (error "Malformed ARGLIST, &aux is not supported."))
   (let ((alist (make-empty-alist arglist field-names
@@ -301,21 +301,21 @@ Examples of mis-use:
         alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
-(confirm that (a:extract-parent-arg '(password &parent par &optional thing))
+(confirm that (a:parse-defclass-args '(password &parent par &optional thing))
   returns ( (arglist password par &optional thing)
             (field-names password par thing)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional)))
 ;; typed parent first case:
-(confirm that (a:extract-parent-arg '(&parent (par account) password))
+(confirm that (a:parse-defclass-args '(&parent (par account) password))
   returns ( (arglist par password)
             (field-names par password)
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional)))
 ;; typed parent with two classes first case:
-(confirm that (a:extract-parent-arg
+(confirm that (a:parse-defclass-args
                 '(&parent (par account account2) password))
   returns ( (arglist par password)
             (field-names par password)
@@ -323,35 +323,35 @@ Examples of mis-use:
             (parent-classes account account2)
             (parent-is-optional)))
 ;; typed parent case:
-(confirm that (a:extract-parent-arg '(password &parent (par account)))
+(confirm that (a:parse-defclass-args '(password &parent (par account)))
   returns ( (arglist password par)
             (field-names password par)
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional)))
 ;; un-typed parent case:
-(confirm that (a:extract-parent-arg '(password &parent par))
+(confirm that (a:parse-defclass-args '(password &parent par))
   returns ( (arglist password par)
             (field-names password par)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional)))
 ;; optional parent case case:
-(confirm that (a:extract-parent-arg '(password &optional thing &parent par))
+(confirm that (a:parse-defclass-args '(password &optional thing &parent par))
   returns ( (arglist password &optional thing par)
             (field-names password thing par)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional . t)))
 ;; optional parent case 2:
-(confirm that (a:extract-parent-arg '(password &optional &parent par thing))
+(confirm that (a:parse-defclass-args '(password &optional &parent par thing))
   returns ( (arglist password &optional par thing)
             (field-names password par thing)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional . t)))
 ;; optional parent case 3:
-(confirm that (a:extract-parent-arg
+(confirm that (a:parse-defclass-args
                 '(password &optional &parent (par account) thing))
   returns ( (arglist password &optional par thing)
             (field-names password par thing)
@@ -360,7 +360,7 @@ Examples of mis-use:
             (parent-is-optional . t)))
 ;; optional parent case 4:
 (confirm that
-  (a:extract-parent-arg
+  (a:parse-defclass-args
     '(password &optional (foo 5) &parent (par account) bar))
   returns ( (arglist password &optional (foo 5) par bar)
             (field-names password foo par bar)
@@ -369,14 +369,14 @@ Examples of mis-use:
             (parent-is-optional . t)))
 ;; mandatory parent and an &rest case:
 (confirm that
-  (a:extract-parent-arg '(password &parent (par account) &rest things))
+  (a:parse-defclass-args '(password &parent (par account) &rest things))
   returns ( (arglist password par &rest things)
             (field-names password par things)
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional)))
 ;; 'do nothing' case:
-(confirm that (a:extract-parent-arg '(password &rest things))
+(confirm that (a:parse-defclass-args '(password &rest things))
   returns ( (arglist password &rest things)
             (field-names password things)
             (parent-sym)
