@@ -75,16 +75,3 @@
 
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro confirm2 (that expr returns expected)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Test whether EXPR evaluates to EXPECTED."
-  (unless (eq? 'that    that)    (error "expected 'that as 1st argument"))
-  (unless (eq? 'returns returns) (error "expected 'returns as 3rd argument"))
-  `(let ((result ,expr))
-     (unless (equal result ',expected)
-       (warn "FAILED TO CONFIRM: \n   EXPR:     %S\n   Expected: %S\n   Got:      %S" ',expr ',expected result))
-     result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm2 that '(a b c) returns (d e f))

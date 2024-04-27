@@ -46,10 +46,23 @@ list keywords excluding &aux.")
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()      class-name)
-     (method-names ()      method-names)
-     (field-names  ()      field-names)
-     (is?          (class) (eq class class-name))
-     (responds-to? (msg)   (not (null (memq msg method-names))))
+     (class-names  ()      (if-let ((par (parent self)))
+                             (append (list class-name) (class-names par))
+
+                             (list class-name)))
+     (method-names ()      (if-let ((par (parent self)))
+                             (cl-union method-names (method-names par))
+                             method-names))
+     (field-names  ()      (if-let ((par (parent self)))
+                             (cl-union field-names (field-names par))
+                             field-names))
+     (is?          (class) (or
+                             (eq class class-name)
+                             (a:is? (parent self) class)))
+     (responds-to? (msg)   (or
+                             (not (null (memq msg method-names)))
+                             (when-let ((par (parent self)))
+                               (responds-to? par msg))))
      (prepr        ()      (prn (strepr self)))
      (strepr       ()
        (trim-trailing-whitespace (pp-to-string (repr self))))
@@ -79,11 +92,9 @@ list keywords excluding &aux.")
                    (sort-symbol-keyed-alist
                      (cl-pairlis field-names (list ,@.field-names)))))
               (parent-method
-                (when .parent-sym
-                  `((parent () ;; wrapped in a list for splicing.
-                      ,.parent-sym))))
+                `(parent () ,(if .parent-sym .parent-sym nil)))
               ;; end of synthesized method(s).
-              (synthesized-methods `(,field-values-method ,@parent-method))
+              (synthesized-methods `(,field-values-method ,parent-method))
               (methods
                 (append *a:universal-methods*
                   synthesized-methods user-methods)))
@@ -386,10 +397,12 @@ Examples of mis-use:
 (confirm that (class-name acct) returns account) 
 (confirm that (method-names acct) returns
   ( balance class-name deposit field-names field-values interest is?
-    method-names name prepr repr responds-to? strepr withdraw))
+    method-names name parent prepr repr responds-to? strepr withdraw))
+(confirm that (responds-to? acct 'withdraw) returns t)
 (confirm that (field-names acct) returns (name balance))
 (confirm that (a:is? acct 'account) returns t)
 (confirm that (is? acct 'account) returns t)
+(confirm that (parent acct) returns nil)
 (confirm that (deposit acct 42.00) returns 2042.0)
 (confirm that (deposit acct 82.00) returns 2124.0)
 (confirm that (withdraw acct 200.00) returns 1924.0)
@@ -423,12 +436,16 @@ Examples of mis-use:
       (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
-(confirm that (method-names passwd-acct) returns
-  ( change-password check-password class-name field-names field-values is?
-    method-names otherwise parent prepr repr responds-to? strepr))
-(confirm that (field-names passwd-acct) returns (password acct))
+(confirm that (method-names passwd-acct)
+  returns (otherwise check-password change-password balance class-name deposit
+            field-names field-values interest is? method-names name parent prepr
+            repr responds-to? strepr withdraw))
+(confirm that (responds-to? passwd-acct 'withdraw) returns t)
+(confirm that (field-names passwd-acct) returns (balance name password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
+(confirm that (a:is? passwd-acct 'account) returns t)
+(confirm that (is? passwd-acct 'account) returns t)
 (confirm that (repr (parent passwd-acct))
   returns ((class . account)
             (balance . 2000.0)
@@ -465,10 +482,12 @@ Examples of mis-use:
           (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
-(confirm that (method-names limit-acct) returns
-  ( change-password check-password class-name field-names field-values is?
-    method-names otherwise parent prepr repr responds-to? strepr))
-(confirm that (field-names limit-acct) returns (password acct))
+(confirm that (method-names limit-acct)
+  returns ( check-password change-password otherwise balance class-name deposit
+            field-names field-values interest is? method-names name parent prepr
+            repr responds-to? strepr withdraw))
+(confirm that (field-names limit-acct) returns
+  (password balance name limit acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
 (confirm that (repr (parent limit-acct))
@@ -498,3 +517,4 @@ Examples of mis-use:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
