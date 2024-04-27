@@ -85,57 +85,56 @@ list keywords excluding &aux.")
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let ((parsed-args (a:parse-defclass-args arglist)))
-    (let-alist parsed-args
-      (let* ( ;; synthesize this method so we can inject it into the `cl-defun'
-              ;; in the expansion so that it can access the instance's arglist:
-              (field-values-method
-                `(field-values ()
-                   (sort-symbol-keyed-alist
-                     (cl-pairlis field-names (list ,@.field-names)))))
-              (parent-method
-                `(parent () ,(if .parent-sym .parent-sym nil)))
-              ;; end of synthesized method(s).
-              (synthesized-methods `(,field-values-method ,parent-method))
-              (methods
-                (append *a:universal-methods*
-                  synthesized-methods user-methods)))
-        (when-let ((method (assoc 'delegate methods)))
-          (setf (car method) 'otherwise))
-        (when (and .parent-sym (not (assoc 'otherwise methods)))
-          (nconc
-            methods
-            `((otherwise (&rest args) (apply message ,.parent-sym args)))))
-        (let ( (method-names (cl-sort
-                               (cl-remove 'otherwise (mapcar #'first methods))
-                               #'string<))
-               (method-clauses (mapcar #'a:make-method-clause methods))
-               (parent-test
-                 (when .parent-classes
-                   `((unless ; warapped in a list for splicing.
-                       (and (a:is-object? ,.parent-sym)
-                         (memq (class-name ,.parent-sym) ',.parent-classes))
-                       (error "Parent class is not %s%s: %S."
-                         (empty-string-unless (rest ',.parent-classes) "one of ")
-                         (apply #'pp-things-to-string :or ',.parent-classes)
-                         (a:maybe-repr ,.parent-sym)))))))
-          ;; `let' class variables:
-          `(let ( (class-name   ',class)
-                  (field-names  ',.field-names)
-                  (method-names ',method-names)
-                  ,@class-vars)
-             ;; define generic functions for the methods:
-             (mapc #'a:ensure-generic-fun method-names)
-             ;; define a constructor for the class:
-             (cl-defun ,class ,.arglist
-               ,@parent-test
-               (let (self)
-                 ;; bind SELF lexically so that the object can reference itself:
-                 (setq self
-                   ;; the object itself:
-                   #'(lambda (message)
-                       (declare (aos-class ',class))
-                       (cl-case message ,@method-clauses)))))))))))
+  (let-alist (a:parse-defclass-args arglist)
+    (let* ( ;; synthesize this method so we can inject it into the `cl-defun'
+            ;; in the expansion so that it can access the instance's arglist:
+            (field-values-method
+              `(field-values ()
+                 (sort-symbol-keyed-alist
+                   (cl-pairlis field-names (list ,@.field-names)))))
+            (parent-method
+              `(parent () ,(if .parent-sym .parent-sym nil)))
+            ;; end of synthesized method(s).
+            (synthesized-methods `(,field-values-method ,parent-method))
+            (methods
+              (append *a:universal-methods*
+                synthesized-methods user-methods)))
+      (when-let ((method (assoc 'delegate methods)))
+        (setf (car method) 'otherwise))
+      (when (and .parent-sym (not (assoc 'otherwise methods)))
+        (nconc
+          methods
+          `((otherwise (&rest args) (apply message ,.parent-sym args)))))
+      (let ( (method-names (cl-sort
+                             (cl-remove 'otherwise (mapcar #'first methods))
+                             #'string<))
+             (method-clauses (mapcar #'a:make-method-clause methods))
+             (parent-test
+               (when .parent-classes
+                 `((unless ; warapped in a list for splicing.
+                     (and (a:is-object? ,.parent-sym)
+                       (memq (class-name ,.parent-sym) ',.parent-classes))
+                     (error "Parent class is not %s%s: %S."
+                       (empty-string-unless (rest ',.parent-classes) "one of ")
+                       (apply #'pp-things-to-string :or ',.parent-classes)
+                       (a:maybe-repr ,.parent-sym)))))))
+        ;; `let' class variables:
+        `(let ( (class-name   ',class)
+                (field-names  ',.field-names)
+                (method-names ',method-names)
+                ,@class-vars)
+           ;; define generic functions for the methods:
+           (mapc #'a:ensure-generic-fun method-names)
+           ;; define a constructor for the class:
+           (cl-defun ,class ,.arglist
+             ,@parent-test
+             (let (self)
+               ;; bind SELF lexically so that the object can reference itself:
+               (setq self
+                 ;; the object itself:
+                 #'(lambda (message)
+                     (declare (aos-class ',class))
+                     (cl-case message ,@method-clauses))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
