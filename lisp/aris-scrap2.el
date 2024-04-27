@@ -190,3 +190,12 @@ Examples of mis-use:
             (parent-classes)
             (parent-is-optional)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(let ((needle 'f))
+  (memq needle (cdr (memq needle '(a b c d e f g h i j k l m n o p q r s t u v w x y z))))) ;; nil
+
+(let ((needle 'f))
+  (member needle (cdr (member needle '(a b c d e f g h i j k l m n o p q r s t u f v w x y z))))) ;; (f v w x y z)
+
+
