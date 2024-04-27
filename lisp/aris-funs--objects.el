@@ -48,7 +48,6 @@ list keywords excluding &aux.")
   '( (class-name   ()      class-name)
      (class-names  ()      (if-let ((par (parent self)))
                              (append (list class-name) (class-names par))
-
                              (list class-name)))
      (method-names ()      (if-let ((par (parent self)))
                              (cl-union method-names (method-names par))
@@ -83,7 +82,7 @@ list keywords excluding &aux.")
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let ((parsed-arglist  (a:extract-parent-arg arglist)))
+  (let ((parsed-arglist (a:extract-parent-arg arglist)))
     (let-alist parsed-arglist
       (let* ( ;; synthesize this method so we can inject it into the `cl-defun'
               ;; in the expansion so that it can access the instance's arglist:
@@ -396,7 +395,7 @@ Examples of mis-use:
 (confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
 (confirm that (class-name acct) returns account) 
 (confirm that (method-names acct) returns
-  ( balance class-name deposit field-names field-values interest is?
+  ( balance class-name class-names deposit field-names field-values interest is?
     method-names name parent prepr repr responds-to? strepr withdraw))
 (confirm that (responds-to? acct 'withdraw) returns t)
 (confirm that (field-names acct) returns (name balance))
@@ -437,9 +436,9 @@ Examples of mis-use:
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
 (confirm that (method-names passwd-acct)
-  returns (otherwise check-password change-password balance class-name deposit
-            field-names field-values interest is? method-names name parent prepr
-            repr responds-to? strepr withdraw))
+  returns ( otherwise check-password change-password balance class-name
+            class-names deposit field-names field-values interest is?
+            method-names name parent prepr repr responds-to? strepr withdraw))
 (confirm that (responds-to? passwd-acct 'withdraw) returns t)
 (confirm that (field-names passwd-acct) returns (balance name password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
@@ -483,9 +482,9 @@ Examples of mis-use:
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (method-names limit-acct)
-  returns ( check-password change-password otherwise balance class-name deposit
-            field-names field-values interest is? method-names name parent prepr
-            repr responds-to? strepr withdraw))
+  returns ( check-password change-password otherwise balance class-name
+            class-names deposit field-names field-values interest is? method-names
+            name parent prepr repr responds-to? strepr withdraw))
 (confirm that (field-names limit-acct) returns
   (password balance name limit acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
