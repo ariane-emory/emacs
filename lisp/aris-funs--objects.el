@@ -37,7 +37,7 @@ list keywords excluding &aux.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:defclass-lambda-list-keywords*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cons '&delegee *a:cl-lambda-list-keywords*)
+  (cons '&parent *a:cl-lambda-list-keywords*)
   "Keywords that can appear in a:defclass' lambda list.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -70,7 +70,7 @@ list keywords excluding &aux.")
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
-  (let ((parsed-arglist  (a:extract-delegee-arg arglist)))
+  (let ((parsed-arglist  (a:extract-parent-arg arglist)))
     (let-alist parsed-arglist
       (let* ( ;; synthesize this method so we can inject it into the `cl-defun'
               ;; in the expansion so that it can access the instance's arglist:
@@ -78,6 +78,10 @@ list keywords excluding &aux.")
                 `(field-values ()
                    (sort-symbol-keyed-alist
                      (cl-pairlis field-names (list ,@.field-names)))))
+              (parent-method
+                (when .parent-sym
+                  `((parent () ;; wrapped in a list for splicing.
+                      ,.parent-sym))))
               ;; end of synthesized method(s).
               (synthesized-methods (list field-values-method))
               (methods
@@ -86,21 +90,21 @@ list keywords excluding &aux.")
         (when-let ((method (or (assoc 'delegate methods)
                              (assoc 'method-not-found methods))))
           (setf (car method) 'otherwise))
-        (when (and .delegee-sym (not (assoc 'otherwise methods)))
+        (when (and .parent-sym (not (assoc 'otherwise methods)))
           (nconc
             methods
-            `((otherwise (&rest args) (apply message ,.delegee-sym args)))))
+            `((otherwise (&rest args) (apply message ,.parent-sym args)))))
         (let ( (method-names   (sort (mapcar #'first methods) #'string<))
                (method-clauses (mapcar #'a:make-method-clause methods))
-               (delegee-test
-                 (when .delegee-classes
+               (parent-test
+                 (when .parent-classes
                    `((unless ; warapped in a list for splicing.
-                       (and (a:is-object? ,.delegee-sym)
-                         (memq (class-name ,.delegee-sym) ',.delegee-classes))
-                       (error "Delegee class is not %s%s: %S."
-                         (empty-string-unless (rest ',.delegee-classes) "one of ")
-                         (apply #'pp-things-to-string :or ',.delegee-classes)
-                         (a:maybe-repr ,.delegee-sym)))))))
+                       (and (a:is-object? ,.parent-sym)
+                         (memq (class-name ,.parent-sym) ',.parent-classes))
+                       (error "Parent class is not %s%s: %S."
+                         (empty-string-unless (rest ',.parent-classes) "one of ")
+                         (apply #'pp-things-to-string :or ',.parent-classes)
+                         (a:maybe-repr ,.parent-sym)))))))
           ;; `let' class variables:
           `(let ( (class-name   ',class)
                   (field-names  ',.field-names)
@@ -110,7 +114,7 @@ list keywords excluding &aux.")
              (mapc #'a:ensure-generic-fun method-names)
              ;; define a constructor for the class:
              (cl-defun ,class ,.arglist
-               ,@delegee-test
+               ,@parent-test
                (let (self)
                  ;; bind SELF lexically so that the object can reference itself:
                  (setq self
@@ -168,11 +172,7 @@ trying to send a message to a non-object."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return the method that implements MESSAGE for OBJECT."
   (a:must-be-object! object)
-  ;; (prn "get: Getting method for %s." message)
-  ;; (let ((res (with-indentation (funcall object message))))
-  ;;   (prn "get: Got method for %s: %s." message res)
-  (let ((res (funcall object message)))
-    res))
+  (funcall object message))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -227,147 +227,147 @@ trying to send a message to a non-object."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:extract-delegee-arg (arglist)
+(defun a:extract-parent-arg (arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Extract the delegee argument from an arglist ARGLIST, returning an alist.
+  "Extract the parent argument from an arglist ARGLIST, returning an alist.
 
-This function adds a new lambda list keyword, &delegee. When used, the &delegee
+This function adds a new lambda list keyword, &parent. When used, the &parent
 keyword must precede any &rest, &key or &aux parameters but may be &optional.
-The &delegee keyword must be followed by a specifier for the delegee, which may
-be either a symbol (meaning the delegee is bound to that symbol and may be of any
-class) or a list whose first element is the symbol to bind the delegee to and whose tail
-is a list of possible classes for the delegee.
+The &parent keyword must be followed by a specifier for the parent, which may
+be either a symbol (meaning the parent is bound to that symbol and may be of any
+class) or a list whose first element is the symbol to bind the parent to and whose tail
+is a list of possible classes for the parent.
 
 Examples of use:
 (see unit tests)
 
 Examples of mis-use:
-(a:extract-delegee-arg '(password &delegee) ;; malformed ARGLIST, nothing after &delegee.
-;; malformed ARGLIST, &rest precedes &delegee:
-(a:extract-delegee-arg '(password &rest thing &delegee acct))"
+(a:extract-parent-arg '(password &parent) ;; malformed ARGLIST, nothing after &parent.
+;; malformed ARGLIST, &rest precedes &parent:
+(a:extract-parent-arg '(password &rest thing &parent acct))"
   (when (memq '&aux arglist)
     (error "Malformed ARGLIST, &aux is not supported."))
   (let ((alist (make-empty-alist arglist field-names
-                 delegee-sym delegee-classes delegee-is-optional)))
+                 parent-sym parent-classes parent-is-optional)))
     (alist-put! 'field-names alist
       (mapcar (lambda (x) (or (car-safe x) x))
         (cl-remove-if
           (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
           arglist)))
-    (if (not (memq '&delegee arglist))
+    (if (not (memq '&parent arglist))
       (alist-put! 'arglist alist arglist)
       (let (new-arglist-segment)
         (while-let ( (popped (pop arglist))
-                     (_ (not (eq popped '&delegee))))
+                     (_ (not (eq popped '&parent))))
           (when (eq popped '&optional)
-            (alist-put! 'delegee-is-optional alist t))
+            (alist-put! 'parent-is-optional alist t))
           (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
-            (error "Malformed ARGLIST, %s before &delegee." top))
+            (error "Malformed ARGLIST, %s before &parent." top))
           (push popped new-arglist-segment))
         (unless arglist
-          (error "Malformed ARGLIST, nothing after &delegee."))
+          (error "Malformed ARGLIST, nothing after &parent."))
         (let ((popped (pop arglist)))
           (when (memq popped *a:defclass-lambda-list-keywords*)
-            (error "Malformed ARGLIST, &delegee immediately followed by %s."
+            (error "Malformed ARGLIST, &parent immediately followed by %s."
               popped))
           (unless
             (or (symbol? popped)
               (and (proper-list? popped)
                 (length> popped 1)
                 (cl-every #'symbol? popped)))
-            (error (concat "Malformed ARGLIST, &delegee must be followed by a "
+            (error (concat "Malformed ARGLIST, &parent must be followed by a "
                      "symbol or a list of 2 or more symbols.")))
-          (let ((delegee-sym (if (symbol? popped) popped (first popped))))
-            (alist-put! 'delegee-sym alist delegee-sym)
-            (push delegee-sym new-arglist-segment))
-          (alist-put! 'delegee-classes alist
+          (let ((parent-sym (if (symbol? popped) popped (first popped))))
+            (alist-put! 'parent-sym alist parent-sym)
+            (push parent-sym new-arglist-segment))
+          (alist-put! 'parent-classes alist
             (when (not (symbol? popped)) (rest popped))))
         (alist-put! 'arglist alist
           (nconc (reverse new-arglist-segment) arglist))
         alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mandatory delegate and an &optional case:
-(confirm that (a:extract-delegee-arg '(password &delegee acct &optional thing))
+(confirm that (a:extract-parent-arg '(password &parent acct &optional thing))
   returns ( (arglist password acct &optional thing)
             (field-names password acct thing)
-            (delegee-sym . acct)
-            (delegee-classes)
-            (delegee-is-optional)))
-;; typed delegee first case:
-(confirm that (a:extract-delegee-arg '(&delegee (acct account) password))
+            (parent-sym . acct)
+            (parent-classes)
+            (parent-is-optional)))
+;; typed parent first case:
+(confirm that (a:extract-parent-arg '(&parent (acct account) password))
   returns ( (arglist acct password)
             (field-names acct password)
-            (delegee-sym . acct)
-            (delegee-classes account)
-            (delegee-is-optional)))
-;; typed delegee with two classes first case:
-(confirm that (a:extract-delegee-arg
-                '(&delegee (acct account account2) password))
+            (parent-sym . acct)
+            (parent-classes account)
+            (parent-is-optional)))
+;; typed parent with two classes first case:
+(confirm that (a:extract-parent-arg
+                '(&parent (acct account account2) password))
   returns ( (arglist acct password)
             (field-names acct password)
-            (delegee-sym . acct)
-            (delegee-classes account account2)
-            (delegee-is-optional)))
-;; typed delegee case:
-(confirm that (a:extract-delegee-arg '(password &delegee (acct account)))
+            (parent-sym . acct)
+            (parent-classes account account2)
+            (parent-is-optional)))
+;; typed parent case:
+(confirm that (a:extract-parent-arg '(password &parent (acct account)))
   returns ( (arglist password acct)
             (field-names password acct)
-            (delegee-sym . acct)
-            (delegee-classes account)
-            (delegee-is-optional)))
-;; un-typed delegee case:
-(confirm that (a:extract-delegee-arg '(password &delegee acct))
+            (parent-sym . acct)
+            (parent-classes account)
+            (parent-is-optional)))
+;; un-typed parent case:
+(confirm that (a:extract-parent-arg '(password &parent acct))
   returns ( (arglist password acct)
             (field-names password acct)
-            (delegee-sym . acct)
-            (delegee-classes)
-            (delegee-is-optional)))
-;; optional delegee case case:
-(confirm that (a:extract-delegee-arg '(password &optional thing &delegee acct))
+            (parent-sym . acct)
+            (parent-classes)
+            (parent-is-optional)))
+;; optional parent case case:
+(confirm that (a:extract-parent-arg '(password &optional thing &parent acct))
   returns ( (arglist password &optional thing acct)
             (field-names password thing acct)
-            (delegee-sym . acct)
-            (delegee-classes)
-            (delegee-is-optional . t)))
-;; optional delegee case 2:
-(confirm that (a:extract-delegee-arg '(password &optional &delegee acct thing))
+            (parent-sym . acct)
+            (parent-classes)
+            (parent-is-optional . t)))
+;; optional parent case 2:
+(confirm that (a:extract-parent-arg '(password &optional &parent acct thing))
   returns ( (arglist password &optional acct thing)
             (field-names password acct thing)
-            (delegee-sym . acct)
-            (delegee-classes)
-            (delegee-is-optional . t)))
-;; optional delegee case 3:
-(confirm that (a:extract-delegee-arg
-                '(password &optional &delegee (acct account) thing))
+            (parent-sym . acct)
+            (parent-classes)
+            (parent-is-optional . t)))
+;; optional parent case 3:
+(confirm that (a:extract-parent-arg
+                '(password &optional &parent (acct account) thing))
   returns ( (arglist password &optional acct thing)
             (field-names password acct thing)
-            (delegee-sym . acct)
-            (delegee-classes account)
-            (delegee-is-optional . t)))
-;; optional delegee case 4:
+            (parent-sym . acct)
+            (parent-classes account)
+            (parent-is-optional . t)))
+;; optional parent case 4:
 (confirm that
-  (a:extract-delegee-arg
-    '(password &optional (foo 5) &delegee (acct account) bar))
+  (a:extract-parent-arg
+    '(password &optional (foo 5) &parent (acct account) bar))
   returns ( (arglist password &optional (foo 5) acct bar)
             (field-names password foo acct bar)
-            (delegee-sym . acct)
-            (delegee-classes account)
-            (delegee-is-optional . t)))
-;; mandatory delegee and an &rest case:
+            (parent-sym . acct)
+            (parent-classes account)
+            (parent-is-optional . t)))
+;; mandatory parent and an &rest case:
 (confirm that
-  (a:extract-delegee-arg '(password &delegee (acct account) &rest things))
+  (a:extract-parent-arg '(password &parent (acct account) &rest things))
   returns ( (arglist password acct &rest things)
             (field-names password acct things)
-            (delegee-sym . acct)
-            (delegee-classes account)
-            (delegee-is-optional)))
+            (parent-sym . acct)
+            (parent-classes account)
+            (parent-is-optional)))
 ;; 'do nothing' case:
-(confirm that (a:extract-delegee-arg '(password &rest things))
+(confirm that (a:extract-parent-arg '(password &rest things))
   returns ( (arglist password &rest things)
             (field-names password things)
-            (delegee-sym)
-            (delegee-classes)
-            (delegee-is-optional)))
+            (parent-sym)
+            (parent-classes)
+            (parent-is-optional)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -405,7 +405,7 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-password (password &delegee acct) ()
+(a:defclass account-with-password (password &parent acct) ()
   (check-password (attempted-password)
     (equal attempted-password password))
   (change-password (attempted-password new-password)
@@ -447,7 +447,7 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-limit (limit &delegee (acct account)) ()
+(a:defclass account-with-limit (limit &parent (acct account)) ()
   (withdraw (amt)
     (if (> amt limit)
       :OVER-LIMIT
