@@ -140,22 +140,33 @@
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; (let* ( (newbody  (mapcar #'(lambda (clause) `(,(gensym) ,@(rest clause))) body))
+;;         (switcher (cl-mapcar
+;;                     #'(lambda (clause newclause) `(,(first clause) (go ,(first newclause))))
+;;                     body newbody))
+;;         (newbody  (apply #'nconc newbody))
+;;         (switch (gensym "switch-")))
+;;   `(cl-block ,switch
+;;      (cl-macrolet ((break () '(cl-return-from ,switch)))
+;;        (cl-tagbody
+;;          (cl-case ,value ,@switcher)
+;;          (break)
+;;          ,@newbody))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro switch (value &rest body)
   "Steele's `switch' from 'The Evolution of Lisp' (but with the originally-separate
 `break' macro refactored to use `cl-macrolet' and a `gensym'-ed block label ."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (newbody  (mapcar #'(lambda (clause) `(,(gensym) ,@(rest clause))) body))
+  (let* ( (label    (gensym "switch-"))
+          (newbody  (mapcar #'(lambda (clause) `(,(gensym) ,@(rest clause))) body))
           (switcher (cl-mapcar
                       #'(lambda (clause newclause) `(,(first clause) (go ,(first newclause))))
-                      body newbody))
-          (switch (gensym "switch-"))
-          (foo (apply #'nconc newbody)))
-    `(cl-block ,switch
-       (cl-macrolet ((break () '(cl-return-from ,switch)))
+                      body newbody)))
+    `(cl-block ,label
+       (cl-macrolet ((break () '(cl-return-from ,label)))
          (cl-tagbody (cl-case ,value ,@switcher)
            (break)
-           ,@foo)))))
+           ,@(apply #'nconc newbody))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defmacro break () '(cl-return-from switch))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
