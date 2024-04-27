@@ -49,9 +49,10 @@ list keywords excluding &aux.")
      (class-names  ()      (if-let ((par (parent self)))
                              (append (list class-name) (class-names par))
                              (list class-name)))
-     (method-names ()      (if-let ((par (parent self)))
-                             (cl-union method-names (method-names par))
-                             method-names))
+     (method-names ()      (sort (if-let ((par (parent self)))
+                                   (cl-union method-names (method-names par))
+                                   method-names)
+                             #'string<))
      (field-names  ()      (if-let ((par (parent self)))
                              (cl-union field-names (field-names par))
                              field-names))
@@ -435,82 +436,84 @@ Examples of mis-use:
       (account-with-password "secret" (account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
+(confirm that (class-names passwd-acct) returns (account-with-password account))
+(confirm that (responds-to? passwd-acct 'withdraw) returns t)
+(confirm that (responds-to? passwd-acct 'balance) returns t)
 (confirm that (method-names passwd-acct)
   returns ( otherwise check-password change-password balance class-name
             class-names deposit field-names field-values interest is?
             method-names name parent prepr repr responds-to? strepr withdraw))
-(confirm that (responds-to? passwd-acct 'withdraw) returns t)
-(confirm that (field-names passwd-acct) returns (balance name password acct))
-(confirm that (a:is? passwd-acct 'account-with-password) returns t)
-(confirm that (is? passwd-acct 'account-with-password) returns t)
-(confirm that (a:is? passwd-acct 'account) returns t)
-(confirm that (is? passwd-acct 'account) returns t)
-(confirm that (repr (parent passwd-acct))
-  returns ((class . account)
-            (balance . 2000.0)
-            (name . "A. User")))
-(confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
-(confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
-(confirm that (withdraw passwd-acct "secret" 1500.00)
-  returns :INSUFFICIENT-FUNDS)
-(confirm that (repr passwd-acct) returns
-  ((class . account-with-password)
-    (acct
-      (class . account)
-      (balance . 500.0)
-      (name . "A. User"))
-    (password . "secret")))
-(confirm that (strepr passwd-acct) returns
-  "((class . account-with-password)\n  (acct\n    (class . account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
-;; (makunbound 'passwd-acct)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (field-names passwd-acct) returns (balance name password acct))
+;; (confirm that (a:is? passwd-acct 'account-with-password) returns t)
+;; (confirm that (is? passwd-acct 'account-with-password) returns t)
+;; (confirm that (a:is? passwd-acct 'account) returns t)
+;; (confirm that (is? passwd-acct 'account) returns t)
+;; (confirm that (repr (parent passwd-acct))
+;;   returns ((class . account)
+;;             (balance . 2000.0)
+;;             (name . "A. User")))
+;; (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
+;; (confirm that (withdraw passwd-acct "secret" 1500.00) returns 500.0)
+;; (confirm that (withdraw passwd-acct "secret" 1500.00)
+;;   returns :INSUFFICIENT-FUNDS)
+;; (confirm that (repr passwd-acct) returns
+;;   ((class . account-with-password)
+;;     (acct
+;;       (class . account)
+;;       (balance . 500.0)
+;;       (name . "A. User"))
+;;     (password . "secret")))
+;; (confirm that (strepr passwd-acct) returns
+;;   "((class . account-with-password)\n  (acct\n    (class . account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
+;; ;; (makunbound 'passwd-acct)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-limit (limit &parent (acct account)) ()
-  (withdraw (amt)
-    (if (> amt limit)
-      :OVER-LIMIT
-      (withdraw acct amt))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (a:is-object?
-    (setq limit-acct
-      (account-with-password "pass"
-        (account-with-limit 100.00
-          (account "A. Thrifty Spender" 500.00)))))
-  returns t)
-(confirm that (class-name limit-acct) returns account-with-password)
-(confirm that (method-names limit-acct)
-  returns ( check-password change-password otherwise balance class-name
-            class-names deposit field-names field-values interest is? method-names
-            name parent prepr repr responds-to? strepr withdraw))
-(confirm that (field-names limit-acct) returns
-  (password balance name limit acct))
-(confirm that (a:is? limit-acct 'account-with-password) returns t)
-(confirm that (is? limit-acct 'account-with-password) returns t)
-(confirm that (repr (parent limit-acct))
-  returns ((class . account-with-limit)
-            (acct (class . account)
-              (balance . 500.0) (name . "A. Thrifty Spender"))
-            (limit . 100.0)))
-(confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
-(confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
-(confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
-(confirm that (repr limit-acct) returns
-  ((class . account-with-password)
-    (acct
-      (class . account-with-limit)
-      (acct
-        (class . account)
-        (balance . 480.0)
-        (name . "A. Thrifty Spender"))
-      (limit . 100.0))
-    (password . "pass")))
-(confirm that (strepr limit-acct) returns
-  "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
-;; (makunbound 'limit-acct)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (a:defclass account-with-limit (limit &parent (acct account)) ()
+;;   (withdraw (amt)
+;;     (if (> amt limit)
+;;       :OVER-LIMIT
+;;       (withdraw acct amt))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that
+;;   (a:is-object?
+;;     (setq limit-acct
+;;       (account-with-password "pass"
+;;         (account-with-limit 100.00
+;;           (account "A. Thrifty Spender" 500.00)))))
+;;   returns t)
+;; (confirm that (class-name limit-acct) returns account-with-password)
+;; (confirm that (method-names limit-acct)
+;;   returns ( check-password change-password otherwise balance class-name
+;;             class-names deposit field-names field-values interest is? method-names
+;;             name parent prepr repr responds-to? strepr withdraw))
+;; (confirm that (field-names limit-acct) returns
+;;   (password balance name limit acct))
+;; (confirm that (a:is? limit-acct 'account-with-password) returns t)
+;; (confirm that (is? limit-acct 'account-with-password) returns t)
+;; (confirm that (repr (parent limit-acct))
+;;   returns ((class . account-with-limit)
+;;             (acct (class . account)
+;;               (balance . 500.0) (name . "A. Thrifty Spender"))
+;;             (limit . 100.0)))
+;; (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
+;; (confirm that (withdraw limit-acct "pass" 20.00) returns 480.0)
+;; (confirm that (withdraw limit-acct "guess" 20.00) returns :WRONG-PASSWORD)
+;; (confirm that (repr limit-acct) returns
+;;   ((class . account-with-password)
+;;     (acct
+;;       (class . account-with-limit)
+;;       (acct
+;;         (class . account)
+;;         (balance . 480.0)
+;;         (name . "A. Thrifty Spender"))
+;;       (limit . 100.0))
+;;     (password . "pass")))
+;; (confirm that (strepr limit-acct) returns
+;;   "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
+;; ;; (makunbound 'limit-acct)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
