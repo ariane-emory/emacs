@@ -9,7 +9,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro switch (value &rest body)
   "Steele's `switch' from 'The Evolution of Lisp' (but with the originally-separate
-`break' macro refactored to use `cl-macrolet' and a `gensym'-ed block label ."
+`break' macro refactored to use `cl-macrolet' and a `gensym'-ed block label .
+
+Remember, `break' breaks from the most-local enclosing `switch''s block,
+similarily to C's switch."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (label    (gensym "switch-"))
           (newbody  (mapcar #'(lambda (clause) `(,(gensym) ,@(rest clause))) body))
@@ -31,8 +34,8 @@
       (1 (push "one " res))
       (2 (push "too " res))
       (3 (push "many" res)))
-    (nreverse res))
-  returns ("none"))
+    (apply #'concat (nreverse res)))
+  returns "none")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let (res)
@@ -41,8 +44,8 @@
       (1 (push "one " res))
       (2 (push "too " res))
       (3 (push "many" res)))
-    (nreverse res))
-  returns ("one " "too " "many"))
+    (apply #'concat (nreverse res)))
+  returns "one too many")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let (res)
@@ -51,8 +54,8 @@
       (1 (push "one " res))
       (2 (push "too " res))
       (3 (push "many" res)))
-    (nreverse res))
-  returns ("too " "many"))
+    (apply #'concat (nreverse res)))
+  returns "too many")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let (res)
@@ -61,8 +64,8 @@
       (1 (push "one " res))
       (2 (push "too " res))
       (3 (push "many" res)))
-    (nreverse res))
-  returns ("many"))
+    (apply #'concat (nreverse res)))
+  returns "many")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let (res)
@@ -71,8 +74,8 @@
       (1 (push "one " res))
       (2 (push "too " res))
       (3 (push "many" res)))
-    (nreverse res))
-  returns nil)
+    (apply #'concat(nreverse res)))
+  returns "")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
