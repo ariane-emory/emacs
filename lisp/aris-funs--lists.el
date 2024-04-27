@@ -587,6 +587,42 @@ This is adapted from the version in Peter Norvig's book."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unrepeat* (lst)
+  "Recursively remove sequentially repeated items from LST."
+  (let (res last)
+    (while lst
+      (let ((popped (pop lst)))
+        (when (consp popped)
+          (setq popped (unrepeat* popped)))
+        (when (not (equal popped last))
+          (push popped res)
+          (setq last popped))))
+    (reverse res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat* '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+  returns (a b a b c a (b c) nil (b (c d e))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unrepeat (lst)
+  "Remove sequentially repeated items from LST."
+  (let (res last)
+    (while lst
+      (let ((popped (pop lst)))
+        (when (not (equal popped last))
+          (push popped res)
+          (setq last popped))))
+    (reverse res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+  returns (a b a b c a (b b c) nil (b b (c d d e))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--lists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -93,8 +93,8 @@
       (let ((old-lisp-indent-offset lisp-indent-offset))
         (setq lisp-indent-offset 1)
         (unwind-protect
-          ;; (eval-last-sexp t)
-          (pp-eval-last-sexp t)
+          (eval-last-sexp t)
+          ;; (pp-eval-last-sexp t)
           ;; (insert "\n")
           (message "Inserted sexp.")
           (setq lisp-indent-offset old-lisp-indent-offset)))))

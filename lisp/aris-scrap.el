@@ -72,8 +72,59 @@
              (let ((next (+ from step)))
                (if (< next to)
                  (setq from next)
-                 (throw 'stop nil))))))
+                 (throw 'stop nil)))))
+  (each (f)
+    (while-let ((val (next self)))
+      (funcall f val))))
 
+(defun a:generator? (val)
+  (and (a:is-object? val)
+    (responds-to? val 'next)
+    (responds-to? val 'each)))
+  
 (let ((gen (up-to-gen 1 10 2)))
   (while-let ((n (next gen)))
     (prn n)))
+
+(let ((g (up-to-gen 1 10 2)))
+  (if (a:generator? g)
+    (each g #'prn)
+    (prn "Not a generator")))
+
+(each g #'prn)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unrepeat* (lst)
+  "Recursively remove sequentially repeated items from LST."
+  (let (res last)
+    (while lst
+      (let ((popped (pop lst)))
+        (when (consp popped)
+          (setq popped (unrepeat popped)))
+        (when (not (equal popped last))
+          (push popped res)
+          (setq last popped))))
+    (reverse res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat* '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+  returns (a b a b c a (b c) nil (b (c d e))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unrepeat (lst)
+  "Remove sequentially repeated items from LST."
+  (let (res last)
+    (while lst
+      (let ((popped (pop lst)))
+        (when (not (equal popped last))
+          (push popped res)
+          (setq last popped))))
+    (reverse res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+  returns (a b a b c a (b b c) nil (b b (c d d e))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
