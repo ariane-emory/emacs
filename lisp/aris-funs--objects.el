@@ -49,9 +49,11 @@ list keywords excluding &aux.")
      (class-names  ()      (if-let ((par (parent self)))
                              (append (list class-name) (class-names par))
                              (list class-name)))
-     (method-names ()      (cl-sort (if-let ((par (parent self)))
-                                      (cl-union method-names (method-names par))
-                                      method-names)
+     (method-names ()      (cl-sort
+                             (copy-sequence
+                               (if-let ((par (parent self)))
+                                 (cl-union method-names (method-names par))
+                                 method-names))
                              #'string<))
      (field-names  ()      (if-let ((par (parent self)))
                              (cl-union field-names (field-names par))
@@ -439,10 +441,10 @@ Examples of mis-use:
 (confirm that (class-names passwd-acct) returns (account-with-password account))
 (confirm that (responds-to? passwd-acct 'withdraw) returns t)
 (confirm that (responds-to? passwd-acct 'balance) returns t)
-(confirm that (method-names passwd-acct)
-  returns ( otherwise check-password change-password balance class-name
-            class-names deposit field-names field-values interest is?
-            method-names name parent prepr repr responds-to? strepr withdraw))
+(confirm that (method-names passwd-acct) returns
+  ( balance change-password check-password class-name class-names deposit
+    field-names field-values interest is? method-names name otherwise parent
+    prepr repr responds-to? strepr withdraw))
 (confirm that (field-names passwd-acct) returns (balance name password acct))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
@@ -484,10 +486,10 @@ Examples of mis-use:
           (account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
-(confirm that (method-names limit-acct)
-  returns ( check-password change-password otherwise balance class-name
-            class-names deposit field-names field-values interest is? method-names
-            name parent prepr repr responds-to? strepr withdraw))
+(confirm that (method-names limit-acct) returns 
+  ( balance change-password check-password class-name class-names deposit
+    field-names field-values interest is? method-names name otherwise parent
+    prepr repr responds-to? strepr withdraw))
 (confirm that (field-names limit-acct) returns
   (password balance name limit acct))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
