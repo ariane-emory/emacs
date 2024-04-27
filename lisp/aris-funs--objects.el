@@ -12,6 +12,7 @@
 ;; TODO:
 ;;  - private methods + interfaces preds = traits?
 ;;  - &get / &set / &getset.
+;;  - 'is' types, 'satisfies' types and 'implements types'.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

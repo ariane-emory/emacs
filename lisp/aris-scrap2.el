@@ -42,113 +42,151 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
-  (cond
-    ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
-    ((eq '\, (car-safe thing)) (prn "This one is special: %s" (cadr thing)))
-    ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" (cadr thing)))
-    ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
-    ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
-    (t (prn "%s" thing))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun a:parse-defclass-args2 (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Extract the parent argument from an arglist ARGLIST, returning an alist.
 
+This function adds a new lambda list keyword, &parent. When used, the &parent
+keyword must precede any &rest, &key or &aux parameters but may be &optional.
+The &parent keyword must be followed by a specifier for the parent, which may
+be either a symbol (meaning the parent is bound to that symbol and may be of any
+class) or a list whose first element is the symbol to bind the parent to and whose tail
+is a list of possible classes for the parent.
 
+Examples of use:
+(see unit tests)
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro switch (value &rest body)
-;;   "Steele's `switch' from 'The Evolution of Lisp'."
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   (let* ( (newbody (cl-mapcar #'(lambda (clause)
-;;                                   `(,(gensym) ,@(rest clause)))
-;;                      body))
-;;           (switcher (cl-mapcar #'(lambda (clause newclause)
-;;                                    `(,(first clause) (go ,(first newclause))))
-;;                       body newbody)))
-;;     `(cl-block switch
-;;        (cl-tagbody (cl-case ,value ,@switcher)
-;;          (break)
-;;          ,@(apply #'nconc newbody)))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro break () '(cl-return-from switch))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (let (res)
-;;     (switch 0
-;;       (0 (push "none" res) (break))
-;;       (1 (push "one " res))
-;;       (2 (push "too " res))
-;;       (3 (push "many" res)))
-;;     (nreverse res))
-;;   returns ("none"))
-;; (confirm that
-;;   (let (res)
-;;     (switch 1
-;;       (0 (push "none" res) (break))
-;;       (1 (push "one " res))
-;;       (2 (push "too " res))
-;;       (3 (push "many" res)))
-;;     (nreverse res))
-;;   returns ("one " "too " "many"))
-;; (confirm that
-;;   (let (res)
-;;     (switch 2
-;;       (0 (push "none" res) (break))
-;;       (1 (push "one " res))
-;;       (2 (push "too " res))
-;;       (3 (push "many" res)))
-;;     (nreverse res))
-;;   returns ("too " "many"))
-;; (confirm that
-;;   (let (res)
-;;     (switch 3
-;;       (0 (push "none" res) (break))
-;;       (1 (push "one " res))
-;;       (2 (push "too " res))
-;;       (3 (push "many" res)))
-;;     (nreverse res))
-;;   returns ("many"))
-;; (confirm that
-;;   (let (res)
-;;     (switch 4
-;;       (0 (push "none" res) (break))
-;;       (1 (push "one " res))
-;;       (2 (push "too " res))
-;;       (3 (push "many" res)))
-;;     (nreverse res))
-;;   returns nil)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (let (res)  
-;;   (cl-block switch
-;;     (cl-tagbody
-;;       (cl-case 1
-;;         (0 (go g1471))
-;;         (1 (go g1472))
-;;         (2 (go g1473))
-;;         (3 (go g1474)))
-;;       (break)
-;;       g1471
-;;       (push "none" res)
-;;       (break)
-;;       g1472
-;;       (push "one " res)
-;;       g1473
-;;       (push "too " res)
-;;       g1474
-;;       (push "many" res)))
-;;   (nreverse res))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; (let* ( (newbody  (mapcar #'(lambda (clause) `(,(gensym) ,@(rest clause))) body))
-;;         (switcher (cl-mapcar
-;;                     #'(lambda (clause newclause) `(,(first clause) (go ,(first newclause))))
-;;                     body newbody))
-;;         (newbody  (apply #'nconc newbody))
-;;         (switch (gensym "switch-")))
-;;   `(cl-block ,switch
-;;      (cl-macrolet ((break () '(cl-return-from ,switch)))
-;;        (cl-tagbody
-;;          (cl-case ,value ,@switcher)
-;;          (break)
-;;          ,@newbody))))
+Examples of mis-use:
+(a:parse-defclass-args2 '(password &parent) ;; malformed ARGLIST, nothing after &parent.
+;; malformed ARGLIST, &rest precedes &parent:
+(a:parse-defclass-args2 '(password &rest thing &parent acct))"
+  (when (memq '&aux arglist)
+    (error "Malformed ARGLIST, &aux is not supported."))
+  (let ((alist (make-empty-alist arglist field-names
+                 parent-sym parent-classes parent-is-optional)))
+    (alist-put! 'field-names alist
+      (mapcar (lambda (x) (or (car-safe x) x))
+        (cl-remove-if
+          (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
+          arglist)))
+    (if (not (memq '&parent arglist))
+      (alist-put! 'arglist alist arglist)
+      (let (new-arglist-segment)
+        (while-let ( (popped (pop arglist))
+                     (_ (not (eq popped '&parent))))
+          (when (eq popped '&optional)
+            (alist-put! 'parent-is-optional alist t))
+          (when (memq popped *a:cl-lambda-list-keywords-other-than-&optional*)
+            (error "Malformed ARGLIST, %s before &parent." top))
+          (push popped new-arglist-segment))
+        (unless arglist
+          (error "Malformed ARGLIST, nothing after &parent."))
+        (let ((popped (pop arglist)))
+          (when (memq popped *a:defclass-lambda-list-keywords*)
+            (error "Malformed ARGLIST, &parent immediately followed by %s."
+              popped))
+          (unless
+            (or (symbol? popped)
+              (and (proper-list? popped)
+                (length> popped 1)
+                (cl-every #'symbol? popped)))
+            (error (concat "Malformed ARGLIST, &parent must be followed by a "
+                     "symbol or a list of 2 or more symbols.")))
+          (let ((parent-sym (if (symbol? popped) popped (first popped))))
+            (alist-put! 'parent-sym alist parent-sym)
+            (push parent-sym new-arglist-segment))
+          (alist-put! 'parent-classes alist
+            (when (not (symbol? popped)) (rest popped))))
+        (alist-put! 'arglist alist
+          (nconc (reverse new-arglist-segment) arglist))
+        alist))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; case with untyped mandatory un-typed parent PAR first:
+(confirm that (a:parse-defclass-args2 '(&parent account password))
+  returns ( (arglist account password)
+            (field-names account password)
+            (parent-sym . account)
+            (parent-classes)
+            (parent-is-optional)))
+;; case with mandatory untyped parent PAR and an &optional THING:
+(confirm that (a:parse-defclass-args2 '(password &parent par &optional thing))
+  returns ( (arglist password par &optional thing)
+            (field-names password par thing)
+            (parent-sym . par)
+            (parent-classes)
+            (parent-is-optional)))
+;; case with typed parent PAR first:
+(confirm that (a:parse-defclass-args2 '(&parent (par account) password))
+  returns ( (arglist par password)
+            (field-names par password)
+            (parent-sym . par)
+            (parent-classes account)
+            (parent-is-optional)))
+;; case with typed parent PAR with two class variants first:
+(confirm that (a:parse-defclass-args2 '(&parent (par account account2) password))
+  returns ( (arglist par password)
+            (field-names par password)
+            (parent-sym . par)
+            (parent-classes account account2)
+            (parent-is-optional)))
+;; case with typed parent PAR:
+(confirm that (a:parse-defclass-args2 '(password &parent (par account)))
+  returns ( (arglist password par)
+            (field-names password par)
+            (parent-sym . par)
+            (parent-classes account)
+            (parent-is-optional)))
+;; case with un-typed parent PAR:
+(confirm that (a:parse-defclass-args2 '(password &parent par))
+  returns ( (arglist password par)
+            (field-names password par)
+            (parent-sym . par)
+            (parent-classes)
+            (parent-is-optional)))
+;; case with optional parent PAR:
+(confirm that (a:parse-defclass-args2 '(password &optional thing &parent par))
+  returns ( (arglist password &optional thing par)
+            (field-names password thing par)
+            (parent-sym . par)
+            (parent-classes)
+            (parent-is-optional . t)))
+;; case with optional parent PAR:
+(confirm that (a:parse-defclass-args2 '(password &optional &parent par thing))
+  returns ( (arglist password &optional par thing)
+            (field-names password par thing)
+            (parent-sym . par)
+            (parent-classes)
+            (parent-is-optional . t)))
+;; case with optional typed parent PAR:
+(confirm that (a:parse-defclass-args2 '(password &optional &parent (par account) thing))
+  returns ( (arglist password &optional par thing)
+            (field-names password par thing)
+            (parent-sym . par)
+            (parent-classes account)
+            (parent-is-optional . t)))
+;; case with optional typed parent:
+(confirm that
+  (a:parse-defclass-args2
+    '(password &optional (foo 5) &parent (par account) bar))
+  returns ( (arglist password &optional (foo 5) par bar)
+            (field-names password foo par bar)
+            (parent-sym . par)
+            (parent-classes account)
+            (parent-is-optional . t)))
+;; case with mandatory parent PAR and a &rest THINGS:
+(confirm that
+  (a:parse-defclass-args2 '(password &parent (par account) &rest things))
+  returns ( (arglist password par &rest things)
+            (field-names password par things)
+            (parent-sym . par)
+            (parent-classes account)
+            (parent-is-optional)))
+;; 'do nothing' case:
+(confirm that (a:parse-defclass-args2 '(password &rest things))
+  returns ( (arglist password &rest things)
+            (field-names password things)
+            (parent-sym)
+            (parent-classes)
+            (parent-is-optional)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
