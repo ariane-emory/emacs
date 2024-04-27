@@ -12,7 +12,7 @@
 ;; TODO:
 ;;  - private methods + interfaces preds = traits?
 ;;  - &get / &set / &getset.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+k;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,8 +100,7 @@ list keywords excluding &aux.")
               (methods
                 (append *a:universal-methods*
                   synthesized-methods user-methods)))
-        (when-let ((method (or (assoc 'delegate methods)
-                             (assoc 'method-not-found methods))))
+        (when-let ((method (assoc 'delegate methods)))
           (setf (car method) 'otherwise))
         (when (and .parent-sym (not (assoc 'otherwise methods)))
           (nconc
