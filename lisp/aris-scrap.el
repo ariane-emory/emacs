@@ -74,4 +74,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(a:definterface generator (next each))
+(setf (get 'generator 'aos-interface) '(next each))
 
+(symbol-plist 'generator)
+
+(a:implements? 'generator (up-to-gen 1 10 2))
+(a:implements? 'generator foo)
+
+(symbol-plist 'foo)

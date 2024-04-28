@@ -193,7 +193,7 @@ trying to send a message to a non-object."
   (let ((fun #'(lambda (object &rest args)
                  (apply #'a:send-message object message args))))
     (setf (symbol-function message) fun)
-    (setf (get message 'generic-fun) fun))) ; )
+    (setf (get message 'aos-generic-fun) fun))) ; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -211,7 +211,7 @@ trying to send a message to a non-object."
   "t when the symbol FUN-NAME it bound to a generic function."
   (and
     (fboundp fun-name)
-    (eq (get fun-name 'generic-fun) (symbol-function fun-name))))
+    (eq (get fun-name 'aos-generic-fun) (symbol-function fun-name))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'a:generic-fun? 'a:generic-fun-p)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -526,6 +526,36 @@ Examples of mis-use:
 (confirm that (strepr limit-acct) returns
   "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
 ;; (makunbound 'limit-acct)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro a:definterface (name method-names)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Define an interface with NAME and METHOD-NAMES."
+  (unless (symbolp name)
+    (error "Interface name must be a symbol."))
+  (unless (cl-every #'symbolp method-names)
+    (error "All method names must be symbols."))
+  `(setf (get ',name 'aos-interface) ',method-names))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:definterface account (withdraw deposit balance name interest))
+  returns (withdraw deposit balance name interest))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun a:implements? (interface-name obj)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when OBJ implements the interface named INTERFACE-NAME."
+  (and (a:is-object? obj)
+    (let ((interface (get interface-name 'aos-interface)))
+      (cl-every (lambda (method) (responds-to? obj method))
+        interface))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:implements? 'account acct)
+(a:implements? 'account passwd-acct)
+(a:implements? 'account limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
