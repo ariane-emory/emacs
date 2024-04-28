@@ -42,21 +42,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(symbol-plist 'account)
-(two three four one)
 
-
-(defmacro foo (something &rest body)
-  (let ((body-res (mapcar #'eval body)))
-    `(,something ,@body-res)))
-
-(foo message
-  (let* ( (multiplicand (read))
-          (addend (read))
-          (res (* multiplicand (+ addend 3))))
-    (prn "You entered %s and %s!" multiplicand addend)
-    (format "%s" res))
-  (prn "Ta-da!"))
-
-;; expand it and enter 8 and 9:
-(message "96" nil)
