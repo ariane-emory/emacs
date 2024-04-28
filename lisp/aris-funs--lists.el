@@ -663,7 +663,7 @@ This is adapted from the version in Peter Norvig's book."
   "Non-destructively sort LST with `string<'."
   (sort (copy-sequence lst) #'string<))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (string<-sort '("a" "B" "A" "c" "b" "D" "e" "F"))
+(confirm that (sort-with-string< '("a" "B" "A" "c" "b" "D" "e" "F"))
   returns ("A" "B" "D" "F" "a" "b" "c" "e"))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
