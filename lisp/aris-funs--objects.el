@@ -552,8 +552,9 @@ Examples of mis-use:
   "t when OBJ implements the interface named INTERFACE-NAME."
   (when (a:is-object? obj)
     (let ((interface (get interface-name 'aos-interface)))
-      (cl-every (lambda (method) (responds-to? obj method))
-        interface))))
+      (when interface 
+        (cl-every (lambda (method) (responds-to? obj method))
+          interface)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:implements? 'account basic-acct) returns t)
 (confirm that (a:implements? 'account passwd-acct) returns t)
