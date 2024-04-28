@@ -59,8 +59,7 @@
            (or (null (cdr (second spec)))
              (integerp (cdr (second spec)))))
          (error "All SPECS must have the form (METHOD-NAME (MIN-ARGS . MAX-ARGS)): %S."
-           spec))
-       ))
+           spec))))
     (when (length= specs 0)
       (error "SPECS may not be empty."))
     (mapc #'valid-spec? specs)
@@ -99,7 +98,7 @@
     (deposit (1 . 1))
     (interest (0 . 0))
     (name (0))
-    (withdraw (1 . 1)))))
+    (withdraw (1 . 1))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

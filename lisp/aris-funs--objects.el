@@ -419,23 +419,83 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro a:definterface (name method-names)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Define an interface with NAME and METHOD-NAMES."
+;;   (unless (symbolp name)
+;;     (error "Interface name must be a symbol."))
+;;   (unless (cl-every #'symbolp method-names)
+;;     (error "All method names must be symbols."))
+;;   (let ((method-names (sort-with-string< method-names)))
+;;     `(setf (get ',name 'aos-interface) ',method-names)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (a:definterface account (balance deposit name interest withdraw))
+;;   returns (balance deposit interest name withdraw))
+;; (confirm that (a:definterface account (withdraw balance name deposit interest))
+;;   returns (balance deposit interest name withdraw))
+;; (confirm that (get 'account 'aos-interface) returns
+;;   (balance deposit interest name withdraw))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro a:definterface (name method-names)
+(defmacro a:definterface (name &rest specs)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Define an interface with NAME and METHOD-NAMES."
+  "Define an interface. SPECS take the form (METHOD-NAME (MIN-ARGS . MAX-ARGS))."
   (unless (symbolp name)
     (error "Interface name must be a symbol."))
-  (unless (cl-every #'symbolp method-names)
-    (error "All method names must be symbols."))
-  (let ((method-names (sort-with-string< method-names)))
-    `(setf (get ',name 'aos-interface) ',method-names)))
+  (cl-flet
+    ((valid-spec? (spec)
+       (unless
+         (and 
+           (proper-list-p spec)
+           (length= spec 2)
+           (consp (second spec))
+           (integerp (car (second spec)))
+           (or (null (cdr (second spec)))
+             (integerp (cdr (second spec)))))
+         (error "All SPECS must have the form (METHOD-NAME (MIN-ARGS . MAX-ARGS)): %S."
+           spec))))
+    (when (length= specs 0)
+      (error "SPECS may not be empty."))
+    (mapc #'valid-spec? specs)
+    (let ((specs (sort-symbol-keyed-alist specs)))
+      `(setf (get ',name 'aos-interface) ',specs))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:definterface account (balance deposit name interest withdraw))
-  returns (balance deposit interest name withdraw))
-(confirm that (a:definterface account (withdraw balance name deposit interest))
-  returns (balance deposit interest name withdraw))
-(confirm that (get 'account 'aos-interface) returns
-  (balance deposit interest name withdraw))
+(confirm that
+  (a:definterface account
+    (balance  (0 . 0))
+    (deposit  (1 . 1))
+    (name     (0 . nil))
+    (interest (0 . 0))
+    (withdraw (1 . 1)))
+  returns
+  ( (balance (0 . 0))
+    (deposit (1 . 1))
+    (interest (0 . 0))
+    (name (0))
+    (withdraw (1 . 1))))
+(confirm that
+  (a:definterface account
+    (deposit  (1 . 1))
+    (name     (0 . nil))
+    (balance  (0 . 0))
+    (withdraw (1 . 1))
+    (interest (0 . 0)))
+  returns
+  ( (balance (0 . 0))
+    (deposit (1 . 1))
+    (interest (0 . 0))
+    (name (0))
+    (withdraw (1 . 1))))
+(confirm that (get 'account 'aos-interface)
+  returns 
+  ( (balance (0 . 0))
+    (deposit (1 . 1))
+    (interest (0 . 0))
+    (name (0))
+    (withdraw (1 . 1))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
