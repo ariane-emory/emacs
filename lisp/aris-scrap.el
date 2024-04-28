@@ -76,6 +76,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:definterface generator (next each))
 (setf (get 'generator 'aos-interface) '(next each))
 
@@ -85,10 +86,5 @@
 (implements? foo 'generator)
 
 (symbol-plist 'foo)
-(aos-generic-fun
-  (closure
-    ((message . foo))
-    (object &rest args)
-    (apply #'a:send-message object message args)))
-
 (symbol-plist 'account)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
