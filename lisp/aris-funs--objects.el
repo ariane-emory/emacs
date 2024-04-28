@@ -79,7 +79,10 @@
                                (dolist (sig interface)
                                  (let ((mysig (signature self (car sig))))
                                    (prn "COMPARE IFACE's: %s" sig)
-                                   (prn "WITH MY: %s" mysig)
+                                   (prn "WITH MY:         %s" mysig)
+                                   (prn "COMPATIBLE:      %s"
+                                     (compatible-arg-counts? (second sig)
+                                       (second mysig)))
                                    ;; (cl-every (lambda (method)
                                    ;;             (responds-to? self method))
                                    ;;   interface)
@@ -696,3 +699,5 @@ Not too confident in this one yet!"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(implements? basic-acct 'account)
