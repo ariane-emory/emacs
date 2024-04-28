@@ -155,18 +155,41 @@
     (lambda ()
       "Transpose sexp ahead of point forwards."
       (interactive)
-      (forward-sexp 2)
-      (backward-sexp 1)
-      (transpose-sexps 1)
-      (backward-sexp 1)))
-  
+      (condition-case nil
+        (progn
+          (forward-sexp 2)
+          (backward-sexp 1)
+          (transpose-sexps 1)
+          (backward-sexp 1))
+        (scan-error (message "Can't transpose")))))
+
   ;; Transpose sexp backwards:
   ("C-M-t" . 
     (lambda ()
       "Transpose sexp ahead of point backwards."
       (interactive)
-      (transpose-sexps 1)
-      (backward-sexp 2)))
+      (condition-case nil
+        (progn
+          (transpose-sexps 1)
+          (backward-sexp 2))
+        (scan-error (message "Can't transpose")))))
+  ;; ;; Transpose sexp forwards:
+  ;; ("C-M-S-t" .
+  ;;   (lambda ()
+  ;;     "Transpose sexp ahead of point forwards."
+  ;;     (interactive)
+  ;;     (forward-sexp 2)
+  ;;     (backward-sexp 1)
+  ;;     (transpose-sexps 1)
+  ;;     (backward-sexp 1)))
+  
+  ;; ;; Transpose sexp backwards:
+  ;; ("C-M-t" . 
+  ;;   (lambda ()
+  ;;     "Transpose sexp ahead of point backwards."
+  ;;     (interactive)
+  ;;     (transpose-sexps 1)
+  ;;     (backward-sexp 2)))
   
   ;; Dump last key macro:
   ("C-x C-d" . aris-dump-key-macro)
