@@ -12,7 +12,7 @@
 ;; TODO:
 ;;  - private methods + interfaces preds = traits?
 ;;  - &get / &set / &getset.
-;;  - 'is' types, 'satisfies' types and 'implements types'.
+;;  - 'is' types, 'satisfies' types and 'implements types'?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -555,10 +555,22 @@ Examples of mis-use:
       (cl-every (lambda (method) (responds-to? obj method))
         interface))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:implements? 'account basic-acct)
-(a:implements? 'account passwd-acct)
-(a:implements? 'account limit-acct)
+(confirm that (a:implements? 'account basic-acct) returns t)
+(confirm that (a:implements? 'account passwd-acct) returns t)
+(confirm that (a:implements? 'account limit-acct) returns t)
+(confirm that (a:implements? 'nope limit-acct) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun a:satisfies? (obj first-pred &rest rest-preds)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "t when OBJ satisfies all of the predicates FIRST-PRED and REST-PREDS."
+;;   (when (a:is-object? obj)
+;;     (cl-every (lambda (pred) (funcall pred obj))
+;;       (cons first-pred rest-preds))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
