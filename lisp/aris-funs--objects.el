@@ -44,7 +44,7 @@
   "Keywords that can appear in `a:defclass' lambda list.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;; (sort-symbol-keyed-alist (cl-union '((a . 1) (b. 2) (c . 3)) '((c . 33) (d . 4)) :test (lambda (x y) (eq (car x) (car y)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,18 +52,20 @@
      (class-names  ()      (if-let ((par (parent self)))
                              (cons class-name (class-names par))
                              (list class-name)))
-     (method-names ()      (sort
-                             (copy-sequence
-                               (if-let ((par (parent self)))
-                                 (cl-union method-names (method-names par))
-                                 (mapcar #'first method-signatures)))
-                             #'string<))
-     (field-names  ()      (sort
-                             (copy-sequence
-                               (if-let ((par (parent self)))
-                                 (cl-union field-names (field-names par))
-                                 field-names))
-                             #'string<))
+     (method-names ()      (mapcar #'first (signatures self)))
+     (signature    (msg)   (or (assoc msg method-signatures)
+                             (when-let ((par (parent self)))
+                               (signature par msg))))     
+     (signatures   ()      (sort-symbol-keyed-alist
+                             (if-let ((par (parent self)))
+                               (cl-union method-signatures
+                                 (signatures par) :test
+                                 (lambda (x y) (eq (car x) (car y))))
+                               method-signatures)))
+     (field-names  ()      (sort-with-string<
+                             (if-let ((par (parent self)))
+                               (cl-union field-names (field-names par))
+                               field-names)))
      (implements?  (iface) (let ((interface (get iface 'aos-interface)))
                              (when interface 
                                (cl-every (lambda (method)
@@ -91,6 +93,9 @@
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; (signature passwd-acct 'withdraw)
+;; (signature passwd-acct 'balance))
+;; (mapcar (lambda (x) (signature passwd-acct x)) (method-names passwd-acct))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
@@ -148,7 +153,6 @@
       ;; `let' class variables:
       `(let ( (class-name        ',class)
               (field-names       ',.field-names)
-              ;; (method-names      ',method-names)
               (method-signatures ',method-signatures)
               ,@class-vars)
          ;; define generic functions for the methods:
@@ -421,7 +425,7 @@ trying to send a message to a non-object."
     (error "Interface name must be a symbol."))
   (unless (cl-every #'symbolp method-names)
     (error "All method names must be symbols."))
-  (let ((method-names (sort (copy-sequence method-names) #'string<)))
+  (let ((method-names (sort-with-string< method-names)))
     `(setf (get ',name 'aos-interface) ',method-names)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (a:definterface account (balance deposit name interest withdraw))
@@ -448,7 +452,31 @@ trying to send a message to a non-object."
 (confirm that (class-name basic-acct) returns basic-account) 
 (confirm that (method-names basic-acct) returns
   ( balance class-name class-names deposit field-names field-values implements?
-    interest is? method-names name parent prepr repr responds-to? strepr withdraw))
+    interest is? method-names name parent prepr repr responds-to? signature
+    signatures strepr withdraw))
+(confirm that (signatures basic-acct) returns
+  ((balance (0 . 0))
+    (class-name (0 . 0))
+    (class-names (0 . 0))
+    (deposit (1 . 1))
+    (field-names (0 . 0))
+    (field-values (0 . 0))
+    (implements? (1 . 1))
+    (interest (0 . 0))
+    (is? (1 . 1))
+    (method-names (0 . 0))
+    (name (0 . 0))
+    (parent (0 . 0))
+    (prepr (0 . 0))
+    (repr (0 . 0))
+    (responds-to? (1 . 1))
+    (signature (1 . 1))
+    (signatures (0 . 0))
+    (strepr (0 . 0))
+    (withdraw (1 . 1))))
+(confirm that (signature basic-acct 'withdraw) returns (withdraw (1 . 1)))
+(confirm that (signature basic-acct 'deposit) returns (deposit (1 . 1)))
+(confirm that (signature basic-acct 'balance) returns (balance (0 . 0)))
 (confirm that (responds-to? basic-acct 'withdraw) returns t)
 (confirm that (field-names basic-acct) returns (balance name))
 (confirm that (a:is? basic-acct 'basic-account) returns t)
@@ -496,7 +524,7 @@ trying to send a message to a non-object."
 (confirm that (method-names passwd-acct) returns
   ( balance change-password check-password class-name class-names deposit
     field-names field-values implements? interest is? method-names name parent
-    prepr repr responds-to? strepr withdraw))
+    prepr repr responds-to? signature signatures strepr withdraw))
 (confirm that (field-names passwd-acct) returns (acct balance name password))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
@@ -542,7 +570,7 @@ trying to send a message to a non-object."
 (confirm that (method-names limit-acct) returns 
   ( balance change-password check-password class-name class-names deposit
     field-names field-values implements? interest is? method-names name parent
-    prepr repr responds-to? strepr withdraw))
+    prepr repr responds-to? signature signatures strepr withdraw))
 (confirm that (field-names limit-acct) returns
   (acct balance limit name password))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
@@ -597,4 +625,3 @@ Not too confident in this one yet!"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
