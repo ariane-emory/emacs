@@ -397,7 +397,7 @@ Examples of mis-use:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account (name &optional (balance 0.00))
+(a:defclass basic-account (name &optional (balance 0.00))
   ((interest-rate .06))
   (withdraw (amt) (if (<= amt balance) (cl-decf balance amt) :INSUFFICIENT-FUNDS))
   (deposit  (amt) (cl-incf balance amt))
@@ -405,27 +405,28 @@ Examples of mis-use:
   (name     ()    name)
   (interest ()    (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:is-object? (setq acct (account "A. User" 2000.00))) returns t)
-(confirm that (class-name acct) returns account) 
-(confirm that (method-names acct) returns
+(confirm that (a:is-object? (setq basic-acct (basic-account "A. User" 2000.00)))
+  returns t)
+(confirm that (class-name basic-acct) returns basic-account) 
+(confirm that (method-names basic-acct) returns
   ( balance class-name class-names deposit field-names field-values interest is?
     method-names name parent prepr repr responds-to? strepr withdraw))
-(confirm that (responds-to? acct 'withdraw) returns t)
-(confirm that (field-names acct) returns (balance name))
-(confirm that (a:is? acct 'account) returns t)
-(confirm that (is? acct 'account) returns t)
-(confirm that (parent acct) returns nil)
-(confirm that (deposit acct 42.00) returns 2042.0)
-(confirm that (deposit acct 82.00) returns 2124.0)
-(confirm that (withdraw acct 200.00) returns 1924.0)
-(confirm that (balance acct) returns 1924.0)
-(confirm that (repr acct) returns
-  ((class . account)
+(confirm that (responds-to? basic-acct 'withdraw) returns t)
+(confirm that (field-names basic-acct) returns (balance name))
+(confirm that (a:is? basic-acct 'basic-account) returns t)
+(confirm that (is? basic-acct 'basic-account) returns t)
+(confirm that (parent basic-acct) returns nil)
+(confirm that (deposit basic-acct 42.00) returns 2042.0)
+(confirm that (deposit basic-acct 82.00) returns 2124.0)
+(confirm that (withdraw basic-acct 200.00) returns 1924.0)
+(confirm that (balance basic-acct) returns 1924.0)
+(confirm that (repr basic-acct) returns
+  ((class . basic-account)
     (balance . 1924.0)
     (name . "A. User")))
-(confirm that (strepr acct) returns
-  "((class . account)\n  (balance . 1924.0)\n  (name . \"A. User\"))")
-;; (makunbound 'acct)
+(confirm that (strepr basic-acct) returns
+  "((class . basic-account)\n  (balance . 1924.0)\n  (name . \"A. User\"))")
+;; (makunbound 'basic-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -445,10 +446,11 @@ Examples of mis-use:
 (confirm that
   (a:is-object?
     (setq passwd-acct
-      (account-with-password "secret" (account "A. User" 2000.00))))
+      (account-with-password "secret" (basic-account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
-(confirm that (class-names passwd-acct) returns (account-with-password account))
+(confirm that (class-names passwd-acct)
+  returns (account-with-password basic-account))
 (confirm that (responds-to? passwd-acct 'withdraw) returns t)
 (confirm that (responds-to? passwd-acct 'balance) returns t)
 (confirm that (method-names passwd-acct) returns
@@ -458,10 +460,10 @@ Examples of mis-use:
 (confirm that (field-names passwd-acct) returns (acct balance name password))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
-(confirm that (a:is? passwd-acct 'account) returns t)
-(confirm that (is? passwd-acct 'account) returns t)
+(confirm that (a:is? passwd-acct 'basic-account) returns t)
+(confirm that (is? passwd-acct 'basic-account) returns t)
 (confirm that (repr (parent passwd-acct))
-  returns ((class . account)
+  returns ((class . basic-account)
             (balance . 2000.0)
             (name . "A. User")))
 (confirm that (withdraw passwd-acct "guess" 2000.00) returns :WRONG-PASSWORD)
@@ -471,18 +473,18 @@ Examples of mis-use:
 (confirm that (repr passwd-acct) returns
   ((class . account-with-password)
     (acct
-      (class . account)
+      (class . basic-account)
       (balance . 500.0)
       (name . "A. User"))
     (password . "secret")))
 (confirm that (strepr passwd-acct) returns
-  "((class . account-with-password)\n  (acct\n    (class . account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
+  "((class . account-with-password)\n  (acct\n    (class . basic-account)\n    (balance . 500.0)\n    (name . \"A. User\"))\n  (password . \"secret\"))")
 ;; (makunbound 'passwd-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:defclass account-with-limit (limit &parent (acct account)) ()
+(a:defclass account-with-limit (limit &parent (acct basic-account)) ()
   (withdraw (amt)
     (if (> amt limit)
       :OVER-LIMIT
@@ -493,7 +495,7 @@ Examples of mis-use:
     (setq limit-acct
       (account-with-password "pass"
         (account-with-limit 100.00
-          (account "A. Thrifty Spender" 500.00)))))
+          (basic-account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (method-names limit-acct) returns 
@@ -504,10 +506,10 @@ Examples of mis-use:
   (acct balance limit name password))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
-(confirm that (is? limit-acct 'account) returns t)
+(confirm that (is? limit-acct 'basic-account) returns t)
 (confirm that (repr (parent limit-acct))
   returns ((class . account-with-limit)
-            (acct (class . account)
+            (acct (class . basic-account)
               (balance . 500.0) (name . "A. Thrifty Spender"))
             (limit . 100.0)))
 (confirm that (withdraw limit-acct "pass" 200.00) returns :OVER-LIMIT)
@@ -518,13 +520,13 @@ Examples of mis-use:
     (acct
       (class . account-with-limit)
       (acct
-        (class . account)
+        (class . basic-account)
         (balance . 480.0)
         (name . "A. Thrifty Spender"))
       (limit . 100.0))
     (password . "pass")))
 (confirm that (strepr limit-acct) returns
-  "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
+  "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . basic-account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
 ;; (makunbound 'limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -548,12 +550,12 @@ Examples of mis-use:
 (defun a:implements? (interface-name obj)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when OBJ implements the interface named INTERFACE-NAME."
-  (and (a:is-object? obj)
+  (when (a:is-object? obj)
     (let ((interface (get interface-name 'aos-interface)))
       (cl-every (lambda (method) (responds-to? obj method))
         interface))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(a:implements? 'account acct)
+(a:implements? 'account basic-acct)
 (a:implements? 'account passwd-acct)
 (a:implements? 'account limit-acct)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
