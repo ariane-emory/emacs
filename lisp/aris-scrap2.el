@@ -48,11 +48,16 @@
 (setq methods '((foo . :FOO) (delegate . :OTHERWISE) (bar . :BAR)))
 (setq methods '((foo . :FOO) (bar . :BAR)))
 
+(setq .parent-sym 'par)
+
 (let* ( (otherwise-assoc (or (assoc 'delegate methods) (assoc 'otherwise methods)))
         (methods (nconc
                    (sort-symbol-keyed-alist
                      (cl-remove-if (lambda (assoc) (eq (car assoc) (car otherwise-assoc)))
                        methods))
-                   (list (cons 'otherwise (cdr otherwise-assoc))))))
+                   (list (cons 'otherwise (if otherwise-assoc
+                                            (cdr otherwise-assoc)
+                                            `((otherwise (&rest args) (apply message ,.parent-sym args)))
+                                            ))))))
   methods)
 
