@@ -42,38 +42,99 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defun foo (bar &rest baz)
-  baz)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun count-args (arglist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Count the minimum and maximum arguments described by ARGLIST and
-return a pair of the form (MIN-ARGS . MAX-ARGS).
-
-This only handles those lambda list keywords native to Emacs Lisp,
-i.e. &optional and &rest."
-  (let ( (min-args 0)
-         (max-args 0)
-         (seen-optional nil)
-         (rest-arg nil))
-    (while-let ((popped (pop arglist)))
-      (cond
-        ((eq popped '&optional)
-          (setq seen-optional t))
-        ((eq popped '&rest)
-          (setq rest-arg t))
-        (seen-optional
-          (cl-incf max-args))
-        (rest-arg) ;; don't bother counting after &rest.
-        (t
-          (cl-incf min-args)
-          (cl-incf max-args))))
-    (cons min-args (if rest-arg nil max-args))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (count-args '(foo &optional bar &rest baz)) returns (1))
-(confirm that (count-args '(foo &optional bar baz)) returns (1 . 3))
-(confirm that (count-args '(foo bar &optional baz)) returns (2 . 3))
-(confirm that (count-args '(foo bar &optional baz &rest quux)) returns (2))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq methods '((balance nil balance)
+                 (class-name nil class-name)
+                 (class-names nil
+                   (if-let
+                     ((par
+                        (parent self)))
+                     (cons class-name
+                       (class-names par))
+                     (list class-name)))
+                 (deposit
+                   (amt)
+                   (cl-incf balance amt))
+                 (field-names nil
+                   (sort
+                     (copy-sequence
+                       (if-let
+                         ((par
+                            (parent self)))
+                         (cl-union field-names
+                           (field-names par))
+                         field-names))
+                     #'string<))
+                 (field-values nil
+                   (sort-symbol-keyed-alist
+                     (cl-pairlis field-names
+                       (list name balance))))
+                 (implements?
+                   (iface)
+                   (let
+                     ((interface
+                        (get iface 'aos-interface)))
+                     (when interface
+                       (cl-every
+                         (lambda
+                           (method)
+                           (responds-to? self method))
+                         interface))))
+                 (interest nil
+                   (cl-infc balance
+                     (* balance interest-rate)))
+                 (is?
+                   (class)
+                   (or
+                     (eq class class-name)
+                     (when-let
+                       ((par
+                          (parent self)))
+                       (is? par class))))
+                 (method-names nil
+                   (sort
+                     (copy-sequence
+                       (if-let
+                         ((par
+                            (parent self)))
+                         (cl-union method-names
+                           (method-names par))
+                         method-names))
+                     #'string<))
+                 (name nil name)
+                 (parent nil nil)
+                 (prepr nil
+                   (prn
+                     (strepr self)))
+                 (repr nil
+                   (cons
+                     (cons 'class
+                       (class-name self))
+                     (mapr
+                       (field-values self)
+                       (lambda
+                         (kvp)
+                         (let-kvp kvp
+                           (cons \.key
+                             (a:maybe-repr \.val)))))))
+                 (responds-to?
+                   (msg)
+                   (or
+                     (not
+                       (null
+                         (memq msg method-names)))
+                     (when-let
+                       ((par
+                          (parent self)))
+                       (responds-to? par msg))))
+                 (strepr nil
+                   (trim-trailing-whitespace
+                     (pp-to-string
+                       (repr self))))
+                 (withdraw
+                   (amt)
+                   (if
+                     (<= amt balance)
+                     (cl-decf balance amt)
+                     :INSUFFICIENT-FUNDS))))

@@ -107,17 +107,14 @@
                    (cl-pairlis field-names (list ,@.field-names)))))
             (parent-method
               `(parent () ,(if .parent-sym .parent-sym nil)))
-            ;; end of synthesized method(s).
+            ;; end of synthesized methods.
             (synthesized-methods (list field-values-method parent-method))
             ;; extract the otherwise method:
             (otherwise-assoc (or (assoc 'delegate user-methods)
                                (assoc 'otherwise user-methods)))
-            ;; remove the otherwise method, we'll tack it on at the end of the
+            ;; remove the otherwise method, we'll tack one onto the end of the
             ;; list later:
-            (user-methods (cl-remove-if
-                            (lambda (assoc)
-                              (eq (car assoc) (car otherwise-assoc)))
-                            user-methods))
+            (user-methods (cl-remove otherwise-assoc user-methods))
             (methods (append *a:universal-methods* synthesized-methods
                        user-methods))
             ;; sort methods by name:
