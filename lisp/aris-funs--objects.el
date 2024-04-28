@@ -7,6 +7,7 @@
 (require 'aris-funs--basic-preds)
 (require 'aris-funs--lists)
 (require 'aris-funs--strings)
+(require 'aris-funs--symbolicate)
 (require 'aris-funs--unsorted)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
@@ -64,7 +65,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let-alist (a:parse-defclass-args arglist)
-    (let* ( ;; synthesize this method so we can inject it into the `cl-defun'
+    (let* ( (constructor-name (symbolicate 'make class))
+            ;; synthesize this method so we can inject it into the `cl-defun'
             ;; in the expansion so that it can access the instance's arglist:
             (field-values-method
               `(field-values ()
@@ -104,7 +106,7 @@
            ;; define generic functions for the methods:
            (mapc #'a:ensure-generic-fun method-names)
            ;; define a constructor for the class:
-           (cl-defun ,class ,.arglist
+           (cl-defun ,constructor-name ,.arglist
              ,@parent-test
              (let (self)
                ;; bind SELF lexically so that the object can reference itself:
@@ -405,7 +407,8 @@ Examples of mis-use:
   (name     ()    name)
   (interest ()    (cl-infc balance (* balance interest-rate))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:is-object? (setq basic-acct (basic-account "A. User" 2000.00)))
+(confirm that
+  (a:is-object? (setq basic-acct (make-basic-account "A. User" 2000.00)))
   returns t)
 (confirm that (class-name basic-acct) returns basic-account) 
 (confirm that (method-names basic-acct) returns
@@ -446,7 +449,8 @@ Examples of mis-use:
 (confirm that
   (a:is-object?
     (setq passwd-acct
-      (account-with-password "secret" (basic-account "A. User" 2000.00))))
+      (make-account-with-password "secret"
+	(make-basic-account "A. User" 2000.00))))
   returns t)
 (confirm that (class-name passwd-acct) returns account-with-password)
 (confirm that (class-names passwd-acct)
@@ -493,9 +497,9 @@ Examples of mis-use:
 (confirm that
   (a:is-object?
     (setq limit-acct
-      (account-with-password "pass"
-        (account-with-limit 100.00
-          (basic-account "A. Thrifty Spender" 500.00)))))
+      (make-account-with-password "pass"
+        (make-account-with-limit 100.00
+          (make-basic-account "A. Thrifty Spender" 500.00)))))
   returns t)
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (method-names limit-acct) returns 

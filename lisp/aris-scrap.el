@@ -21,11 +21,11 @@
     (responds-to? val 'next)
     (responds-to? val 'each)))
 
-(let ((gen (up-to-gen 1 10 2)))
+(let ((gen (make-up-to-gen 1 10 2)))
   (while-let ((n (next gen)))
     (prn n)))
 
-(let ((g (up-to-gen 1 10 2)))
+(let ((g (make-up-to-gen 1 10 2)))
   (if (a:generator? g)
     (each g #'prn)
     (prn "Not a generator")))
@@ -42,32 +42,32 @@
 (a:defclass bazclass (num &parent (parent fooclass barclass) &rest things) ()
   (baz () (format "BAZ! %d" num)))
 
-(setq foo  (fooclass 8))
-(setq bar  (barclass 4 foo))
-(setq baz  (bazclass 7 foo))
-(setq baz2 (bazclass 6 bar))
+(setq foo  (make-fooclass 8))
+(setq bar  (make-barclass 4 foo))
+(setq baz  (make-bazclass 7 foo))
+(setq baz2 (make-bazclass 6 bar))
 ;; (setq bad-bar (barclass 9 baz)) ;; this shouldn't work.
 
-(foo (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "FOO! 2"
-(bar (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAR! 3"
-(baz (bazclass 5 (barclass 3 (fooclass 2)))) ;; => "BAZ! 5"
+(foo (make-bazclass 5 (make-barclass 3 (make-fooclass 2)))) ;; => "FOO! 2"
+(bar (make-bazclass 5 (make-barclass 3 (make-fooclass 2)))) ;; => "BAR! 3"
+(baz (make-bazclass 5 (make-barclass 3 (make-fooclass 2)))) ;; => "BAZ! 5"
 
-(field-names acct)
+(field-names basic-acct)
 (field-names passwd-acct)
 
-(setq acct (account "A. User" 2000.00))
-(field-values acct) ;; => ("A. User" 2000.0)
+(setq basic-acct (make-basic-account "A. User" 2000.00))
+(field-values basic-acct) ;; => ("A. User" 2000.0)
 
 (a:is-object? (alist-get 'acct (field-values passwd-acct)))
 
-(repr acct)
+(repr basic-acct)
 (repr passwd-acct)
 (repr limit-acct)
 
 (prepr limit-acct)
 (strepr limit-acct)
 
-(field-values acct)
+(field-values basic-acct)
 (field-values passwd-acct)
 
 (change-password passwd-acct "this" "that")
@@ -79,7 +79,7 @@
 
 (symbol-plist 'generator)
 
-(a:implements? 'generator (up-to-gen 1 10 2))
+(a:implements? 'generator (make-up-to-gen 1 10 2))
 (a:implements? 'generator foo)
 
 (symbol-plist 'foo)
