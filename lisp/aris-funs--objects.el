@@ -547,7 +547,7 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:implements? (interface-name obj)
+(defun a:implements? (obj interface-name)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when OBJ implements the interface named INTERFACE-NAME."
   (when (a:is-object? obj)
@@ -556,22 +556,27 @@ Examples of mis-use:
         (cl-every (lambda (method) (responds-to? obj method))
           interface)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:implements? 'account basic-acct) returns t)
-(confirm that (a:implements? 'account passwd-acct) returns t)
-(confirm that (a:implements? 'account limit-acct) returns t)
-(confirm that (a:implements? 'nope limit-acct) returns nil)
+(confirm that (a:implements? basic-acct 'account) returns t)
+(confirm that (a:implements? passwd-acct 'account) returns t)
+(confirm that (a:implements? limit-acct 'account) returns t)
+(confirm that (a:implements? limit-acct 'nope) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun a:satisfies? (obj first-pred &rest rest-preds)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "t when OBJ satisfies all of the predicates FIRST-PRED and REST-PREDS."
-;;   (when (a:is-object? obj)
-;;     (cl-every (lambda (pred) (funcall pred obj))
-;;       (cons first-pred rest-preds))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun a:satisfies? (thing pred-or-preds)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when THING satisfies all of the predicates in PRED-OR-PREDS.
 
+PRED-OR-PREDS may be a single predicate or a list of predicates."
+  (if (listp pred-or-preds)
+    (cl-every (lambda (pred) (funcall pred thing)) pred-or-preds)
+    (funcall pred-or-preds thing)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(a:satisfies? basic-acct #'a:is-object?)
+(a:satisfies? basic-acct '(a:is-object? (lambda (o) (a:is-object? o))))
+(a:satisfies? basic-acct '((lambda (o) (a:is-object? o))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
