@@ -52,7 +52,7 @@
      (class-names  ()      (if-let ((par (parent self)))
                              (cons class-name (class-names par))
                              (list class-name)))
-     (method-names ()      (mapcar #'first (signatures self)))
+     ;;-------------------------------------------------------------------------
      (signature    (msg)   (or (assoc msg method-signatures)
                              (when-let ((par (parent self)))
                                (signature par msg))))     
@@ -62,19 +62,26 @@
                                  (signatures par) :test
                                  (lambda (x y) (eq (car x) (car y))))
                                method-signatures)))
+     ;;-------------------------------------------------------------------------
+     (responds-to? (msg)   (not (null (signature self msg))))
+     ;;-------------------------------------------------------------------------
+     (method-names ()      (mapcar #'first (signatures self)))
+     ;;-------------------------------------------------------------------------
      (field-names  ()      (sort-with-string<
                              (if-let ((par (parent self)))
                                (cl-union field-names (field-names par))
                                field-names)))
+     ;;-------------------------------------------------------------------------
      (implements?  (iface) (let ((interface (get iface 'aos-interface)))
                              (when interface 
                                (cl-every (lambda (method)
                                            (responds-to? self method))
                                  interface))))
+     ;;-------------------------------------------------------------------------
      (is?          (class) (or (eq class class-name)
                              (when-let ((par (parent self)))
                                (is? par class))))
-     (responds-to? (msg)   (not (null (signature self msg))))
+     ;;-------------------------------------------------------------------------
      (prepr        ()      (prn (strepr self)))
      (strepr       ()      (trim-trailing-whitespace
                              (pp-to-string (repr self))))
@@ -83,6 +90,7 @@
                                (lambda (kvp)
                                  (let-kvp kvp
                                    (cons .key (a:maybe-repr .val))))))))
+  ;;----------------------------------------------------------------------------
   ;; Note that all objects also have a `field-values' and possibly a `parent'
   ;; method but, since they need to access instance variables, they are
   ;; synthesized in `defclass' in order to resolve them in the right lexical
@@ -90,9 +98,6 @@
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (signature passwd-acct 'withdraw)
-;; (signature passwd-acct 'balance))
-;; (mapcar (lambda (x) (signature passwd-acct x)) (method-names passwd-acct))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro a:defclass (class arglist class-vars &rest user-methods)

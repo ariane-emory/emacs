@@ -72,5 +72,42 @@ args."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compatible-arg-count-specs (pattern-arg-count-spec scrutinee-arg-count-spec)
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Determine whether SCRUTINEE-ARG-COUNT-SPEC is 'compatible' with
+PATTERN-ARG-COUNT-SPEC.
+
+SCRUTINEE-ARG-COUNT-SPEC and PATTERN-ARG-COUNT-SPEC are pairs of the form
+(MIN-ARGS . MAX-ARGS). MAX-ARGS may be nil to indicate 'no maximum number of args',
+(i.e., the spec describtes the argument count of an arglist with a &rest lambda
+list keyword in it).
+
+SCRUTINEE-ARG-COUNT-SPEC is considered 'compatible' with
+PATTERN-ARG-COUNT-SPEC when any arg count that would be valid for the pattern
+would also be valid for the scrutinee."
+  (cond
+    ;; if MINARGS doesn't match, they're not compatible:
+    ((not (= (car pattern-arg-count-spec) (car scrutinee-arg-count-spec))) nil)
+    ;; if scrutinee has no MAXARGS, they're compatible:
+    ((null (cdr scrutinee-arg-count-spec)) t)
+    ;; if pattern has a MAXARGS, scrutinees must be GTE:
+    ((and (cdr pattern-arg-count-spec)
+       (>= (cdr scrutinee-arg-count-spec) (cdr pattern-arg-count-spec)) t))
+    ;; otherwise they're not compatible:
+    (t nil)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (compatible-arg-count-specs '(1 . 3) '(1 . 3)) returns t)
+(confirm that (compatible-arg-count-specs '(1 . 3) '(1 . 4)) returns t)
+(confirm that (compatible-arg-count-specs '(1 . 4) '(1 . 3)) returns nil)
+(confirm that (compatible-arg-count-specs '(2 . 3) '(1 . 3)) returns nil)
+(confirm that (compatible-arg-count-specs '(1 . 3) '(2 . 3)) returns nil)
+(confirm that (compatible-arg-count-specs '(1 . nil) '(1 . 3)) returns nil)
+(confirm that (compatible-arg-count-specs '(1 . 3) '(1 . nil)) returns t)
+(confirm that (compatible-arg-count-specs '(2 . 3) '(2 . 5)) returns t)
+(confirm that (compatible-arg-count-specs '(2 . 5) '(2 . 3)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--arglists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
