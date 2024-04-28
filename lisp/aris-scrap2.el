@@ -7,7 +7,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (aos:definterface generator
-  ((next (0 . 0))
+  ( (next (0 . 0))
     (each (1 . 1))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (aos:defclass up-to-gen (from &optional to step) ()
@@ -17,15 +17,13 @@
                  (setq from next)
                  (throw 'stop nil)))))
   ;; should probably go in a parent class:
-  (each (f &optional y)
-    (let ((y (or y 0)))
-      (prn "Y: %s" y)
-      (while-let ((val (next self)))
-        (funcall f (+ y val))))))
+  (each (f)
+    (while-let ((val (next self)))
+      (funcall f val))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((g (make-up-to-gen 1 10 2)))
   (if (implements? g 'generator)
-    (each g #'prn 10)
+    (each g #'prn)
     (prn "Not a generator")))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (let ((gen (make-up-to-gen 1 10 2)))
