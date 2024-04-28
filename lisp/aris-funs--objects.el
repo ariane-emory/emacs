@@ -36,13 +36,15 @@
                                  (cl-union field-names (field-names par))
                                  field-names))
                              #'string<))
-     (implements?  (iface) (a:implements? self iface))
-     (is?          (class) (or
-                             (eq class class-name)
+     (implements?  (iface)   (let ((interface (get iface 'aos-interface)))
+                               (when interface 
+                                 (cl-every (lambda (method)
+                                             (responds-to? self method))
+                                   interface))))
+     (is?          (class) (or (eq class class-name)
                              (when-let ((par (parent self)))
                                (is? par class))))
-     (responds-to? (msg)   (or
-                             (not (null (memq msg method-names)))
+     (responds-to? (msg)   (or (not (null (memq msg method-names)))
                              (when-let ((par (parent self)))
                                (responds-to? par msg))))
      (prepr        ()      (prn (strepr self)))
@@ -413,20 +415,6 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:implements? (obj interface-name)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "t when OBJ implements the interface named INTERFACE-NAME."
-  (when (a:is-object? obj)
-    (let ((interface (get interface-name 'aos-interface)))
-      (when interface 
-        (cl-every (lambda (method) (responds-to? obj method))
-          interface)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tests further down
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:defclass basic-account (name &optional (balance 0.00))
@@ -448,7 +436,6 @@ Examples of mis-use:
 (confirm that (field-names basic-acct) returns (balance name))
 (confirm that (a:is? basic-acct 'basic-account) returns t)
 (confirm that (is? basic-acct 'basic-account) returns t)
-(confirm that (a:implements? basic-acct 'account) returns t)
 (confirm that (implements? basic-acct  'account) returns t)
 (confirm that (parent basic-acct) returns nil)
 (confirm that (deposit basic-acct 42.00) returns 2042.0)
@@ -498,7 +485,6 @@ Examples of mis-use:
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (a:is? passwd-acct 'basic-account) returns t)
 (confirm that (is? passwd-acct 'basic-account) returns t)
-(confirm that (a:implements? passwd-acct 'account) returns t)
 (confirm that (implements? passwd-acct 'account) returns t)
 (confirm that (repr (parent passwd-acct))
   returns ((class . basic-account)
@@ -545,9 +531,8 @@ Examples of mis-use:
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'basic-account) returns t)
-(confirm that (a:implements? limit-acct 'account) returns t)
-(confirm that (a:implements? limit-acct 'nope) returns nil)
 (confirm that (implements? limit-acct 'account) returns t)
+(confirm that (implements? limit-acct 'nope) returns nil)
 (confirm that (repr (parent limit-acct))
   returns ((class . account-with-limit)
             (acct (class . basic-account)
