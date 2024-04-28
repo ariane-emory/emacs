@@ -50,6 +50,11 @@
 (bar (make-bazclass 5 (make-barclass 3 (make-fooclass 2)))) ;; => "BAR! 3"
 (baz (make-bazclass 5 (make-barclass 3 (make-fooclass 2)))) ;; => "BAZ! 5"
 
+(class-names foo)
+(class-names bar)
+(class-names baz) ;; (bazclass fooclass) WHY ISN'T this (bazclass barclass fooclass)?
+
+
 (field-names basic-acct)
 (field-names passwd-acct)
 
