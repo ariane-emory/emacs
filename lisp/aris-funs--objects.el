@@ -3,6 +3,7 @@
 ;; Ari's lambda-based objects, inspired by Peter Norvig's book.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--aliases)
+(require 'aris-funs--arglists)
 (require 'aris-funs--alists)
 (require 'aris-funs--basic-preds)
 (require 'aris-funs--let-kvp)
