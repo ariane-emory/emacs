@@ -188,11 +188,7 @@ Examples of mis-use:
     (error "Malformed ARGLIST, &aux and &body are not supported."))
   (let ((alist (make-empty-alist arglist field-names
                  parent-sym parent-classes parent-is-optional)))
-    (alist-put! 'field-names alist
-      (mapcar (lambda (e) (or (car-safe e) e))
-        (cl-remove-if
-          (lambda (e) (memq e *a:defclass-lambda-list-keywords*))
-          arglist)))
+    (alist-put! 'field-names alist (arg-names arglist '(&parent)))
     (if (not (memq '&parent arglist))
       (alist-put! 'arglist alist arglist)
       (let (new-arglist-segment)
@@ -222,8 +218,8 @@ Examples of mis-use:
           (alist-put! 'parent-classes alist
             (when (not (symbol? popped)) (rest popped))))
         (alist-put! 'arglist alist
-          (nconc (reverse new-arglist-segment) arglist))
-        alist))))
+          (nconc (reverse new-arglist-segment) arglist))))
+    alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; case with untyped mandatory un-typed parent PAR first:
 (confirm that (a:parse-defclass-args '(&parent account password))
