@@ -22,9 +22,9 @@
 (defvar *a:cl-lambda-list-keywords*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '(&optional &key &rest)
-  ;; we're not concerned with &body and &aux for now, but in the future we
-  ;; should probably forbid them?
-  " CL's lambda list keywords excluding &aux.")
+  ;; we're not concerning ourselves with &body and &aux for now, but in the
+  ;; future we should probably forbid them.
+  " CL's lambda list keywords excluding &aux and &body.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -32,7 +32,7 @@
 (defvar *a:cl-lambda-list-keywords-other-than-&optional*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cl-remove '&optional *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a lambda list other than &optional and &aux.")
+  "Keywords that can appear in a lambda list other than &optional.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -82,10 +82,11 @@
          (mapr (field-values self)
            (lambda (kvp)
              (let-kvp kvp
-               (cons .key (a:maybe-repr .val)))))))
-  ;; Note that all objects also have a `field-values' method but, since it needs
-  ;; to access instance variables, it is synthesized in `defclass' in order to
-  ;; resolve them in the right lexical scope.
+               (cons .key (a:maybe-repr .val))))))))
+  ;; Note that all objects also have a `field-values' and possibly a `parent'
+  ;; method but, since they need to access instance variables, they are
+  ;; synthesized in `defclass' in order to resolve them in the right lexical
+  ;; scope.
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -96,8 +97,9 @@
   "Define a class for object-oriented programming."
   (let-alist (a:parse-defclass-args arglist)
     (let* ( (constructor-name (symbolicate 'make class))
-            ;; synthesize this method so we can inject it into the `cl-defun'
-            ;; in the expansion so that it can access the instance's arglist:
+            ;; synthesize these methods so we can inject them into the
+            ;; `cl-defun' in the expansion so that it can access the instance's
+            ;; arglist:
             (field-values-method
               `(field-values ()
                  (sort-symbol-keyed-alist
@@ -123,12 +125,12 @@
             (methods (if (null .parent-sym)
                        methods
                        ;; because .parent-sym, we need an 'otherwise' method:
-                       (nconc methods 
+                       (append methods
                          (list (cons 'otherwise
                                  (or
-                                   ;; either use supplied 'otherwise' method:
+                                   ;; either use a supplied 'otherwise' method:
                                    (cdr otherwise-assoc)
-                                   ;; or synthesize an 'otherwise' method:
+                                   ;; or synthesize one:
                                    `((&rest args)
                                       (apply message ,.parent-sym args))))))))
             (method-clauses (mapcar #'a:make-method-clause methods))
@@ -181,14 +183,14 @@ Examples of mis-use:
 (a:parse-defclass-args '(password &parent) ;; malformed ARGLIST, nothing after &parent.
 ;; malformed ARGLIST, &rest precedes &parent:
 (a:parse-defclass-args '(password &rest thing &parent acct))"
-  (when (memq '&aux arglist)
-    (error "Malformed ARGLIST, &aux is not supported."))
+  (when (or (memq '&aux arglist) (memq '&aux arglist))
+    (error "Malformed ARGLIST, &aux and &body are not supported."))
   (let ((alist (make-empty-alist arglist field-names
                  parent-sym parent-classes parent-is-optional)))
     (alist-put! 'field-names alist
-      (mapcar (lambda (x) (or (car-safe x) x))
+      (mapcar (lambda (e) (or (car-safe e) e))
         (cl-remove-if
-          (lambda (x) (memq x *a:defclass-lambda-list-keywords*))
+          (lambda (e) (memq e *a:defclass-lambda-list-keywords*))
           arglist)))
     (if (not (memq '&parent arglist))
       (alist-put! 'arglist alist arglist)

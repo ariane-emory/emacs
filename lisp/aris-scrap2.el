@@ -42,17 +42,38 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-kvp (kvp &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Let-bind the key and value of a KVP."
-  `(let ( (key  (car ,kvp))
-          (value (cdr ,kvp)))
-     ,@body))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (let-kvp '(a . 1) key) returns a)
-(confirm that (let-kvp '(a . 1) value) returns 1)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun foo (bar &rest baz)
+  baz)
 
-(let-kvp '(a . 1)
-  (prn "key: %s, value: %s" key value))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun count-args (arglist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Count the minimum and maximum arguments described by ARGLIST and
+return a pair of the form (MIN-ARGS . MAX-ARGS).
+
+This only handles those lambda list keywords native to Emacs Lisp,
+i.e. &optional and &rest."
+  (let ( (min-args 0)
+         (max-args 0)
+         (seen-optional nil)
+         (rest-arg nil))
+    (while-let ((popped (pop arglist)))
+      (cond
+        ((eq popped '&optional)
+          (setq seen-optional t))
+        ((eq popped '&rest)
+          (setq rest-arg t))
+        (seen-optional
+          (cl-incf max-args))
+        (rest-arg) ;; don't bother counting after &rest.
+        (t
+          (cl-incf min-args)
+          (cl-incf max-args))))
+    (cons min-args (if rest-arg nil max-args))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (count-args '(foo &optional bar &rest baz)) returns (1))
+(confirm that (count-args '(foo &optional bar baz)) returns (1 . 3))
+(confirm that (count-args '(foo bar &optional baz)) returns (2 . 3))
+(confirm that (count-args '(foo bar &optional baz &rest quux)) returns (2))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
