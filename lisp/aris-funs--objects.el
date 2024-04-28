@@ -74,18 +74,15 @@
      (is?          (class) (or (eq class class-name)
                              (when-let ((par (parent self)))
                                (is? par class))))
-     (responds-to? (msg)   (or (not (null (assoc msg method-signatures)))
-                             (when-let ((par (parent self)))
-                               (responds-to? par msg))))
+     (responds-to? (msg)   (not (null (signature self msg))))
      (prepr        ()      (prn (strepr self)))
-     (strepr       ()
-       (trim-trailing-whitespace (pp-to-string (repr self))))
-     (repr         ()
-       (cons (cons 'class (class-name self)) 
-         (mapr (field-values self)
-           (lambda (kvp)
-             (let-kvp kvp
-               (cons .key (a:maybe-repr .val))))))))
+     (strepr       ()      (trim-trailing-whitespace
+                             (pp-to-string (repr self))))
+     (repr         ()      (cons (cons 'class (class-name self)) 
+                             (mapr (field-values self)
+                               (lambda (kvp)
+                                 (let-kvp kvp
+                                   (cons .key (a:maybe-repr .val))))))))
   ;; Note that all objects also have a `field-values' and possibly a `parent'
   ;; method but, since they need to access instance variables, they are
   ;; synthesized in `defclass' in order to resolve them in the right lexical
