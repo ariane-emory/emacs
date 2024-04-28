@@ -6,40 +6,36 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dolist (thing '(1 2 ,3 4 ,@5 #'6 '7 `8))
-  (cond
-    ((eq 'quote (car-safe thing)) (prn "This one is kind of special: %s" (cadr thing)))
-    ((eq '\, (car-safe thing)) (prn "This one is special: %s" (cadr thing)))
-    ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" (cadr thing)))
-    ((eq 'function (car-safe thing)) (prn "This one is super special: %s" (cadr thing)))
-    ((eq '\` (car-safe thing)) (prn "This one is extra special: %s" (cadr thing)))
-    (t (prn "%s" thing))))
+(aos:definterface generator
+  ((next (0 . 0))
+    (each (1 . 1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(aos:defclass up-to-gen (from &optional to step) ()
+  (next () (catch 'stop
+             (let ((next (+ from step)))
+               (if (< next to)
+                 (setq from next)
+                 (throw 'stop nil)))))
+  ;; should probably go in a parent class:
+  (each (f &optional y)
+    (let ((y (or y 0)))
+      (prn "Y: %s" y)
+      (while-let ((val (next self)))
+        (funcall f (+ y val))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((g (make-up-to-gen 1 10 2)))
+  (if (implements? g 'generator)
+    (each g #'prn 10)
+    (prn "Not a generator")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (let ((gen (make-up-to-gen 1 10 2)))
+;;   (while-let ((n (next gen)))
+;;     (prn n)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Manually tweaked expansion with a private method:
+(symbol-plist 'generator)
+
+(implements? (make-up-to-gen 1 10 2) 'generator)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (let
-;;   ((interest-rate 0.06))
-;;   (a:ensure-generic-fn 'is?)
-;;   (mapcar #'a:ensure-generic-fn '(withdraw deposit balance name privcall interest))
-;;   (cl-defun account (name &optional (balance 0.0))
-;;     #'(lambda (message)
-;;         (cl-flet ((private-method () name))
-;;           (cl-case message
-;;             (is? #'(lambda (class) (eq class 'account)))
-;;             (withdraw #'(lambda (amt)
-;;                           (if (<= amt balance)
-;;                             (cl-decf balance amt)
-;;                             :INSUFFICIENT-FUNDS)))
-;;             (deposit #'(lambda (amt) (cl-incf balance amt)))
-;;             (balance #'(lambda nil balance))
-;;             (name #'(lambda nil name))
-;;             (privcall #'(lambda nil (private-method)))
-;;             (interest #'(lambda nil (cl-infc balance (* balance interest-rate)))))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
