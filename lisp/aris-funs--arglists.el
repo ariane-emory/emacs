@@ -16,20 +16,20 @@ args."
   (let ( (min-args 0)
          (max-args 0)
          (seen-optional nil)
-         (rest-arg nil))
+         (seen-rest nil))
     (while-let ((popped (pop arglist)))
       (cond
         ((eq popped '&optional)
           (setq seen-optional t))
         ((eq popped '&rest)
-          (setq rest-arg t))
-        (rest-arg)
+          (setq seen-rest t))
+        (seen-rest) ;; don't bother counting after &rest.
         (seen-optional
-          (cl-incf max-args)) ;; don't bother counting after &rest.
+          (cl-incf max-args)) 
         (t
           (cl-incf min-args)
           (cl-incf max-args))))
-    (cons min-args (if rest-arg nil max-args))))
+    (cons min-args (if seen-rest nil max-args))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (count-args '(foo &optional bar &rest baz)) returns (1))
 (confirm that (count-args '(foo &optional bar baz)) returns (1 . 3))
