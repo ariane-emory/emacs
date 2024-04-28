@@ -24,7 +24,7 @@
     (prn n)))
 
 (let ((g (make-up-to-gen 1 10 2)))
-  (if (a:implements? g 'generator)
+  (if (implements? g 'generator)
     (each g #'prn)
     (prn "Not a generator")))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,7 +81,14 @@
 
 (symbol-plist 'generator)
 
-(a:implements? 'generator (make-up-to-gen 1 10 2))
-(a:implements? 'generator foo)
+(implements? (make-up-to-gen 1 10 2) 'generator)
+(implements? foo 'generator)
 
 (symbol-plist 'foo)
+(aos-generic-fun
+  (closure
+    ((message . foo))
+    (object &rest args)
+    (apply #'a:send-message object message args)))
+
+(symbol-plist 'account)
