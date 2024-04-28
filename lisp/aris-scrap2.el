@@ -50,7 +50,9 @@
 (let* ( (otherwise-assoc (or (assoc 'delegate methods)
                            (assoc 'otherwise methods)))
         (methods (nconc
-                   (sort-symbol-keyed-alist (cl-remove-if (lambda (assoc) (eq (car assoc) 'otherwise)) al))
+                   (sort-symbol-keyed-alist
+                     (cl-remove-if (lambda (assoc) (eq (car assoc) (car otherwise-assoc)))
+                       methods))
                    (list (cons 'otherwise (cdr otherwise-assoc))))))
   methods)
 
