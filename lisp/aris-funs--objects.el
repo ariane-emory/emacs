@@ -5,6 +5,7 @@
 (require 'aris-funs--aliases)
 (require 'aris-funs--alists)
 (require 'aris-funs--basic-preds)
+(require 'aris-funs--let-kvp)
 (require 'aris-funs--lists)
 (require 'aris-funs--strings)
 (require 'aris-funs--symbolicate)
@@ -80,9 +81,8 @@
        (cons (cons 'class (class-name self)) 
          (mapr (field-values self)
            (lambda (kvp)
-             (let ( (key (car kvp))
-                    (val (cdr kvp)))
-               (cons key (a:maybe-repr val))))))))
+             (let-kvp kvp
+               (cons .key (a:maybe-repr .val)))))))
   ;; Note that all objects also have a `field-values' method but, since it needs
   ;; to access instance variables, it is synthesized in `defclass' in order to
   ;; resolve them in the right lexical scope.

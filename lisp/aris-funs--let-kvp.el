@@ -8,13 +8,13 @@
 (defmacro let-kvp (kvp &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Let-bind the key and value of a KVP."
-  `(let ( (key  (car ,kvp))
-          (val (cdr ,kvp)))
+  `(let ( (.key  (car ,kvp))
+          (.val (cdr ,kvp)))
      ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (let-kvp '(a . 1) key) returns a)
-(confirm that (let-kvp '(a . 1) val) returns 1)
-(confirm that (let-kvp '(b . 2) (format "%s: %s" key val)) returns "b: 2")
+(confirm that (let-kvp '(a . 1) .key) returns a)
+(confirm that (let-kvp '(a . 1) .val) returns 1)
+(confirm that (let-kvp '(b . 2) (format "%s: %s" .key .val)) returns "b: 2")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
