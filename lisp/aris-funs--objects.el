@@ -36,6 +36,7 @@
                                  (cl-union field-names (field-names par))
                                  field-names))
                              #'string<))
+     (implements?  (iface) (a:implements? self iface))
      (is?          (class) (or
                              (eq class class-name)
                              (when-let ((par (parent self)))
@@ -397,6 +398,35 @@ Examples of mis-use:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro a:definterface (name method-names)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Define an interface with NAME and METHOD-NAMES."
+  (unless (symbolp name)
+    (error "Interface name must be a symbol."))
+  (unless (cl-every #'symbolp method-names)
+    (error "All method names must be symbols."))
+  `(setf (get ',name 'aos-interface) ',method-names))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (a:definterface account (withdraw deposit balance name interest))
+  returns (withdraw deposit balance name interest))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun a:implements? (obj interface-name)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when OBJ implements the interface named INTERFACE-NAME."
+  (when (a:is-object? obj)
+    (let ((interface (get interface-name 'aos-interface)))
+      (when interface 
+        (cl-every (lambda (method) (responds-to? obj method))
+          interface)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tests further down
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (a:defclass basic-account (name &optional (balance 0.00))
@@ -412,12 +442,14 @@ Examples of mis-use:
   returns t)
 (confirm that (class-name basic-acct) returns basic-account) 
 (confirm that (method-names basic-acct) returns
-  ( balance class-name class-names deposit field-names field-values interest is?
-    method-names name parent prepr repr responds-to? strepr withdraw))
+  ( balance class-name class-names deposit field-names field-values implements?
+    interest is? method-names name parent prepr repr responds-to? strepr withdraw))
 (confirm that (responds-to? basic-acct 'withdraw) returns t)
 (confirm that (field-names basic-acct) returns (balance name))
 (confirm that (a:is? basic-acct 'basic-account) returns t)
 (confirm that (is? basic-acct 'basic-account) returns t)
+(confirm that (a:implements? basic-acct 'account) returns t)
+(confirm that (implements? basic-acct  'account) returns t)
 (confirm that (parent basic-acct) returns nil)
 (confirm that (deposit basic-acct 42.00) returns 2042.0)
 (confirm that (deposit basic-acct 82.00) returns 2124.0)
@@ -459,13 +491,15 @@ Examples of mis-use:
 (confirm that (responds-to? passwd-acct 'balance) returns t)
 (confirm that (method-names passwd-acct) returns
   ( balance change-password check-password class-name class-names deposit
-    field-names field-values interest is? method-names name parent prepr repr
-    responds-to? strepr withdraw))
+    field-names field-values implements? interest is? method-names name parent
+    prepr repr responds-to? strepr withdraw))
 (confirm that (field-names passwd-acct) returns (acct balance name password))
 (confirm that (a:is? passwd-acct 'account-with-password) returns t)
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (a:is? passwd-acct 'basic-account) returns t)
 (confirm that (is? passwd-acct 'basic-account) returns t)
+(confirm that (a:implements? passwd-acct 'account) returns t)
+(confirm that (implements? passwd-acct 'account) returns t)
 (confirm that (repr (parent passwd-acct))
   returns ((class . basic-account)
             (balance . 2000.0)
@@ -504,13 +538,16 @@ Examples of mis-use:
 (confirm that (class-name limit-acct) returns account-with-password)
 (confirm that (method-names limit-acct) returns 
   ( balance change-password check-password class-name class-names deposit
-    field-names field-values interest is? method-names name parent prepr repr
-    responds-to? strepr withdraw))
+    field-names field-values implements? interest is? method-names name parent
+    prepr repr responds-to? strepr withdraw))
 (confirm that (field-names limit-acct) returns
   (acct balance limit name password))
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'basic-account) returns t)
+(confirm that (a:implements? limit-acct 'account) returns t)
+(confirm that (a:implements? limit-acct 'nope) returns nil)
+(confirm that (implements? limit-acct 'account) returns t)
 (confirm that (repr (parent limit-acct))
   returns ((class . account-with-limit)
             (acct (class . basic-account)
@@ -532,38 +569,6 @@ Examples of mis-use:
 (confirm that (strepr limit-acct) returns
   "((class . account-with-password)\n  (acct\n    (class . account-with-limit)\n    (acct\n      (class . basic-account)\n      (balance . 480.0)\n      (name . \"A. Thrifty Spender\"))\n    (limit . 100.0))\n  (password . \"pass\"))")
 ;; (makunbound 'limit-acct)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro a:definterface (name method-names)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Define an interface with NAME and METHOD-NAMES."
-  (unless (symbolp name)
-    (error "Interface name must be a symbol."))
-  (unless (cl-every #'symbolp method-names)
-    (error "All method names must be symbols."))
-  `(setf (get ',name 'aos-interface) ',method-names))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:definterface account (withdraw deposit balance name interest))
-  returns (withdraw deposit balance name interest))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun a:implements? (obj interface-name)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "t when OBJ implements the interface named INTERFACE-NAME."
-  (when (a:is-object? obj)
-    (let ((interface (get interface-name 'aos-interface)))
-      (when interface 
-        (cl-every (lambda (method) (responds-to? obj method))
-          interface)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:implements? basic-acct 'account) returns t)
-(confirm that (a:implements? passwd-acct 'account) returns t)
-(confirm that (a:implements? limit-acct 'account) returns t)
-(confirm that (a:implements? limit-acct 'nope) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -590,5 +595,4 @@ Not too confident in this one yet!"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
