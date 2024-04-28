@@ -12,21 +12,19 @@
                (if (< next to)
                  (setq from next)
                  (throw 'stop nil)))))
+  ;; should probably go in a parent class:
   (each (f)
     (while-let ((val (next self)))
       (funcall f val))))
 
-(defun a:generator? (val)
-  (and (a:is-object? val)
-    (responds-to? val 'next)
-    (responds-to? val 'each)))
+(a:definterface generator (next each))
 
 (let ((gen (make-up-to-gen 1 10 2)))
   (while-let ((n (next gen)))
     (prn n)))
 
 (let ((g (make-up-to-gen 1 10 2)))
-  (if (a:generator? g)
+  (if (a:implements? g 'generator)
     (each g #'prn)
     (prn "Not a generator")))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
