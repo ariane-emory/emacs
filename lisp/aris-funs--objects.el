@@ -75,15 +75,15 @@
      ;;-------------------------------------------------------------------------------
      (implements?  (iface) (let ((interface (get iface 'aos:interface)))
                              (when interface
-                               (with-gensyms (implements-test)
-                                 (catch implements-test
+                               (with-gensyms (implements?-dolist)
+                                 (catch implements?-dolist
                                    (dolist (sig interface)
                                      (let ((mysig (signature self (car sig))))
                                        (unless
                                          (and mysig 
                                            (compatible-arg-counts? (second sig)
                                              (second mysig)))
-                                         (throw implements-test nil))))
+                                         (throw implements?-dolist nil))))
                                    t)))))
      ;;-------------------------------------------------------------------------------
      (is?          (class) (or (eq class class-name)
