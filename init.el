@@ -801,6 +801,7 @@
            aris-funs--confirm
            aris-funs--ignorebang
            aris-funs--interactive
+           aris-funs--let-kvp
            aris-funs--lists
            aris-funs--stacks
            aris-funs--alists
