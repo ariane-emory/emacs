@@ -53,6 +53,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(aos:definterface generator
+  ((next (0 . 0))
+    (each (1 . 1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (aos:defclass up-to-gen (from &optional to step) ()
   (next () (catch 'stop
              (let ((next (+ from step)))
@@ -60,22 +64,20 @@
                  (setq from next)
                  (throw 'stop nil)))))
   ;; should probably go in a parent class:
-  (each (f &optional g)
-    (while-let ((val (next self)))
-      (funcall f val))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(aos:definterface generator
-  (next (0 . 0))
-  (each (1 . 1)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((gen (make-up-to-gen 1 10 2)))
-  (while-let ((n (next gen)))
-    (prn n)))
+  (each (f &optional y)
+    (let ((y (or y 0)))
+      (prn "Y: %s" y)
+      (while-let ((val (next self)))
+        (funcall f (+ y val))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((g (make-up-to-gen 1 10 2)))
   (if (implements? g 'generator)
-    (each g #'prn)
+    (each g #'prn 10)
     (prn "Not a generator")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (let ((gen (make-up-to-gen 1 10 2)))
+;;   (while-let ((n (next gen)))
+;;     (prn n)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

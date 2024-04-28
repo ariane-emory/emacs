@@ -448,7 +448,7 @@ trying to send a message to a non-object."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro aos:definterface (name &rest specs)
+(defmacro aos:definterface (name specs)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define an interface. SPECS take the form (METHOD-NAME (MIN-ARGS . MAX-ARGS))."
   (unless (symbolp name)
@@ -474,11 +474,11 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (aos:definterface account
-    (balance  (0 . 0))
-    (deposit  (1 . 1))
-    (name     (0 . 0))
-    (interest (0 . 0))
-    (withdraw (1 . 1)))
+    ( (balance  (0 . 0))
+      (deposit  (1 . 1))
+      (name     (0 . 0))
+      (interest (0 . 0))
+      (withdraw (1 . 1))))
   returns
   ( (balance  (0 . 0))
     (deposit  (1 . 1))
@@ -487,11 +487,11 @@ trying to send a message to a non-object."
     (withdraw (1 . 1))))
 (confirm that
   (aos:definterface account
-    (deposit  (1 . 1))
-    (name     (0 . 0))
-    (balance  (0 . 0))
-    (withdraw (1 . 1))
-    (interest (0 . 0)))
+    ( (deposit  (1 . 1))
+      (name     (0 . 0))
+      (balance  (0 . 0))
+      (withdraw (1 . 1))
+      (interest (0 . 0))))
   returns
   ( (balance  (0 . 0))
     (deposit  (1 . 1))
