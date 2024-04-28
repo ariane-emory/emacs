@@ -198,4 +198,21 @@ Examples of mis-use:
 (let ((needle 'f))
   (member needle (cdr (member needle '(a b c d e f g h i j k l m n o p q r s t u f v w x y z))))) ;; (f v w x y z)
 
+(defun count>= (needle lst count)
+  "t when COUNT or more instances of NEEDLE are found in LST."
+  (prndiv)
+  (prn "needle: %s" needle)
+  (prn "lst:    %s" lst)
+  (prn "count:  %s" count)
+  (when (< count 0)
+    (error "COUNT must be a non-negative integer."))
+  (if (and (= count 0) lst)
+    t
+    (when (> count 0)
+      (debug)
+      (count>= needle (cdr (member needle lst)) (1- count)))))
+
+(count>= 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z) 1)
+(count>= 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z) 2) ;; t
+(count>= 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z) 3)c ;; nil
 
