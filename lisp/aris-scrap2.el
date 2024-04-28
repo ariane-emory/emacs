@@ -138,3 +138,26 @@
                      (<= amt balance)
                      (cl-decf balance amt)
                      :INSUFFICIENT-FUNDS))))
+
+
+(mapcar (lambda (method) (list (first method) (count-args (second method)))) methods)
+( (balance (0 . 0))
+  (class-name (0 . 0))
+  (class-names (0 . 0))
+  (deposit (1 . 1))
+  (field-names (0 . 0))
+  (field-values (0 . 0))
+  (implements? (1 . 1))
+  (interest (0 . 0))
+  (is? (1 . 1))
+  (method-names (0 . 0))
+  (name (0 . 0))
+  (parent (0 . 0))
+  (prepr (0 . 0))
+  (repr (0 . 0))
+  (responds-to? (1 . 1))
+  (strepr (0 . 0))
+  (withdraw (1 . 1)))
+
+
+

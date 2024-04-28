@@ -56,7 +56,7 @@
                              (copy-sequence
                                (if-let ((par (parent self)))
                                  (cl-union method-names (method-names par))
-                                 method-names))
+                                 (mapcar #'first method-signatures)))
                              #'string<))
      (field-names  ()      (sort
                              (copy-sequence
@@ -120,6 +120,9 @@
             ;; sort methods by name:
             (methods (sort-symbol-keyed-alist methods))
             (method-names (mapcar #'first methods))
+            (method-signatures
+              (mapcar (lambda (method) (list (first method) (count-args (second method))))
+                methods))
             (methods (if (null .parent-sym)
                        methods
                        ;; because .parent-sym, we need an 'otherwise' method:
@@ -143,9 +146,10 @@
                       (apply #'pp-things-to-string :or ',.parent-classes)
                       (a:maybe-repr ,.parent-sym)))))))
       ;; `let' class variables:
-      `(let ( (class-name   ',class)
-              (field-names  ',.field-names)
-              (method-names ',method-names)
+      `(let ( (class-name        ',class)
+              (field-names       ',.field-names)
+              (method-names      ',method-names)
+              (method-signatures ',method-signatures)
               ,@class-vars)
          ;; define generic functions for the methods:
          (mapc #'a:ensure-generic-fun method-names)
