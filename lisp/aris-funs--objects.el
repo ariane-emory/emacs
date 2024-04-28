@@ -72,7 +72,7 @@
      (is?          (class) (or (eq class class-name)
                              (when-let ((par (parent self)))
                                (is? par class))))
-     (responds-to? (msg)   (or (not (null (memq msg method-names)))
+     (responds-to? (msg)   (or (not (null (assoc msg method-signatures)))
                              (when-let ((par (parent self)))
                                (responds-to? par msg))))
      (prepr        ()      (prn (strepr self)))
@@ -148,11 +148,11 @@
       ;; `let' class variables:
       `(let ( (class-name        ',class)
               (field-names       ',.field-names)
-              (method-names      ',method-names)
+              ;; (method-names      ',method-names)
               (method-signatures ',method-signatures)
               ,@class-vars)
          ;; define generic functions for the methods:
-         (mapc #'a:ensure-generic-fun method-names)
+         (mapc #'a:ensure-generic-fun ',method-names)
          ;; define a constructor for the class:
          (cl-defun ,constructor-name ,.arglist
            ,@parent-test-expr
