@@ -50,13 +50,13 @@
      (class-names  ()      (if-let ((par (parent self)))
                              (cons class-name (class-names par))
                              (list class-name)))
-     (method-names ()      (cl-sort
+     (method-names ()      (sort
                              (copy-sequence
                                (if-let ((par (parent self)))
                                  (cl-union method-names (method-names par))
                                  method-names))
                              #'string<))
-     (field-names  ()      (cl-sort
+     (field-names  ()      (sort
                              (copy-sequence
                                (if-let ((par (parent self)))
                                  (cl-union field-names (field-names par))
@@ -406,10 +406,13 @@ trying to send a message to a non-object."
     (error "Interface name must be a symbol."))
   (unless (cl-every #'symbolp method-names)
     (error "All method names must be symbols."))
-  `(setf (get ',name 'aos-interface) ',method-names))
+  (let ((method-names (sort (copy-sequence method-names) #'string<)))
+    `(setf (get ',name 'aos-interface) ',method-names)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (a:definterface account (withdraw deposit balance name interest))
-  returns (withdraw deposit balance name interest))
+(confirm that (a:definterface account (balance deposit name interest withdraw))
+  returns (balance deposit interest name withdraw))
+(confirm that (a:definterface account (withdraw balance name deposit interest))
+  returns (balance deposit interest name withdraw))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
