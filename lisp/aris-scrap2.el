@@ -46,6 +46,7 @@
 
 (setq methods '((foo . :FOO) (otherwise . :OTHERWISE) (bar . :BAR)))
 (setq methods '((foo . :FOO) (delegate . :OTHERWISE) (bar . :BAR)))
+(setq methods '((foo . :FOO) (bar . :BAR)))
 
 (let* ( (otherwise-assoc (or (assoc 'delegate methods) (assoc 'otherwise methods)))
         (methods (nconc
