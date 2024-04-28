@@ -11,6 +11,7 @@
 (require 'aris-funs--strings)
 (require 'aris-funs--symbolicate)
 (require 'aris-funs--unsorted)
+(require 'aris-funs--with-gensyms)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - private methods + interfaces preds = traits?
@@ -73,20 +74,17 @@
                                field-names)))
      ;;-------------------------------------------------------------------------
      (implements?  (iface) (let ((interface (get iface 'aos-interface)))
-                             (prn "CHECKING INTERFACE:")
-                             (prn "%s" (pp-to-string interface))
                              (when interface
-                               (dolist (sig interface)
-                                 (let ((mysig (signature self (car sig))))
-                                   (prn "COMPARE IFACE's: %s" sig)
-                                   (prn "WITH MY:         %s" mysig)
-                                   (prn "COMPATIBLE:      %s"
-                                     (compatible-arg-counts? (second sig)
-                                       (second mysig)))
-                                   ;; (cl-every (lambda (method)
-                                   ;;             (responds-to? self method))
-                                   ;;   interface)
-                                   )))))
+                               (with-gensyms (implements-test)
+                                 (catch implements-test
+                                   (dolist (sig interface)
+                                     (let ((mysig (signature self (car sig))))
+                                       (unless
+                                         (and mysig 
+                                           (compatible-arg-counts? (second sig)
+                                             (second mysig)))
+                                         (throw implements-test nil))))
+                                   t)))))
      ;;-------------------------------------------------------------------------
      (is?          (class) (or (eq class class-name)
                              (when-let ((par (parent self)))
@@ -96,7 +94,7 @@
      (strepr       ()      (trim-trailing-whitespace
                              (pp-to-string (repr self))))
      (repr         ()      (cons (cons 'class (class-name self)) 
-                             (mapr (field-values self)
+                             (rmapcar (field-values self)
                                (lambda (kvp)
                                  (let-kvp kvp
                                    (cons .key (a:maybe-repr .val))))))))
@@ -108,7 +106,7 @@
   "Methods possessed by all objects in Ari's variant of Norvig-style objects.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-     
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro a:defclass (class arglist class-vars &rest user-methods)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -477,34 +475,34 @@ trying to send a message to a non-object."
   (a:definterface account
     (balance  (0 . 0))
     (deposit  (1 . 1))
-    (name     (0 . nil))
+    (name     (0 . 0))
     (interest (0 . 0))
     (withdraw (1 . 1)))
   returns
-  ( (balance (0 . 0))
-    (deposit (1 . 1))
+  ( (balance  (0 . 0))
+    (deposit  (1 . 1))
     (interest (0 . 0))
-    (name (0))
+    (name     (0 . 0))
     (withdraw (1 . 1))))
 (confirm that
   (a:definterface account
     (deposit  (1 . 1))
-    (name     (0 . nil))
+    (name     (0 . 0))
     (balance  (0 . 0))
     (withdraw (1 . 1))
     (interest (0 . 0)))
   returns
-  ( (balance (0 . 0))
-    (deposit (1 . 1))
+  ( (balance  (0 . 0))
+    (deposit  (1 . 1))
     (interest (0 . 0))
-    (name (0))
+    (name     (0 . 0))
     (withdraw (1 . 1))))
 (confirm that (get 'account 'aos-interface)
-  returns 
-  ( (balance (0 . 0))
-    (deposit (1 . 1))
+  returns
+  ((balance   (0 . 0))
+    (deposit  (1 . 1))
     (interest (0 . 0))
-    (name (0))
+    (name     (0 . 0))
     (withdraw (1 . 1))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -555,7 +553,7 @@ trying to send a message to a non-object."
 (confirm that (field-names basic-acct) returns (balance name))
 (confirm that (a:is? basic-acct 'basic-account) returns t)
 (confirm that (is? basic-acct 'basic-account) returns t)
-;; (confirm that (implements? basic-acct  'account) returns t)
+(confirm that (implements? basic-acct  'account) returns t)
 (confirm that (parent basic-acct) returns nil)
 (confirm that (deposit basic-acct 42.00) returns 2042.0)
 (confirm that (deposit basic-acct 82.00) returns 2124.0)
@@ -604,7 +602,7 @@ trying to send a message to a non-object."
 (confirm that (is? passwd-acct 'account-with-password) returns t)
 (confirm that (a:is? passwd-acct 'basic-account) returns t)
 (confirm that (is? passwd-acct 'basic-account) returns t)
-;; (confirm that (implements? passwd-acct 'account) returns t)
+(confirm that (implements? passwd-acct 'account) returns t)
 (confirm that (repr (parent passwd-acct))
   returns ((class . basic-account)
             (balance . 2000.0)
@@ -650,8 +648,8 @@ trying to send a message to a non-object."
 (confirm that (a:is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'account-with-password) returns t)
 (confirm that (is? limit-acct 'basic-account) returns t)
-;; (confirm that (implements? limit-acct 'account) returns t)
-;; (confirm that (implements? limit-acct 'nope) returns nil)
+(confirm that (implements? limit-acct 'account) returns t)
+(confirm that (implements? limit-acct 'nope) returns nil)
 (confirm that (repr (parent limit-acct))
   returns ((class . account-with-limit)
             (acct (class . basic-account)
@@ -699,5 +697,3 @@ Not too confident in this one yet!"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--objects)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(implements? basic-acct 'account)

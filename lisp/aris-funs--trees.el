@@ -47,7 +47,7 @@
 
 This version is slower than `transform-tree'."
   (if (listp tree)
-    (mapr tree
+    (rmapcar tree
       (lambda (item)
         (if (listp item)
           (transform-tree2 pred? fun item)

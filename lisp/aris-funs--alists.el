@@ -191,7 +191,7 @@ Examples:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "Not a proper list!"))
-  (mapr
+  (rmapcar
     alist
     (lambda (pair)
       (cond
@@ -240,7 +240,7 @@ Examples:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (proper-list-p alist)
     (error "Not a proper list!"))
-  (mapr
+  (rmapcar
     alist
     (lambda (pair)
       ;; (message "pair %s"pair)
