@@ -42,5 +42,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(assoc 'otherwise al)
 
+(setq methods '((foo . :FOO) (otherwise . :OTHERWISE) (bar . :BAR)))
+(setq methods '((foo . :FOO) (delegate . :OTHERWISE) (bar . :BAR)))
+
+(let* ( (otherwise-assoc (or (assoc 'delegate methods)
+                           (assoc 'otherwise methods)))
+        (methods (nconc
+                   (sort-symbol-keyed-alist (cl-remove-if (lambda (assoc) (eq (car assoc) 'otherwise)) al))
+                   (list (cons 'otherwise (cdr otherwise-assoc))))))
+  methods)
 
