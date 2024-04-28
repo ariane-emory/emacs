@@ -434,7 +434,7 @@ trying to send a message to a non-object."
   returns (balance deposit interest name withdraw))
 (confirm that (a:definterface account (withdraw balance name deposit interest))
   returns (balance deposit interest name withdraw))
-(confirm that (plist-get (symbol-plist 'account) 'aos-interface) returns
+(confirm that (get 'account 'aos-interface) returns
   (balance deposit interest name withdraw))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

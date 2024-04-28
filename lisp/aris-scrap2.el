@@ -43,13 +43,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (a:definterface account (balance deposit name interest withdraw))
-;;   returns (balance deposit interest name withdraw))
-;; (confirm that (a:definterface account (withdraw balance name deposit interest))
-;;   returns (balance deposit interest name withdraw))
-;; (confirm that (symbol-plist 'account) returns
-;;   (aos-interface (balance deposit interest name withdraw)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro a:definterface2 (name &rest specs)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define an interface. SPECS take the form (METHOD-NAME (MIN-ARGS . MAX-ARGS))."
@@ -68,14 +61,45 @@
          (error "All SPECS must have the form (METHOD-NAME (MIN-ARGS . MAX-ARGS)): %S."
            spec))
        ))
+    (when (length= specs 0)
+      (error "SPECS may not be empty."))
     (mapc #'valid-spec? specs)
     (let ((specs (sort-symbol-keyed-alist specs)))
       `(setf (get ',name 'aos-interface2) ',specs))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (a:definterface2 account
+    (balance  (0 . 0))
+    (deposit  (1 . 1))
+    (name     (0 . nil))
+    (interest (0 . 0))
+    (withdraw (1 . 1)))
+  returns
+  ( (balance (0 . 0))
+    (deposit (1 . 1))
+    (interest (0 . 0))
+    (name (0))
+    (withdraw (1 . 1))))
+(confirm that
+  (a:definterface2 account
+    (deposit  (1 . 1))
+    (name     (0 . nil))
+    (balance  (0 . 0))
+    (withdraw (1 . 1))
+    (interest (0 . 0)))
+  returns
+  ( (balance (0 . 0))
+    (deposit (1 . 1))
+    (interest (0 . 0))
+    (name (0))
+    (withdraw (1 . 1))))
+(confirm that (get 'account 'aos-interface2)
+  returns 
+  ( (balance (0 . 0))
+    (deposit (1 . 1))
+    (interest (0 . 0))
+    (name (0))
+    (withdraw (1 . 1)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(a:definterface2 account
-  (balance  (0 . 0))
-  (deposit  (1 . 1))
-  (name     (0 . nil))
-  (interest (0 . 0))
-  (withdraw (1 . 1)))
+
