@@ -572,7 +572,9 @@ Examples of mis-use:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when THING satisfies all of the predicates in PRED-OR-PREDS.
 
-PRED-OR-PREDS may be a single predicate or a list of predicates."
+PRED-OR-PREDS may be a single predicate or a list of predicates.
+
+Not too confident in this one yet!"
   (if (listp pred-or-preds)
     (cl-every (lambda (pred) (funcall pred thing)) pred-or-preds)
     (funcall pred-or-preds thing)))
@@ -580,6 +582,8 @@ PRED-OR-PREDS may be a single predicate or a list of predicates."
 (a:satisfies? basic-acct #'a:is-object?)
 (a:satisfies? basic-acct '(a:is-object? (lambda (o) (a:is-object? o))))
 (a:satisfies? basic-acct '((lambda (o) (a:is-object? o))))
+;; This should ideally work, but it doesn't right now:
+;; (a:satisfies? basic-acct '(lambda (o) (a:is-object? o))) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

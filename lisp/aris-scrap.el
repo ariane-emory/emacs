@@ -54,7 +54,6 @@
 (class-names bar)
 (class-names baz) ;; (bazclass fooclass) WHY ISN'T this (bazclass barclass fooclass)?
 
-
 (field-names basic-acct)
 (field-names passwd-acct)
 
