@@ -57,7 +57,7 @@
                        methods))
                    (list (cons 'otherwise (if otherwise-assoc
                                             (cdr otherwise-assoc)
-                                            `((otherwise (&rest args) (apply message ,.parent-sym args)))
+                                            `((&rest args) (apply message ,.parent-sym args))
                                             ))))))
   methods)
 

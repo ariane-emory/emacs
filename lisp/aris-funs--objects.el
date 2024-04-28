@@ -104,16 +104,23 @@
             (parent-method
               `(parent () ,(if .parent-sym .parent-sym nil)))
             ;; end of synthesized method(s).
-            (synthesized-methods `(,field-values-method ,parent-method))
-            (methods
-              (append *a:universal-methods*
-                synthesized-methods user-methods)))
-      (when-let ((method (assoc 'delegate methods)))
-        (setf (car method) 'otherwise))
-      (when (and .parent-sym (not (assoc 'otherwise methods)))
-        (nconc
-          methods
-          `((otherwise (&rest args) (apply message ,.parent-sym args)))))
+            (synthesized-methods (list field-values-method parent-method))
+            (otherwise-assoc (or (assoc 'delegate user-methods)
+                               (assoc 'otherwise user-methods)))
+            (user-methods (cl-remove-if
+                            (lambda (assoc)
+                              (eq (car assoc) (car otherwise-assoc)))
+                            user-methods))
+            (methods (append *a:universal-methods* synthesized-methods
+                       user-methods))
+            ;; sort by name and remove otherwise-assoc;
+            (methods (sort-symbol-keyed-alist methods))
+            (methods (nconc methods 
+                       (list (cons 'otherwise
+                               (if otherwise-assoc
+                                 (cdr otherwise-assoc)
+                                 `((&rest args)
+                                    (apply message ,.parent-sym args))))))))
       (let ( (method-names (cl-sort
                              (cl-remove 'otherwise (mapcar #'first methods))
                              #'string<))
