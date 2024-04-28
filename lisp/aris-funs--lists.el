@@ -614,5 +614,31 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun count>= (count needle lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return t when COUNT or more instances of NEEDLE are found in LST."
+  (when (< count 0) (error "COUNT must be a non-negative integer."))
+  (if (and (= count 0) lst)
+    t
+    (let ((lst (member needle lst)))
+      (when (and (> count 0) lst)
+        (count>= (1- count) needle (cdr lst))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (count>= 1 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z))
+  returns t)
+(confirm that
+  (count>= 2 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z))
+  returns t)
+(confirm that
+  (count>= 3 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z))
+  returns nil)
+(confirm that
+  (count>= 4 'f '(a b c d e f g h i j k l m n o p q r s t u f v w x y z))
+  returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--lists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

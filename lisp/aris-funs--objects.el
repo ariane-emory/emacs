@@ -17,33 +17,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:cl-lambda-list-keywords*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  '(&optional &key &rest)
-  ;; we're not concerned with &body for now, but in the future we should 
-  ;; probably forbid it?
-  "Keywords that can appear in a `defclass' lambda list, which are CL's lambda
-list keywords excluding &aux.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:cl-lambda-list-keywords-other-than-&optional*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-remove '&optional *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a lambda list other than &optional and &aux.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *a:defclass-lambda-list-keywords*
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cons '&parent *a:cl-lambda-list-keywords*)
-  "Keywords that can appear in a:defclass' lambda list.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *a:universal-methods*
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   '( (class-name   ()      class-name)
@@ -244,6 +217,33 @@ trying to send a message to a non-object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  '(&optional &key &rest)
+  ;; we're not concerned with &body for now, but in the future we should 
+  ;; probably forbid it?
+  " CL's lambda list keywords excluding &aux.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:cl-lambda-list-keywords-other-than-&optional*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cl-remove '&optional *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in a lambda list other than &optional and &aux.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *a:defclass-lambda-list-keywords*
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cons '&parent *a:cl-lambda-list-keywords*)
+  "Keywords that can appear in `a:defclass' lambda list.")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun a:parse-defclass-args (arglist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -304,65 +304,70 @@ Examples of mis-use:
           (nconc (reverse new-arglist-segment) arglist))
         alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; mandatory delegate and an &optional case:
+;; case with untyped mandatory un-typed parent PAR first:
+(confirm that (a:parse-defclass-args '(&parent account password))
+  returns ( (arglist account password)
+            (field-names account password)
+            (parent-sym . account)
+            (parent-classes)
+            (parent-is-optional)))
+;; case with mandatory untyped parent PAR and an &optional THING:
 (confirm that (a:parse-defclass-args '(password &parent par &optional thing))
   returns ( (arglist password par &optional thing)
             (field-names password par thing)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional)))
-;; typed parent first case:
+;; case with typed parent PAR first:
 (confirm that (a:parse-defclass-args '(&parent (par account) password))
   returns ( (arglist par password)
             (field-names par password)
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional)))
-;; typed parent with two classes first case:
-(confirm that (a:parse-defclass-args
-                '(&parent (par account account2) password))
+;; case with typed parent PAR with two class variants first:
+(confirm that (a:parse-defclass-args '(&parent (par account account2) password))
   returns ( (arglist par password)
             (field-names par password)
             (parent-sym . par)
             (parent-classes account account2)
             (parent-is-optional)))
-;; typed parent case:
+;; case with typed parent PAR:
 (confirm that (a:parse-defclass-args '(password &parent (par account)))
   returns ( (arglist password par)
             (field-names password par)
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional)))
-;; un-typed parent case:
+;; case with un-typed parent PAR:
 (confirm that (a:parse-defclass-args '(password &parent par))
   returns ( (arglist password par)
             (field-names password par)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional)))
-;; optional parent case case:
+;; case with optional parent PAR:
 (confirm that (a:parse-defclass-args '(password &optional thing &parent par))
   returns ( (arglist password &optional thing par)
             (field-names password thing par)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional . t)))
-;; optional parent case 2:
+;; case with optional parent PAR:
 (confirm that (a:parse-defclass-args '(password &optional &parent par thing))
   returns ( (arglist password &optional par thing)
             (field-names password par thing)
             (parent-sym . par)
             (parent-classes)
             (parent-is-optional . t)))
-;; optional parent case 3:
-(confirm that (a:parse-defclass-args
-                '(password &optional &parent (par account) thing))
+;; case with optional typed parent PAR:
+(confirm that (a:parse-defclass-args '(password &optional &parent (par account) thing))
   returns ( (arglist password &optional par thing)
             (field-names password par thing)
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional . t)))
-;; optional parent case 4:
+;; case with optional typed parent:
 (confirm that
   (a:parse-defclass-args
     '(password &optional (foo 5) &parent (par account) bar))
@@ -371,7 +376,7 @@ Examples of mis-use:
             (parent-sym . par)
             (parent-classes account)
             (parent-is-optional . t)))
-;; mandatory parent and an &rest case:
+;; case with mandatory parent PAR and a &rest THINGS:
 (confirm that
   (a:parse-defclass-args '(password &parent (par account) &rest things))
   returns ( (arglist password par &rest things)
