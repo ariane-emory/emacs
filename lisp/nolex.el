@@ -1,7 +1,7 @@
 (defun foo (pat target)
   "A very bad pattern matching fun."
-  (prn "pat:   %s" .key)
-  (prn "targ:  %s" .val)
+  (prn "pat:   %s" key)
+  (prn "targ:  %s" val)
   (let (alist)
     (while-let ( (pat-head  (pop pat))
                  (targ-head (pop targ))
