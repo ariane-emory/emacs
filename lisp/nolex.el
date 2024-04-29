@@ -31,10 +31,12 @@
   (catch 'matched
     (dolist (pair rules)
       (let ((pattern (car pair)) (out-pattern (cdr pair)))
-        (when-let-alist (ap:match pattern target)
+        (when-let ((alist (ap:match pattern target)))
           (prn
-            `( do ,(swap-sym .desig1) really ,.verb1 that ,(swap-sym .desig2)
-               ,.modal-verb ,.verb2 a ,.noun \?))
+            (ap:fill out-pattern alist)
+            ;; `( do ,(swap-sym .desig1) really ,.verb1 that ,(swap-sym .desig2)
+            ;;    ,.modal-verb ,.verb2 a ,.noun \?)
+            )
           (throw 'matched nil))
         ))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
