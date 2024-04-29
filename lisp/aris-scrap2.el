@@ -37,3 +37,6 @@
 
 (implements? (make-up-to-gen 1 10 2) 'generator)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(aos:implements? (make-up-to-gen 1 10 2) 'generator)
+(aos:implements? 7 'generator)
