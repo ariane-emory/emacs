@@ -10,7 +10,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ap:merge-2-alists (alist-1 alist-2)
+(defun ap::merge-2-alists (alist-1 alist-2)
   "Merge two alists into a single alist, maintaining their relative key order
  and signaling an eror upon encountering a duplicate key. Results are returned
 in reverse order."
@@ -38,12 +38,17 @@ in reverse order."
                    (targ-head (pop targ)))
         (cond
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
-            (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
+            (if (assoc (cadr pat-head) alist)
+              (error "duplicate key %s" (cadr pat-head))
+              (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
           ((proper-list-p pat-head) ; recurse and merge.
-            (setf alist (ap:merge-2-alists alist (ap:match pat-head targ-head))))
+            (setf alist (ap::merge-2-alists alist (ap:match pat-head targ-head))))
           ((equal pat-head targ-head)) ; do nothing.
           (t (throw 'no-match nil))))
       (unless (or pat targ) (nreverse alist)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
+;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
