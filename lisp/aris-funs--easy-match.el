@@ -11,17 +11,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ap:merge-2-alists (alist-1 alist-2)
-  "Merge two alists into a single alist, maintaining their key order and
-signaling an eror upon encountering a duplicate key."
+  "Merge two alists into a single alist, maintaining their relative key order
+ and signaling an eror upon encountering a duplicate key. Results are returned
+in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (prn "merge this: %s" alist-1)
+  (prn "and this:   %s" alist-2)
   (let ((alist (nreverse alist-1)))
-    (dolist (kvp alist-2 (nreverse alist))
+    (dolist (kvp alist-2 alist)
       (if (assoc (car kvp) alist-1)
         (error "duplicate key %s" (car kvp))
         (push kvp alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
-  returns ((a . 1) (b. 2) (c . 3) (d . 4) (e . 5)))
+  returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -37,7 +40,7 @@ signaling an eror upon encountering a duplicate key."
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
             (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
           ((proper-list-p pat-head) ; recurse and merge.
-            (setf alist (nreverse (ap:merge-2-alists alist (ap:match pat-head targ-head)))))
+            (setf alist (ap:merge-2-alists alist (ap:match pat-head targ-head))))
           ((equal pat-head targ-head)) ; do nothing.
           (t (throw 'no-match nil))))
       (unless (or pat targ) (nreverse alist)))))
