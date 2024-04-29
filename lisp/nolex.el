@@ -26,7 +26,7 @@
                (i suspect that you have never seen a zebra)))
     (catch 'matched
       (dolist (pattern patterns)
-        (when-let-alist (easy-match pattern target)
+        (when-let-alist (ap:match pattern target)
           (prn
             `( do ,(swap-sym .desig1) really ,.verb1 that ,(swap-sym .desig2)
                ,.modal-verb ,.verb2 a ,.noun \?))
