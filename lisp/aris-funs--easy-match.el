@@ -8,23 +8,38 @@
 (require 'aris-funs--when-let-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fill-pattern (pat alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (rmapcar pat
+    (lambda (thing)
+      (cond
+        ((if (eq '\, (car-safe thing))
+           (if-let ((kvp (assoc (cadr thing) alist)))
+             (let-kvp kvp
+               .val)
+             (error "var %s not found" (cadr thing)))))
+        (t thing)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun easy-match (pat targ)
+(fill-pattern '(x ,y z) '((y . 999)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun easy-match (pat targ)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A very rudimentary pattern matching fun."
-  (catch 'no-match
-    (let (alist)
-      (while-let ( (pat-head  (pop pat))
-                   (targ-head (pop targ)))
-        (cond
-          ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
-            (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
-          ((proper-list-p pat-head) ; recurse and merge.
-            (setf alist (merge-alists alist (easy-match pat-head targ-head))))
-          ((equal pat-head targ-head)) ; do nothing.
-          (t (throw 'no-match nil))))
-      (unless (or pat targ) (nreverse alist)))))
+      "A very rudimentary pattern matching fun."
+      (catch 'no-match
+        (let (alist)
+          (while-let ( (pat-head  (pop pat))
+                       (targ-head (pop targ)))
+            (cond
+              ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
+                (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
+              ((proper-list-p pat-head) ; recurse and merge.
+                (setf alist (merge-alists alist (easy-match pat-head targ-head))))
+              ((equal pat-head targ-head)) ; do nothing.
+              (t (throw 'no-match nil))))
+          (unless (or pat targ) (nreverse alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (easy-match
