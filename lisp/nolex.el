@@ -1,34 +1,16 @@
-(defun foo (x y)
-  (list x y))
-
-(cdr (symbol-function 'foo))  ;; ((x y) (list x y))
-(cddr (symbol-function 'foo)) ;; ((list x y))
-
-(fset 'poop (cons 'lambda (cdr (symbol-function 'foo))))
-
-(poop 'd 'e)
-
-
-(cl-defun foo (xxx (yyy zzz))
-  (list xxx yyy zzz))
-
-(defun foo
-  (xxx &rest --cl-rest--)
-  "\n\n(fn XXX (YYY ZZZ))"
-  (let*
-    ( (--cl-rest--
-        (if (= (length --cl-rest--) 1)
-          (car-safe --cl-rest--)
-          (signal 'wrong-number-of-arguments (list 'foo (length --cl-rest--)))))
-      (yyy
-        (if (= (length --cl-rest--) 2)
-          (pop --cl-rest--)
-          (signal 'wrong-number-of-arguments (list 'foo (length --cl-rest--)))))
-      (zzz (car-safe --cl-rest--)))
-    (cl-block foo
-      (list xxx yyy zzz))))
+(defmacro foo (pat target)
+  (let (alist)
+    (while pat
+      (let* ( (pat-head  (pop pat))
+              (targ-head (pop target))
+              (pat-head-is-var (eq '\, (car-safe pat-head))))
+        (prndiv)
+        (prn "phead: %s" pat-head)
+        (prn "thead: %s" targ-head)
+        (when pat-head-is-var
+          (alist-put! (cadr pat-head) alist targ-head))))
+    (prn "alist: %s" alist)
+    (quote alist)))
 
 
-(setq x 8)
-
-(foo 2 (list 3 x))
+(foo (1 ,y 3) (1 2 3))
