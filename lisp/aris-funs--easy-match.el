@@ -13,25 +13,18 @@
 (defun easy-match (pat targ)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching fun."
-  ;; (prndiv)
-  ;; (prn "pat:        %s" pat)
-  ;; (prn "targ:       %s" targ)
-  (let (alist)
-    (catch 'no-match
+  (catch 'no-match
+    (let (alist)
       (while-let ( (pat-head  (pop pat))
                    (targ-head (pop targ)))
-        ;; (prn "pat-head:   %s" pat-head)
-        ;; (prn "targ-head:  %s" targ-head)
         (cond
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
             (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
           ((proper-list-p pat-head) ; recurse and merge.
             (setf alist (merge-alists alist (easy-match pat-head targ-head))))
           ((equal pat-head targ-head)) ; do nothing.
-          (t (throw 'no-match nil)))))
-    (let ((res (unless (or pat targ) (nreverse alist))))
-      ;; (prn "res:   %s" res)
-      res)))
+          (t (throw 'no-match nil))))
+      (unless (or pat targ) (nreverse alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (easy-match
