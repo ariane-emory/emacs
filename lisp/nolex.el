@@ -1,16 +1,18 @@
 (defmacro foo (pat target)
   (let (alist)
-    (while pat
-      (let* ( (pat-head  (pop pat))
-              (targ-head (pop target))
-              (pat-head-is-var (eq '\, (car-safe pat-head))))
-        (prndiv)
-        (prn "phead: %s" pat-head)
-        (prn "thead: %s" targ-head)
-        (when pat-head-is-var
-          (alist-put! (cadr pat-head) alist targ-head))))
+    (prndiv)
     (prn "alist: %s" alist)
-    (quote alist)))
+    (while-let ( (pat-head  (pop pat))
+                 (targ-head (pop target))
+                 (_ (or (eq pat-head targ-head) (eq '\, (car-safe pat-head)))))
+      (when (eq '\, (car-safe pat-head))
+        (alist-put! (cadr pat-head) alist targ-head)))
+    `',(nreverse alist)))
 
+(prn "got: %s" (foo (hello ,you this is ,me) (hello bob this is kate)))
 
-(foo (1 ,y 3) (1 2 3))
+(prn "got: %s" (foo (hello ,you this is ,me) (this is some dumb junk)))
+
+(if-let ((alist (foo (i would like a ,thing) (i would like a smoke))))
+  (let-alist alist
+    `(you should have a ,.thing)))
