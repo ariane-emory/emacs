@@ -10,6 +10,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ap:merge-2-alists (alist-1 alist-2)
+  "Merge two alists into a single alist, maintaining their key order and
+signaling an eror upon encountering a duplicate key."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let ((alist (nreverse alist-1)))
+    (dolist (kvp alist-2 (nreverse alist))
+      (if (assoc (car kvp) alist-1)
+        (error "duplicate key %s" (car kvp))
+        (push kvp alist)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
+  returns ((a . 1) (b. 2) (c . 3) (d . 4) (e . 5)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ap:match (pat targ)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching fun."
@@ -21,15 +37,17 @@
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
             (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
           ((proper-list-p pat-head) ; recurse and merge.
-            (setf alist (merge-alists alist (ap:match pat-head targ-head))))
+            (setf alist (nreverse (ap:merge-2-alists alist (ap:match pat-head targ-head)))))
           ((equal pat-head targ-head)) ; do nothing.
           (t (throw 'no-match nil))))
       (unless (or pat targ) (nreverse alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (ap:match
     '(one (this that) (,two three (,four ,five) ,six))
-    '(one (this that) (2 three (4 5) 6)))
+    '(one (this that) (2 three (4 5) 6)))  
   returns ( (two . 2)
             (four . 4)
             (five . 5)
@@ -66,18 +84,22 @@
       (cond
         ((if (eq '\, (car-safe thing))
            (if-let ((kvp (assoc (cadr thing) alist)))
-             (let-kvp kvp
-               .val)
+             (cdr kvp)
              (error "var %s not found" (cadr thing)))))
-        ((proper-list-p thing) (fill-pattern thing alist))
+        ((proper-list-p thing) (ap:fill thing alist))
         (t thing)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (fill-pattern '(,w x ,y z) '((w . 666) (y . 999)))
+(confirm that (ap:fill '(,w x ,y z) '((w . 666) (y . 999)))
   returns (666 x 999 z))
-(confirm that (fill-pattern '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
+(confirm that (ap:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
   returns ((333 666) x 999 (999 999) z (333 666)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (fill-pattern '(a ,b (,c ,d)) (ap:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+(confirm that (ap:fill '(a ,b (,c ,d)) (ap:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+  returns (a 2 (3 4)))
+(confirm that (ap:fill '(a ,b (,c ,d))
+                (ap:match '(a ,b (,c ,d))
+                  (ap:fill '(a ,b (,c ,d))
+                    (ap:match '(a ,b (,c ,d))
+                      '(a 2 (3 4))))))
   returns (a 2 (3 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
