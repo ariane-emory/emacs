@@ -9,8 +9,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro if-let-alist (expr then &rest else)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "If the result of evaluating EXPR is a non-nil alist, bind with `let-alist'
-and execute THEN, otherwise execute ELSE."
+  "If the result of evaluating EXPR is non-nil, bind with `let-alist' and
+execute THEN, otherwise execute ELSE."
   (with-gensyms (alist-sym)
     `(if-let ((,alist-sym ,expr))
        (let-alist ,alist-sym ,then)
@@ -22,12 +22,21 @@ and execute THEN, otherwise execute ELSE."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro when-let-alist (expr &rest then)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "If the result of evaluating EXPR is a non-nil alist, bind with `let-alist'
+;; and execute THEN."
+;;   `(if-let-alist ,expr (progn ,@then)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro when-let-alist (expr &rest then)
+(defmacro when-let-alist (expr &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "If the result of evaluating EXPR is a non-nil alist, bind with `let-alist'
+  "When the result of evaluating EXPR is non-nil, bind it with `let-alist'
 and execute THEN."
-  `(if-let-alist ,expr (progn ,@then)))
+  (with-gensyms (alist-sym)
+    `(when-let ((,alist-sym ,expr))
+       (let-alist ,alist-sym
+         ,@body))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (when-let-alist (list (cons 'a 1) (cons 'b 2)) :BAR (list .a .b))
   returns (1 2))
