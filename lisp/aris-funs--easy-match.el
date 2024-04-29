@@ -4,6 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--confirm)
+(require 'aris-funs--lists)
 (require 'aris-funs--when-let-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -11,7 +12,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun easy-match (pat targ)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A rudimentary pattern matching fun."
+  "A very rudimentary pattern matching fun."
   ;; (prndiv)
   ;; (prn "pat:        %s" pat)
   ;; (prn "targ:       %s" targ)
@@ -41,27 +42,26 @@
             (five . 5)
             (six . 6)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
+(confirm that
+  (when-let-alist (easy-match
+                    '(i ,modal-verb ,verb a ,thing)
+                    '(i have (never seen) a (red car)))
+    (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
+  returns (Do you really believe that you have never seen a red car \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when-let-alist (easy-match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
-  (prndiv)
-  (prn (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?))))
+(confirm that
+  (when-let-alist (easy-match
+                    '(i ,verb that ,noun ,con ,thing)
+                    '(i think that dogs are dumb))
+    (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
+  returns (Why do you think that dogs are dumb \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dolist (pair
-          '( ((i ,modal-verb ,verb a ,thing) . (i would like a smoke))
-             ((i ,modal-verb ,verb a ,thing) . (i could have a smoke))
-             ((i ,modal-verb ,verb a ,thing) . (i have seen a ghost))
-             ((i ,modal-verb ,verb a ,thing) . (i have (never seen) a (red car)))))
-  (let-kvp pair
-    (prndiv)
-    (prn "pat:   %s" .key)
-    (prn "targ:  %s" .val)
-    (when-let-alist (easy-match .key .val)
-      (prn
-        (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?))))))
+(confirm that
+  (when-let-alist
+    (easy-match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
+    (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
+  returns (why do you think that you have never seen a red car \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
