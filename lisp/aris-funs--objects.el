@@ -199,7 +199,7 @@ Examples of mis-use:
 (aos:parse-defclass-args '(password &parent) ;; malformed ARGLIST, nothing after &parent.
 ;; malformed ARGLIST, &rest precedes &parent:
 (aos:parse-defclass-args '(password &rest thing &parent acct))"
-  (when (or (memq '&aux arglist) (memq '&aux arglist))
+  (when (or (memq '&aux arglist) (memq '&body arglist))
     (error "Malformed ARGLIST, &aux and &body are not supported."))
   (let ((alist (make-empty-alist arglist field-names
                  parent-sym parent-classes parent-is-optional)))
