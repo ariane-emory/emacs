@@ -1,18 +1,26 @@
-(defmacro foo (pat target)
+(defun foo (pat target)
   (let (alist)
-    (prndiv)
-    (prn "alist: %s" alist)
     (while-let ( (pat-head  (pop pat))
                  (targ-head (pop target))
-                 (_ (or (eq pat-head targ-head) (eq '\, (car-safe pat-head)))))
+                 (_ (or (equal pat-head targ-head) (eq '\, (car-safe pat-head)))))
       (when (eq '\, (car-safe pat-head))
-        (alist-put! (cadr pat-head) alist targ-head)))
-    `',(nreverse alist)))
+        (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
+    (unless (or pat target) (nreverse alist))))
 
-(prn "got: %s" (foo (hello ,you this is ,me) (hello bob this is kate)))
-
-(prn "got: %s" (foo (hello ,you this is ,me) (this is some dumb junk)))
-
-(if-let ((alist (foo (i would like a ,thing) (i would like a smoke))))
+(when-let ((alist (foo '(i ,blah ,verb a ,thing) '(i would like a smoke))))
   (let-alist alist
-    `(you should have a ,.thing)))
+    (prn `(why do you think that you ,.blah ,.verb a ,.thing \?))))
+
+(when-let ((alist (foo '(i ,blah ,verb a ,thing) '(i could have a smoke))))
+  (let-alist alist
+    (prn `(why do you think that you ,.blah ,.verb a ,.thing \?))))
+
+(when-let ((alist (foo '(i ,blah ,verb a ,thing) '(i have seen a ghost))))
+  (let-alist alist
+    (prn `(why do you think that you ,.blah ,.verb a ,.thing \?))))
+
+(when-let-alist (foo '(i ,blah ,verb a ,thing) '(i have (never seen) a (red car)))
+  (prn (flatten `(why do you think that you ,.blah ,.verb a ,.thing \?))))
+
+
+
