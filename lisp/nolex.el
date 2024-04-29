@@ -6,22 +6,22 @@
   (let ((res
           (cond
             ((assoc sym swap-syms) (cdr (assoc sym swap-syms)))
-            ((rassoc sym swap-syms) (cdr (rassoc sym swap-syms)))
+            ((rassoc sym swap-syms) (car (rassoc sym swap-syms)))
             (t sym))))
-    (prn "swap %s for %s" sym res)
+    ;; (prn "swap %s for %s" sym res)
     res))
-(swap-sym 'i)
-(swap-sym 'you)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((pattern '(i ,verb1 ,desig ,modal-verb ,verb2 a ,thing)))
+(prndiv)
+(let ((pattern '(,desig1 ,verb1 that ,desig2 ,modal-verb ,verb2 a ,noun)))
   (dolist (target
-            '( (i think i would like a smoke)
-               (i know i could have a smoke)
-               (i believe i have seen a ghost)
-               (i suspect you have (never seen) a (red car))))
-    ;; (prn "pattern: %s" pattern)
-    ;; (prn "target:  %s" target)
+            '( (i think that i would like a smoke)
+               (i think that you would like a smoke)
+               (i know that i could have a smoke)
+               (i believe that you have seen a ghost)
+               (you believe that i have seen a ghost)
+               (i suspect that you have (never seen) a (red car))))
     (when-let-alist (easy-match pattern target)
       (prn
-        (flatten `(do you really ,.verb1 that ,(swap-sym .desig) ,.modal-verb ,.verb2 a ,.thing \?))))))
+        (flatten `( do ,(swap-sym .desig1) really ,.verb1 that ,(swap-sym .desig2)
+                    ,.modal-verb ,.verb2 a ,.noun \?))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
