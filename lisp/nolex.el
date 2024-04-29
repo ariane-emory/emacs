@@ -13,7 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar rules
   '( ((,desig1 ,verb1 that ,desig2 ,modal-verb never ,verb2 a ,noun) .
-       ( do ,(swap-sym .desig1) really ,.verb1 that ,(swap-sym .desig2) ,.modal-verb ,.verb2 a ,.noun \?))
+       ( do ,desig1 really ,verb1 that ,desig2 ,modal-verb ,verb2 a ,noun \?))
      ;; (,desig1 ,verb1 that ,desig2 ,modal-verb ,verb2 a ,noun)
      ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -33,7 +33,10 @@
       (let ((pattern (car pair)) (out-pattern (cdr pair)))
         (when-let ((alist (ap:match pattern target)))
           (prn
-            (ap:fill out-pattern alist)
+            (ap:fill out-pattern (rmapcar alist (lambda (kvp)
+                                                  (prn "kvp %s" kvp)
+                                                  (cons (car kvp)
+                                                    (swap-sym (cdr kvp))))))
             ;; `( do ,(swap-sym .desig1) really ,.verb1 that ,(swap-sym .desig2)
             ;;    ,.modal-verb ,.verb2 a ,.noun \?)
             )
