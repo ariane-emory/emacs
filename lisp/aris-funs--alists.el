@@ -443,14 +443,14 @@ to achieve your preferred structure."
            (if (assoc (car pair) ,res)
              (alist-put! (car pair) ,res (cdr pair))
              (push pair ,res))))
-       (nreverse ,res))))
+       ,res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (merge-alists '((a . 1) (b. 2) (c . 3)) '((c . 33) (d . 4)) '((d . 44) (e . 5)))
-  returns ((a . 1) (b. 2) (c . 33) (d . 44) (e . 5)))
+  returns ((e . 5) (d . 44) (c . 33) (b. 2) (a . 1)))
 (confirm that
   (merge-alists '((a . 1) (b. 2) (c . 3)) '((c . 33) (d . 4)) nil '((d . 44) (e . 5)))
-  returns ((a . 1) (b. 2) (c . 33) (d . 44) (e . 5)))
+  returns ((e . 5) (d . 44) (c . 33) (b. 2) (a . 1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

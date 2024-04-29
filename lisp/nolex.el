@@ -1,22 +1,30 @@
 (defun foo (pat targ)
   "A very bad pattern matching fun."
   (prndiv)
-  (prn "pat:   %s" pat)
-  (prn "targ:  %s" targ)
+  (prn "pat:        %s" pat)
+  (prn "targ:       %s" targ)
   (let (alist)
-    (while-let ( (pat-head  (pop pat))
-                 (targ-head (pop targ))
-                 (_ (or (equal pat-head targ-head) (eq '\, (car-safe pat-head)))))
-      (when (eq '\, (car-safe pat-head)) ; pat-head is a variable
-        (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
+    (catch 'no-match
+      (while-let ( (pat-head  (pop pat))
+                   (targ-head (pop targ)))
+        (prn "pat-head:   %s" pat-head)
+        (prn "targ-head:  %s" targ-head)
+        (cond
+          ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
+            (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
+          ((proper-list-p pat-head) ; recurse and merge.
+            (setf alist
+              (merge-alists alist
+                (with-indentation (foo pat-head targ-head)))))
+          ((equal pat-head targ-head)) ; do nothing.
+          (t (throw 'no-match nil)))))
     (let ((res (unless (or pat targ) (nreverse alist))))
       (prn "res:   %s" res)
       res)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(foo '(one ,two ,three ,four) '(one 2 3 4))
-;;(foo '(one (,two ,three) ,four) '(1 (2 3) 4))
-
+;;(foo '(one ,two ,three ,four) '(one 2 3 4))
+(foo '(one (,two three (,four ,five) ,six)) '(one (2 three (4 5) 6)))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (when-let-alist (foo '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
