@@ -1,17 +1,23 @@
-(defun foo (pat target)
+(defun foo (pat targ)
   "A very bad pattern matching fun."
-  (prn "pat:   %s" key)
-  (prn "targ:  %s" val)
+  (prndiv)
+  (prn "pat:   %s" pat)
+  (prn "targ:  %s" targ)
   (let (alist)
     (while-let ( (pat-head  (pop pat))
                  (targ-head (pop targ))
                  (_ (or (equal pat-head targ-head) (eq '\, (car-safe pat-head)))))
       (when (eq '\, (car-safe pat-head)) ; pat-head is a variable
         (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
-    (unless (or pat targ) (nreverse alist))))
+    (let ((res (unless (or pat targ) (nreverse alist))))
+      (prn "res:   %s" res)
+      res)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(foo '(one ,two ,three ,four) '(1 2 3 4))
 (foo '(one (,two ,three) ,four) '(1 (2 3) 4))
+
+
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (when-let-alist (foo '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
 ;;   (prndiv)
