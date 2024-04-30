@@ -72,25 +72,31 @@
         (when-let ((alist (ap:match input-pattern input)))
           (when-let ((var-testses (third rule)))
             (prn "This rule has VAR-TESTSES: %s" var-testses)
-            (with-indentation
-              (dolist (var-tests var-testses)
-                (prn "var-tests: %s" var-tests)
-                (with-indentation
-                  (let* ( (var   (car var-tests))
-                          (tests (cdr var-tests))
-                          (value (alist-get var alist)))
-                    (prn "var:   %s" var)
-                    (prn "tests: %s" tests)
-                    (prn "value: %s" value)
-                    (with-indentation
-                      (dolist (test tests)
-                        (let ((test-result (not (null (funcall test value)))))
-                          (prn "test:   %s" test)
-                          (prn "result: %s" test-result)
-                          ))))))))
+            (run-var-tests alist var-testses))
           (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun run-var-tests (var-alist var-testses)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (with-indentation
+    (dolist (var-tests var-testses)
+      (prn "var-tests: %s" var-tests)
+      (with-indentation
+        (let* ( (var   (car var-tests))
+                (tests (cdr var-tests))
+                (value (alist-get var alist)))
+          (prn "var:   %s" var)
+          (prn "tests: %s" tests)
+          (prn "value: %s" value)
+          (with-indentation
+            (dolist (test tests)
+              (let ((test-result (not (null (funcall test value)))))
+                (prn "test:   %s" test)
+                (prn "result: %s" test-result)
+                ))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
