@@ -27,7 +27,7 @@
   :group 'pipe
   :type 'function)
 
-(defcustom *pipe--print-divider-fun* 'prndiv
+(defcustom *pipe:print-divider-fun* 'prndiv
   "The function to use to print dividers."
   :group 'pipe
   :type 'function)
@@ -87,8 +87,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe::prndiv ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *pipe--print-divider-fun*"
-  `(when *pipe:verbose* (ignore (funcall *pipe--print-divider-fun*))))
+  "Wrap *pipe:print-divider-fun*"
+  `(when *pipe:verbose* (ignore (funcall *pipe:print-divider-fun*))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
