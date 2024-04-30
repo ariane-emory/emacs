@@ -39,7 +39,7 @@ in reverse order."
   (prn "dont-care: %s" dont-care)
   (prn "ellipsis: %s" ellipsis)
   (let ( (no-match-tag-supplied (not (null no-match-tag)))
-         (no-match-tag (or no-match-tag (gensym))))
+         (no-match-tag (or no-match-tag (gensym "no-match-"))))
     (unless no-match-tag-supplied
       (prn "GENERATED %s" no-match-tag))
     (catch (if no-match-tag-supplied nil no-match-tag)
