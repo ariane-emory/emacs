@@ -17,7 +17,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pipe--verbose* nil
+(defcustom *pipe:verbose* nil
   "Whether the pipe operator should print verbose messages."
   :group 'pipe
   :type 'boolean)
@@ -80,7 +80,7 @@
 (defmacro pipe::prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe:print-fun*"
-  `(when *pipe--verbose* (ignore (funcall *pipe:print-fun* ,first ,@rest))))
+  `(when *pipe:verbose* (ignore (funcall *pipe:print-fun* ,first ,@rest))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -88,7 +88,7 @@
 (defmacro pipe::prndiv ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-divider-fun*"
-  `(when *pipe--verbose* (ignore (funcall *pipe--print-divider-fun*))))
+  `(when *pipe:verbose* (ignore (funcall *pipe--print-divider-fun*))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
