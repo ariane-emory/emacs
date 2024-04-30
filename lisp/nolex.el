@@ -43,7 +43,7 @@
   '( ( :input-pattern    (,subj ,bar ,baz)
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
        :var-preds        ((subj subject?))
-       :var-funs        ((subj swap-word)))
+       :var-funs         ((subj swap-word)))
      ;;-----------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
        :response-pattern (so just go ,verb a ,thing \!)
@@ -129,9 +129,7 @@
               (if (eq t .:input-pattern)
                 (throw result .:response-pattern) ; t matches any input.
                 (when-let ((var-alist (ap:match .:input-pattern input)))
-                  (when .:var-preds
-                    (let ((tests-result (run-var-tests var-alist .:var-preds)))
-                      (unless tests-result (throw continue nil))))
+                  (unless (run-var-tests var-alist .:var-preds) (throw continue nil))
                   (run-var-funs var-alist .:var-funs)
                   (throw result (ap:fill .:response-pattern var-alist)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
