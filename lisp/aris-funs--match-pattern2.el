@@ -10,7 +10,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *mp--use-new-pipe-macro* t
+(defcustom *mp:use-new-pipe-macro* t
   "Whether to use the new pipe macro or the old one."
   :group 'match-pattern
   :type 'boolean)
@@ -268,7 +268,7 @@ Examples:
 		                t)
 		              (print "Extracted match result %s." match-result)
                   ;; Temporarily accomodate use of both pipe macros:
-                  (if *mp--use-new-pipe-macro*
+                  (if *mp:use-new-pipe-macro*
                     (|> ((it match-result))
                       :(print "USING NEW PIPE.")
                       ;;(nreverse it)
@@ -309,25 +309,25 @@ Examples:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
-    (let ( (*mp--use-new-pipe-macro* t)
+    (let ( (*mp:use-new-pipe-macro* t)
            (*mp--verbose* t)
            (*mp--merge-duplicate-alist-keys* nil)
            (*mp--use-dotted-pairs-in-result* nil))
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
     
-    (let ( (*mp--use-new-pipe-macro* nil)
+    (let ( (*mp:use-new-pipe-macro* nil)
            (*mp--verbose* t)
            (*mp--merge-duplicate-alist-keys* nil)
            (*mp--use-dotted-pairs-in-result* nil))
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
-    (let ( (*mp--use-new-pipe-macro* t)
+    (let ( (*mp:use-new-pipe-macro* t)
            (*mp--verbose* t)
            (*mp--merge-duplicate-alist-keys* t)
            (*mp--use-dotted-pairs-in-result* nil))
       (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
     
-    (let ( (*mp--use-new-pipe-macro* nil)
+    (let ( (*mp:use-new-pipe-macro* nil)
            (*mp--verbose* t)
            (*mp--merge-duplicate-alist-keys* t)
            (*mp--use-dotted-pairs-in-result* nil))
