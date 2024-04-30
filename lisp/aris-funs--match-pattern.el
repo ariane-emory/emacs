@@ -68,7 +68,7 @@ is an invalid element."
   :group 'match-pattern
   :type 'symbol)
 
-(defcustom *mp--merge-duplicate-alist-keys* t
+(defcustom *mp:merge-duplicate-alist-keys* t
   "Whether `match-pattern' should merge the values of duplicate keys in the result alist."
   :group 'match-pattern
   :type 'boolean)
@@ -84,7 +84,7 @@ elements."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *mp--use-dotted-pairs-in-result* t
+(defcustom *mp:use-dotted-pairs-in-result* t
   "Whether `match-pattern' should use dotted pairs in the result alist."
   :group 'match-pattern
   :type 'boolean)
@@ -128,7 +128,7 @@ Examples:
   (`mp--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
-  (setq `*mp--use-dotted-pairs-in-result*' nil)
+  (setq `*mp:use-dotted-pairs-in-result*' nil)
 
   (`mp--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
@@ -363,11 +363,11 @@ Examples:
 		              (print "Extracted match result %s." match-result)
 		              (nreverse
                     (let ((match-result
-			                      (if *mp--merge-duplicate-alist-keys*
+			                      (if *mp:merge-duplicate-alist-keys*
 			                        (merge-duplicate-alist-keys match-result)
 			                        match-result)))
 		                  (print "Post-merge match result %s." match-result)
-		                  (if *mp--use-dotted-pairs-in-result*
+		                  (if *mp:use-dotted-pairs-in-result*
 		                    (add-dots-to-alist match-result)
 		                    match-result))))))))))))
                         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -385,7 +385,7 @@ Examples:
   (progn
     (let ((*mp:verbose* t))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      (let ((*mp--use-dotted-pairs-in-result* t))
+      (let ((*mp:use-dotted-pairs-in-result* t))
 
         (mp--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
         ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
@@ -394,7 +394,7 @@ Examples:
         ;; ⇒ t
         )
 
-      (let ((*mp--use-dotted-pairs-in-result* nil))
+      (let ((*mp:use-dotted-pairs-in-result* nil))
         (mp--match '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
         ;; ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
