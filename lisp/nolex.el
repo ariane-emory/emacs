@@ -34,7 +34,7 @@
   '( :input-pattern    
      :response-pattern 
      :var-funs
-     :var-preds))
+     :var-tests))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -42,12 +42,12 @@
 (defvar *rules*
   '( ( :input-pattern    (,subj ,bar ,baz)
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-       :var-preds        ((subj subject?))
+       :var-tests        ((subj subject?))
        :var-funs         ((subj swap-word)))
      ;;-----------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
        :response-pattern (so just go ,verb a ,thing \!)
-       :var-preds        ((subj subject?)))
+       :var-tests        ((subj subject?)))
      ;;-----------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
        :response-pattern (,subj ,modal-verb ,verb a ,thing \!)
@@ -92,32 +92,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun fill-in-missing-rule-keys (rule)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (fill-in-missing-rule-keys
-    '( :input-pattern (,subj ,bar ,baz)
-       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
-  returns ( (:var-preds)
-            (:var-funs)
-            (:input-pattern (\, subj) (\, bar) (\, baz))
-            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-rule (rule &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-rule-keys ,rule)
-     ,@body))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun run-var-tests (var-alist var-testses)
+(defun run-var-tests (var-testses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (if (null var-testses)
     t
@@ -127,35 +102,58 @@
           (with-indentation
             (while-let ( (var-tests (pop var-testses))
                          (var   (car var-tests))
-                         (value (alist-get var var-alist))
-                         (tests (cdr var-tests)))
+                         (tests (cdr var-tests))
+                         (value (alist-get var var-alist)))
               (with-indentation
                 (dolist (test tests)
-                  (let ((test-result (not (null (funcall test value)))))
-                    (unless test-result
-                      (throw my-result nil)))))))
+                  (unless (funcall test value)
+                    (throw my-result nil))))))
           t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?)))
+(confirm that (run-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
   returns t)
-(confirm that (run-var-tests '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
+(confirm that (run-var-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun run-var-funs (var-alist var-funses)
+(defun run-var-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (dolist (var-funs var-funses)
     (let* ( (var   (car var-funs))
-            (value (alist-get var var-alist))
-            (funs (cdr var-funs)))
+            (funs  (cdr var-funs))
+            (assoc (assoc var var-alist)))
       (dolist (fun funs)
-        (alist-put! var var-alist (funcall fun value)))))
+        (setf (cdr assoc) (funcall fun (cdr assoc))))))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-funs '((subj . i) (subj-2 . you) (baz . you)) '((subj swap-word) (subj-2 swap-word)))
+(confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word)) '((subj . i) (subj-2 . you) (baz . you)))
   returns ((subj . you) (subj-2 . i) (baz . you)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fill-in-missing-rule-keys (rule)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (fill-in-missing-rule-keys
+    '( :input-pattern (,subj ,bar ,baz)
+       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
+  returns ( (:var-tests)
+            (:var-funs)
+            (:input-pattern (\, subj) (\, bar) (\, baz))
+            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro let-rule (rule &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let-alist (fill-in-missing-rule-keys ,rule)
+     ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -170,10 +168,11 @@
           (with-indentation
             (catch continue
               (if (eq t .:input-pattern)
-                (throw result .:response-pattern) ; t matches any input.
+                                        ; t matches any input and throws it's .:RESPONSE-PATTERN:
+                (throw result .:response-pattern)
                 (when-let ((var-alist (ap:match .:input-pattern input)))
-                  (unless (run-var-tests var-alist .:var-preds) (throw continue nil))
-                  (run-var-funs var-alist .:var-funs)
+                  (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
+                  (run-var-funs .:var-funs var-alist)
                   (throw result (ap:fill .:response-pattern var-alist)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
