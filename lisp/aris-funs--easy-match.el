@@ -32,6 +32,9 @@ in reverse order."
 (defun ap:match (pat targ)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching fun."
+  (prndiv)
+  (prn "START:")
+  (prndiv)
   (catch 'no-match
     (let (alist)
       (while-let ( (pat-head  (pop pat))
@@ -53,9 +56,18 @@ in reverse order."
                           (with-indentation (ap:match pat-head targ-head)))))
           ((equal pat-head targ-head)) ; do nothing.
           (t (throw 'no-match nil))))
-      ;; (prn "pat:  %s" pat)
-      ;; (prn "targ: %s" targ)
-      (unless (or pat targ) (nreverse alist)))))
+      (prndiv)
+      (prn "FINAL STATE:")
+      (prndiv)
+      (prn "alist:     %S" alist)
+      ;;(prn "pat-head:  %S" pat-head)
+      (prn "pat:       %S" pat)
+      ;;(prn "targ-head: %S" targ-head)
+      (prn "targ:      %S" targ)
+      (when (not (or pat targ)) (nreverse alist))
+      )))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ap:match '(,a ,b ,c \!) '(1 2 3)) ;; ((a . 1) (b . 2) (c . 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
@@ -125,3 +137,5 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--easy-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
