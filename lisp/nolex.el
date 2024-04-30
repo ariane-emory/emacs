@@ -10,7 +10,8 @@
   '( ( (,desig1 ,verb1 that ,desig2 ,modal-verb never ,verb2 a ,noun) .
        ( do ,desig1 really ,verb1 that ,desig2 ,modal-verb never ,verb2 a ,noun \?))
      ( (,desig1 ,verb1 that ,desig2 ,modal-verb ,verb2 a ,noun) .
-       ( do ,desig1 really ,verb1 that ,desig2 ,modal-verb  ,verb2 a ,noun \?))))
+       ( do ,desig1 really ,verb1 that ,desig2 ,modal-verb  ,verb2 a ,noun \?))
+     ( t . (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -31,17 +32,17 @@
   "Transform INPUT according to *RULES*, returning nil if none match."
   (prndiv)
   (prn "target: %s" target)
-  (if-let ((res
-             (catch 'result
-               (dolist (pair *rules*)
-                 (let ((pattern (car pair)) (out-pattern (cdr pair)))
-                   ;;(prn "try pat: %s" pattern)
-                   (when-let ((alist (ap:match pattern target)))
-                     (throw 'result
-                       (ap:fill out-pattern
-                         (mapcdar #'swap-word alist)))))))))
-    res
-    '(i don\'t understand \!)))
+  (catch 'result
+    (dolist (pair *rules*)
+      (let ((pattern (car pair)) (out-pattern (cdr pair)))
+        ;; (prn "pattern: %s" pattern)
+        (if (eq pattern t)
+          (throw 'result out-pattern)
+          ;;(prn "try pat: %s" pattern)
+          (when-let ((alist (ap:match pattern target)))
+            (throw 'result
+              (ap:fill out-pattern
+                (mapcdar #'swap-word alist)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
