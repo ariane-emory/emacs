@@ -270,6 +270,9 @@
   (interactive)
   (with-current-buffer "*Messages*"
     (erase-buffer))
+  (with-current-buffer "*Warnings*"
+    (read-only-mode -1)
+    (erase-buffer))
   (let ((result (eval-buffer)))
     (message "Evaluated buffer: %s" result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

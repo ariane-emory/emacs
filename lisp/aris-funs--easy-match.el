@@ -100,18 +100,19 @@ in reverse order."
       (throw no-match-tag nil))
     
     ;; if target ran out before pattern, pattern had better just contain an ellipsis:
-    (when (and target (not (equal (pat (list ellipsis)))))      
+    (when (and target (not (equal pat (list ellipsis))))
       (throw no-match-tag nil))
 
     (let ((res (nreverse alist)))
       (prn "RESULT:        %s" res)
       res)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
-;; (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
+;; (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
+(confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
 ;; (confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
 ;; (confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
 ;; (confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns

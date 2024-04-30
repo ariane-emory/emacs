@@ -54,7 +54,8 @@
   '(truncate-lines t)
   '(use-short-answers t)
   '(word-wrap t)
-  '(zoom-size '(96 . 16)))
+  '(zoom-mode t nil (zoom))
+  '(zoom-size '(96 . 22)))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
