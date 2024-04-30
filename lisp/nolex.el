@@ -69,10 +69,15 @@
     (dolist (rule *rules*)
       (let ( (input-pattern    (first  rule))
              (response-pattern (second rule)))
-        (if (eq input-pattern t)
-          (throw 'result response-pattern)
-          (when-let ((alist (ap:match input-pattern input)))
-            (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist)))))))))
+        (when-let ((alist (ap:match input-pattern input)))
+          (when-let ((var-testses (third rule)))
+            (prn "This rule has VAR-TESTSES: %s" var-testses)
+            (with-indentation
+              (dolist (var-tests var-testses)
+                (let ( (var  (car var-tests))
+                       (tests (cdr var-tests)))
+                  (prn "var-tests: %s" var-tests)))))
+          (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

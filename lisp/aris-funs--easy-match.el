@@ -34,7 +34,7 @@ in reverse order."
   "A very rudimentary pattern matching/destructuring fun."
   (catch 'no-match
     (if (eq pat t)
-      t
+      '();; t matches anything and returns an empty alist.
       (let (alist)
         (while (and pat targ)
           (let ( (pat-head  (pop pat))
@@ -93,15 +93,17 @@ in reverse order."
 (defun ap:fill (pat alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in the variables in PAT with the values from ALIST."
-  (rmapcar pat
-    (lambda (thing)
-      (cond
-        ((if (eq '\, (car-safe thing))
-           (if-let ((kvp (assoc (cadr thing) alist)))
-             (cdr kvp)
-             (error "var %s not found" (cadr thing)))))
-        ((proper-list-p thing) (ap:fill thing alist))
-        (t thing)))))
+  (if (eq pat t)
+    (error "You can't fill %s" pat)
+    (rmapcar pat
+      (lambda (thing)
+        (cond
+          ((if (eq '\, (car-safe thing))
+             (if-let ((kvp (assoc (cadr thing) alist)))
+               (cdr kvp)
+               (error "var %s not found" (cadr thing)))))
+          ((proper-list-p thing) (ap:fill thing alist))
+          (t thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:fill '(,w x ,y z) '((w . 666) (y . 999)))
   returns (666 x 999 z))
