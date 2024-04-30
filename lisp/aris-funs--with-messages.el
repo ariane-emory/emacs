@@ -65,7 +65,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --wm-actual-indent ()
+(defun wm::actual-indent ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Calculate the actual indentation."
   (* *wm--indent* *wm--indent-size*))
@@ -172,7 +172,7 @@ last expression in `body'."
   "Return a string of *WM--INDENT-CHAR*s corresponding to the current indentation level."
   (let ((indent-string
           (make-string
-            (--wm-actual-indent)
+            (wm::actual-indent)
             *wm--indent-char*))
          (depth-indicator
            (if *wm--depth-indicator-enable*
@@ -210,7 +210,7 @@ last expression in `body'."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a divider line with the current indentation level."
   ;; (indented-message "%s" (make-string count char))
-  (indented-message "%s" (make-string (- count (--wm-actual-indent)) char)))
+  (indented-message "%s" (make-string (- count (wm::actual-indent)) char)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
