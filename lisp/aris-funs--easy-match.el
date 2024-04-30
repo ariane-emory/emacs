@@ -29,7 +29,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun ap:match (pat targ &optional (dont-care '_) (ellipsis '...))
+(cl-defun ap:match (pattern target &optional (dont-care '_) (ellipsis '...))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
   (with-gensyms (no-match-tag)
@@ -37,7 +37,7 @@ in reverse order."
     (prn "GENERATED:    %s" no-match-tag)
     (catch no-match-tag
       (with-indentation
-        (ap::match1 pat targ dont-care ellipsis no-match-tag)))))
+        (ap::match1 pattern target dont-care ellipsis no-match-tag)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
