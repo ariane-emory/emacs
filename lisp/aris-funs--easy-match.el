@@ -40,11 +40,6 @@ in reverse order."
         (ap::match1 pattern target dont-care ellipsis no-match-tag)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; this is fine:
-;; (ap:match '(,x ...) '(1 2 3))
-;; but it would be nice if this matched:
-;; (ap:match '(,x ...) '(1))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ap::match1 (pattern target dont-care ellipsis no-match-tag)
@@ -63,67 +58,70 @@ in reverse order."
         (prn "pat-head:      %s" pat-head)
         (prn "targ-head:     %s" targ-head)
         (cond
-          ((equal pat-head targ-head)) ; do nothing.
-          ;; do nothing, maybe this should only match atoms? dunno:
-          ((and dont-care (eq pat-head dont-care))) 
+          ;; Maybe list case should be before this one?
+          ((equal pat-head targ-head)) ; equal literals, do nothing. 
+          ((and dont-care (eq pat-head dont-care))) ; DONT-CARE, do nothing.
+          ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
+          ;; loop successfully:
           ((and ellipsis (eq pat-head ellipsis) )
-            (unless (null pattern)
+            (when pattern
               (error "ellipsis must be the last element in the pattern"))
-            ;; nullify TARGET and PATTERN to break the loop 'successfully':
-            (setf target nil)
+            (setf target  nil)
             (setf pattern nil))
-          ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
+          ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
+          ((eq '\, (car-safe pat-head)) 
             (let ((var (cadr pat-head)))
               (when (assoc var alist)
                 (error "duplicate key %s" var))
               (setf alist (cons (cons var targ-head) alist))
               (prn "ALIST:         %s" alist)
               ))
+          ;; When PAT-HEAD is a list, recurse and merge the result into ALIST:
           ((and (proper-list-p pat-head)
              (proper-list-p targ-head))
-            (setf alist ; recurse and merge:
+            (setf alist 
               (ap::merge-2-alists alist
                 (with-indentation
                   (ap::match1 pat-head targ-head dont-care ellipsis no-match-tag)))))
-          (t
+          ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
+          ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match;
+          (t 
             (prn "THROWING %s!" no-match-tag)
             (throw no-match-tag nil))))) ;; end of (while (and pattern target).
+    ;; If we got this far, either PATTERN, TARGET or both are nil.
     (prndiv)
     (prn "final pattern: %s" pattern)
     (prn "final target:  %s" target)
-    ;; (unless (or (null pattern) (and (eq ellipsis (car pattern)) (null (cdr pattern))))
-    ;;   (prn "THROWING %s!" no-match-tag)
-
-    ;; if we got this far, either pattern, target or both should be nil.
-    
-    ;; it pattern ran out before target, no match:
-    (when (and target (null pattern))
+    ;; When TARGET isn't nil, then PATTERN must have ran out before TARGET, no match:
+    (when target
       (prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
-    
-    ;; if target ran out before pattern, pattern had better just contain an ellipsis:
-    (when (and target (not (equal pat (list ellipsis))))
+    ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
+    ;; just contain an ELLIPSIS:
+    (unless (or (null pattern) (equal pattern (list ellipsis)))
       (throw no-match-tag nil))
-
+    ;; In the future, we could return t here for empty-but-successful matches?
     (let ((res (nreverse alist)))
       (prn "RESULT:        %s" res)
       res)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
+(confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
-;; (confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
-;; (confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
-;; (confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
-;;   ((x . a) (y . 5)))
-;; (confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
-;;   ((x . a) (y . 5)))
-;; (confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
-;; ;; (confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns
-;; ;;   ((x . 1) (y . 4))) ; elippsis needs alterations for this one to work!
+(confirm that (ap:match '(,a ,b ,c) '(1 2 3)) returns ((a . 1) (b . 2) (c . 3)))
+(confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
+(confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
+(confirm that (ap:match '(,x ...) '(1 2 3)) returns ((x . 1)))
+(confirm that (ap:match '(,x ...) '(1)) returns ((x . 1)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
+  ((x . a) (y . 5)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
+  ((x . a) (y . 5)))
+(confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
+(confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns
+  ((x . 1) (y . 4)))
 ;; (confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4)) returns
 ;;   ((x . 1) (p . q) (y . 4)))
 ;; ;; don't allow partially match:
