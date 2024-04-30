@@ -36,7 +36,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *wm--indent* 0 "The current indentation level in `with-messages'.
+(defvar *wm:indent* 0 "The current indentation level in `with-messages'.
 This variable is not meant to be customized but can be safely dynamically shadowed." )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -45,7 +45,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
 (defmacro with-indentation (&rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate body with one more level of indentation."
-  `(let ((*wm--indent* (1+ *wm--indent*))) ,@body))
+  `(let ((*wm:indent* (1+ *wm:indent*))) ,@body))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -68,7 +68,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
 (defun wm::actual-indent ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Calculate the actual indentation."
-  (* *wm--indent* *wm--indent-size*))
+  (* *wm:indent* *wm--indent-size*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -105,7 +105,7 @@ last expression in `body' and printing a variant message afterwards."
               (1st-is-just-kw (cddr args))
               (t (cdr args)))))
     `(let ( (indent-string (indent-string))
-            (*wm--indent* (1+ *wm--indent*)))
+            (*wm:indent* (1+ *wm:indent*)))
        (unwind-protect
          (progn
            (message "%s%s" indent-string ,start-message-string)
@@ -177,7 +177,7 @@ last expression in `body'."
          (depth-indicator
            (if *wm:depth-indicator-enable*
              (format  *wm:depth-indicator-format*
-               *wm--indent*) "")))
+               *wm:indent*) "")))
     (format "%s%s" depth-indicator indent-string)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

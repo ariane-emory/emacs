@@ -135,10 +135,10 @@ Examples:
 
   (`mp--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
-  (let ((original-indent *wm--indent*))
+  (let ((original-indent *wm:indent*))
     (cl-letf (((symbol-function 'print) (if *mp--verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
-      (let ((*wm--indent* (1+ *wm--indent*)))
+      (let ((*wm:indent* (1+ *wm:indent*)))
         (when *mp--init-fun*
           (funcall *mp--init-fun*))
         (cl-labels
@@ -217,7 +217,7 @@ Examples:
                              (make-kvp (value)
                                (cons (capture-symbol-of-pattern-head) (list value)))
                              (continue (pattern target &optional (value :NOT-SUPPLIED))
-                               (let ((*wm--indent* (1+ *wm--indent*)))
+                               (let ((*wm:indent* (1+ *wm:indent*)))
                                  (matchrec pattern target depth
                                    (if (eq value :NOT-SUPPLIED)
                                      accumulator
@@ -352,7 +352,7 @@ Examples:
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          (let ( (*wm--indent* original-indent)
+          (let ( (*wm:indent* original-indent)
                  (match-result (matchrec pattern target 0 nil)))
             (print "Match result is %s." match-result)
 	          (when (car match-result)
