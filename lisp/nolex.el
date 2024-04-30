@@ -121,6 +121,7 @@
     (let* ( (var   (car var-funs))
             (funs  (cdr var-funs))
             (assoc (assoc var var-alist)))
+      (unless assoc (error "missing var %s" var))
       (dolist (fun funs)
         (setf (cdr assoc) (funcall fun (cdr assoc))))))
   var-alist)
@@ -156,10 +157,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro let-rule (rule &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-rule-keys ,rule)
-     ,@body))
+  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(confirm that
+  (let-rule '( :input-pattern    (,subj ,bar ,baz)
+               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+               :var-tests        ((subj subject?))
+               :var-funs         ((subj swap-word)))
+    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
+  returns ( ((\, subj) (\, bar) (\, baz))
+            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
+            ((subj subject?))
+            ((subj swap-word))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -173,7 +183,7 @@
           (with-indentation
             (catch continue
               (if (eq t .:input-pattern)
-                                        ; t matches any input and throws it's .:RESPONSE-PATTERN:
+                ;; t matches any input and throws it's .:RESPONSE-PATTERN:
                 (throw result .:response-pattern)
                 (when-let ((var-alist (ap:match .:input-pattern input)))
                   (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
