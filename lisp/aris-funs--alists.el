@@ -485,12 +485,14 @@ to achieve your preferred structure."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro fill-in-missing-alist-keys (keys alist)
+(defun fill-in-missing-alist-keys (keys alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in missing keys in ALIST with KVPs whose value is nil (without
-maintaining ordering)."
-  `(cl-union ,alist (make-empty-alist-2 ,keys)
-     :test (lambda (x y) (eq (car x) (car y)))))
+maintaining ordering). Sketchy?"
+  (dolist (key keys)
+    (unless (assoc key alist)
+      (setf alist (cons (list key) alist))))
+  alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (sort-symbol-keyed-alist (fill-in-missing-alist-keys '(c d e) '((a . 1) (b . 2) (c . 3))))

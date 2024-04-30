@@ -3,6 +3,7 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--easy-match)
 (require 'aris-funs--lists)
+(require 'aris-funs--plists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -97,6 +98,8 @@
   (with-gensyms (result continue)
     (catch result
       (dolist (rule *rules*)
+        (prn "ALIST:  %s" (plist-to-alist rule))
+        (prn "FILLED: %s" (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
         (catch continue
           (with-indentation
             (let ( (input-pattern    (plist-get rule :input-pattern))
@@ -187,4 +190,4 @@
 
 
 
-
+(fill-in-missing-alist-keys *rule-keys* (plist-to-alist (car *rules*)))
