@@ -80,26 +80,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-tests (var-alist var-testses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; (prn "var-alist: %s" var-alist)
+  (prn "var-alist: %s" var-alist)
   (with-indentation
-    (catch 'result
-      (dolist (var-tests var-testses)
-        ;; (prn "var-tests: %s" var-tests)
-        (with-indentation
-          (let* ( (var   (car var-tests))
-                  (value (alist-get var alist))
-                  (tests (cdr var-tests)))
-            ;; (prn "var:   %s" var)
-            ;; (prn "value: %s" value)
-            ;; (prn "tests: %s" tests)
-            (with-indentation
-              (dolist (test tests)
-                (let ((test-result (not (null (funcall test value)))))
-                  ;; (prn "test:   %s" test)
-                  ;; (prn "result: %s" test-result)
-                  (unless test-result
-                    (throw 'result nil)))))))))
-    t))
+    (with-gensyms (my-result)
+      (catch my-result
+        (dolist (var-tests var-testses)
+          (prn "var-tests: %s" var-tests)
+          (with-indentation
+            (let* ( (var   (car var-tests))
+                    (value (alist-get var alist))
+                    (tests (cdr var-tests)))
+              (prn "var:   %s" var)
+              (prn "value: %s" value)
+              (prn "tests: %s" tests)
+              (with-indentation
+                (dolist (test tests)
+                  (let ((test-result (not (null (funcall test value)))))
+                    (prn "test:   %s" test)
+                    (prn "result: %s" test-result)
+                    (unless test-result
+                      (prn "THROWING!")
+                      (throw my-result nil))))))))
+        t))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?))) 
 (run-var-tests '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
