@@ -22,7 +22,7 @@
   :group 'pipe
   :type 'boolean)
 
-(defcustom *pipe--print-fun* 'prn
+(defcustom *pipe:print-fun* 'prn
   "The function to use to print messages."
   :group 'pipe
   :type 'function)
@@ -79,8 +79,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro pipe::prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *pipe--print-fun*"
-  `(when *pipe--verbose* (ignore (funcall *pipe--print-fun* ,first ,@rest))))
+  "Wrap *pipe:print-fun*"
+  `(when *pipe--verbose* (ignore (funcall *pipe:print-fun* ,first ,@rest))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
