@@ -9,7 +9,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-p (lst)
   `(lambda (x)
-     (prn "Check if %s is in %s!" x ,lst)
+     ;; (prn "Check if %s is in %s!" x ,lst)
      (member x ,lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -82,60 +82,62 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-tests (var-alist var-testses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (prn "var-alist: %s" var-alist)
+  ;; (prn "var-alist: %s" var-alist)
   (with-indentation
     (with-gensyms (my-result)
       (catch my-result
         (dolist (var-tests var-testses)
-          (prn "var-tests: %s" var-tests)
+          ;; (prn "var-tests: %s" var-tests)
           (with-indentation
             (let* ( (var   (car var-tests))
-                    (value (alist-get var alist))
+                    (value (alist-get var var-alist))
                     (tests (cdr var-tests)))
-              (prn "var:   %s" var)
-              (prn "value: %s" value)
-              (prn "tests: %s" tests)
+              ;; (prn "var:   %s" var)
+              ;; (prn "value: %s" value)
+              ;; (prn "value2: %s" (assoc var alist))
+              ;; (prn "tests: %s" tests)
               (with-indentation
                 (dolist (test tests)
-                  (let ((test-result (funcall test value)))
-                    (prn "test:   %s" test)
-                    (prn "result: %s" test-result)
+                  (let ((test-result (not (null (funcall test value)))))
+                    ;; (prn "test:   %s" test)
+                    ;; (prn "result: %s" test-result)
                     (unless test-result
-                      (prn "THROWING!")
                       (throw my-result nil))))))))
         t))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?)))
+  returns t)
+(confirm that (run-var-tests '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
+  returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?))) 
-(run-var-tests '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (prndiv)
-;; (prn "START:")
-;; (dolist (input
-;;           '( ;; (i think that i would like a smoke)
-;;              ;; (i think that you would like a smoke)
-;;              ;; (i think that you should have a smoke)
-;;              ;; (i know that i could have a smoke)
-;;              ;; (i believe that you have seen a ghost)
-;;              ;; (you believe that i have seen a ghost)
-;;              ;; (i suspect that you have never seen a zebra)
-;;              ;; (i know that you have never eaten a hamburger)
-;;              ;; (you would never eat a hamburger)
-;;              ;; (you should never eat a hamburger)
-;;              ;; (i could eat a hamburger)
-;;              ;; (foo bar baz)
-;;              ;; (foo bar baz quux)
-;;              ;; (you don\'t understand)
-;;              ;; (i don\'t understand \!)
-;;              (you eat chickens)
-;;              (dogs eat chickens)
-;;              ;; (you are stupid \!)
-;;              ;; (you suck ass \!)
-;;              ))
-;;   (prndiv)
-;;   (prn "INPUT:     %s" input)
-;;   (prn "RESPONSE:  %s" (get-response input)))
-;; (prndiv)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(prndiv)
+(prn "START:")
+(dolist (input
+          '( ;; (i think that i would like a smoke)
+             ;; (i think that you would like a smoke)
+             ;; (i think that you should have a smoke)
+             ;; (i know that i could have a smoke)
+             ;; (i believe that you have seen a ghost)
+             ;; (you believe that i have seen a ghost)
+             ;; (i suspect that you have never seen a zebra)
+             ;; (i know that you have never eaten a hamburger)
+             ;; (you would never eat a hamburger)
+             ;; (you should never eat a hamburger)
+             ;; (i could eat a hamburger)
+             ;; (foo bar baz)
+             ;; (foo bar baz quux)
+             ;; (you don\'t understand)
+             ;; (i don\'t understand \!)
+             (you eat chickens)
+             (dogs eat chickens)
+             ;; (you are stupid \!)
+             ;; (you suck ass \!)
+             ))
+  (prndiv)
+  (prn "INPUT:     %s" input)
+  (prn "RESPONSE:  %s" (get-response input)))
+(prndiv)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
