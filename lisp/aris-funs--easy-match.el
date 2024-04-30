@@ -15,8 +15,8 @@
  and signaling an eror upon encountering a duplicate key. Results are returned
 in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (prn "merge this: %s" alist-1)
-  (prn "and this:   %s" alist-2)
+  ;; (prn "merge this: %s" alist-1)
+  ;; (prn "and this:   %s" alist-2)
   (let ((alist (nreverse alist-1)))
     (dolist (kvp alist-2 alist)
       (if (assoc (car kvp) alist-1)
@@ -37,42 +37,41 @@ in reverse order."
   (prndiv)
   (catch 'no-match
     (let (alist)
-      (while-let ( (pat-head  (pop pat))
-                   (targ-head (pop targ)))
-        (prndiv)
-        (prn "alist:     %S" alist)
-        (prn "pat-head:  %S" pat-head)
-        (prn "pat:       %S" pat)
-        (prn "targ-head: %S" targ-head)
-        (prn "targ:      %S" targ)
+      (while (and pat targ)
+        (let ( (pat-head  (pop pat))
+               (targ-head (pop targ)))
+          ;; (prndiv)
+          ;; (prn "alist:     %S" alist)
+          ;; (prn "pat-head:  %S" pat-head)
+          ;; (prn "targ-head: %S" targ-head)
+          ;; (prn "pat:       %S" pat)
+          ;; (prn "targ:      %S" targ)
 
-        (cond
-          ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
-            (if (assoc (cadr pat-head) alist)
-              (error "duplicate key %s" (cadr pat-head))
-              (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
-          ((proper-list-p pat-head) ; recurse and merge.
-            (setf alist (ap::merge-2-alists alist
-                          (with-indentation (ap:match pat-head targ-head)))))
-          ((equal pat-head targ-head)) ; do nothing.
-          (t (throw 'no-match nil))))
-      (prndiv)
-      (prn "FINAL STATE:")
-      (prndiv)
-      (prn "alist:     %S" alist)
-      ;;(prn "pat-head:  %S" pat-head)
-      (prn "pat:       %S" pat)
-      ;;(prn "targ-head: %S" targ-head)
-      (prn "targ:      %S" targ)
-      (when (not (or pat targ)) (nreverse alist))
-      )))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ap:match '(,a ,b ,c \!) '(1 2 3)) ;; ((a . 1) (b . 2) (c . 3))
+          (cond
+            ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
+              (if (assoc (cadr pat-head) alist)
+                (error "duplicate key %s" (cadr pat-head))
+                (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
+            ((proper-list-p pat-head) ; recurse and merge.
+              (setf alist (ap::merge-2-alists alist
+                            (with-indentation (ap:match pat-head targ-head)))))
+            ((equal pat-head targ-head)) ; do nothing.
+            (t (throw 'no-match nil))))) ;; end of while-let.
+
+      ;; (prndiv)
+      ;; (prn "FINAL STATE:")
+      ;; (prndiv)
+      ;; (prn "alist:     %S" alist)
+      ;; (prn "pat:       %S" pat)
+      ;; (prn "targ:      %S" targ)
+      (unless (or pat targ) (nreverse alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (ap:match
