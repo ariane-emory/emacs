@@ -33,24 +33,24 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
   (catch 'no-match
-    (if (eq pat t)
-      '();; t matches anything and returns an empty alist.
-      (let (alist)
-        (while (and pat targ)
-          (let ( (pat-head  (pop pat))
-                 (targ-head (pop targ)))
-            (cond
-              ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
-                (when (assoc (cadr pat-head) alist)
-                  (error "duplicate key %s" (cadr pat-head)))
-                (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
-              ((proper-list-p pat-head) ; recurse and merge.
-                (setf alist
-                  (ap::merge-2-alists alist
-                    (with-indentation (ap:match pat-head targ-head)))))
-              ((equal pat-head targ-head)) ; do nothing.
-              (t (throw 'no-match nil)))))
-        (unless (or pat targ) (nreverse alist))))))
+    ;; (if (eq pat t)
+    ;; '();; t matches anything and returns an empty alist.
+    (let (alist)
+      (while (and pat targ)
+        (let ( (pat-head  (pop pat))
+               (targ-head (pop targ)))
+          (cond
+            ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
+              (when (assoc (cadr pat-head) alist)
+                (error "duplicate key %s" (cadr pat-head)))
+              (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
+            ((proper-list-p pat-head) ; recurse and merge.
+              (setf alist
+                (ap::merge-2-alists alist
+                  (with-indentation (ap:match pat-head targ-head)))))
+            ((equal pat-head targ-head)) ; do nothing.
+            (t (throw 'no-match nil)))))
+      (unless (or pat targ) (nreverse alist))))) ;; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
@@ -59,7 +59,7 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ap:match t '(1 2 3)) returns nil)
+;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (ap:match
