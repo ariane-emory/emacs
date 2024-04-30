@@ -32,7 +32,7 @@
   :group 'pipe
   :type 'function)
 
-(defcustom *pipe--default-var-sym* '_
+(defcustom *pipe:default-var-sym* '_
   "The default symbol to use for the pipe operator."
   :group 'pipe
   :type 'symbol)
@@ -55,7 +55,7 @@
               (cons? (car head))
               (length> (car head) 0)
               (length< (car head) 3)))
-          (var (if head-is-spec (caar head) *pipe--default-var-sym*))
+          (var (if head-is-spec (caar head) *pipe:default-var-sym*))
           (init-form (when head-is-spec (cadar head)))
           (body (if head-is-spec tail (cons head tail))))
     body
@@ -153,7 +153,7 @@
               (> car-head-length 0)
               (< car-head-length 3)))
           (head-is-spec-with-init-form (eql car-head-length 2))
-          (var (if head-is-spec (car car-head) *pipe--default-var-sym*))
+          (var (if head-is-spec (car car-head) *pipe:default-var-sym*))
           (body
             (cond
               (head-is-spec-with-init-form (cons (cadr car-head) tail))
