@@ -105,7 +105,7 @@
      )
   "An alist mapping commands to their flags and arities. This is not meant to be customized.")
 
-(defvar *--pipe-flags*
+(defvar *pipe::flags*
   (compact (cl-remove-duplicates (map #'cdr (alist-values *--pipe-commands*))))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -134,8 +134,8 @@
 (defun --valid-pipe-flag (kw &optional or-nil)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return KW if it is a valid pipe flag, or signal an error. If OR-NIL is t, return nil if KW is nil."
-  (when (not (or (and or-nil (nil? kw)) (memq kw *--pipe-flags*)))
-    (error "Invalid pipe flag: %S. Must be one of %S." kw *--pipe-flags*))
+  (when (not (or (and or-nil (nil? kw)) (memq kw *pipe::flags*)))
+    (error "Invalid pipe flag: %S. Must be one of %S." kw *pipe::flags*))
   kw)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
