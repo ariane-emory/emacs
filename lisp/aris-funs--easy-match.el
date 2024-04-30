@@ -29,9 +29,16 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun ap:match (pat targ &optional (dont-care '_) (ellipsis '...) no-match-tag)
+(cl-defun ap:match (pat targ &optional (dont-care '_) (ellipsis '...))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
+  (ap::match1 pat targ dont-care ellipsis nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun ap::match1 (pat targ dont-care ellipsis no-match-tag)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
   (prn "MATCHING %S AGAINST %S" pat targ)
   (prndiv)
@@ -70,7 +77,7 @@ in reverse order."
                 (setf alist ; recurse and merge:
                   (ap::merge-2-alists alist
                     (with-indentation
-                      (ap:match pat-head targ-head dont-care ellipsis no-match-tag)))))
+                      (ap::match1 pat-head targ-head dont-care ellipsis no-match-tag)))))
               (t
                 (prn "THROWING %s!" no-match-tag)
                 (throw no-match-tag nil))))) ;; end of (while (and pat targ).
@@ -79,7 +86,7 @@ in reverse order."
         (unless (not pat)
           (prn "THROWING %s!" no-match-tag)
           (throw no-match-tag nil))
-        ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
+        ;; ugly hack to handle cases like (ap::match1 '(,x ...) '(1)) follows.
         ;; if not for the '... in final position case, this could really just be
         ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
         (let ((res
