@@ -96,7 +96,7 @@ element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--verbose* nil
+(defcustom *mp:verbose* nil
   "Whether `match-pattern' should print verbose messages."
   :group 'match-pattern
   :type 'boolean)
@@ -136,7 +136,7 @@ Examples:
   (`mp--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ((original-indent *wm:indent*))
-    (cl-letf (((symbol-function 'print) (if *mp--verbose* #'indented-message #'ignore)))
+    (cl-letf (((symbol-function 'print) (if *mp:verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
       (let ((*wm:indent* (1+ *wm:indent*)))
         (when *mp--init-fun*
@@ -383,7 +383,7 @@ Examples:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (progn
-    (let ((*mp--verbose* t))
+    (let ((*mp:verbose* t))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (let ((*mp--use-dotted-pairs-in-result* t))
 

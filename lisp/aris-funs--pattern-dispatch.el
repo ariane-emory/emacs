@@ -366,7 +366,7 @@ because we're gong to be stshing stuff in their symbol properties."
 (when nil
   (progn
     (let ( (*pd--verbose* t)
-           (*mp--verbose* nil)
+           (*mp:verbose* nil)
            (*match-pattern2--verbose* nil))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (pd--reset)
