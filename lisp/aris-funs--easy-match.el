@@ -99,7 +99,7 @@ in reverse order."
       (prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
     
-    ;; if target ran out before pattern, pattern must just contain an ellipsis:
+    ;; if target ran out before pattern, pattern had better just contain an ellipsis:
     (when (and target (not (equal (pat (list ellipsis)))))      
       (throw no-match-tag nil))
 
