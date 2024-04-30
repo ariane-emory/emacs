@@ -23,7 +23,7 @@
   :group 'with-messages
   :type 'boolean)
 
-(defcustom *wm--depth-indicator-format* "[%2d] "
+(defcustom *wm:depth-indicator-format* "[%2d] "
   "The format string used to display the current indentation level in `with-messages'."
   :group 'with-messages
   :type 'string)
@@ -176,7 +176,7 @@ last expression in `body'."
             *wm:indent-char*))
          (depth-indicator
            (if *wm:depth-indicator-enable*
-             (format  *wm--depth-indicator-format*
+             (format  *wm:depth-indicator-format*
                *wm--indent*) "")))
     (format "%s%s" depth-indicator indent-string)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
