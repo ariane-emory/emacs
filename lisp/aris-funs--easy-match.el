@@ -94,6 +94,8 @@ in reverse order."
     ;; (unless (or (null pattern) (and (eq ellipsis (car pattern)) (null (cdr pattern))))
     ;;   (prn "THROWING %s!" no-match-tag)
 
+    ;; if we got this far, either pattern, target or both should be nil.
+    
     ;; it pattern ran out before target, no match:
     (when (and target (null pattern))
       (prn "THROWING %s!" no-match-tag)
