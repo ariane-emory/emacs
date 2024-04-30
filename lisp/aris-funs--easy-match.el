@@ -29,52 +29,52 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun ap:match (pat targ &optional (dont-care '_) (ellipsis '...))
+(cl-defun ap:match (pat targ &optional no-match-tag (dont-care '_) (ellipsis '...))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
   ;; (prn "MATCHING %S AGAINST %S" pat targ)
-  (catch 'no-match
-    ;; (if (eq pat t)
-    ;; '();; t matches anything and returns an empty alist.
-    (let (alist)
-      (while (and pat targ)
-        ;; (prn "pat:  %s" pat)
-        ;; (prn "targ: %s" targ)
-        (let ( (pat-head  (pop pat))
-               (targ-head (pop targ)))
-          ;; (prn "pat-head:   %s" pat)
-          ;; (prn "targ-headd: %s" targ)
-          (cond
-            ((equal pat-head targ-head)) ; do nothing.
-            ;; do nothing, maybe this should only match atoms? dunno:
-            ((and dont-care (eq pat-head dont-care))) 
-            ((and ellipsis (eq pat-head ellipsis) )
-              (unless (null pat)
-                (error "ellipsis must be the last element in the pattern"))
-              ;; nullify TARG to break the loop 'successfully'.
-              (setf targ nil))
-            ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
-              (when (assoc (cadr pat-head) alist)
-                (error "duplicate key %s" (cadr pat-head)))
-              (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
-            ((and (proper-list-p pat-head)
-               (proper-list-p targ-head))
-              (setf alist ; recurse and merge:
-                (ap::merge-2-alists alist
-                  (with-indentation (ap:match pat-head targ-head dont-care ellipsis)))))
-            (t (throw 'no-match nil)))))
-      ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
-      ;; if not for the '... in final position case, this could really just be
-      ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
-      (unless (or targ
-                (and pat
-                  (not (and ellipsis
-                       (eq ellipsis (car pat ))
-                       (progn
-                         (when (cdr pat)
-                           (error "ellipsis must be the last element in the pattern.")
-                           t))))))
-        (nreverse alist)))))
+  (let ( (no-match-tag-supplied (not (null no-match-tag)))
+         (no-match-tag (or no-match-tag (gensym))))
+    (catch (if no-match-tag-supplied nil no-match-tag)
+      (let (alist)
+        (while (and pat targ)
+          ;; (prn "pat:  %s" pat)
+          ;; (prn "targ: %s" targ)
+          (let ( (pat-head  (pop pat))
+                 (targ-head (pop targ)))
+            ;; (prn "pat-head:   %s" pat)
+            ;; (prn "targ-headd: %s" targ)
+            (cond
+              ((equal pat-head targ-head)) ; do nothing.
+              ;; do nothing, maybe this should only match atoms? dunno:
+              ((and dont-care (eq pat-head dont-care))) 
+              ((and ellipsis (eq pat-head ellipsis) )
+                (unless (null pat)
+                  (error "ellipsis must be the last element in the pattern"))
+                ;; nullify TARG to break the loop 'successfully'.
+                (setf targ nil))
+              ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
+                (when (assoc (cadr pat-head) alist)
+                  (error "duplicate key %s" (cadr pat-head)))
+                (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
+              ((and (proper-list-p pat-head)
+                 (proper-list-p targ-head))
+                (setf alist ; recurse and merge:
+                  (ap::merge-2-alists alist
+                    (with-indentation (ap:match pat-head targ-head dont-care ellipsis)))))
+              (t (throw no-match-tag nil)))))
+        ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
+        ;; if not for the '... in final position case, this could really just be
+        ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
+        (unless (or targ
+                  (and pat
+                    (not (and ellipsis
+                         (eq ellipsis (car pat ))
+                         (progn
+                           (when (cdr pat)
+                             (error "ellipsis must be the last element in the pattern.")
+                             t))))))
+          (nreverse alist))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
