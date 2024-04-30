@@ -29,24 +29,29 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun ap:match (pat targ &optional no-match-tag (dont-care '_) (ellipsis '...))
+(cl-defun ap:match (pat targ &optional (dont-care '_) (ellipsis '...) no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
-  ;; (prn "MATCHING %S AGAINST %S" pat targ)
+  (prndiv)
+  (prn "MATCHING %S AGAINST %S" pat targ)
+  (prndiv)
   (prn "no-match-tag: %s" no-match-tag)
   (prn "dont-care: %s" dont-care)
   (prn "ellipsis: %s" ellipsis)
   (let ( (no-match-tag-supplied (not (null no-match-tag)))
          (no-match-tag (or no-match-tag (gensym))))
+    (unless no-match-tag-supplied
+      (prn "GENERATED %s" no-match-tag))
     (catch (if no-match-tag-supplied nil no-match-tag)
       (let (alist)
         (while (and pat targ)
-          ;; (prn "pat:  %s" pat)
-          ;; (prn "targ: %s" targ)
+          (prndiv)
+          (prn "pat:        %s" pat)
+          (prn "targ:       %s" targ)
           (let ( (pat-head  (pop pat))
                  (targ-head (pop targ)))
-            ;; (prn "pat-head:   %s" pat)
-            ;; (prn "targ-headd: %s" targ)
+            (prn "pat-head:   %s" pat)
+            (prn "targ-head:  %s" targ)
             (cond
               ((equal pat-head targ-head)) ; do nothing.
               ;; do nothing, maybe this should only match atoms? dunno:
@@ -64,8 +69,11 @@ in reverse order."
                  (proper-list-p targ-head))
                 (setf alist ; recurse and merge:
                   (ap::merge-2-alists alist
-                    (with-indentation (ap:match pat-head targ-head no-match-tag dont-care ellipsis)))))
-              (t (throw no-match-tag nil)))))
+                    (with-indentation
+                      (ap:match pat-head targ-head dont-care ellipsis no-match-tag)))))
+              (t
+                (prn "THROWING %s!" no-match-tag)
+                (throw no-match-tag nil)))))
         ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
         ;; if not for the '... in final position case, this could really just be
         ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
@@ -164,8 +172,16 @@ in reverse order."
 (provide 'aris-funs--easy-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; this shouldn't be allowed to partially match;
-(ap:match '(,x 2 (,p ,q ...) 3 ,y) '(1 2 (q r) 3 4))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; BUGS, FIX THESE!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; this one seems fine:
+(ap:match '(,x (,p q r) ,y) '(1 (q r) 2))
 
 ;; it would be nice if this matched:
 (ap:match '(,x ...) '(1))
+
+;; these shouldn't be allowed to partially match, should throw but does not:
+(ap:match '(,x (,p ...) ,y) '(1 (q) 2))
+(ap:match '(,x (,p) ,y) '(1 () 2))
