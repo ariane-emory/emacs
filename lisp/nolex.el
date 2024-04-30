@@ -47,8 +47,12 @@
              (i know that i could have a smoke)
              (i believe that you have seen a ghost)
              (you believe that i have seen a ghost)
-             (i suspect that you have never seen a zebra)))
-  (prn (proc-input target)))
+             (i suspect that you have never seen a zebra)
+             (foo bar baz)))
+  (prn (if-let ((res (proc-input target)))
+         res
+         '(i don\'t understand \!))))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
