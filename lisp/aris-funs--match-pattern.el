@@ -16,13 +16,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DO NOT NEGLECT THE SPACE AFTER THE ? ON THE NEXT LINE:
-(defcustom *mp--anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
+(defcustom *mp:anything-tag* '?  ;; << CRITICAL SPACE AFTER THE ? !!!
   "The symbol used by `match-pattern' to represent a wildcard, matching any single item
 in TARGET."
   :group 'match-pattern
   :type 'symbol)
 
-(defcustom *mp--capture-can-be-predicate* t
+(defcustom *mp:capture-can-be-predicate* t
   "Whether a capture's 'tag' in th PATTERN argument to `match-pattern' is allowed to be
 a predicate function."
   :group 'match-pattern
@@ -34,24 +34,24 @@ a predicate function."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--error-if-target-element-is-not-verbatim* t
+(defcustom *mp:error-if-target-element-is-not-verbatim* t
   "Whether `match-pattern' shoud signal an error (or merely fail to match) if a
 non-verbatim TARGET element is encountered. This setting only applies when
 *MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *mp--get-capture-symbol-fun* #'cdr
+(defcustom *mp:get-capture-symbol-fun* #'cdr
   "The function used by `match-pattern' to extract the symbol from a capture."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--get-capture-tag-fun* #'car
+(defcustom *mp:get-capture-tag-fun* #'car
   "The function used by `match-pattern' to extract the 'tag' from a capture element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--init-fun* nil
+(defcustom *mp:init-fun* nil
   "The function `match-pattern' calls to initialize a new match."
   :group 'match-pattern
   :type 'function)
@@ -63,7 +63,7 @@ is an invalid element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--kleene-tag* '*
+(defcustom *mp:kleene-tag* '*
   "The symbol used by `match-pattern' to represent a Kleene star, matching 0 or more times."
   :group 'match-pattern
   :type 'symbol)
@@ -73,12 +73,12 @@ is an invalid element."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *mp--print-fun* 'indented-message
+(defcustom *mp:print-fun* 'indented-message
   "The function to use to print messages."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--target-elements-must-be-verbatim* t
+(defcustom *mp:target-elements-must-be-verbatim* t
   "Whether the elements of  the TARGET argument to `match-pattern' must be verbatim
 elements."
   :group 'match-pattern
@@ -106,9 +106,9 @@ element."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro --mp-prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *mp--print-fun*. NOT YET USED FOR SOME REASON?"
+  "Wrap *mp:print-fun*. NOT YET USED FOR SOME REASON?"
   `(when *pm--verbose*     
-     (funcall *mp--print-fun* ,first ,@rest)
+     (funcall *mp:print-fun* ,first ,@rest)
      nil))
      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -139,8 +139,8 @@ Examples:
     (cl-letf (((symbol-function 'print) (if *mp:verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
       (let ((*wm:indent* (1+ *wm:indent*)))
-        (when *mp--init-fun*
-          (funcall *mp--init-fun*))
+        (when *mp:init-fun*
+          (funcall *mp:init-fun*))
         (cl-labels
           ((matchrec (pattern target depth accumulator)
              (let  ( (pattern-head (car pattern))
@@ -201,10 +201,10 @@ Examples:
                                (funcall fun pattern-head))
                              (capture-symbol-of-pattern-head ()
                                (capture-field-of-pattern-head
-                                 *mp--get-capture-symbol-fun*))
+                                 *mp:get-capture-symbol-fun*))
                              (capture-tag-of-pattern-head ()
                                (capture-field-of-pattern-head
-                                 *mp--get-capture-tag-fun*))
+                                 *mp:get-capture-tag-fun*))
                              (pattern-head-is-invalid? ()
                                (if *mp--invalid-element?*
                                  (funcall *mp--invalid-element?* pattern-head)
@@ -285,17 +285,17 @@ Examples:
                              (if (heads-are-equal?)
                                (continue pattern-tail target-tail)
                                (fail-to-match))))
-                         ;; If `*mp--target-elements-must-be-verbatim*' is set, then 
+                         ;; If `*mp:target-elements-must-be-verbatim*' is set, then 
                          ;; signal an error if `target-head' isn't a verbatim element:
                          ((case 4 "Error case: non-verbatim target element"
                             (and
-                              *mp--target-elements-must-be-verbatim*
+                              *mp:target-elements-must-be-verbatim*
                               (not (elem-is-verbatim? target-head))))
                            (with-indentation
                              (let ((complaint
                                      (format "target-head %s is not a verbatim element."
                                        target-head)))
-                               (when *mp--error-if-target-element-is-not-verbatim*
+                               (when *mp:error-if-target-element-is-not-verbatim*
                                  (error complaint)
                                  (print complaint)
                                  (fail-to-match)))))
@@ -307,13 +307,13 @@ Examples:
                          ;; From here on, we know that `pattern-head' must be a capture.
                          ;; Case when `pattern-head' is tagged with the "anything" tag:
                          ((case 6 "`anything' pattern element"
-                            (capture-at-pattern-head-has-tag? *mp--anything-tag*))
+                            (capture-at-pattern-head-has-tag? *mp:anything-tag*))
                            (with-indentation
                              (print "head of pattern has 'anything' tag.")
                              (continue pattern-tail target-tail target-head)))
                          ;; Case when `pattern-head' is tagged with the Kleene tag:
                          ((case 7 "Kleene pattern element"
-                            (capture-at-pattern-head-has-tag? *mp--kleene-tag*))
+                            (capture-at-pattern-head-has-tag? *mp:kleene-tag*))
                            (with-indentation
                              (print "head of pattern has Kleene tag.")
                              (cond
@@ -341,7 +341,7 @@ Examples:
                          ;; Case when `pattern-head' starts with predicate form:
                          ((case 8 "Predicate pattern element"
                             (and
-                              *mp--capture-can-be-predicate*
+                              *mp:capture-can-be-predicate*
                               (apply (capture-tag-of-pattern-head) (list target-head))))
                            (with-indentation
                              (continue pattern-tail target-tail target-head)))

@@ -43,8 +43,8 @@ Examples:
     (cl-letf (((symbol-function 'print) (if *mp:verbose* #'indented-message #'ignore)))
       (print "MATCHING PATTERN %S AGAINST TARGET %s!" pattern target)
       (let ((*wm:indent* (1+ *wm:indent*)))
-        (when *mp--init-fun*
-          (funcall *mp--init-fun*))
+        (when *mp:init-fun*
+          (funcall *mp:init-fun*))
         (cl-labels
           ((matchrec (pattern target depth accumulator)
              (let  ( (pattern-head (car pattern))
@@ -105,10 +105,10 @@ Examples:
                                (funcall fun pattern-head))
                              (capture-symbol-of-pattern-head ()
                                (capture-field-of-pattern-head
-                                 *mp--get-capture-symbol-fun*))
+                                 *mp:get-capture-symbol-fun*))
                              (capture-tag-of-pattern-head ()
                                (capture-field-of-pattern-head
-                                 *mp--get-capture-tag-fun*))
+                                 *mp:get-capture-tag-fun*))
                              (pattern-head-is-invalid? ()
                                (if *mp--invalid-element?*
                                  (funcall *mp--invalid-element?* pattern-head)
@@ -189,17 +189,17 @@ Examples:
                              (if (heads-are-equal?)
                                (continue pattern-tail target-tail)
                                (fail-to-match))))
-                         ;; If `*mp--target-elements-must-be-verbatim*' is set, then 
+                         ;; If `*mp:target-elements-must-be-verbatim*' is set, then 
                          ;; signal an error if `target-head' isn't a verbatim element:
                          ((case 4 "Error case: non-verbatim target element"
                             (and
-                              *mp--target-elements-must-be-verbatim*
+                              *mp:target-elements-must-be-verbatim*
                               (not (elem-is-verbatim? target-head))))
                            (with-indentation
                              (let ((complaint
                                      (format "target-head %s is not a verbatim element."
                                        target-head)))
-                               (when *mp--error-if-target-element-is-not-verbatim*
+                               (when *mp:error-if-target-element-is-not-verbatim*
                                  (error complaint)
                                  (print complaint)
                                  (fail-to-match)))))
@@ -211,13 +211,13 @@ Examples:
                          ;; From here on, we know that `pattern-head' must be a capture.
                          ;; Case when `pattern-head' is tagged with the "anything" tag:
                          ((case 6 "`anything' pattern element"
-                            (capture-at-pattern-head-has-tag? *mp--anything-tag*))
+                            (capture-at-pattern-head-has-tag? *mp:anything-tag*))
                            (with-indentation
                              (print "head of pattern has 'anything' tag.")
                              (continue pattern-tail target-tail target-head)))
                          ;; Case when `pattern-head' is tagged with the Kleene tag:
                          ((case 7 "Kleene pattern element"
-                            (capture-at-pattern-head-has-tag? *mp--kleene-tag*))
+                            (capture-at-pattern-head-has-tag? *mp:kleene-tag*))
                            (with-indentation
                              (print "head of pattern has Kleene tag.")
                              (cond
@@ -245,7 +245,7 @@ Examples:
                          ;; Case when `pattern-head' starts with predicate form:
                          ((case 8 "Predicate pattern element"
                             (and
-                              *mp--capture-can-be-predicate*
+                              *mp:capture-can-be-predicate*
                               (apply (capture-tag-of-pattern-head) (list target-head))))
                            (with-indentation
                              (continue pattern-tail target-tail target-head)))
