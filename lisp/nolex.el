@@ -42,7 +42,8 @@
 (defvar *rules*
   '( ( :input-pattern    (,subj ,bar ,baz)
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-       :var-preds        ((subj subject?)))
+       :var-preds        ((subj subject?))
+       :var-funs        ((subj swap-word)))
      ;;-----------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
        :response-pattern (so just go ,verb a ,thing \!)
@@ -145,15 +146,15 @@
       (with-gensyms (my-result)
         (catch my-result
           (with-indentation
-            (dolist (var-tests var-testses)
-              (let* ( (var   (car var-tests))
-                      (value (alist-get var var-alist))
-                      (tests (cdr var-tests)))
-                (with-indentation
-                  (dolist (test tests)
-                    (let ((test-result (not (null (funcall test value)))))
-                      (unless test-result
-                        (throw my-result nil))))))))
+            (while-let ( (var-tests (pop var-testses))
+                         (var   (car var-tests))
+                         (value (alist-get var var-alist))
+                         (tests (cdr var-tests)))
+              (with-indentation
+                (dolist (test tests)
+                  (let ((test-result (not (null (funcall test value)))))
+                    (unless test-result
+                      (throw my-result nil)))))))
           t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?)))
