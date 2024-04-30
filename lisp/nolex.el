@@ -117,25 +117,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun get-response (input)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Transform INPUT according to *RULES*, returning nil if none match."
-  (with-gensyms (result continue)
-    (catch result
-      (dolist (rule *rules*)
-        (let-rule rule
-          (with-indentation
-            (catch continue
-              (if (eq t .:input-pattern)
-                (throw result .:response-pattern) ; t matches any input.
-                (when-let ((var-alist (ap:match .:input-pattern input)))
-                  (unless (run-var-tests var-alist .:var-preds) (throw continue nil))
-                  (run-var-funs var-alist .:var-funs)
-                  (throw result (ap:fill .:response-pattern var-alist)))))))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-tests (var-alist var-testses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (if (null var-testses)
@@ -176,6 +157,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-funs '((subj . i) (subj-2 . you) (baz . you)) '((subj swap-word) (subj-2 swap-word)))
   returns ((subj . you) (subj-2 . i) (baz . you)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun get-response (input)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Transform INPUT according to *RULES*, returning nil if none match."
+  (with-gensyms (result continue)
+    (catch result
+      (dolist (rule *rules*)
+        (let-rule rule
+          (with-indentation
+            (catch continue
+              (if (eq t .:input-pattern)
+                (throw result .:response-pattern) ; t matches any input.
+                (when-let ((var-alist (ap:match .:input-pattern input)))
+                  (unless (run-var-tests var-alist .:var-preds) (throw continue nil))
+                  (run-var-funs var-alist .:var-funs)
+                  (throw result (ap:fill .:response-pattern var-alist)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
