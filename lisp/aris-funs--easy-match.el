@@ -36,22 +36,22 @@ in reverse order."
   (prn "MATCHING %S AGAINST %S" pat targ)
   (prndiv)
   (prn "no-match-tag: %s" no-match-tag)
-  (prn "dont-care: %s" dont-care)
-  (prn "ellipsis: %s" ellipsis)
+  ;; (prn "dont-care: %s" dont-care)
+  ;; (prn "ellipsis: %s" ellipsis)
   (let ( (no-match-tag-supplied (not (null no-match-tag)))
          (no-match-tag (or no-match-tag (gensym "no-match-"))))
     (unless no-match-tag-supplied
-      (prn "GENERATED %s" no-match-tag))
+      (prn "GENERATED:    %s" no-match-tag))
     (catch (if no-match-tag-supplied nil no-match-tag)
       (let (alist)
         (while (and pat targ)
           (prndiv)
-          (prn "pat:        %s" pat)
-          (prn "targ:       %s" targ)
+          (prn "pat:         %s" pat)
+          (prn "targ:        %s" targ)
           (let ( (pat-head  (pop pat))
                  (targ-head (pop targ)))
-            (prn "pat-head:   %s" pat)
-            (prn "targ-head:  %s" targ)
+            (prn "pat-head:    %s" pat)
+            (prn "targ-head:   %s" targ)
             (cond
               ((equal pat-head targ-head)) ; do nothing.
               ;; do nothing, maybe this should only match atoms? dunno:
@@ -74,8 +74,8 @@ in reverse order."
               (t
                 (prn "THROWING %s!" no-match-tag)
                 (throw no-match-tag nil))))) ;; end of (while (and pat targ).
-        (prn "end pat:    %s" pat)
-        (prn "end targ:   %s" targ)
+        (prn "end pat:     %s" pat)
+        (prn "end targ:    %s" targ)
         ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
         ;; if not for the '... in final position case, this could really just be
         ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
@@ -108,6 +108,9 @@ in reverse order."
 ;;   ((x . 1) (y . 4))) ; elippsis needs alterations for this one to work!
 (confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4)) returns
   ((x . 1) (p . q) (y . 4)))
+;; don't allow partially match:
+(confirm that (ap:match '(,x (,p ...) ,y) '(1 (q) 2)) returns nil)
+(confirm that (ap:match '(,x (,p) ,y) '(1 () 2)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -181,12 +184,7 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; BUGS, FIX THESE!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; this one seems fine:
-(ap:match '(,x (,p q r) ,y) '(1 (q r) 2))
 
 ;; it would be nice if this matched:
 (ap:match '(,x ...) '(1))
 
-;; these shouldn't be allowed to partially match, should throw but does not:
-(ap:match '(,x (,p ...) ,y) '(1 (q) 2))
-(ap:match '(,x (,p) ,y) '(1 () 2))
