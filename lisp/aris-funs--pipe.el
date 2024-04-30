@@ -93,7 +93,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *--pipe-commands*
+(defvar *pipe::commands*
   '( (:       . (1 . :IGNORE))
      (:ignore . (1 . :IGNORE))
      (:?      . (1 . :MAYBE))
@@ -106,7 +106,7 @@
   "An alist mapping commands to their flags and arities. This is not meant to be customized.")
 
 (defvar *pipe::flags*
-  (compact (cl-remove-duplicates (map #'cdr (alist-values *--pipe-commands*))))
+  (compact (cl-remove-duplicates (map #'cdr (alist-values *pipe::commands*))))
   "A list of flags that can be set by the pipe operator. This is not meant to be customized.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -115,7 +115,7 @@
 (defun --get-pipe-command (kw)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Retrieve the command associated with a keyword KW, or nil if KW is not a command."
-  (alist-get kw *--pipe-commands*))
+  (alist-get kw *pipe::commands*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -123,7 +123,7 @@
 (defun --get-pipe-command-arity (command)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the arity of a pipe command COMMAND or 0 if COMMAND is not a pipe command."
-  (if-let ( (alist-value (alist-get command *--pipe-commands*))
+  (if-let ( (alist-value (alist-get command *pipe::commands*))
             (arity (car alist-value)))
     arity
     0))
