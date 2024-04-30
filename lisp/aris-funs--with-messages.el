@@ -169,7 +169,7 @@ last expression in `body'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun indent-string ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return a string of *WM--INDENT-CHAR*s corresponding to the current indentation level."
+  "Return a string of *WM:INDENT-CHAR*s corresponding to the current indentation level."
   (let ((indent-string
           (make-string
             (wm::actual-indent)
