@@ -14,20 +14,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
-  '( ( (,subj ,bar ,baz) .
+  '( ( (,subj ,bar ,baz)
        (fine \, ,subj ,bar ,baz \, so what \?))
-     ( (,subj ,modal-verb ,verb a ,thing) .
+     ( (,subj ,modal-verb ,verb a ,thing)
        (so just go ,verb a ,thing \!))
-     ( (,subj ,modal-verb never ,verb a ,thing) .
+     ( (,subj ,modal-verb never ,verb a ,thing)
        (,subj ,modal-verb ,verb a ,thing \!))
-     ( (you ,do-don\'t ,verb \!) .
+     ( (you ,do-don\'t ,verb \!)
        (you ,do-don\'t ,verb \!))
-     ( (,subj ,do-don\'t ,verb \!) .
+     ( (,subj ,do-don\'t ,verb \!)
        (,subj ,do-don\'t ,verb \!))
-     ( (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun) .
+     ( (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
        ( come on \, ,subj can\'t really ,verb that
          ,subj-2 ,modal-verb never ,verb-2 a ,noun \!))
-     ( (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun) .
+     ( (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
        ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?))
      ( t . (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,7 +54,7 @@
   "Transform INPUT according to *RULES*, returning nil if none match."
   (catch 'result
     (dolist (pair *rules*)
-      (let ((pattern (car pair)) (response (cdr pair)))
+      (let ((pattern (car pair)) (response (cadr pair)))
         (if (eq pattern t)
           (throw 'result response)
           ;; (prn "  try:     %s" pattern)
