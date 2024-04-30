@@ -46,7 +46,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun ap::match1 (pat targ dont-care ellipsis no-match-tag)
+(defun ap::match1 (pat targ dont-care ellipsis no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
   (prn "MATCHING %S AGAINST %S" pat targ)
