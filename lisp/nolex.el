@@ -85,19 +85,18 @@
       (prn "var-tests: %s" var-tests)
       (with-indentation
         (let* ( (var   (car var-tests))
-                (tests (cdr var-tests))
-                (value (alist-get var alist)))
+                (value (alist-get var alist))
+                (tests (cdr var-tests)))
           (prn "var:   %s" var)
-          (prn "tests: %s" tests)
           (prn "value: %s" value)
+          (prn "tests: %s" tests)
           (with-indentation
             (dolist (test tests)
               (let ((test-result (not (null (funcall test value)))))
                 (prn "test:   %s" test)
-                (prn "result: %s" test-result)
-                ))))))))
+                (prn "result: %s" test-result)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?))) ;; should be t but returns nil!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
 (prn "START:")
