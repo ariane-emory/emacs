@@ -40,8 +40,9 @@ in reverse order."
         (ap::match1 pattern target dont-care ellipsis no-match-tag)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; it would be nice if this matched:
+;; this is fine:
+;; (ap:match '(,x ...) '(1 2 3))
+;; but it would be nice if this matched:
 ;; (ap:match '(,x ...) '(1))
 
 
@@ -68,8 +69,9 @@ in reverse order."
           ((and ellipsis (eq pat-head ellipsis) )
             (unless (null pattern)
               (error "ellipsis must be the last element in the pattern"))
-            ;; nullify TARGET to break the loop 'successfully'.
-            (setf target nil))
+            ;; nullify TARGET and PATTERN to break the loop 'successfully':
+            (setf target nil)
+            (setf pattern nil))
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
             (let ((var (cadr pat-head)))
               (when (assoc var alist)
@@ -89,77 +91,92 @@ in reverse order."
     (prndiv)
     (prn "final pattern: %s" pattern)
     (prn "final target:  %s" target)
-    (unless (or (null pattern) (and (eq ellipsis (car pattern)) (null (cdr pattern))))
+    ;; (unless (or (null pattern) (and (eq ellipsis (car pattern)) (null (cdr pattern))))
+    ;;   (prn "THROWING %s!" no-match-tag)
+
+    ;; it pattern ran out before target, no match:
+    (when (and target (null pattern))
       (prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
+    
+    ;;   (throw no-match-tag nil))
+    (when (and target (not (equal (pat (list ellipsis)))))
+      
+      (throw no-match-tag nil))
+
+    (let ((res (nreverse alist)))
+      (prn "RESULT:        %s" res)
+      res)
+
     ;; ugly hack to handle cases like (ap::match1 '(,x ...) '(1)) follows.
     ;; if not for the '... in final position case, this could really just be
     ;; (unless (or pattern target) (nreverse alist)), which looks much nicer.
-    (let ((res
-            (unless
-              (or target
-                (and pattern
-                  (not (and ellipsis
-                       (eq ellipsis (car pattern ))
-                       (progn
-                         (when (cdr pattern)
-                           (error "ellipsis must be the last element in the pattern.")
-                           t))))))
-              (nreverse alist))))
-      (prn "RESULT:        %s" res)
-      res)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
-;; ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
-;; (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
-;; (confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
-;; (confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
-;; (confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
-;;   ((x . a) (y . 5)))
-;; (confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
-;;   ((x . a) (y . 5)))
-;; (confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
-;; ;; (confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns
-;; ;;   ((x . 1) (y . 4))) ; elippsis needs alterations for this one to work!
-;; (confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4)) returns
-;;   ((x . 1) (p . q) (y . 4)))
-;; ;; don't allow partially match:
-;; (confirm that (ap:match '(,x (,p ...) ,y) '(1 (q) 2)) returns nil)
-;; (confirm that (ap:match '(,x (,p) ,y) '(1 () 2)) returns nil)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (ap:match
-;;     '(one (this that) (,two three (,four ,five) ,six))
-;;     '(one (this that) (2 three (4 5) 6)))  
-;;   returns ( (two . 2)
-;;             (four . 4)
-;;             (five . 5)
-;;             (six . 6)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (when-let-alist (ap:match
-;;                     '(i ,modal-verb ,verb a ,thing)
-;;                     '(i have (never seen) a (red car)))
-;;     (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
-;;   returns (Do you really believe that you have never seen a red car \?))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (when-let-alist (ap:match
-;;                     '(i ,verb that ,noun ,con ,thing)
-;;                     '(i think that dogs are dumb))
-;;     (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
-;;   returns (Why do you think that dogs are dumb \?))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (when-let-alist
-;;     (ap:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
-;;     (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
-;;   returns (why do you think that you have never seen a red car \?))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; (let ((res
+    ;;         (unless
+    ;;           (or target
+    ;;             (and pattern
+    ;;               (not (and ellipsis
+    ;;                    (eq ellipsis (car pattern ))
+    ;;                    (progn
+    ;;                      (when (cdr pattern)
+    ;;                        (error "ellipsis must be the last element in the pattern.")
+    ;;                        t))))))
+    ;;           (nreverse alist))))
+    ;;   (prn "RESULT:        %s" res)
+    ;;   res)
+    ))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
+;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
+(confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
+(confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
+(confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
+  ((x . a) (y . 5)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
+  ((x . a) (y . 5)))
+(confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
+;; (confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns
+;;   ((x . 1) (y . 4))) ; elippsis needs alterations for this one to work!
+(confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4)) returns
+  ((x . 1) (p . q) (y . 4)))
+;; don't allow partially match:
+(confirm that (ap:match '(,x (,p ...) ,y) '(1 (q) 2)) returns nil)
+(confirm that (ap:match '(,x (,p) ,y) '(1 () 2)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (ap:match
+    '(one (this that) (,two three (,four ,five) ,six))
+    '(one (this that) (2 three (4 5) 6)))  
+  returns ( (two . 2)
+            (four . 4)
+            (five . 5)
+            (six . 6)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (when-let-alist (ap:match
+                    '(i ,modal-verb ,verb a ,thing)
+                    '(i have (never seen) a (red car)))
+    (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
+  returns (Do you really believe that you have never seen a red car \?))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (when-let-alist (ap:match
+                    '(i ,verb that ,noun ,con ,thing)
+                    '(i think that dogs are dumb))
+    (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
+  returns (Why do you think that dogs are dumb \?))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (when-let-alist
+    (ap:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
+    (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
+  returns (why do you think that you have never seen a red car \?))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -178,18 +195,18 @@ in reverse order."
           ((proper-list-p thing) (ap:fill thing alist))
           (t thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ap:fill '(,w x ,y z) '((w . 666) (y . 999)))
-  returns (666 x 999 z))
-(confirm that (ap:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
-  returns ((333 666) x 999 (999 999) z (333 666)))
-(confirm that (ap:fill '(a ,b (,c ,d)) (ap:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-  returns (a 2 (3 4)))
-(confirm that (ap:fill '(a ,b (,c ,d))
-                (ap:match '(a ,b (,c ,d))
-                  (ap:fill '(a ,b (,c ,d))
-                    (ap:match '(a ,b (,c ,d))
-                      '(a 2 (3 4))))))
-  returns (a 2 (3 4)))
+;; (confirm that (ap:fill '(,w x ,y z) '((w . 666) (y . 999)))
+;;   returns (666 x 999 z))
+;; (confirm that (ap:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
+;;   returns ((333 666) x 999 (999 999) z (333 666)))
+;; (confirm that (ap:fill '(a ,b (,c ,d)) (ap:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+;;   returns (a 2 (3 4)))
+;; (confirm that (ap:fill '(a ,b (,c ,d))
+;;                 (ap:match '(a ,b (,c ,d))
+;;                   (ap:fill '(a ,b (,c ,d))
+;;                     (ap:match '(a ,b (,c ,d))
+;;                       '(a 2 (3 4))))))
+;;   returns (a 2 (3 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
