@@ -13,7 +13,7 @@
   :group 'with-messages
   :type 'character)
 
-(defcustom *wm--indent-size* 2
+(defcustom *wm:indent-size* 2
   "The number of `*wm:indent-char*' characters used for each level of indentation in `with-messages'."
   :group 'with-messages
   :type 'integer)
@@ -68,7 +68,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
 (defun wm::actual-indent ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Calculate the actual indentation."
-  (* *wm:indent* *wm--indent-size*))
+  (* *wm:indent* *wm:indent-size*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
