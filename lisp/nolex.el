@@ -151,8 +151,7 @@
             (value (alist-get var var-alist))
             (funs (cdr var-funs)))
       (dolist (fun funs)
-        (let ((fun-result (funcall fun value)))
-          (alist-put! var var-alist fun-result)))))
+        (alist-put! var var-alist (funcall fun value)))))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-funs '((subj . i) (subj-2 . you) (baz . you)) '((subj swap-word) (subj-2 swap-word)))
