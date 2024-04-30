@@ -376,7 +376,7 @@ because we're gong to be stshing stuff in their symbol properties."
       (pd--def (double n) (+ n n))
       (pd--def (square y) (* y y))
       (pd--def (double-square y) (double (square y)))
-      ;; (double-square 3)
+      (double-square 3)
 
       (prndiv)
       (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
