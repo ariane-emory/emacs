@@ -8,13 +8,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *wm--indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
+(defcustom *wm:indent-char* ?\  ;; DO NOT NEGLECT THE SPACE!
   "The character used for indentation in `with-messages'."
   :group 'with-messages
   :type 'character)
 
 (defcustom *wm--indent-size* 2
-  "The number of `*wm--indent-char*' characters used for each level of indentation in `with-messages'."
+  "The number of `*wm:indent-char*' characters used for each level of indentation in `with-messages'."
   :group 'with-messages
   :type 'integer)
 
@@ -28,7 +28,7 @@
   :group 'with-messages
   :type 'string)
 
-(defcustom *wm--divider-width* 60
+(defcustom *wm:divider-width* 60
   "The width of the divider line in `prndiv'."
   :group 'with-messages
   :type 'integer)
@@ -173,7 +173,7 @@ last expression in `body'."
   (let ((indent-string
           (make-string
             (wm::actual-indent)
-            *wm--indent-char*))
+            *wm:indent-char*))
          (depth-indicator
            (if *wm--depth-indicator-enable*
              (format  *wm--depth-indicator-format*
@@ -206,7 +206,7 @@ last expression in `body'."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun prndiv (&optional (char ?\=) (count *wm--divider-width*))
+(cl-defun prndiv (&optional (char ?\=) (count *wm:divider-width*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a divider line with the current indentation level."
   ;; (indented-message "%s" (make-string count char))
