@@ -32,7 +32,8 @@
 (defvar *rules*
   '( ( (,subj ,bar ,baz)
        (fine \, ,subj ,bar ,baz \, so what \?)
-       ((subj subject?))) 
+       ((subj subject?))
+       ((subj repeat))) ; not yet used...
      ( (,subj ,modal-verb ,verb a ,thing)
        (so just go ,verb a ,thing \!))
      ( (,subj ,modal-verb never ,verb a ,thing)
