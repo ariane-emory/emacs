@@ -33,21 +33,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun proc-input (target)
+(defun proc-input (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
-  (prndiv)
-  (prn "target: %s" target)
-  (catch 'result
-    (dolist (pair *rules*)
-      (let ((pattern (car pair)) (out-pattern (cdr pair)))
-        (if (eq pattern t)
-          (throw 'result out-pattern)
-          ;;(prn "try pat: %s" pattern)
-          (when-let ((alist (ap:match pattern target)))
-            (throw 'result
-              (ap:fill out-pattern
-                (mapcdar #'swap-word alist)))))))))
+  (prn "INPUT:     %s" input)
+  (prn "RESPONSE:  %s"
+    (catch 'result
+      (dolist (pair *rules*)
+        (let ((pattern (car pair)) (response (cdr pair)))
+          (if (eq pattern t)
+            (throw 'result response)
+            (prn "  try:     %s" pattern)
+            (when-let ((alist (ap:match pattern input)))
+              (throw 'result
+                (ap:fill response (mapcdar #'swap-word alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -62,7 +61,8 @@
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)
              (foo bar baz)))
-  (prn (proc-input target)))
+  (prndiv)
+  (proc-input target))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
