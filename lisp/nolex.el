@@ -72,7 +72,7 @@
         (when-let ((alist (ap:match input-pattern input)))
           (when-let ((var-testses (third rule)))
             (prn "This rule has VAR-TESTSES: %s" var-testses)
-            (run-var-tests alist var-testses))
+            (prn "TESTS RETURNED: %s" (run-var-tests alist var-testses)))
           (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -80,23 +80,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-tests (var-alist var-testses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; (prn "var-alist: %s" var-alist)
   (with-indentation
-    (dolist (var-tests var-testses)
-      (prn "var-tests: %s" var-tests)
-      (with-indentation
-        (let* ( (var   (car var-tests))
-                (value (alist-get var alist))
-                (tests (cdr var-tests)))
-          (prn "var:   %s" var)
-          (prn "value: %s" value)
-          (prn "tests: %s" tests)
-          (with-indentation
-            (dolist (test tests)
-              (let ((test-result (not (null (funcall test value)))))
-                (prn "test:   %s" test)
-                (prn "result: %s" test-result)))))))))
+    (catch 'result
+      (dolist (var-tests var-testses)
+        ;; (prn "var-tests: %s" var-tests)
+        (with-indentation
+          (let* ( (var   (car var-tests))
+                  (value (alist-get var alist))
+                  (tests (cdr var-tests)))
+            ;; (prn "var:   %s" var)
+            ;; (prn "value: %s" value)
+            ;; (prn "tests: %s" tests)
+            (with-indentation
+              (dolist (test tests)
+                (let ((test-result (not (null (funcall test value)))))
+                  ;; (prn "test:   %s" test)
+                  ;; (prn "result: %s" test-result)
+                  (unless test-result
+                    (throw 'result nil)))))))))
+    t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?))) ;; should be t but returns nil!
+(run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?))) 
+(run-var-tests '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
 (prn "START:")
