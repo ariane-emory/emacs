@@ -12,7 +12,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ap::merge-2-alists (alist-1 alist-2)
   "Merge two alists into a single alist, maintaining their relative key order
- and signaling an eror upon encountering a duplicate key. Results are returned
+and signaling an eror upon encountering a duplicate key. Result is returned
 in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; (prn "merge this: %s" alist-1)
