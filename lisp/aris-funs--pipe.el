@@ -77,7 +77,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --pipe-prn (first &rest rest)
+(defmacro pipe::prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-fun*"
   `(when *pipe--verbose* (ignore (funcall *pipe--print-fun* ,first ,@rest))))
@@ -85,7 +85,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --pipe-prndiv ()
+(defmacro pipe::prndiv ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *pipe--print-divider-fun*"
   `(when *pipe--verbose* (ignore (funcall *pipe--print-divider-fun*))))
@@ -174,8 +174,8 @@
           (return-label `',(gensym "return-"))
           (var             (alist-get 'var  args))
           (body         `',(alist-get 'body args)))
-    ;; (--pipe-prn "return-label is %S" return-label)
-    ;; (--pipe-prn "args is %S" args)
+    ;; (pipe::prn "return-label is %S" return-label)
+    ;; (pipe::prn "args is %S" args)
     `(let* ( (,var             nil)
              (var-sym        ',var)
              (body            ,body)
@@ -184,7 +184,7 @@
        (cl-labels ( (length>= (len)
                       (length> remaining-body (1- len)))
                     (set-remaining-body! (new-body)
-                      (--pipe-prn "Setting remaining-body to %S." new-body)
+                      (pipe::prn "Setting remaining-body to %S." new-body)
                       (setq remaining-body new-body))
                     (pop! ()
                       (unless (length>= 1) (signal 'stack-underflow (list 'remaining-body)))
@@ -192,14 +192,14 @@
                     (pop-next-and-args! ()
                       (let ((drop-count 1) poppeds)
                         (until (zero? drop-count)
-                          (--pipe-prn "Drop count is %S" drop-count)
+                          (pipe::prn "Drop count is %S" drop-count)
                           (cl-decf drop-count)
                           (let* ( (popped (pop!))
                                   (popped-things-arity (--get-pipe-command-arity popped))
                                   (next-drop-count (+ drop-count popped-things-arity)))
                             (unless (length>= next-drop-count)
                               (error "malformed pipe body detected during drop"))
-                            (--pipe-prn
+                            (pipe::prn
                               (concat "Just dropped %S, adding %d to drop-count, "
                                 "new drop-count is %s")
                               popped popped-things-arity next-drop-count)
@@ -209,7 +209,7 @@
                     (store! (value)
                       (prog1
                         (setq ,var value)
-                        (--pipe-prn "Updated %S to %S." var-sym ,var)))
+                        (pipe::prn "Updated %S to %S." var-sym ,var)))
                     (flag-is? (tested-flag)
                       (eq flag (--valid-pipe-flag tested-flag)))
                     (set-flag! (new-flag &optional force)
@@ -219,27 +219,27 @@
                             (error "Cannot set flag to %S when flag is already set to %S."
                               new-flag flag))
                           (force
-                            (--pipe-prn "FORCING FLAG FROM %S TO %S." flag new-flag))
+                            (pipe::prn "FORCING FLAG FROM %S TO %S." flag new-flag))
                           (t
-                            (--pipe-prn "Setting flag from %S to %S%s." flag new-flag
+                            (pipe::prn "Setting flag from %S to %S%s." flag new-flag
                               (if force " (forced)" ""))))
                         (setq flag new-flag)))
                     (unset-flag! ()
                       (when flag
-                        (--pipe-prn "Unsetting flag %S." flag)
+                        (pipe::prn "Unsetting flag %S." flag)
                         (set-flag! nil)))
                     (labeled-print (label value)
                       (let* ( (label  (format "%s:" label))
                               (whites (make-string (- 21 (length label)) ?\ ))
                               (label  (concat label whites)))
-                        (--pipe-prn "%s%S" label value))))
-         (--pipe-prndiv)
-         (--pipe-prn "START WITH %s!" remaining-body)
-         (--pipe-prndiv)
+                        (pipe::prn "%s%S" label value))))
+         (pipe::prndiv)
+         (pipe::prn "START WITH %s!" remaining-body)
+         (pipe::prndiv)
          (catch ,return-label                
            (while remaining-body
              (let ((expr (pop!)))
-               (--pipe-prndiv)
+               (pipe::prndiv)
                (labeled-print "Current" expr)
                (labeled-print "Remaining" remaining-body)
                (labeled-print var-sym ,var)
@@ -255,28 +255,28 @@
                  (pcase expr
                    ;; ('nil (error "impossible, expr is %s?" expr))
                    ((and `',label (guard (symbolp label)))
-                     (--pipe-prn "Skip past label %s..." label))
+                     (pipe::prn "Skip past label %s..." label))
                    ;; maybe this should be handled inside the _ case like other flagged 
                    ;; items so as to eval the label:
                    (:go
                      (unless (length>= (--get-pipe-command-arity expr))
                        (error "malformed pipe body"))
                      (let ((go-label (pop!)) found-go-label)
-                       (--pipe-prn ":GO-ING TO %S" go-label)
+                       (pipe::prn ":GO-ING TO %S" go-label)
                        ;; rewind:
                        (set-remaining-body! body)
                        ;; skip exprs/commands+args until we find the label:
                        (while (and (not found-go-label) remaining-body)
                          (let ((poppeds (pop-next-and-args!)))
-                           (--pipe-prn "poppeds are %S, left with %S"
+                           (pipe::prn "poppeds are %S, left with %S"
                              poppeds remaining-body)
-                           ;; (--pipe-prn "%S vs %S = %S"
+                           ;; (pipe::prn "%S vs %S = %S"
                            ;;   poppeds `(,go-label)
                            ;;   (equal poppeds `(,go-label)))
                            (setq found-go-label (equal poppeds `(,go-label)))))
                        ;; error if we didn't find the label:
                        (if found-go-label
-                         (--pipe-prn "CONTINUING FROM %S." remaining-body)
+                         (pipe::prn "CONTINUING FROM %S." remaining-body)
                          (error ":go label %s not found in %s" go-label body))))
                    (_ (let
                         ((result
@@ -285,32 +285,32 @@
                                    (let ((return-label ,return-label))
                                      `(cl-flet
                                         ((return! (value)
-                                           (--pipe-prn "Throwing %S." ',return-label)
+                                           (pipe::prn "Throwing %S." ',return-label)
                                            (throw ',return-label value)))
                                         ,expr))))))
                         (labeled-print "Expr result" result)
                         (cond
                           ((flag-is? :IGNORE)
-                            (--pipe-prn "Not setting %S because %S." result flag))
+                            (pipe::prn "Not setting %S because %S." result flag))
                           ((flag-is? :WHEN)
                             (when (not result) (pop-next-and-args!)))
                           ((flag-is? :UNLESS)
                             (when result (pop-next-and-args!)))
                           ((flag-is? :RETURN)
-                            (--pipe-prn "Returning due to command: %S" result)
+                            (pipe::prn "Returning due to command: %S" result)
                             (throw ,return-label result))
                           ((and (flag-is? :MAYBE) result)
                             (store! result))
                           ((and (flag-is? :MAYBE) (not result))
-                            (--pipe-prn "Ignoring %S." result))
+                            (pipe::prn "Ignoring %S." result))
                           (t (store! result)))
                         (unset-flag!)))))))
            ;; For clarity, explicitly throw the return value if we run out of stack items:
            (throw ,return-label
              (progn
-               (--pipe-prndiv)
-               (--pipe-prn "Returning this because stack is empty: %S" ,var)
-               (--pipe-prndiv)
+               (pipe::prndiv)
+               (pipe::prn "Returning this because stack is empty: %S" ,var)
+               (pipe::prndiv)
                ,var))
            ) ;; END OF CATCH.
          ) ;; END OF CL-LABELS.
@@ -607,7 +607,7 @@
     (|> 5 6 7 'loop (* _ 3) :when (< _ 100) :go 'loop)
     returns 189)
   
-  (--pipe-prn "Ran all pipe test cases.")
+  (pipe::prn "Ran all pipe test cases.")
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
