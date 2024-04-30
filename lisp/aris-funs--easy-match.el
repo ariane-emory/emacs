@@ -29,7 +29,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ap:match (pat targ)
+(cl-defun ap:match (pat targ &optional (dont-care '_) (ellipsis '...))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
   ;; (prn "MATCHING %S AGAINST %S" pat targ)
@@ -38,28 +38,43 @@ in reverse order."
     ;; '();; t matches anything and returns an empty alist.
     (let (alist)
       (while (and pat targ)
+        ;; (prn "pat:  %s" pat)
+        ;; (prn "targ: %s" targ)
         (let ( (pat-head  (pop pat))
                (targ-head (pop targ)))
+          ;; (prn "pat-head:   %s" pat)
+          ;; (prn "targ-headd: %s" targ)
           (cond
             ((equal pat-head targ-head)) ; do nothing.
-            ((eq pat-head '_)) ; do nothing, maybe this should only match atoms? dunno.
-            ((eq pat-head '...) 
+            ;; do nothing, maybe this should only match atoms? dunno:
+            ((and dont-care (eq pat-head dont-care))) 
+            ((and ellipsis (eq pat-head ellipsis) )
               (unless (null pat)
-                (error "... must be the last element in the pattern"))
+                (error "ellipsis must be the last element in the pattern"))
               ;; nullify TARG to break the loop 'successfully'.
               (setf targ nil))
             ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
               (when (assoc (cadr pat-head) alist)
                 (error "duplicate key %s" (cadr pat-head)))
               (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
-            ((proper-list-p pat-head) ; recurse and merge.
-              (setf alist
+            ((and (proper-list-p pat-head)
+               (proper-list-p targ-head))
+              (setf alist ; recurse and merge:
                 (ap::merge-2-alists alist
-                  (with-indentation (ap:match pat-head targ-head)))))
+                  (with-indentation (ap:match pat-head targ-head dont-care ellipsis)))))
             (t (throw 'no-match nil)))))
-      ;; (unless (or pat targ) (nreverse alist))
-      ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)):
-      (unless (or (and pat (not (and (eq '... (car pat )) (not (cdr pat))))) targ) (nreverse alist))))) 
+      ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
+      ;; if not for the '... in final position case, this could really just be
+      ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
+      (unless (or targ
+                (and pat
+                  (not (and ellipsis
+                       (eq ellipsis (car pat ))
+                       (progn
+                         (when (cdr pat)
+                           (error "ellipsis must be the last element in the pattern.")
+                           t))))))
+        (nreverse alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
@@ -70,9 +85,13 @@ in reverse order."
 (confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
 (confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
   ((x . a) (y . 5)))
-(confirm that (ap:match '(1 2 (,x b ...) 4  ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
   ((x . a) (y . 5)))
-
+(confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
+(confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns
+  ((x . 1) (y . 4)))
+(confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4)) returns
+  ((x . 1) (p . q) (y . 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -142,4 +161,8 @@ in reverse order."
 (provide 'aris-funs--easy-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; this shouldn't be allowed to partially match;
+(ap:match '(,x 2 (,p ,q ...) 3 ,y) '(1 2 (q r) 3 4))
 
+;; it would be nice if this matched:
+(ap:match '(,x ...) '(1))
