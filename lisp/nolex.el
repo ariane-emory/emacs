@@ -30,22 +30,38 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
-  '( ( (,subj ,bar ,baz)
-       (fine \, ,subj ,bar ,baz \, so what \?)
-       ((subj subject?))
-       ((subj repeat-word)))
-     ( (,subj ,modal-verb ,verb a ,thing)
-       (so just go ,verb a ,thing \!))
-     ( (,subj ,modal-verb never ,verb a ,thing)
-       (,subj ,modal-verb ,verb a ,thing \!))
-     ( (you ,foo ,baz \!)
-       (no \, it is you who ,foo ,baz \!))
-     ( (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
-       ( come on \, ,subj can\'t really ,verb that
-         ,subj-2 ,modal-verb never ,verb-2 a ,noun \!))
-     ( (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
-       ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?))
-     ( t (i don\'t understand \!))))
+  '( ( :input-pattern    (,subj ,bar ,baz)
+       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+       :var-preds        ((subj subject?))
+       :var-funs         nil)
+     ;;-----------------------------------------------------------------------------------
+     ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
+       :response-pattern (so just go ,verb a ,thing \!)
+       :var-preds        ((subj subject?))
+       :var-funs         nil)
+     ;;-----------------------------------------------------------------------------------
+     ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
+       :response-pattern (,subj ,modal-verb ,verb a ,thing \!)
+       :var-preds        nil
+       :var-funs         ((subj swap-word)))
+     ;;-----------------------------------------------------------------------------------
+     ( :input-pattern    (you ,foo ,baz \!)
+       :response-pattern (no \, it is you who ,foo ,baz \!))
+     ;;-----------------------------------------------------------------------------------
+     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
+       :response-pattern ( come on \, ,subj can\'t really ,verb
+                           that ,subj-2 ,modal-verb never ,verb-2 a ,noun \!)
+       :var-preds        nil
+       :var-funs         ((subj swap-word) (subj-2 swap-word)))
+     ;;-----------------------------------------------------------------------------------
+     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
+       :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal-verb
+                           ,verb-2 a ,noun \?)
+       :var-preds        nil
+       :var-funs         ((subj swap-word) (subj-2 swap-word)))
+     ;;-----------------------------------------------------------------------------------
+     ( :input-pattern    t
+       :response-pattern (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -80,16 +96,22 @@
       (dolist (rule *rules*)
         (catch continue
           (with-indentation
-            (let ( (input-pattern    (first  rule))
-                   (response-pattern (second rule)))
+            (let ( (input-pattern    (plist-get rule :input-pattern))
+                   (response-pattern (plist-get rule :response-pattern))
+                   (var-preds        (plist-get rule :var-preds))
+                   (var-funs         (plist-get rule :var-funs)))
+              ;; (prn "input-pattern:    %s" input-pattern)
+              ;; (prn "response-pattern: %s" response-pattern)
+              ;; (prn "var-preds:      %s" var-preds)
+              ;; (prn "var-funs:       %s" var-funs)
               (if (eq t input-pattern)
                 (throw result response-pattern)
                 (when-let ((var-alist (ap:match input-pattern input)))
-                  (when-let ((var-testses (third rule)))
-                    (let ((tests-result (run-var-tests var-alist var-testses)))
+                  (when var-preds
+                    (let ((tests-result (run-var-tests var-alist var-preds)))
                       (unless tests-result (throw continue nil))))
-                  (when-let ((var-funses (fourth rule)))
-                    (run-var-funs var-alist var-funses))
+                  (when var-funs
+                    (run-var-funs var-alist var-funs))
                   (throw result (ap:fill response-pattern var-alist)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -143,22 +165,21 @@
              (i think that you would like a smoke)
              (i think that you should have a smoke)
              (i know that i could have a smoke)
-             ;; (i believe that you have seen a ghost)
-             ;; (you believe that i have seen a ghost)
-             ;; (i suspect that you have never seen a zebra)
-             ;; (i know that you have never eaten a hamburger)
-             ;; (you would never eat a hamburger)
-             ;; (you should never eat a hamburger)
-             ;; (i could eat a hamburger)
-             ;; (foo bar baz)
-             ;; (foo bar baz quux)
-             ;; (you don\'t understand)
-             ;; (i don\'t understand \!)
-             ;; (you eat chickens)
-             ;; (dogs eat chickens)
-             ;; (you are stupid \!)
-             ;; (you suck ass \!)
-             ))
+             (i believe that you have seen a ghost)
+             (you believe that i have seen a ghost)
+             (i suspect that you have never seen a zebra)
+             (i know that you have never eaten a hamburger)
+             (you would never eat a hamburger)
+             (you should never eat a hamburger)
+             (i could eat a hamburger)
+             (foo bar baz)
+             (foo bar baz quux)
+             (you don\'t understand)
+             (i don\'t understand \!)
+             (you eat chickens)
+             (dogs eat chickens)
+             (you are stupid \!)
+             (you suck ass \!)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
