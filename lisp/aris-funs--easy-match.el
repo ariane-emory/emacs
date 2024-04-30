@@ -45,8 +45,9 @@ in reverse order."
                   (error "duplicate key %s" (cadr pat-head)))
                 (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
               ((proper-list-p pat-head) ; recurse and merge.
-                (setf alist (ap::merge-2-alists alist
-                              (with-indentation (ap:match pat-head targ-head)))))
+                (setf alist
+                  (ap::merge-2-alists alist
+                    (with-indentation (ap:match pat-head targ-head)))))
               ((equal pat-head targ-head)) ; do nothing.
               (t (throw 'no-match nil)))))
         (unless (or pat targ) (nreverse alist))))))
@@ -57,6 +58,8 @@ in reverse order."
 (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:match t '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (ap:match

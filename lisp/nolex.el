@@ -67,15 +67,21 @@
 (defun get-response (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
-  (catch 'result
-    (dolist (rule *rules*)
-      (let ( (input-pattern    (first  rule))
-             (response-pattern (second rule)))
-        (when-let ((alist (ap:match input-pattern input)))
-          (when-let ((var-testses (third rule)))
-            (prn "This rule has VAR-TESTSES: %s" var-testses)
-            (prn "TESTS RETURNED: %s" (run-var-tests alist var-testses)))
-          (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))
+  (with-gensyms (result continue)
+    (catch result
+      (dolist (rule *rules*)
+        (catch continue
+          (let ( (input-pattern    (first  rule))
+                 (response-pattern (second rule)))
+            (prn "try: %s" input-pattern)
+            (when-let ((alist (ap:match input-pattern input)))
+              (when-let ((var-testses (third rule)))
+                (prn "This rule has VAR-TESTSES: %s" var-testses)
+                (let ((tests-result (run-var-tests alist var-testses)))
+                  (prn "TESTS RETURNED: %s" tests-result)
+                  (unless tests-result
+                    (throw continue nil))))
+              (throw result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
