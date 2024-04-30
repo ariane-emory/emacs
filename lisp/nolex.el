@@ -95,6 +95,16 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (fill-in-missing-rule-keys
+    '( :input-pattern (,subj ,bar ,baz)
+       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
+  returns ( (:var-preds)
+            (:var-funs)
+            (:input-pattern (\, subj) (\, bar) (\, baz))
+            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,20 +139,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-tests (var-alist var-testses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (with-indentation
-    (with-gensyms (my-result)
-      (catch my-result
-        (dolist (var-tests var-testses)
+  (if (null var-testses)
+    t
+    (with-indentation
+      (with-gensyms (my-result)
+        (catch my-result
           (with-indentation
-            (let* ( (var   (car var-tests))
-                    (value (alist-get var var-alist))
-                    (tests (cdr var-tests)))
-              (with-indentation
-                (dolist (test tests)
-                  (let ((test-result (not (null (funcall test value)))))
-                    (unless test-result
-                      (throw my-result nil))))))))
-        t))))
+            (dolist (var-tests var-testses)
+              (let* ( (var   (car var-tests))
+                      (value (alist-get var var-alist))
+                      (tests (cdr var-tests)))
+                (with-indentation
+                  (dolist (test tests)
+                    (let ((test-result (not (null (funcall test value)))))
+                      (unless test-result
+                        (throw my-result nil))))))))
+          t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-tests '((subj . i) (bar . think) (baz . you)) '((subj subject?)))
   returns t)
@@ -154,16 +166,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-funs (var-alist var-funses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (with-indentation
-    (dolist (var-funs var-funses)
-      (with-indentation
-        (let* ( (var   (car var-funs))
-                (value (alist-get var var-alist))
-                (funs (cdr var-funs)))
-          (with-indentation
-            (dolist (fun funs)
-              (let ((fun-result (funcall fun value)))
-                (alist-put! var var-alist fun-result)))))))))
+  (dolist (var-funs var-funses)
+    (let* ( (var   (car var-funs))
+            (value (alist-get var var-alist))
+            (funs (cdr var-funs)))
+      (dolist (fun funs)
+        (let ((fun-result (funcall fun value)))
+          (alist-put! var var-alist fun-result)))))
+  var-alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (run-var-funs '((subj . i) (subj-2 . you) (baz . you)) '((subj swap-word) (subj-2 swap-word)))
+  returns ((subj . you) (subj-2 . i) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
