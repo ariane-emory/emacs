@@ -2,6 +2,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--easy-match)
+(require 'aris-funs--lists)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro make-member-p (lst)
+  `(lambda (x) (member x ,lst)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *subject-words*
+  '(i you))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'subject? (make-member-p *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -15,21 +29,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ( (,subj ,bar ,baz)
-       (fine \, ,subj ,bar ,baz \, so what \?))
+       (fine \, ,subj ,bar ,baz \, so what \?)
+       ((suj subject?))) ;; we don't use this yet...
      ( (,subj ,modal-verb ,verb a ,thing)
        (so just go ,verb a ,thing \!))
      ( (,subj ,modal-verb never ,verb a ,thing)
        (,subj ,modal-verb ,verb a ,thing \!))
-     ( (you ,do-don\'t ,verb \!)
-       (you ,do-don\'t ,verb \!))
-     ( (,subj ,do-don\'t ,verb \!)
-       (,subj ,do-don\'t ,verb \!))
+     ( (you ,foo ,baz \!)
+       (no \, it is you who ,foo ,baz \!))
      ( (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
        ( come on \, ,subj can\'t really ,verb that
          ,subj-2 ,modal-verb never ,verb-2 a ,noun \!))
      ( (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
        ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?))
-     ( t . (i don\'t understand \!))))
+     ( t (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -53,14 +66,13 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
   (catch 'result
-    (dolist (pair *rules*)
-      (let ((pattern (car pair)) (response (cadr pair)))
-        (if (eq pattern t)
-          (throw 'result response)
-          ;; (prn "  try:     %s" pattern)
-          (when-let ((alist (with-indentation (ap:match pattern input))))
-            (throw 'result
-              (ap:fill response (mapcdar #'swap-word alist)))))))))
+    (dolist (rule *rules*)
+      (let ( (input-pattern    (first  rule))
+             (response-pattern (second rule)))
+        (if (eq input-pattern t)
+          (throw 'result response-pattern)
+          (when-let ((alist (ap:match input-pattern input)))
+            (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -80,12 +92,15 @@
              (you should never eat a hamburger)
              (i could eat a hamburger)
              (foo bar baz)
+             (foo bar baz quux)
              (you don\'t understand)
              (i don\'t understand \!)
              (you eat chickens)
+             (you are stupid \!)
              (you suck ass \!)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
