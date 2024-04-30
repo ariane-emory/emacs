@@ -42,7 +42,7 @@ in reverse order."
 
 
 ;; it would be nice if this matched:
-;; (ap:match '(,x ...) '(1))
+;; (ap:match '(,x ...) '(1)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,17 +50,17 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
   (prn "MATCHING %S AGAINST %S" pattern target)
-  (prn "no-match-tag: %s" no-match-tag)
+  (prn "no-match-tag:   %s" no-match-tag)
   ;; (prndiv)
   (let (alist)
     (while (and pattern target)
       (prndiv)
-      (prn "pattern:     %s" pattern)
-      (prn "target:      %s" target)
+      (prn "pattern:       %s" pattern)
+      (prn "target:        %s" target)
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
-        (prn "pat-head:    %s" pat-head)
-        (prn "targ-head:   %s" targ-head)
+        (prn "pat-head:      %s" pat-head)
+        (prn "targ-head:     %s" targ-head)
         (cond
           ((equal pat-head targ-head)) ; do nothing.
           ;; do nothing, maybe this should only match atoms? dunno:
@@ -84,8 +84,8 @@ in reverse order."
             (prn "THROWING %s!" no-match-tag)
             (throw no-match-tag nil))))) ;; end of (while (and pattern target).
     (prndiv)
-    (prn "end pattern: %s" pattern)
-    (prn "end target:  %s" target)
+    (prn "final pattern: %s" pattern)
+    (prn "final target:  %s" target)
     (unless (not pattern)
       (prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
