@@ -25,16 +25,16 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
   (prn "target: %s" target)
-  (catch 'matched
+  (catch 'result
     (dolist (pair *rules*)
       (let ((pattern (car pair)) (out-pattern (cdr pair)))
         ;;(prn "try pat: %s" pattern)
         (when-let ((alist (ap:match pattern target)))
-          (prn
-            (ap:fill out-pattern (rmapcar alist
-                                   (lambda (kvp)
-                                     (cons (car kvp) (swap-word (cdr kvp)))))))
-          (throw 'matched t))))))
+          (throw 'result
+            (ap:fill out-pattern
+              (rmapcar alist
+                (lambda (kvp)
+                  (cons (car kvp) (swap-word (cdr kvp))))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -48,7 +48,7 @@
              (i believe that you have seen a ghost)
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)))
-  (proc-input target))
+  (prn (proc-input target)))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
