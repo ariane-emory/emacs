@@ -32,7 +32,7 @@
 (defvar *rules*
   '( ( (,subj ,bar ,baz)
        (fine \, ,subj ,bar ,baz \, so what \?)
-       ((subj subject?))) ;; we don't use this yet...
+       ((subj subject?))) 
      ( (,subj ,modal-verb ,verb a ,thing)
        (so just go ,verb a ,thing \!))
      ( (,subj ,modal-verb never ,verb a ,thing)
@@ -49,13 +49,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun swap-word (sym)
-  "Return the swapped word for SYM found in *SWAP-WORDS*, or SYM if none."
+(defun repeat (word-sym)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (symbolicate word-sym word-sym))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun swap-word (word-sym)
+  "Return the swapped word for WORD-SYM found in *SWAP-WORDS*, or WORD-SYM if none."
   (let ((res
           (cond
-            ((assoc sym  *swap-words*) (cdr (assoc sym *swap-words*)))
-            ((rassoc sym *swap-words*) (car (rassoc sym *swap-words*)))
-            (t sym))))
+            ((assoc word-sym  *swap-words*) (cdr (assoc word-sym *swap-words*)))
+            ((rassoc word-sym *swap-words*) (car (rassoc word-sym *swap-words*)))
+            (t word-sym))))
     ;; (prn "swap %s for %s" sym res)
     res
     ))
@@ -71,17 +78,20 @@
     (catch result
       (dolist (rule *rules*)
         (catch continue
-          (let ( (input-pattern    (first  rule))
-                 (response-pattern (second rule)))
-            (prn "try: %s" input-pattern)
-            (when-let ((alist (ap:match input-pattern input)))
-              (when-let ((var-testses (third rule)))
-                (prn "This rule has VAR-TESTSES: %s" var-testses)
-                (let ((tests-result (run-var-tests alist var-testses)))
-                  (prn "TESTS RETURNED: %s" tests-result)
-                  (unless tests-result
-                    (throw continue nil))))
-              (throw result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))))
+          (with-indentation
+            (let ( (input-pattern    (first  rule))
+                   (response-pattern (second rule)))
+              ;; (prn "try: %s" input-pattern)
+              (if (eq t input-pattern)
+                (throw result response-pattern)
+                (when-let ((alist (ap:match input-pattern input)))
+                  (when-let ((var-testses (third rule)))
+                    ;; (prn "This rule has VAR-TESTSES: %s" var-testses)
+                    (let ((tests-result (run-var-tests alist var-testses)))
+                      ;; (prn "TESTS RETURNED: %s" tests-result)
+                      (unless tests-result (throw continue nil))))
+                  (throw result
+                    (ap:fill response-pattern (mapcdar #'swap-word alist))))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -121,25 +131,25 @@
 (prndiv)
 (prn "START:")
 (dolist (input
-          '( ;; (i think that i would like a smoke)
-             ;; (i think that you would like a smoke)
-             ;; (i think that you should have a smoke)
-             ;; (i know that i could have a smoke)
-             ;; (i believe that you have seen a ghost)
-             ;; (you believe that i have seen a ghost)
-             ;; (i suspect that you have never seen a zebra)
-             ;; (i know that you have never eaten a hamburger)
-             ;; (you would never eat a hamburger)
-             ;; (you should never eat a hamburger)
-             ;; (i could eat a hamburger)
-             ;; (foo bar baz)
-             ;; (foo bar baz quux)
-             ;; (you don\'t understand)
-             ;; (i don\'t understand \!)
+          '( (i think that i would like a smoke)
+             (i think that you would like a smoke)
+             (i think that you should have a smoke)
+             (i know that i could have a smoke)
+             (i believe that you have seen a ghost)
+             (you believe that i have seen a ghost)
+             (i suspect that you have never seen a zebra)
+             (i know that you have never eaten a hamburger)
+             (you would never eat a hamburger)
+             (you should never eat a hamburger)
+             (i could eat a hamburger)
+             (foo bar baz)
+             (foo bar baz quux)
+             (you don\'t understand)
+             (i don\'t understand \!)
              (you eat chickens)
              (dogs eat chickens)
-             ;; (you are stupid \!)
-             ;; (you suck ass \!)
+             (you are stupid \!)
+             (you suck ass \!)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
