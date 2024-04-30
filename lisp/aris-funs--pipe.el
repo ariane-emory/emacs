@@ -620,7 +620,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (progn
-    (let ((*wm--depth-indicator-enable*))
+    (let ((*wm:depth-indicator-enable*))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; Reset the pattern-call dispatcher's alist:
       (pd--reset)

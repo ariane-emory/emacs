@@ -18,7 +18,7 @@
   :group 'with-messages
   :type 'integer)
 
-(defcustom *wm--depth-indicator-enable* nil
+(defcustom *wm:depth-indicator-enable* nil
   "Whether to display the current indentation level in `with-messages'."
   :group 'with-messages
   :type 'boolean)
@@ -175,7 +175,7 @@ last expression in `body'."
             (wm::actual-indent)
             *wm:indent-char*))
          (depth-indicator
-           (if *wm--depth-indicator-enable*
+           (if *wm:depth-indicator-enable*
              (format  *wm--depth-indicator-format*
                *wm--indent*) "")))
     (format "%s%s" depth-indicator indent-string)))
