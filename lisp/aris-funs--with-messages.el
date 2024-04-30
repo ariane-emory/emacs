@@ -136,7 +136,8 @@ last expression in `body'."
 (defun indented-pretty-message (fmt &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a capitalized message with the current indentation level."
-  (apply #'indented-message (wm::capitalize (concat fmt (if (wm::last-char-is-punctuation? fmt) "" "."))) rest)
+  (apply #'indented-message
+    (wm::capitalize (concat fmt (if (wm::last-char-is-punctuation? fmt) "" "."))) rest)
   ;; (apply 'message (format "%s%s" (indent-string) fmt) rest)
   nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
