@@ -97,6 +97,39 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun run-var-funs (var-alist var-funses)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; (prn "var-alist: %s" var-alist)
+  (with-indentation
+    (with-gensyms (my-result)
+      (catch my-result
+        (dolist (var-funs var-funses)
+          ;; (prn "var-funs: %s" var-funs)
+          (with-indentation
+            (let* ( (var   (car var-funs))
+                    (value (alist-get var var-alist))
+                    (funs (cdr var-funs)))
+              ;; (prn "var:   %s" var)
+              ;; (prn "value: %s" value)
+              ;; (prn "value2: %s" (assoc var alist))
+              ;; (prn "funs: %s" funs)
+              (with-indentation
+                (dolist (test funs)
+                  (let ((test-result (not (null (funcall test value)))))
+                    ;; (prn "test:   %s" test)
+                    ;; (prn "result: %s" test-result)
+                    (unless test-result
+                      (throw my-result nil))))))))
+        t))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (run-var-funs '((subj . i) (bar . think) (baz . you)) '((subj subject?)))
+  returns t)
+(confirm that (run-var-funs '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
+  returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun run-var-tests (var-alist var-testses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; (prn "var-alist: %s" var-alist)
@@ -127,6 +160,7 @@
 (confirm that (run-var-tests '((subj . x) (bar . think) (baz . you)) '((subj subject?)))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
