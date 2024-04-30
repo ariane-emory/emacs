@@ -276,6 +276,11 @@
       (erase-buffer)))
   (let ((result (eval-buffer)))
     (message "Evaluated buffer: %s" result))
+  ;; These don't work:
+  ;; (run-with-idle-timer 0.1 nil
+  ;;   (lambda ()
+  ;;     (with-current-buffer "*Messages*"
+  ;;       (goto-char (point-min)))))
   ;; (with-current-buffer "*Messages*"
   ;;   (goto-char (point-min)))
   )
