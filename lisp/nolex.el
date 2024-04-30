@@ -1,3 +1,7 @@
+;; -*- fill-column: 90; eval: (display-fill-column-indicator-mode 1); -*-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *swap-words*
   '( (i . you)))
@@ -12,6 +16,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (sym)
+  "Return the swapped word for SYM found in *SWAP-WORDS*, or SYM if none."
   (cond
     ((assoc sym  *swap-words*) (cdr (assoc sym *swap-words*)))
     ((rassoc sym *swap-words*) (car (rassoc sym *swap-words*)))
@@ -23,18 +28,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-input (target)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Transform INPUT according to *RULES*, returning nil if none match."
   (prndiv)
   (prn "target: %s" target)
-  (catch 'result
-    (dolist (pair *rules*)
-      (let ((pattern (car pair)) (out-pattern (cdr pair)))
-        ;;(prn "try pat: %s" pattern)
-        (when-let ((alist (ap:match pattern target)))
-          (throw 'result
-            (ap:fill out-pattern
-              (rmapcar alist
-                (lambda (kvp)
-                  (cons (car kvp) (swap-word (cdr kvp))))))))))))
+  (if-let ((res
+             (catch 'result
+               (dolist (pair *rules*)
+                 (let ((pattern (car pair)) (out-pattern (cdr pair)))
+                   ;;(prn "try pat: %s" pattern)
+                   (when-let ((alist (ap:match pattern target)))
+                     (throw 'result
+                       (ap:fill out-pattern
+                         (mapcdar #'swap-word alist)))))))))
+    res
+    '(i don\'t understand \!)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -49,9 +56,7 @@
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)
              (foo bar baz)))
-  (prn (if-let ((res (proc-input target)))
-         res
-         '(i don\'t understand \!))))
+  (prn (proc-input target)))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
