@@ -32,11 +32,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ap::prndiv ()
+(defun ap::prndiv (&rest args)
   "Internal print helper function."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (when *ap:match--verbose*
-    (prndiv)))
+    (apply #'prndiv args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -65,10 +65,15 @@ in reverse order."
   "A simple pattern matching/destructuring fun."
   (with-gensyms (no-match-tag)
     (ap::prndiv)
-    (ap::prn "GENERATED:    %s" no-match-tag)
-    (catch no-match-tag
-      (with-indentation
-        (ap::match1 pattern target dont-care ellipsis no-match-tag)))))
+    (ap::prn "GENERATED:     %s" no-match-tag)
+    (let ((res
+            (catch no-match-tag
+              (with-indentation
+                (ap::match1 pattern target dont-care ellipsis no-match-tag)))))
+      (ap::prndiv)
+      (ap::prn "FINAL RESULT:  %s" res) 
+      (ap::prndiv)
+      res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -77,9 +82,10 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `ap:match'."
   (ap::prndiv)
-  (ap::prn "MATCHING %S AGAINST %S" pattern target)
+  (ap::prn "MATCHING:       %S" pattern)
+  (ap::prn "AGAINST:        %S" target)
+  (ap::prndiv ?\-)
   (ap::prn "no-match-tag:   %s" no-match-tag)
-  ;; (ap::prndiv)
   (let (alist)
     (while (and pattern target)
       (let ( (pat-head  (pop pattern))

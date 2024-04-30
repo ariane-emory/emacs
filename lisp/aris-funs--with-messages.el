@@ -202,7 +202,9 @@ last expression in `body'."
 (cl-defun prndiv (&optional (char ?\=) (count *wm--divider-width*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a divider line with the current indentation level."
-  (indented-message "%s" (make-string count char)))
+  ;; (indented-message "%s" (make-string count char))
+  (indented-message "%s" (make-string (- count (* *wm--indent* *wm--indent-size*)) char))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
