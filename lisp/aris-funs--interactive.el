@@ -270,11 +270,15 @@
   (interactive)
   (with-current-buffer "*Messages*"
     (erase-buffer))
-  (with-current-buffer "*Warnings*"
-    (read-only-mode -1)
-    (erase-buffer))
+  (when-let ((buff (get-buffer "*Warnings*")))
+    (with-current-buffer buff
+      (read-only-mode -1)
+      (erase-buffer)))
   (let ((result (eval-buffer)))
-    (message "Evaluated buffer: %s" result)))
+    (message "Evaluated buffer: %s" result))
+  ;; (with-current-buffer "*Messages*"
+  ;;   (goto-char (point-min)))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

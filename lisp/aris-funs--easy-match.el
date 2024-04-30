@@ -64,8 +64,8 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A simple pattern matching/destructuring fun."
   (with-gensyms (no-match-tag)
-    (prndiv)
-    (prn "GENERATED:    %s" no-match-tag)
+    (ap::prndiv)
+    (ap::prn "GENERATED:    %s" no-match-tag)
     (catch no-match-tag
       (with-indentation
         (ap::match1 pattern target dont-care ellipsis no-match-tag)))))
@@ -76,19 +76,19 @@ in reverse order."
 (defun ap::match1 (pattern target dont-care ellipsis no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `ap:match'."
-  (prndiv)
-  (prn "MATCHING %S AGAINST %S" pattern target)
-  (prn "no-match-tag:   %s" no-match-tag)
-  ;; (prndiv)
+  (ap::prndiv)
+  (ap::prn "MATCHING %S AGAINST %S" pattern target)
+  (ap::prn "no-match-tag:   %s" no-match-tag)
+  ;; (ap::prndiv)
   (let (alist)
     (while (and pattern target)
-      (prndiv)
-      (prn "pattern:       %s" pattern)
-      (prn "target:        %s" target)
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
-        (prn "pat-head:      %s" pat-head)
-        (prn "targ-head:     %s" targ-head)
+        (ap::prndiv)
+        (ap::prn "pattern:       %s" pattern)
+        (ap::prn "target:        %s" target)
+        (ap::prn "pat-head:      %s" pat-head)
+        (ap::prn "targ-head:     %s" targ-head)
         (cond
           ((and dont-care (eq pat-head dont-care))) ; DONT-CARE, do nothing.
           ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
@@ -104,8 +104,7 @@ in reverse order."
               (when (assoc var alist)
                 (error "duplicate key %s" var))
               (setf alist (cons (cons var targ-head) alist))
-              (prn "ALIST:         %s" alist)))
-          ((equal pat-head targ-head)) ; equal literals, do nothing. 
+              (ap::prn "ALIST:         %s" alist)))
           ;; When PAT-HEAD is a list, recurse and merge the result into ALIST:
           ((and (proper-list-p pat-head)
              (proper-list-p targ-head))
@@ -113,18 +112,19 @@ in reverse order."
               (ap::merge-2-alists alist
                 (with-indentation
                   (ap::match1 pat-head targ-head dont-care ellipsis no-match-tag)))))
+          ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
           (t 
-            (prn "THROWING %s!" no-match-tag)
+            (ap::prn "THROWING %s!" no-match-tag)
             (throw no-match-tag nil))))) ;; end of (while (and pattern target).
     ;; If we got this far, either PATTERN, TARGET or both are nil.
-    (prndiv)
-    (prn "final pattern: %s" pattern)
-    (prn "final target:  %s" target)
+    (ap::prndiv)
+    (ap::prn "final pattern: %s" pattern)
+    (ap::prn "final target:  %s" target)
     ;; When TARGET isn't nil, then PATTERN must have ran out before TARGET, no match:
     (when target
-      (prn "THROWING %s!" no-match-tag)
+      (ap::prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
     ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
     ;; just contain an ELLIPSIS:
@@ -132,9 +132,10 @@ in reverse order."
       (throw no-match-tag nil))
     ;; In the future, we could return t here for empty-but-successful matches?
     (let ((res (nreverse alist)))
-      (prn "RESULT:        %s" res)
+      (ap::prn "RESULT:        %s" res)
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; These two are just examples of error cases:
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -145,15 +146,16 @@ in reverse order."
 (confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
 (confirm that (ap:match '(,x ...) '(1 2 3)) returns ((x . 1)))
 (confirm that (ap:match '(,x ...) '(1)) returns ((x . 1)))
-(confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
-  ((x . a) (y . 5)))
-(confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
-  ((x . a) (y . 5)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
+  returns ((x . a) (y . 5)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
+  returns ((x . a) (y . 5)))
 (confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
 (confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns ((x . 1) (y . 4)))
 (confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
 (confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
   returns ((x . 1) (p . q) (y . 4)))
+(confirm that (ap:match '(1 (,foo _) 2) '(1 (,foo _) 2)) returns ((foo \, foo)))
 ;; don't allow these to partially match;
 (confirm that (ap:match '(,x (,p ...) ,y) '(1 (q r) 2)) returns ((x . 1) (p . q) (y . 2)))
 (confirm that (ap:match '(,x (,p) ,y) '(1 (q r) 2)) returns nil)
@@ -229,6 +231,7 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; BUGS, FIX THESE!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 
