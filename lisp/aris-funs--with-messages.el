@@ -50,7 +50,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --wm-capitalize (string)
+(defun wm::capitalize (string)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Uppercase the first character of STRING."
   (concat (upcase (substring string 0 1)) (substring string 1)))
@@ -58,7 +58,7 @@ This variable is not meant to be customized but can be safely dynamically shadow
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --wm-uncapitalize (string)
+(defun wm::uncapitalize (string)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Downcase the first character of STRING."
   (concat (downcase (substring string 0 1)) (substring string 1)))
@@ -85,12 +85,12 @@ last expression in `body' and printing a variant message afterwards."
             (if (stringp message-string) message-string (eval message-string)))
           (start-message-string
             (format "%s%s"
-              (--wm-capitalize message-string)
+              (wm::capitalize message-string)
               (if 1st-is-just-kw "." "...")))
           (end-message-fmt-args 
             (cond 
-              (is-double-message  (list (--wm-capitalize second-message-string)))
-              ((not 1st-is-just-kw) (list (--wm-uncapitalize message-string)))))
+              (is-double-message  (list (wm::capitalize second-message-string)))
+              ((not 1st-is-just-kw) (list (wm::uncapitalize message-string)))))
           (end-message-expr
             (when end-message-fmt-args
               (list `(apply #'message "%s%s%s."
@@ -136,7 +136,7 @@ last expression in `body'."
 (defun indented-pretty-message (fmt &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a capitalized message with the current indentation level."
-  (apply #'indented-message (--wm-capitalize (concat fmt (if (wm::last-char-is-punctuation? fmt) "" "."))) rest)
+  (apply #'indented-message (wm::capitalize (concat fmt (if (wm::last-char-is-punctuation? fmt) "" "."))) rest)
   ;; (apply 'message (format "%s%s" (indent-string) fmt) rest)
   nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
