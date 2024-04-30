@@ -76,14 +76,16 @@
               (dolist (var-tests var-testses)
                 (prn "var-tests: %s" var-tests)
                 (with-indentation
-                  (let ( (var   (car var-tests))
-                         (tests (cdr var-tests)))
+                  (let* ( (var   (car var-tests))
+                          (tests (cdr var-tests))
+                          (value (alist-get var alist)))
                     (prn "var:   %s" var)
                     (prn "tests: %s" tests)
-                    (prn "value: %s" (alist-get var alist))
+                    (prn "value: %s" value)
                     (with-indentation
                       (dolist (test tests)
-                        (prn "test: %s" test)
+                        (prn "test:   %s" test)
+                        (prn "result: %s" (funcall test value))
                         )))))))
           (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
