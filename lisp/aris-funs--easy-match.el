@@ -46,30 +46,30 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ap::match1 (pat targ dont-care ellipsis no-match-tag)
+(defun ap::match1 (pattern target dont-care ellipsis no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prndiv)
-  (prn "MATCHING %S AGAINST %S" pat targ)
+  (prn "MATCHING %S AGAINST %S" pattern target)
   (prn "no-match-tag: %s" no-match-tag)
   ;; (prndiv)
   (let (alist)
-    (while (and pat targ)
+    (while (and pattern target)
       (prndiv)
-      (prn "pat:         %s" pat)
-      (prn "targ:        %s" targ)
-      (let ( (pat-head  (pop pat))
-             (targ-head (pop targ)))
-        (prn "pat-head:    %s" pat)
-        (prn "targ-head:   %s" targ)
+      (prn "pattern:     %s" pattern)
+      (prn "target:      %s" target)
+      (let ( (pat-head  (pop pattern))
+             (targ-head (pop target)))
+        (prn "pat-head:    %s" pat-head)
+        (prn "targ-head:   %s" targ-head)
         (cond
           ((equal pat-head targ-head)) ; do nothing.
           ;; do nothing, maybe this should only match atoms? dunno:
           ((and dont-care (eq pat-head dont-care))) 
           ((and ellipsis (eq pat-head ellipsis) )
-            (unless (null pat)
+            (unless (null pattern)
               (error "ellipsis must be the last element in the pattern"))
-            ;; nullify TARG to break the loop 'successfully'.
-            (setf targ nil))
+            ;; nullify TARGET to break the loop 'successfully'.
+            (setf target nil))
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
             (when (assoc (cadr pat-head) alist)
               (error "duplicate key %s" (cadr pat-head)))
@@ -82,24 +82,24 @@ in reverse order."
                   (ap::match1 pat-head targ-head dont-care ellipsis no-match-tag)))))
           (t
             (prn "THROWING %s!" no-match-tag)
-            (throw no-match-tag nil))))) ;; end of (while (and pat targ).
+            (throw no-match-tag nil))))) ;; end of (while (and pattern target).
     (prndiv)
-    (prn "end pat:     %s" pat)
-    (prn "end targ:    %s" targ)
-    (unless (not pat)
+    (prn "end pattern: %s" pattern)
+    (prn "end target:  %s" target)
+    (unless (not pattern)
       (prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
     ;; ugly hack to handle cases like (ap::match1 '(,x ...) '(1)) follows.
     ;; if not for the '... in final position case, this could really just be
-    ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
+    ;; (unless (or pattern target) (nreverse alist)), which looks much nicer.
     (let ((res
             (unless
-              (or targ
-                (and pat
+              (or target
+                (and pattern
                   (not (and ellipsis
-                       (eq ellipsis (car pat ))
+                       (eq ellipsis (car pattern ))
                        (progn
-                         (when (cdr pat)
+                         (when (cdr pattern)
                            (error "ellipsis must be the last element in the pattern.")
                            t))))))
               (nreverse alist))))
@@ -160,12 +160,12 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ap:fill (pat alist)
+(defun ap:fill (pattern alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Fill in the variables in PAT with the values from ALIST."
-  (if (eq pat t)
-    (error "You can't fill %s" pat)
-    (rmapcar pat
+  "Fill in the variables in PATTERN with the values from ALIST."
+  (if (eq pattern t)
+    (error "You can't fill %s" pattern)
+    (rmapcar pattern
       (lambda (thing)
         (cond
           ((if (eq '\, (car-safe thing))
