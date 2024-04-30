@@ -74,9 +74,17 @@
             (prn "This rule has VAR-TESTSES: %s" var-testses)
             (with-indentation
               (dolist (var-tests var-testses)
-                (let ( (var  (car var-tests))
-                       (tests (cdr var-tests)))
-                  (prn "var-tests: %s" var-tests)))))
+                (prn "var-tests: %s" var-tests)
+                (with-indentation
+                  (let ( (var   (car var-tests))
+                         (tests (cdr var-tests)))
+                    (prn "var:   %s" var)
+                    (prn "tests: %s" tests)
+                    (prn "value: %s" (alist-get var alist))
+                    (with-indentation
+                      (dolist (test tests)
+                        (prn "test: %s" test)
+                        )))))))
           (throw 'result (ap:fill response-pattern (mapcdar #'swap-word alist))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
