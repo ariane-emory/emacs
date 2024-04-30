@@ -9,6 +9,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgroup ap:match nil
+  "Ari's destructuring pattern matcher.")
+;;-----------------------------------------------------------------------------------------
+(defcustom *ap:match--verbose* t
+  "Whether `match-pattern' should print verbose messages."
+  :group 'ap:match
+  :type 'boolean)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ap::prn (&rest args)
+  "Internal print helper function."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (when *ap:match--verbose*
+    (apply #'prn args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ap::prndiv ()
+  "Internal print helper function."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (when *ap:match--verbose*
+    (prndiv)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ap::merge-2-alists (alist-1 alist-2)
   "Merge two alists into a single alist, maintaining their relative key order
@@ -31,7 +62,7 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun ap:match (pattern target &optional (dont-care '_) (ellipsis '...))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A very rudimentary pattern matching/destructuring fun."
+  "A simple pattern matching/destructuring fun."
   (with-gensyms (no-match-tag)
     (prndiv)
     (prn "GENERATED:    %s" no-match-tag)
@@ -44,6 +75,7 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ap::match1 (pattern target dont-care ellipsis no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Internal function used by `ap:match'."
   (prndiv)
   (prn "MATCHING %S AGAINST %S" pattern target)
   (prn "no-match-tag:   %s" no-match-tag)
@@ -58,8 +90,6 @@ in reverse order."
         (prn "pat-head:      %s" pat-head)
         (prn "targ-head:     %s" targ-head)
         (cond
-          ;; Maybe list case should be before this one?
-          ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ((and dont-care (eq pat-head dont-care))) ; DONT-CARE, do nothing.
           ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
           ;; loop successfully:
@@ -74,8 +104,8 @@ in reverse order."
               (when (assoc var alist)
                 (error "duplicate key %s" var))
               (setf alist (cons (cons var targ-head) alist))
-              (prn "ALIST:         %s" alist)
-              ))
+              (prn "ALIST:         %s" alist)))
+          ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When PAT-HEAD is a list, recurse and merge the result into ALIST:
           ((and (proper-list-p pat-head)
              (proper-list-p targ-head))
@@ -84,7 +114,7 @@ in reverse order."
                 (with-indentation
                   (ap::match1 pat-head targ-head dont-care ellipsis no-match-tag)))))
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
-          ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match;
+          ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
           (t 
             (prn "THROWING %s!" no-match-tag)
             (throw no-match-tag nil))))) ;; end of (while (and pattern target).
@@ -104,10 +134,10 @@ in reverse order."
     (let ((res (nreverse alist)))
       (prn "RESULT:        %s" res)
       res)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
 (confirm that (ap:match '(,a ,b ,c) '(1 2 3)) returns ((a . 1) (b . 2) (c . 3)))
@@ -120,45 +150,44 @@ in reverse order."
 (confirm that (ap:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
   ((x . a) (y . 5)))
 (confirm that (ap:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
-(confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns
-  ((x . 1) (y . 4)))
-;; (confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4)) returns
-;;   ((x . 1) (p . q) (y . 4)))
-;; ;; don't allow partially match:
-;; (confirm that (ap:match '(,x (,p ...) ,y) '(1 (q) 2)) returns nil)
-;; (confirm that (ap:match '(,x (,p) ,y) '(1 () 2)) returns nil)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (ap:match
-;;     '(one (this that) (,two three (,four ,five) ,six))
-;;     '(one (this that) (2 three (4 5) 6)))  
-;;   returns ( (two . 2)
-;;             (four . 4)
-;;             (five . 5)
-;;             (six . 6)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (when-let-alist (ap:match
-;;                     '(i ,modal-verb ,verb a ,thing)
-;;                     '(i have (never seen) a (red car)))
-;;     (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
-;;   returns (Do you really believe that you have never seen a red car \?))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (when-let-alist (ap:match
-;;                     '(i ,verb that ,noun ,con ,thing)
-;;                     '(i think that dogs are dumb))
-;;     (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
-;;   returns (Why do you think that dogs are dumb \?))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-;;   (when-let-alist
-;;     (ap:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
-;;     (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
-;;   returns (why do you think that you have never seen a red car \?))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns ((x . 1) (y . 4)))
+(confirm that (ap:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
+(confirm that (ap:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
+  returns ((x . 1) (p . q) (y . 4)))
+;; don't allow these to partially match;
+(confirm that (ap:match '(,x (,p ...) ,y) '(1 (q r) 2)) returns ((x . 1) (p . q) (y . 2)))
+(confirm that (ap:match '(,x (,p) ,y) '(1 (q r) 2)) returns nil)
+(confirm that (ap:match '(,x (,p) ,y) '(1 () 2)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (ap:match
+    '(one (this that) (,two three (,four ,five) ,six))
+    '(one (this that) (2 three (4 5) 6)))  
+  returns ( (two . 2)
+            (four . 4)
+            (five . 5)
+            (six . 6)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (when-let-alist (ap:match
+                    '(i ,modal-verb ,verb a ,thing)
+                    '(i have (never seen) a (red car)))
+    (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
+  returns (Do you really believe that you have never seen a red car \?))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (when-let-alist (ap:match
+                    '(i ,verb that ,noun ,con ,thing)
+                    '(i think that dogs are dumb))
+    (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
+  returns (Why do you think that dogs are dumb \?))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (when-let-alist
+    (ap:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
+    (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
+  returns (why do you think that you have never seen a red car \?))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -177,18 +206,18 @@ in reverse order."
           ((proper-list-p thing) (ap:fill thing alist))
           (t thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (ap:fill '(,w x ,y z) '((w . 666) (y . 999)))
-;;   returns (666 x 999 z))
-;; (confirm that (ap:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
-;;   returns ((333 666) x 999 (999 999) z (333 666)))
-;; (confirm that (ap:fill '(a ,b (,c ,d)) (ap:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-;;   returns (a 2 (3 4)))
-;; (confirm that (ap:fill '(a ,b (,c ,d))
-;;                 (ap:match '(a ,b (,c ,d))
-;;                   (ap:fill '(a ,b (,c ,d))
-;;                     (ap:match '(a ,b (,c ,d))
-;;                       '(a 2 (3 4))))))
-;;   returns (a 2 (3 4)))
+(confirm that (ap:fill '(,w x ,y z) '((w . 666) (y . 999)))
+  returns (666 x 999 z))
+(confirm that (ap:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
+  returns ((333 666) x 999 (999 999) z (333 666)))
+(confirm that (ap:fill '(a ,b (,c ,d)) (ap:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+  returns (a 2 (3 4)))
+(confirm that (ap:fill '(a ,b (,c ,d))
+                (ap:match '(a ,b (,c ,d))
+                  (ap:fill '(a ,b (,c ,d))
+                    (ap:match '(a ,b (,c ,d))
+                      '(a 2 (3 4))))))
+  returns (a 2 (3 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
