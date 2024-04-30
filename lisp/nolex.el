@@ -4,14 +4,16 @@
 (require 'aris-funs--easy-match)
 (require 'aris-funs--lists)
 (require 'aris-funs--plists)
+(require 'aris-funs--with-gensyms)
+(require 'aris-funs--symbolicate)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-p (lst)
-  `(lambda (x)
-     ;; (prn "Check if %s is in %s!" x ,lst)
-     (member x ,lst)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Generate a membership predicate fun for LST."
+  `(lambda (thing) (member thing ,lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -27,32 +29,28 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun repeat-word (word-sym)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (symbolicate word-sym word-sym))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (repeat-word 'i) returns i-i)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *swap-words*
   '( (i . you)
      (do . don\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (word-sym)
   "Return the swapped word for WORD-SYM found in *SWAP-WORDS*, or WORD-SYM if none."
-  (let ((res
-          (cond
-            ((assoc word-sym  *swap-words*) (cdr (assoc word-sym *swap-words*)))
-            ((rassoc word-sym *swap-words*) (car (rassoc word-sym *swap-words*)))
-            (t word-sym))))
-    ;; (prn "swap %s for %s" sym res)
-    res
-    ))
+  (cond
+    ((assoc  word-sym *swap-words*) (cdr (assoc  word-sym *swap-words*)))
+    ((rassoc word-sym *swap-words*) (car (rassoc word-sym *swap-words*)))
+    (t word-sym)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (swap-word 'i) returns you)
 (confirm that (swap-word 'you) returns i)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *rule-keys*
+  '( :input-pattern    
+     :response-pattern 
+     :var-tests
+     :var-funs))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -62,29 +60,40 @@
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
        :var-tests        ((subj subject?))
        :var-funs         ((subj swap-word)))
-     ;;-----------------------------------------------------------------------------------
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
        :response-pattern (so just go ,verb a ,thing \!)
        :var-tests        ((subj subject?)))
-     ;;-----------------------------------------------------------------------------------
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
        :response-pattern (,subj ,modal-verb ,verb a ,thing \!)
        :var-funs         ((subj swap-word)))
-     ;;-----------------------------------------------------------------------------------
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (you ,foo ,baz \!)
        :response-pattern (no \, it is you who ,foo ,baz \!))
-     ;;-----------------------------------------------------------------------------------
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
        :response-pattern ( come on \, ,subj can\'t really ,verb
                            that ,subj-2 ,modal-verb never ,verb-2 a ,noun \!)
+       :var-tests        ((subj subject?)  (subj-2 subject?))
        :var-funs         ((subj swap-word) (subj-2 swap-word)))
-     ;;-----------------------------------------------------------------------------------
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
        :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?)
        :var-funs         ((subj swap-word) (subj-2 swap-word)))
-     ;;-----------------------------------------------------------------------------------
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun repeat-word (word-sym)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Double a symbol with a hyphen in between the two, foo ⇒ foo-foo."
+  (symbolicate word-sym word-sym))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (repeat-word 'i) returns i-i)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -93,19 +102,17 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (if (null var-testses)
     t
-    (with-indentation
-      (with-gensyms (my-result)
-        (catch my-result
-          (with-indentation
-            (while-let ( (var-tests (pop var-testses))
-                         (var   (car var-tests))
-                         (tests (cdr var-tests))
-                         (value (alist-get var var-alist)))
-              (with-indentation
-                (dolist (test tests)
-                  (unless (funcall test value)
-                    (throw my-result nil))))))
-          t)))))
+    (with-gensyms (result)
+      (catch result
+        (dolist (var-tests var-testses)
+          (let* ( (var   (car var-tests))
+                  (tests (cdr var-tests))
+                  (assoc (assoc var var-alist)))
+            (unless assoc (error "missing var %s" var))
+            (dolist (test tests)
+              (unless (funcall test (cdr assoc))
+                (throw result nil)))))
+        t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
   returns t)
@@ -133,22 +140,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *rule-keys*
-  '( :input-pattern    
-     :response-pattern 
-     :var-tests
-     :var-funs))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun fill-in-missing-rule-keys (rule)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: this also converts RULE from a plist to an alist."
   (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (fill-in-missing-rule-keys
     '( :input-pattern (,subj ,bar ,baz)
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
-  returns ( (:var-tests)
-            (:var-funs)
+  returns ( (:var-funs)
+            (:var-tests)
             (:input-pattern (\, subj) (\, bar) (\, baz))
             (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -180,15 +182,14 @@
     (catch result
       (dolist (rule *rules*)
         (let-rule rule
-          (with-indentation
-            (catch continue
-              (if (eq t .:input-pattern)
-                ;; t matches any input and throws it's .:RESPONSE-PATTERN:
-                (throw result .:response-pattern)
-                (when-let ((var-alist (ap:match .:input-pattern input)))
-                  (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
-                  (run-var-funs .:var-funs var-alist)
-                  (throw result (ap:fill .:response-pattern var-alist)))))))))))
+          (catch continue
+            (if (eq t .:input-pattern)
+              ;; t matches any input and throws it's .:RESPONSE-PATTERN:
+              (throw result .:response-pattern)
+              (when-let ((var-alist (ap:match .:input-pattern input)))
+                (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
+                (run-var-funs .:var-funs var-alist)
+                (throw result (ap:fill .:response-pattern var-alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

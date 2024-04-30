@@ -41,6 +41,12 @@ in reverse order."
         (let ( (pat-head  (pop pat))
                (targ-head (pop targ)))
           (cond
+            ((equal pat-head targ-head)) ; do nothing.
+            ((eq pat-head '_)) ; do nothing, maybe this should only match atoms? dunno.
+            ((eq pat-head '...)
+              ;; nullify PAT and TARG to break the loop 'successfully'.
+              (setf pat nil)
+              (setf targ nil))
             ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
               (when (assoc (cadr pat-head) alist)
                 (error "duplicate key %s" (cadr pat-head)))
@@ -49,15 +55,15 @@ in reverse order."
               (setf alist
                 (ap::merge-2-alists alist
                   (with-indentation (ap:match pat-head targ-head)))))
-            ((equal pat-head targ-head)) ; do nothing.
             (t (throw 'no-match nil)))))
       (unless (or pat targ) (nreverse alist))))) ;; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
+(confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
 (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
