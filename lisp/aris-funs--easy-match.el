@@ -36,15 +36,25 @@ in reverse order."
     (let (alist)
       (while-let ( (pat-head  (pop pat))
                    (targ-head (pop targ)))
+        (prndiv)
+        (prn "alist:     %S" alist)
+        (prn "pat-head:  %S" pat-head)
+        (prn "pat:       %S" pat)
+        (prn "targ-head: %S" targ-head)
+        (prn "targ:      %S" targ)
+
         (cond
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
             (if (assoc (cadr pat-head) alist)
               (error "duplicate key %s" (cadr pat-head))
               (setf alist (cons (cons (cadr pat-head) targ-head) alist))))
           ((proper-list-p pat-head) ; recurse and merge.
-            (setf alist (ap::merge-2-alists alist (ap:match pat-head targ-head))))
+            (setf alist (ap::merge-2-alists alist
+                          (with-indentation (ap:match pat-head targ-head)))))
           ((equal pat-head targ-head)) ; do nothing.
           (t (throw 'no-match nil))))
+      ;; (prn "pat:  %s" pat)
+      ;; (prn "targ: %s" targ)
       (unless (or pat targ) (nreverse alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
