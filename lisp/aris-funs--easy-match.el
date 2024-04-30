@@ -71,9 +71,10 @@ in reverse order."
             ;; nullify TARGET to break the loop 'successfully'.
             (setf target nil))
           ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
-            (when (assoc (cadr pat-head) alist)
-              (error "duplicate key %s" (cadr pat-head)))
-            (setf alist (cons (cons (cadr pat-head) targ-head) alist)))
+            (let ((var (cadr pat-head)))
+              (when (assoc var alist)
+                (error "duplicate key %s" var))
+              (setf alist (cons (cons var targ-head) alist))))
           ((and (proper-list-p pat-head)
              (proper-list-p targ-head))
             (setf alist ; recurse and merge:
