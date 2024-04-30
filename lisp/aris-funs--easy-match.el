@@ -43,9 +43,10 @@ in reverse order."
           (cond
             ((equal pat-head targ-head)) ; do nothing.
             ((eq pat-head '_)) ; do nothing, maybe this should only match atoms? dunno.
-            ((eq pat-head '...)
-              ;; nullify PAT and TARG to break the loop 'successfully'.
-              (setf pat nil)
+            ((eq pat-head '...) 
+              (unless (null pat)
+                (error "... must be the last element in the pattern"))
+              ;; nullify TARG to break the loop 'successfully'.
               (setf targ nil))
             ((eq '\, (car-safe pat-head)) ; pat-head is a variable.
               (when (assoc (cadr pat-head) alist)
@@ -56,15 +57,22 @@ in reverse order."
                 (ap::merge-2-alists alist
                   (with-indentation (ap:match pat-head targ-head)))))
             (t (throw 'no-match nil)))))
-      (unless (or pat targ) (nreverse alist))))) ;; )
+      ;; (unless (or pat targ) (nreverse alist))
+      ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)):
+      (unless (or (and pat (not (and (eq '... (car pat )) (not (cdr pat))))) targ) (nreverse alist))))) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
-(confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
 (confirm that (ap:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 (confirm that (ap:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
+(confirm that (ap:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
+(confirm that (ap:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
+(confirm that (ap:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns
+  ((x . a) (y . 5)))
+(confirm that (ap:match '(1 2 (,x b ...) 4  ,y ...) '(1 2 (a b c) 4 5 6 7 8 9)) returns
+  ((x . a) (y . 5)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (confirm that (ap:match t '(1 2 3)) returns nil) ; no longer legal!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
