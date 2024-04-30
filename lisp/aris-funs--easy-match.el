@@ -76,21 +76,25 @@ in reverse order."
                 (throw no-match-tag nil))))) ;; end of (while (and pat targ).
         (prn "end pat:     %s" pat)
         (prn "end targ:    %s" targ)
-        ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
-        ;; if not for the '... in final position case, this could really just be
-        ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
         (unless (not pat)
           (prn "THROWING %s!" no-match-tag)
           (throw no-match-tag nil))
-        (unless (or targ
-                  (and pat
-                    (not (and ellipsis
-                         (eq ellipsis (car pat ))
-                         (progn
-                           (when (cdr pat)
-                             (error "ellipsis must be the last element in the pattern.")
-                             t))))))
-          (nreverse alist))))))
+        ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
+        ;; if not for the '... in final position case, this could really just be
+        ;; (unless (or pat targ) (nreverse alist)), which looks much nicer.
+        (let ((res
+                (unless
+                  (or targ
+                    (and pat
+                      (not (and ellipsis
+                           (eq ellipsis (car pat ))
+                           (progn
+                             (when (cdr pat)
+                               (error "ellipsis must be the last element in the pattern.")
+                               t))))))
+                  (nreverse alist))))
+          (prn "RESULT:      %s" res)
+          res)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ap:match '(,y (,y)) '(2 (3))) ; duplicate key!
 ;; (ap:match '(,y ,z) '(2 (3))) ; duplicate key!
