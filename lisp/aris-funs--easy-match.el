@@ -33,6 +33,9 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
   ;; (prn "MATCHING %S AGAINST %S" pat targ)
+  (prn "no-match-tag: %s" no-match-tag)
+  (prn "dont-care: %s" dont-care)
+  (prn "ellipsis: %s" ellipsis)
   (let ( (no-match-tag-supplied (not (null no-match-tag)))
          (no-match-tag (or no-match-tag (gensym))))
     (catch (if no-match-tag-supplied nil no-match-tag)
@@ -61,7 +64,7 @@ in reverse order."
                  (proper-list-p targ-head))
                 (setf alist ; recurse and merge:
                   (ap::merge-2-alists alist
-                    (with-indentation (ap:match pat-head targ-head dont-care ellipsis)))))
+                    (with-indentation (ap:match pat-head targ-head no-match-tag dont-care ellipsis)))))
               (t (throw no-match-tag nil)))))
         ;; ugly hack to handle cases like (ap:match '(,x ...) '(1)) follows.
         ;; if not for the '... in final position case, this could really just be
