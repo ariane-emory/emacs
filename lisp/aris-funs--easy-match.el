@@ -32,6 +32,7 @@ in reverse order."
 (defun ap:match (pat targ)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A very rudimentary pattern matching/destructuring fun."
+  (prn "MATCHING %S AGAINST %S" pat targ)
   (catch 'no-match
     ;; (if (eq pat t)
     ;; '();; t matches anything and returns an empty alist.

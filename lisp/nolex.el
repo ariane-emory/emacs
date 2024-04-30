@@ -98,22 +98,24 @@
   (with-gensyms (result continue)
     (catch result
       (dolist (rule *rules*)
-        (prn "ALIST:  %s" (plist-to-alist rule))
-        (prn "FILLED: %s" (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
+        ;; (prn "ALIST:  %s" (plist-to-alist rule))
+        ;; (prn "FILLED: %s" (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
         (catch continue
           (with-indentation
-            (let ( (input-pattern    (plist-get rule :input-pattern))
-                   (response-pattern (plist-get rule :response-pattern))
-                   (var-preds        (plist-get rule :var-preds))
-                   (var-funs         (plist-get rule :var-funs)))
-              (if (eq t input-pattern)
-                (throw result response-pattern) ; t matches any input.
-                (when-let ((var-alist (ap:match input-pattern input)))
-                  (when var-preds
-                    (let ((tests-result (run-var-tests var-alist var-preds)))
-                      (unless tests-result (throw continue nil))))
-                  (run-var-funs var-alist var-funs)
-                  (throw result (ap:fill response-pattern var-alist)))))))))))
+            (let ( ;; (input-pattern    (plist-get rule :input-pattern))
+                   ;; (response-pattern (plist-get rule :response-pattern))
+                   ;; (var-preds        (plist-get rule :var-preds))
+                   ;; (var-funs         (plist-get rule :var-funs))
+                   )
+              (let-alist (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule))
+                (if (eq t .:input-pattern)
+                  (throw result .:response-pattern) ; t matches any input.
+                  (when-let ((var-alist (ap:match .:input-pattern input)))
+                    (when .:var-preds
+                      (let ((tests-result (run-var-tests var-alist .:var-preds)))
+                        (unless tests-result (throw continue nil))))
+                    (run-var-funs var-alist .:var-funs)
+                    (throw result (ap:fill .:response-pattern var-alist))))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
