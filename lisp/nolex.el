@@ -10,6 +10,28 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *swap-words*
+  '( (i . you)
+     (am . are)
+     (had . have)
+     (think . thought)
+     (do . don\'t)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun swap-word (var val var-alist)
+  "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
+  (cond
+    ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
+    ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
+    (t val)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (swap-word 'x 'i '((x . i))) returns you)
+(confirm that (swap-word 'x 'you '((x . you))) returns i)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
@@ -30,36 +52,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *swap-words*
-  '( (i . you)
-     (am . are)
-     (had . have)
-     (think . thought)
-     (do . don\'t)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun swap-word (var val var-alist)
-  "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
-  (cond
-    ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
-    ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
-    (t val)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (swap-word 'x 'i '((x . i))) returns you)
-(confirm that (swap-word 'x 'you '((x . you))) returns i)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dup-var (var val var-alist)
-  (let* ( (assoc (assoc var var-alist))
-          (new (cons (symbolicate (car assoc) '*) (cdr assoc))))
-    (nconc var-alist (list new)))
-  nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dup-var2 (var val var-alist)
   (cl-loop for n from 1
     for new-var = (intern (format "$%d" n))
     until (not (assoc new-var var-alist))
@@ -80,6 +73,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun have-to-know/knew (var val var-alist)
+  (if (eq val 'have) 'know\ that 'knew))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rule-keys*
   '( :input-pattern    
      :response-pattern 
@@ -89,21 +88,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun have-to-know/knew (var val var-alist)
-  (if (eq val 'have) 'know\ that 'knew))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,thing)
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
-       :var-funs         ( (subject   dup-var2 swap-word)
-                           (had/have  dup-var2)
-                           ($2 have-to-know/knew)
-                           )
+       :var-funs         ( (subject   dup-var swap-word)
+                           (had/have  dup-var)
+                           ($2        have-to-know/knew))
        :response-pattern (  ,$1 ,$2  ,subject ,had/have ,a/an ,thing ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
@@ -178,7 +170,7 @@
       (dolist (fun funs)
         (when-let ((res (funcall fun var (cdr assoc) var-alist)))
           (setf (cdr assoc) res))
-        (prn "ALIST: %s" var-alist)
+        ;; (prn "ALIST: %s" var-alist)
         )))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -287,7 +279,8 @@
              (i am a bitch)
              (i have an orange)
              (you have a dollar)
-             (i had a dollar)))
+             (i had a dollar)
+             (you had a dollar)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
