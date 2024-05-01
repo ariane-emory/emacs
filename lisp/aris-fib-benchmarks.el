@@ -46,10 +46,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(pd--reset)
-(pd--def (untyped-pattern-dispatch-fib 0) 0)
-(pd--def (untyped-pattern-dispatch-fib 1) 1)
-(pd--def (untyped-pattern-dispatch-fib n)
+(pd:reset)
+(pd:def (untyped-pattern-dispatch-fib 0) 0)
+(pd:def (untyped-pattern-dispatch-fib 1) 1)
+(pd:def (untyped-pattern-dispatch-fib n)
   (+ (untyped-pattern-dispatch-fib (1- n))
     (untyped-pattern-dispatch-fib (- n 2))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

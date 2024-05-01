@@ -623,19 +623,19 @@
     (let ((*wm:depth-indicator-enable*))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; Reset the pattern-call dispatcher's alist:
-      (pd--reset)
+      (pd:reset)
 
       ;; Define some simple functions:
-      (pd--def (doub n) (|> n (+ _ _)))
-      (pd--def (sqr y) (|> y (* _ _)))
-      (pd--def (doub-sqr y) (doub (sqr y)))
+      (pd:def (doub n) (|> n (+ _ _)))
+      (pd:def (sqr y) (|> y (* _ _)))
+      (pd:def (doub-sqr y) (doub (sqr y)))
 
       ;; Define a fib:
-      (pd--def (fib 0) 0)
-      (pd--def (fib 1) 1)
-      (pd--def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+      (pd:def (fib 0) 0)
+      (pd:def (fib 1) 1)
+      (pd:def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
       
-      ;; (pd--def (fib n)
+      ;; (pd:def (fib n)
       ;;   (|>
       ;;     :(prn "Calculating (fib %d) using a pipe-based fib..." n)
       ;;     (|> n

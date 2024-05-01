@@ -2,9 +2,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lust-style function definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (pd--def (fib 0) 0)
-;; (pd--def (fib 1) 1)
-;; (pd--def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
+;; (pd:def (fib 0) 0)
+;; (pd:def (fib 1) 1)
+;; (pd:def (fib n) (+ (fib (- n 1)) (fib (- n 2))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--match-pattern)
 (require 'aris-funs--match-pattern2)
@@ -98,7 +98,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --match-pd-call-pattern-in-group (call-pattern group)
+(defun pd::match-call-pattern-in-group (call-pattern group)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Find the pattern case in group that matches the call pattern.."
   (error-unless "Invalid call, no pattern group for '%s." '(call-pattern) group)    
@@ -137,7 +137,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --make-pd-dispatcher-fun (symbol)
+(defmacro pd::make-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Factory function for pattern call dispatch handler functions. The reason we construct new ones each time is
 because we're gong to be stshing stuff in their symbol properties."
@@ -155,15 +155,15 @@ because we're gong to be stshing stuff in their symbol properties."
                (call-pattern args))
          (pd::prn "MAKE: Looked up group for '%s and found:" ',symbol)
          (pd::prndiv)
-         (pd--prn-group group)
+         (pd:prn-group group)
          (pd::eval-match-result
-           (--match-pd-call-pattern-in-group
+           (pd::match-call-pattern-in-group
              call-pattern group-rows))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun --bind-pd-dispatcher-fun (symbol)
+(defun pd::bind-dispatcher-fun (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "An internal helper function to bind the pattern dispatcher function to symbols that's used by def."
   (pd::prndiv ?\#)
@@ -187,7 +187,7 @@ because we're gong to be stshing stuff in their symbol properties."
     (pd::prn "BIND: '%s isn't bound or was bound by us, we can %sbind it."
       symbol (if already-bound "re" "")))
   ;; Attach our handler function to SYMBOL's function cell:
-  (fset symbol (eval `(--make-pd-dispatcher-fun ,symbol)))
+  (fset symbol (eval `(pd::make-dispatcher-fun ,symbol)))
   ;; Stash the group label and a serial numbe in properties on SYMBOL:
   (put symbol :PD-GROUP symbol)
   (setq *pd::handler-count* (1+ *pd::handler-count*))
@@ -213,7 +213,7 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro pd--def (pattern-or-symbol &rest def-body) 
+(defmacro pd:def (pattern-or-symbol &rest def-body) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a function call pattern case or a variable using a Lust-style syntax."
   (let* ( (is-variable-definition (symbolp pattern-or-symbol))
@@ -243,7 +243,7 @@ because we're gong to be stshing stuff in their symbol properties."
            (pd::prndiv ?\#)
            (pd::prn "DEF:  Defining pattern '%s in group '%s."
              ',pattern-without-group-symbol ',group-symbol)
-           (--bind-pd-dispatcher-fun ',group-symbol)
+           (pd::bind-dispatcher-fun ',group-symbol)
            ;; Look up existing group and add new case to it if it exists.
            (let ( (new-pattern-case
                     (list (cons ',pattern-without-group-symbol ',def-body)))
@@ -254,7 +254,7 @@ because we're gong to be stshing stuff in their symbol properties."
                  (push group-alist *pd::pattern-dispatch-table*)
                  (pd::prn "DEF:  Added new group:")
                  (pd::prndiv)
-                 (pd--prn-group group-alist))
+                 (pd:prn-group group-alist))
                (let* ( (existing-pattern-case
                          (assoc ',pattern-without-group-symbol (cdr group-alist))))
                  (when existing-pattern-case
@@ -268,14 +268,14 @@ because we're gong to be stshing stuff in their symbol properties."
                  (pd::prndiv)
                  (pd::prn "DEF:  Added pattern case for pattern '%s to group '%s:"
                    ',full-pattern-including-group-symbol group-alist)
-                 (pd--prn-group group-alist)))
+                 (pd:prn-group group-alist)))
              (pd::prndiv ?\#)
              nil))))))
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun pd--reset ()
+(defun pd:reset ()
   "Reset the dispatch table and unbind bound functions."
   (pd::prndiv)
   (pd::prn "RESET PATTERN DISPATCHER!")
@@ -297,7 +297,7 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Formatting/printing functions:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun pd--format-group-as-lines (group &optional (indent 0) (indent-char ?\ ))
+(cl-defun pd:format-group-as-lines (group &optional (indent 0) (indent-char ?\ ))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Format a pattern group as a list of lines."
   (let* ( result
@@ -315,47 +315,47 @@ because we're gong to be stshing stuff in their symbol properties."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun pd--format-group-as-string (group &optional (indent 0) (indent-char ?\ ))
+(cl-defun pd:format-group-as-string (group &optional (indent 0) (indent-char ?\ ))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Format a pattern group as a string."
-  (string-join (pd--format-group-as-lines group indent indent-char) "\n"))
+  (string-join (pd:format-group-as-lines group indent indent-char) "\n"))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun pd--format-table-as-lines ()
+(defun pd:format-table-as-lines ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Format the pattern dispatch table as a list of lines."
   (let (result)
     (dolist (group *pd::pattern-dispatch-table*)
-      (dolist (line (pd--format-group-as-lines group))
+      (dolist (line (pd:format-group-as-lines group))
         (push (format "%s" line) result)))
     (nreverse result)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun pd--format-table-as-string ()
+(defun pd:format-table-as-string ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Format the pattern dispatch table as a string."
-  (string-join (pd--format-table-as-lines) "\n"))
+  (string-join (pd:format-table-as-lines) "\n"))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun pd--prn-group (group)
+(defun pd:prn-group (group)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a single pattern dispatch group."
-  (dolist (line (pd--format-group-as-lines group))
+  (dolist (line (pd:format-group-as-lines group))
     (pd::prn line)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun pd--prn-table ()
+(defun pd:prn-table ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print the pattern dispatch table."
-  (dolist (line (pd--format-table-as-lines))
+  (dolist (line (pd:format-table-as-lines))
     (pd::prn line)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -369,13 +369,13 @@ because we're gong to be stshing stuff in their symbol properties."
            (*mp:verbose* nil)
            (*match-pattern2--verbose* nil))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      (pd--reset)
-      (pd--def (fib 0) 0)
-      (pd--def (fib 1) 1)
-      (pd--def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-      (pd--def (double n) (+ n n))
-      (pd--def (square y) (* y y))
-      (pd--def (double-square y) (double (square y)))
+      (pd:reset)
+      (pd:def (fib 0) 0)
+      (pd:def (fib 1) 1)
+      (pd:def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
+      (pd:def (double n) (+ n n))
+      (pd:def (square y) (* y y))
+      (pd:def (double-square y) (double (square y)))
       (double-square 3)
 
       (prndiv)
@@ -385,7 +385,7 @@ because we're gong to be stshing stuff in their symbol properties."
       (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
       
       (prn "Printing the table:")
-      (pd--prn-table)
+      (pd:prn-table)
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       )))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
