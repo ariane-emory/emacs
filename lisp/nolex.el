@@ -93,6 +93,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun i-you (var val var-alist)
+  (if (eq val 'i)
+    'you
+    'i))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun i-to-know/knew (var val var-alist)
   (if (eq val 'i)
     'already\ knew\ that
@@ -152,6 +160,17 @@
                            (desire    swap-word))
        :response-pattern ( do ,subject really ,desire ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
+
+     ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
+       :var-tests        ( (subject   subject?)
+                           (desire    desire?)
+                           ;; (a/an      a/an?)
+                           )
+       :var-funs         ( (subject   swap-word)
+                           (desire    swap-word))
+       :response-pattern ( i don\'t know if ,subject really ,desire to ,verb ,@things))
+
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
        :var-tests        ( (subject   subject?))
        :var-funs         ( (subject   swap-word))
@@ -197,11 +216,12 @@
                            (subject-2 subject?)
                            (desire    desire?)
                            (a/n       a/an?))
-       :var-funs         ( (subject   i-me)
-                           (subject-2 i-me)
+       :var-funs         ( (subject   swap-word)
+                           (subject-2 swap-word)
                            (epistemic swap-word)
                            (desire    swap-word))
-       :response-pattern (  this conversation definitely makes ,subject
+       :response-pattern (  after this conversation \, ,subject
+                           ,epistemic that ,subject-2
                            ,desire ,a/n ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
@@ -379,6 +399,8 @@
              (you think that i need a drink)
              (i think that i need a drink)
              (you think that you need a drink)
+             (you want to smoke a fat joint)
+             (i want to smoke a fat joint)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
