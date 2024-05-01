@@ -53,7 +53,13 @@
 (defalias 'a/an?             (make-member-sym-p '(a an)))
 (defalias 'had/have?         (make-member-sym-p '(had have)))
 (defalias 'do/does?          (make-member-sym-p '(do does)))
-(defalias 'desire?           (make-member-sym-p '(need want)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'do/would?         (make-member-sym-p '(do would)))
+(defalias 'pick-do/would?    (make-pick '(do would)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar   *desire-words*     '(like need want))
+(defalias 'desire?           (make-member-sym-p '(like need want)))
+(defalias 'pick-desire       (make-pick *desire-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar    *subject-words*  '(i you))
 (defalias 'subject?          (make-member-sym-p *subject-words*))
@@ -66,6 +72,8 @@
 (defvar   *epistemic-words* '(know believe suspect think))
 (defalias 'epistemic?        (make-member-sym-p *epistemic-words*))
 (defalias 'pick-epistemic    (make-pick *epistemic-words*))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'pick-possibility  (make-pick '(do would would\ not sometimes always might would)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -186,12 +194,15 @@
                            (desire    swap-word))
        :response-pattern ( do ,subject really ,desire ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,do/does ,subject ,verb ,@things)
-       :var-tests        ( (do/does   do/does?)
-                           (subject   subject?))
-       :var-funs         ( (subject   swap-word))
-       :response-pattern ( :FOO))
-
+     ( :input-pattern    ( ,do/would ,subject ,desire ,@things)
+       :var-tests        ( (do/would  do/would?)
+                           (subject   subject?)
+                           (desire   desire?))
+       :var-funs         ( (subject   swap-word dup-var)
+                           (desire   pick-desire)
+                           ($1        pick-possibility))
+       :response-pattern ( ,subject ,$1 ,desire ,@things))
+     
 
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
@@ -440,6 +451,15 @@
              (i would climb a tall tree)
              (you would climb a tall tree)
              (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
