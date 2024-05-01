@@ -114,6 +114,7 @@
                            (had/have  had/have?)
                            (a/an      a/an?))
        :var-funs         ( (subject   dup-var dup-var swap-word)
+                           (had/have  swap-word)
                            ($2        i-to-know/knew)
                            (things    mapswap))
        :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \! ))
@@ -163,6 +164,7 @@
                            that ,subj-2 ,modal-verb never ,verb-2 a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
+       :var-tests        ((subj subject?)  (subj-2 subject?))
        :var-funs         ((subj swap-word) (subj-2 swap-word))
        :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
@@ -329,5 +331,8 @@
   (prn "RESPONSE:  %s" (get-response input)))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
 
