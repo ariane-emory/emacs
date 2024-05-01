@@ -385,47 +385,47 @@
 (prn "START:")
 (dolist (input
           '(
-             ;; (i think that i would like a smoke)
-             ;; (i think that you would like a smoke)
-             ;; (i think that you should have a smoke)
-             ;; (i know that i could have a smoke)
+             (i think that i would like a smoke)
+             (i think that you would like a smoke)
+             (i think that you should have a smoke)
+             (i know that i could have a smoke)
              (i believe that you have seen a ghost)
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)
-             ;; (i know that you have never eaten a hamburger)
-             ;; (you would never eat a cold hamburger)
-             ;; (you should never eat a cold hamburger)
-             ;; (foo bar baz)
-             ;; (foo bar baz quux)
-             ;; (you don\'t understand)
-             ;; (i don\'t understand \!)
-             ;; (you eat chickens)
-             ;; (dogs eat chickens)
-             ;; (you are stupid \!)
-             ;; (you suck ass \!)
-             ;; (you are an asshole)
-             ;; (i am a bitch)
-             ;; (i have an apple tree)
-             ;; (you have a dollar)
-             ;; (i had a dollar)
-             ;; (you had a dollar)
-             ;; (you had a coin in your pocket)
-             ;; (you have a coin in your pocket)
-             ;; (i could eat a hamburger and some fries)
-             ;; (i have a fly on my arm)
-             ;; (i would like a hamburger with cheese and bacon)
-             ;; (i would like an orange cat)
-             ;; (you would like a hamburger with cheese and bacon)
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i want a hamburger with cheese and bacon)
-             ;; (i need a hamburger with cheese and bacon)
-             ;; (you want a hamburger with cheese and bacon)
-             ;; (you need a hamburger with cheese and bacon)
-             ;; (i think that you need a drink)
-             ;; (you think that i need a drink)
-             ;; (i think that i need a drink)
-             ;; (you think that you need a drink)
-             ;; (you want to smoke a fat joint)
+             (i know that you have never eaten a hamburger)
+             (you would never eat a cold hamburger)
+             (you should never eat a cold hamburger)
+             (foo bar baz)
+             (foo bar baz quux)
+             (you don\'t understand)
+             (i don\'t understand \!)
+             (you eat chickens)
+             (dogs eat chickens)
+             (you are stupid \!)
+             (you suck ass \!)
+             (you are an asshole)
+             (i am a bitch)
+             (i have an apple tree)
+             (you have a dollar)
+             (i had a dollar)
+             (you had a dollar)
+             (you had a coin in your pocket)
+             (you have a coin in your pocket)
+             (i could eat a hamburger and some fries)
+             (i have a fly on my arm)
+             (i would like a hamburger with cheese and bacon)
+             (i would like an orange cat)
+             (you would like a hamburger with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
+             (i want a hamburger with cheese and bacon)
+             (i need a hamburger with cheese and bacon)
+             (you want a hamburger with cheese and bacon)
+             (you need a hamburger with cheese and bacon)
+             (i think that you need a drink)
+             (you think that i need a drink)
+             (i think that i need a drink)
+             (you think that you need a drink)
+             (you want to smoke a fat joint)
              (i want to smoke a fat joint)
              (i want to dance in the moonlight)
              (i would climb a tall tree)
@@ -440,4 +440,135 @@
 
 
 
-
+;; ============================================================
+;; START:
+;; ============================================================
+;; INPUT:     (i think that i would like a smoke)
+;; RESPONSE:  (do you really think that you would like a smoke ?)
+;; ============================================================
+;; INPUT:     (i think that you would like a smoke)
+;; RESPONSE:  (do you really think that i would like a smoke ?)
+;; ============================================================
+;; INPUT:     (i think that you should have a smoke)
+;; RESPONSE:  (do you really think that i should have a smoke ?)
+;; ============================================================
+;; INPUT:     (i know that i could have a smoke)
+;; RESPONSE:  (do you really know that you could have a smoke ?)
+;; ============================================================
+;; INPUT:     (i believe that you have seen a ghost)
+;; RESPONSE:  (do you really believe that i have seen a ghost ?)
+;; ============================================================
+;; INPUT:     (you believe that i have seen a ghost)
+;; RESPONSE:  (do i really believe that you have seen a ghost ?)
+;; ============================================================
+;; INPUT:     (i suspect that you have never seen a zebra)
+;; RESPONSE:  (come on , you can't really suspect that i have never seen a zebra !)
+;; ============================================================
+;; INPUT:     (i know that you have never eaten a hamburger)
+;; RESPONSE:  (come on , you can't really know that i have never eaten a hamburger !)
+;; ============================================================
+;; INPUT:     (you would never eat a cold hamburger)
+;; RESPONSE:  (i would eat a cold hamburger !)
+;; ============================================================
+;; INPUT:     (you should never eat a cold hamburger)
+;; RESPONSE:  (i should eat a cold hamburger !)
+;; ============================================================
+;; INPUT:     (foo bar baz)
+;; RESPONSE:  (i don't understand !)
+;; ============================================================
+;; INPUT:     (foo bar baz quux)
+;; RESPONSE:  (i don't understand !)
+;; ============================================================
+;; INPUT:     (you don't understand)
+;; RESPONSE:  (fine , i don't understand , so what ?)
+;; ============================================================
+;; INPUT:     (i don't understand !)
+;; RESPONSE:  (i don't understand !)
+;; ============================================================
+;; INPUT:     (you eat chickens)
+;; RESPONSE:  (fine , i eat chickens , so what ?)
+;; ============================================================
+;; INPUT:     (dogs eat chickens)
+;; RESPONSE:  (i don't understand !)
+;; ============================================================
+;; INPUT:     (you are stupid !)
+;; RESPONSE:  (no , it is you who are stupid !)
+;; ============================================================
+;; INPUT:     (you suck ass !)
+;; RESPONSE:  (no , it is you who suck ass !)
+;; ============================================================
+;; INPUT:     (you are an asshole)
+;; RESPONSE:  (don't be silly , i am not an asshole , you are the real asshole !)
+;; ============================================================
+;; INPUT:     (i am a bitch)
+;; RESPONSE:  (don't be silly , you are not a bitch , i am the real bitch !)
+;; ============================================================
+;; INPUT:     (i have an apple tree)
+;; RESPONSE:  (i already knew that you had an apple tree !)
+;; ============================================================
+;; INPUT:     (you have a dollar)
+;; RESPONSE:  (you already knew that i had a dollar !)
+;; ============================================================
+;; INPUT:     (i had a dollar)
+;; RESPONSE:  (i already knew that you have a dollar !)
+;; ============================================================
+;; INPUT:     (you had a dollar)
+;; RESPONSE:  (you already knew that i have a dollar !)
+;; ============================================================
+;; INPUT:     (you had a coin in your pocket)
+;; RESPONSE:  (you already knew that i have a coin in my pocket !)
+;; ============================================================
+;; INPUT:     (you have a coin in your pocket)
+;; RESPONSE:  (you already knew that i had a coin in my pocket !)
+;; ============================================================
+;; INPUT:     (i could eat a hamburger and some fries)
+;; RESPONSE:  (so just go eat a hamburger and some fries !)
+;; ============================================================
+;; INPUT:     (i have a fly on my arm)
+;; RESPONSE:  (i already knew that you had a fly on your arm !)
+;; ============================================================
+;; INPUT:     (i would like a hamburger with cheese and bacon)
+;; RESPONSE:  (why do you think that you would like a hamburger with cheese and bacon ?)
+;; ============================================================
+;; INPUT:     (i would like an orange cat)
+;; RESPONSE:  (why do you think that you would like an orange cat ?)
+;; ============================================================
+;; INPUT:     (you would like a hamburger with cheese and bacon)
+;; RESPONSE:  (why do you think that i would like a hamburger with cheese and bacon ?)
+;; ============================================================
+;; INPUT:     (i would like many hamburgers with cheese and bacon)
+;; RESPONSE:  (don't you have enough hamburgers with cheese and bacon already ?)
+;; ============================================================
+;; INPUT:     (i want a hamburger with cheese and bacon)
+;; RESPONSE:  (do you really need a hamburger with cheese and bacon ?)
+;; ============================================================
+;; INPUT:     (i need a hamburger with cheese and bacon)
+;; RESPONSE:  (do you really want a hamburger with cheese and bacon ?)
+;; ============================================================
+;; INPUT:     (you want a hamburger with cheese and bacon)
+;; RESPONSE:  (do i really need a hamburger with cheese and bacon ?)
+;; ============================================================
+;; INPUT:     (you need a hamburger with cheese and bacon)
+;; RESPONSE:  (do i really want a hamburger with cheese and bacon ?)
+;; ============================================================
+;; INPUT:     (i think that you need a drink)
+;; RESPONSE:  (after this conversation , you know that i want a drink !)
+;; ============================================================
+;; INPUT:     (you think that i need a drink)
+;; RESPONSE:  (after this conversation , i know that you want a drink !)
+;; ============================================================
+;; INPUT:     (i think that i need a drink)
+;; RESPONSE:  (after this conversation , you know that you want a drink !)
+;; ============================================================
+;; INPUT:     (you think that you need a drink)
+;; RESPONSE:  (after this conversation , i know that i want a drink !)
+;; ============================================================
+;; INPUT:     (you want to smoke a fat joint)
+;; RESPONSE:  (i don't know if i really need to smoke a fat joint)
+;; ============================================================
+;; INPUT:     (i want to smoke a fat joint)
+;; RESPONSE:  (i don't know if you really need to smoke a fat joint)
+;; ============================================================
+;; INPUT:     (i want to dance in the moonlight)
+;; RESPONSE:  (i don't know if you really need to dance in the moonlight)
+;; ============================================================
