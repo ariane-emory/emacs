@@ -143,7 +143,7 @@ in reverse order."
       (dm::prn "THROWING %s!" no-match-tag)
       (throw no-match-tag nil))
     ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
-    ;; just contain an ELLIPSIS:
+    ;; contain an ELLIPSIS or an UNSPLICE:
     (unless (or (null pattern) (and ellipsis (equal pattern (list ellipsis))))
       (throw no-match-tag nil))
     ;; In the future, we could return t here for empty-but-successful matches?
@@ -177,8 +177,9 @@ in reverse order."
 (confirm that (dm:match '(,x (,p) ,y) '(1 (q r) 2)) returns nil)
 (confirm that (dm:match '(,x (,p) ,y) '(1 () 2)) returns nil)
 (confirm that (dm:match '(,x ,@ys) '(1 2 3 4)) returns ((x . 1) (ys 2 3 4)))
-(confirm that (dm:match '(,w (,x ,@ys) ,z ...) '(1 (2 3 4) 5 6 7 8))
-  returns ((w . 1) (x . 2) (ys 3 4) (z . 5)))
+(confirm that
+  (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
+  returns ((w . 1) (v . foo) (x . 2) (ys 3 4) (z . 5)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (dm:match
