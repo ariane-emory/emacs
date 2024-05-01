@@ -59,8 +59,7 @@
   (let* ( (assoc (assoc var var-alist))
           (new (cons (symbolicate (car assoc) '*) (cdr assoc))))
     (nconc var-alist (list new)))
-  (prn "VAR-ALIST: %s" var-alist)
-  var)
+  val)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -68,6 +67,7 @@
 (defun repeat-word (var val var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Double a symbol with a hyphen in between the two, foo ⇒ foo-foo."
+  (prn "THESE: %s %s %s" var val var-alist)
   (symbolicate- val val))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (repeat-word 'x 'bo '((x . bo))) returns bo-bo)
@@ -161,7 +161,9 @@
             (assoc (assoc var var-alist)))
       (unless assoc (error "missing var %s" var))
       (dolist (fun funs)
-        (setf (cdr assoc) (funcall fun var (cdr assoc) var-alist)))))
+        (let ((res (funcall fun var (cdr assoc) var-alist)))
+          (setf (cdr assoc) res)
+          (prn "ALIST: %s" var-alist)))))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word))
