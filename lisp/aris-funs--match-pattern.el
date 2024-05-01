@@ -104,7 +104,7 @@ element."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro --mp-prn (first &rest rest)
+(defmacro mp::prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Wrap *mp:print-fun*. NOT YET USED FOR SOME REASON?"
   `(when *pm--verbose*     
@@ -114,7 +114,7 @@ element."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun mp--match (pattern target)
+(defun mp:match (pattern target)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Match a PATTERN list against a TARGET list.
 
@@ -122,18 +122,18 @@ This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of
 Artificial Intelligence' but with several improvements.
 
 Examples:
-  (`mp--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`mp:match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
 
-  (`mp--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`mp:match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
   (setq `*mp:use-dotted-pairs-in-result*' nil)
 
-  (`mp--match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`mp:match' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (`mp--match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`mp:match' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ((original-indent *wm:indent*))
     (cl-letf (((symbol-function 'print) (if *mp:verbose* #'indented-message #'ignore)))
@@ -374,7 +374,7 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'pmatch 'mp--match)
+(defalias 'pmatch 'mp:match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

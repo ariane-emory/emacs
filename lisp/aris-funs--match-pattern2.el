@@ -18,7 +18,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun match-pattern--match2 (pattern target)
+(defun mp:match2 (pattern target)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Match a PATTERN list against a TARGET list.
 
@@ -26,18 +26,18 @@ This is inspired by MATCH6 function from Steven Tanimoto's book `The Elements of
 Artificial Intelligence' but with several improvements.
 
 Examples:
-  (`match-pattern--match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`mp:match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v . 77) (w 3 2 1) (x . 66) (y . 22))
 
-  (`match-pattern--match2' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`mp:match2' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t
 
   (setq `*mp:use-dotted-pairs-in-result*' nil)
 
-  (`match-pattern--match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+  (`mp:match2' '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
   ⇒ ((v 77) (w 3 2 1) (x 66) (y 22))
 
-  (`match-pattern--match2' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
+  (`mp:match2' '(77 1 2 3 4 5 66 22) '(77 1 2 3 4 5 66 22))
   ⇒ t"
   (let ((original-indent *wm:indent*))
     (cl-letf (((symbol-function 'print) (if *mp:verbose* #'indented-message #'ignore)))
@@ -113,7 +113,7 @@ Examples:
                                (if *mp:invalid-element?*
                                  (funcall *mp:invalid-element?* pattern-head)
                                  (not (or (pattern-head-is-verbatim?)
-                                      (pattern-head-is-capture?)))))
+                                        (pattern-head-is-capture?)))))
                              (capture-at-pattern-head-has-tag? (tag)
                                (when tag
                                  (assert-pattern-head-is-capture!)
@@ -297,7 +297,7 @@ Examples:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'pmatch2 'match-pattern--match2)
+(defalias 'pmatch2 'mp:match2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -307,31 +307,31 @@ Examples:
 (when nil
   (progn
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (match2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
+    (pmatch2 '((? . v) (* . w) 4 5 (? . x) (even? . y)) '(77 1 2 3 4 5 66 22))
 
     (let ( (*mp:use-new-pipe-macro* t)
            (*mp:verbose* t)
            (*mp:merge-duplicate-alist-keys* nil)
            (*mp:use-dotted-pairs-in-result* nil))
-      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+      (pmatch2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
     
     (let ( (*mp:use-new-pipe-macro* nil)
            (*mp:verbose* t)
            (*mp:merge-duplicate-alist-keys* nil)
            (*mp:use-dotted-pairs-in-result* nil))
-      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+      (pmatch2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
 
     (let ( (*mp:use-new-pipe-macro* t)
            (*mp:verbose* t)
            (*mp:merge-duplicate-alist-keys* t)
            (*mp:use-dotted-pairs-in-result* nil))
-      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+      (pmatch2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
     
     (let ( (*mp:use-new-pipe-macro* nil)
            (*mp:verbose* t)
            (*mp:merge-duplicate-alist-keys* t)
            (*mp:use-dotted-pairs-in-result* nil))
-      (match2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
+      (pmatch2 '((* . a) 6 7 (even? . b)) '(1 2 3 4 5 6 7 8)))
     
     (merge-duplicate-alist-keys '((a 1) (a 2) (a 3) (a 4) (a 5) (b 8)))
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
