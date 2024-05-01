@@ -13,6 +13,7 @@
 (defvar *swap-words*
   '( (i . you)
      (am . are)
+     (my . your)
      (had . have)
      (think . thought)
      (do . don\'t)))
@@ -92,13 +93,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
-  '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,thing)
+  '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
        :var-funs         ( (subject   dup-var dup-var swap-word)
                            ($2        i-to-know/knew))
-       :response-pattern (  ,$1 ,$2 ,subject ,had/have ,a/an ,thing ))
+       :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
@@ -110,6 +111,11 @@
                            ($2        swap-word))
        :response-pattern ( don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
                            the real ,thing \!))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    (,subject would like many ,@things)
+       :var-tests        ((subject subject?))
+       :var-funs         ((subject swap-word))
+       :response-pattern ( don\'t ,subject have enough ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subject would like ,@things)
        :var-tests        ((subject subject?))
@@ -293,8 +299,10 @@
              (you have a dollar)
              (i had a dollar)
              (you had a dollar)
+             (you had a coin in your pocket)
              (i would like a hamburger with cheese and bacon)
-             (you would like a hamburger with cheese and bacon)))
+             (you would like a hamburger with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
