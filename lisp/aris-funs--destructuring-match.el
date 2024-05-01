@@ -131,7 +131,7 @@ in reverse order."
       (throw no-match-tag nil))
     ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
     ;; just contain an ELLIPSIS:
-    (unless (or (null pattern) (equal pattern (list ellipsis)))
+    (unless (or (null pattern) (and ellipsis (equal pattern (list ellipsis))))
       (throw no-match-tag nil))
     ;; In the future, we could return t here for empty-but-successful matches?
     (let ((res (nreverse alist)))
