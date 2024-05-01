@@ -320,8 +320,8 @@ Examples:
                                  (with-indentation
                                    (print
                                      (concat
-                                       "pattern-pattern tail matches the target-tail "
-                                       "target, so we'll take pattern-head as a Kleene "
+                                       "pattern-pattern matches target-tail, "
+                                       "so we'll take target-head as a Kleene "
                                        "item.")))
                                  (continue pattern-tail target-tail target-head))
                                ((case 102 "Kleene: pattern-tail matches target?"
