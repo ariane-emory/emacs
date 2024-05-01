@@ -39,12 +39,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'am/are?   (make-member-sym-p  '(am are)))
-(defalias 'a/an?     (make-member-sym-p  '(a an)))
-(defalias 'had/have? (make-member-sym-p  '(had have))) 
-(defalias 'subject?  (make-member-sym-p  '(i you)))
-(defalias 'modal?    (make-member-sym-p  '(would should could have will)))
+(defalias 'am/are?    (make-member-sym-p '(am are)))
+(defalias 'a/an?      (make-member-sym-p '(a an)))
+(defalias 'had/have?  (make-member-sym-p '(had have))) 
+(defalias 'subject?   (make-member-sym-p '(i you)))
+(defalias 'modal?     (make-member-sym-p '(would should could have will)))
 (defalias 'epistemic? (make-member-sym-p '(know believe suspect think)))
+(defalias 'desire?    (make-member-sym-p '(need want)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -100,15 +101,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun mapswap (var val var-alist)
-  ;; (debug)
-  (let ((res (rmapcar val (lambda (v) (swap-word var v var-alist)))))
-    ;; (debug)
-    res))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,@things)
        :var-tests        ( (subject   subject?)
@@ -118,7 +110,7 @@
                            (had/have  swap-word)
                            ($2        i-to-know/knew)
                            (things    swap-word))
-       :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \! ))
+       :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
@@ -229,9 +221,10 @@
           (setf (cdr assoc) res))
         ;; (prn "ALIST: %s" var-alist)
         )))
-  var-alist)
+  var-alist) ; return value is only used by a unit test right now.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word))
+(confirm that (run-var-funs
+                '((subj swap-word) (subj-2 swap-word))
                 '((subj . i) (subj-2 . you) (baz . you)))
   returns ((subj . you) (subj-2 . i) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -333,7 +326,7 @@
              (you suck ass \!)
              (you are an asshole)
              (i am a bitch)
-             (i have an orange)
+             (i have an apple tree)
              (you have a dollar)
              (i had a dollar)
              (you had a dollar)
@@ -344,6 +337,7 @@
              (i would like a hamburger with cheese and bacon)
              (you would like a hamburger with cheese and bacon)
              (i would like many hamburgers with cheese and bacon)
+             (i need hamburger with cheese and bacon)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
