@@ -174,11 +174,11 @@ in reverse order."
             (setf alist (cons (cons var nil) alist))))
         (t (throw 'no-match nil)))    
       ;; return either the ALIST or just t:
-      (if alist
+      (if (not alist)
+        t
         (let ((res (nreverse alist)))
           (dm::prn "RESULT:        %s" res)
-          res)
-        t))))
+          res)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These two are just examples of error cases:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
