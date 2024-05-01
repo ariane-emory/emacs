@@ -67,7 +67,11 @@ in reverse order."
                      &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A simple pattern matching/destructuring fun."
-  (unless (and (listp pattern) (listp target))
+  (unless (and (listp pattern)
+            (listp target)
+            (symbolp dont-care)
+            (symbolp ellipsis)
+            (symbolp unsplice))
     (error "both PATTERN and TARGET must be lists."))  
   (dm::prndiv)
   (let ((res
@@ -138,8 +142,8 @@ in reverse order."
                 (cond
                   ((eq res t)) ; do nothing.
                   ((eq res nil) (throw 'no-match nil))
-                  (t (setf alist (dm::merge-2-alists alist res)))
-                  )))
+                  ;; dm::match1 only returns t or lists, so now we'll assume it's a list.
+                  (t (setf alist (dm::merge-2-alists alist res))))))
             ((equal pat-head targ-head)) ; equal literals, do nothing. 
             ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
             ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match

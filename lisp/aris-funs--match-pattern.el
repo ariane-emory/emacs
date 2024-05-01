@@ -142,7 +142,7 @@ Examples:
         (when *mp:init-fun*
           (funcall *mp:init-fun*))
         (cl-labels
-          ((matchrec (pattern target depth accumulator)
+          ((matchrec (pattern target accumulator)
              (let  ( (pattern-head (car pattern))
                      (pattern-tail (cdr pattern))
                      (target-head  (car target))
@@ -218,7 +218,7 @@ Examples:
                                (cons (capture-symbol-of-pattern-head) (list value)))
                              (continue (pattern target &optional (value :NOT-SUPPLIED))
                                (let ((*wm:indent* (1+ *wm:indent*)))
-                                 (matchrec pattern target depth
+                                 (matchrec pattern target 
                                    (if (eq value :NOT-SUPPLIED)
                                      accumulator
                                      (let ((kvp (make-kvp value)))
@@ -351,7 +351,7 @@ Examples:
           ;; Leave body of matchrec.
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           (let ( (*wm:indent* original-indent)
-                 (match-result (matchrec pattern target 0 nil)))
+                 (match-result (matchrec pattern target nil)))
             (print "Match result is %s." match-result)
 	          (when (car match-result)
 	            (let ((match-result (cdr match-result)))
