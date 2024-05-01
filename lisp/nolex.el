@@ -19,7 +19,12 @@
      (need . want)
      (had . have)
      (think . thought)
-     (do . don\'t)))
+     (do . don\'t)
+     (always . never)
+     (should . shouldn\'t)
+     (could . couldn\'t)
+     (will . won\'t)
+     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (var val var-alist)
   "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
@@ -50,7 +55,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'am/are?           (make-member-sym-p '(am are)))
-(defalias 'a/an?             (make-member-sym-p '(a an)))
+(defalias 'a/an?             (make-member-sym-p '(a an another)))
 (defalias 'had/have?         (make-member-sym-p '(had have)))
 (defalias 'do/does?          (make-member-sym-p '(do does)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,14 +71,17 @@
 (defalias 'pick-subject      (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar    *modal-words*    '(would should could will can might have))
+(defvar    *modal-words2*    (append *modal-words* '(wouldn\'t shouldn\'t couldn\'t won\'t cant)))
 (defalias 'modal?            (make-member-sym-p *modal-words*))
 (defalias 'pick-modal        (make-pick (cl-remove 'have *modal-words*)))
+(defalias 'pick-modal2       (make-pick *modal-words2*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar   *epistemic-words* '(know believe suspect think))
 (defalias 'epistemic?        (make-member-sym-p *epistemic-words*))
 (defalias 'pick-epistemic    (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'pick-possibility  (make-pick '(do would would\ not sometimes always might would)))
+(defalias 'pick-possibility
+  (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -156,7 +164,7 @@
                            (things    swap-word))
        :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun)
+     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun)
        :var-tests        ( (subject   subject?)
                            (epistemic epistemic?)
                            (subject-2 subject?)
@@ -197,9 +205,9 @@
      ( :input-pattern    ( ,do/would ,subject ,desire ,@things)
        :var-tests        ( (do/would  do/would?)
                            (subject   subject?)
-                           (desire   desire?))
+                           (desire    desire?))
        :var-funs         ( (subject   swap-word dup-var)
-                           (desire   pick-desire)
+                           (desire    pick-desire)
                            ($1        pick-possibility))
        :response-pattern ( ,subject ,$1 ,desire ,@things))
      
@@ -210,7 +218,7 @@
        :var-funs         ( (subject   swap-word))
        :response-pattern ( fine \, ,subject ,bar ,baz \, so what \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject ,modal ,verb ,a/an ,@things)
+     ( :input-pattern    ( ,subject  ,modal ,verb ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (modal     modal?)
                            (a/an      a/an?)
@@ -218,16 +226,8 @@
        :var-funs         ( (subject   dup-var dup-var dup-var swap-word)
                            ($1        pick-subject)
                            ($2        pick-epistemic)
-                           ($3        pick-modal))
+                           ($3        pick-modal2))
        :response-pattern ( ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
-     ;; ;;----------------------------------------------------------------------------------------------
-     ;; ( :input-pattern    ( ,subject ,modal ,verb ,a/an ,@things)
-     ;;   :var-tests        ( (subject   subject?)
-     ;;                       (modal     modal?)
-     ;;                       (a/an      a/an?))
-     ;;   :var-funs         ( (things    swap-word))
-     ;;   :response-pattern (  so just go ,verb ,a/an ,@things \!))
-     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        :var-tests        ( (subject   subject?)
                            (modal     modal?))
@@ -415,6 +415,8 @@
              (i know that you have never eaten a hamburger)
              (you would never eat a cold hamburger)
              (you should never eat a cold hamburger)
+             (you could never eat a cold hamburger)
+             (i could never eat a cold hamburger)
              (foo bar baz)
              (foo bar baz quux)
              (you don\'t understand)
@@ -460,6 +462,11 @@
              (would you like a cigarette)
              (would you like a cigarette)
              (would you like a cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (you should have a cigarette)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
