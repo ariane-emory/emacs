@@ -242,9 +242,11 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:fill (pattern alist &optional (unsplice '\,@))
+(cl-defun dm:fill (pattern alist &optional (splice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Fill in the variables in PATTERN with the values from ALIST."
+  "Fill in the variables in PATTERN with the values from ALIST.
+
+This behaves very similarly to quasiquote."
   (dm::prndiv)
   (dm::prn "FILL:")
   (let (res)
@@ -259,7 +261,7 @@ in reverse order."
               (if-let ((assoc (assoc var alist)))
                 (push (cdr assoc) res)
                 (error "var %s not found." var))))
-          ((eq unsplice (car-safe thing))
+          ((eq splice (car-safe thing))
             ;; (debug)
             (let ((var (cadr thing)))
               (dm::prn "VAR:     %s" var)
@@ -269,41 +271,25 @@ in reverse order."
                   (dm::prn "VAL:     %s" val)
                   (unless (proper-list-p val)
                     (error "var %s's value %s cannot be spliced, not a list."))
-                  (nconc res val)
-                  ;; (dolist (elem val)
-                  ;;   (push elem res))
-                  )
+                  (dolist (elem val)
+                    (push elem res)))
                 (error "var %s not found." (cadr thing)))))
-          ((proper-list-p thing) (push (dm:fill thing alist) res))
+          ((proper-list-p thing) (push (with-indentation (dm:fill thing alist)) res))
           (t (push thing res)))))
     (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(prn "THIS:    %s"  (dm:fill '(,w ,@y) '((w . 666) (y 1 2 3 4))))
-
-;;(prn "THIS: %s"  (dm:fill '(,w ,y) '((w . 666) (y 1 2 3 4))))
-
-;; (rmapcar pattern
-;;   (lambda (thing)
-;;     (cond
-;;       ((if (eq '\, (car-safe thing))
-;;          (if-let ((assoc (assoc (cadr thing) alist)))
-;;            (cdr assoc)
-;;            (error "var %s not found." (cadr thing)))))
-;;       ((proper-list-p thing) (dm:fill thing alist))
-;;       (t thing))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
-;;   returns (666 x 999 z))
-;; (confirm that (dm:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
-;;   returns ((333 666) x 999 (999 999) z (333 666)))
-;; (confirm that (dm:fill '(a ,b (,c ,d)) (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-;;   returns (a 2 (3 4)))
-;; (confirm that (dm:fill '(a ,b (,c ,d))
-;;                 (dm:match '(a ,b (,c ,d))
-;;                   (dm:fill '(a ,b (,c ,d))
-;;                     (dm:match '(a ,b (,c ,d))
-;;                       '(a 2 (3 4))))))
-;;   returns (a 2 (3 4)))
+(confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+  returns (666 x 999 z))
+(confirm that (dm:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
+  returns ((333 666) x 999 (999 999) z (333 666)))
+(confirm that (dm:fill '(a ,b (,c ,d)) (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+  returns (a 2 (3 4)))
+(confirm that (dm:fill '(a ,b (,c ,d))
+                (dm:match '(a ,b (,c ,d))
+                  (dm:fill '(a ,b (,c ,d))
+                    (dm:match '(a ,b (,c ,d))
+                      '(a 2 (3 4))))))
+  returns (a 2 (3 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
