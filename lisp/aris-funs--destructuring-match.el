@@ -110,7 +110,7 @@ in reverse order."
             (let ((var (cadr pat-head)))
               ;; (debug)
               ;; put the remainder of TARGET in VAR's key in ALIST:
-              (setf alist (cons (cons var target) alist))
+              (setf alist (cons (cons var (cons targ-head target)) alist))
               ;; nullify TARGET and PATTERN:
               (setf target  nil)
               (setf pattern nil)))
@@ -176,6 +176,9 @@ in reverse order."
 (confirm that (dm:match '(,x (,p ...) ,y) '(1 (q r) 2)) returns ((x . 1) (p . q) (y . 2)))
 (confirm that (dm:match '(,x (,p) ,y) '(1 (q r) 2)) returns nil)
 (confirm that (dm:match '(,x (,p) ,y) '(1 () 2)) returns nil)
+(confirm that (dm:match '(,x ,@ys) '(1 2 3 4)) returns ((x . 1) (ys 2 3 4)))
+(confirm that (dm:match '(,w (,x ,@ys) ,z ...) '(1 (2 3 4) 5 6 7 8))
+  returns ((w . 1) (x . 2) (ys 3 4) (z . 5)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (dm:match
@@ -243,4 +246,3 @@ in reverse order."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:match '(,x ,@ys) '(1 2 3 4))
