@@ -10,13 +10,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-pick (lst)
-  (lambda (&rest _)
-    (elt lst (random (length lst)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *swap-words*
   '( (i . you)
      (am . are)
@@ -49,13 +42,29 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'am/are?    (make-member-sym-p '(am are)))
-(defalias 'a/an?      (make-member-sym-p '(a an)))
-(defalias 'had/have?  (make-member-sym-p '(had have))) 
-(defalias 'subject?   (make-member-sym-p '(i you)))
-(defalias 'modal?     (make-member-sym-p '(would should could have will)))
-(defalias 'epistemic? (make-member-sym-p '(know believe suspect think)))
-(defalias 'desire?    (make-member-sym-p '(need want)))
+(defun make-pick (lst)
+  (lambda (&rest _)
+    (elt lst (random (length lst)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'am/are?           (make-member-sym-p '(am are)))
+(defalias 'a/an?             (make-member-sym-p '(a an)))
+(defalias 'had/have?         (make-member-sym-p '(had have))) 
+(defalias 'desire?           (make-member-sym-p '(need want)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar    *subject-words*  '(i you))
+(defalias 'subject?          (make-member-sym-p *subject-words*))
+(defalias 'pick-subject      (make-pick *subject-words*))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar    *modal-words*    '(would should could will can))
+(defalias 'modal?            (make-member-sym-p *modal-words*))
+(defalias 'pick-modal        (make-pick *modal-words*))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar   *epistemic-words* '(know believe suspect think))
+(defalias 'epistemic?        (make-member-sym-p *epistemic-words*))
+(defalias 'pick-epistemic    (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -167,15 +176,6 @@
                            (desire    swap-word))
        :response-pattern ( do ,subject really ,desire ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
-
-     ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
-       :var-tests        ( (subject   subject?)
-                           (desire    desire?))
-       :var-funs         ( (subject   swap-word)
-                           (desire    swap-word))
-       :response-pattern ( i don\'t know if ,subject really ,desire to ,verb ,@things))
-
-     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
        :var-tests        ( (subject   subject?))
        :var-funs         ( (subject   swap-word))
@@ -184,9 +184,20 @@
      ( :input-pattern    ( ,subject ,modal ,verb ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (modal     modal?)
-                           (a/an      a/an?))
-       :var-funs         ( (things    swap-word))
-       :response-pattern (  so just go ,verb ,a/an ,@things \!))
+                           (a/an      a/an?)
+                           )
+       :var-funs         ( (subject   dup-var dup-var dup-var swap-word)
+                           ($1        pick-subject)
+                           ($2        pick-epistemic)
+                           ($3        pick-modal))
+       :response-pattern ( ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
+     ;; ;;----------------------------------------------------------------------------------------------
+     ;; ( :input-pattern    ( ,subject ,modal ,verb ,a/an ,@things)
+     ;;   :var-tests        ( (subject   subject?)
+     ;;                       (modal     modal?)
+     ;;                       (a/an      a/an?))
+     ;;   :var-funs         ( (things    swap-word))
+     ;;   :response-pattern (  so just go ,verb ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        :var-tests        ( (subject   subject?)
@@ -228,6 +239,15 @@
        :response-pattern (  after this conversation \, ,subject
                            ,epistemic that ,subject-2
                            ,desire ,a/n ,noun \!))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
+       :var-tests        ( (subject   subject?)
+                           (desire    desire?))
+       :var-funs         ( (subject   swap-word)
+                           (desire    swap-word dup-var)
+                           ($1        pick-epistemic)
+                           )
+       :response-pattern ( i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
@@ -407,6 +427,8 @@
              (you want to smoke a fat joint)
              (i want to smoke a fat joint)
              (i want to dance in the moonlight)
+             (i would climb a tall tree)
+             (you would climb a tall tree)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
