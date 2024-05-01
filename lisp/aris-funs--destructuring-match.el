@@ -57,7 +57,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:match (pattern target &optional (dont-care '_) (ellipsis '...))
+(cl-defun dm:match (pattern target &optional (dont-care '_) (ellipsis '...) (rest '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A simple pattern matching/destructuring fun."
   (with-gensyms (no-match-tag)
@@ -66,7 +66,7 @@ in reverse order."
     (let ((res
             (catch no-match-tag
               (with-indentation
-                (dm::match1 pattern target dont-care ellipsis no-match-tag)))))
+                (dm::match1 pattern target dont-care ellipsis rest no-match-tag)))))
       (dm::prndiv)
       (dm::prn "FINAL RESULT:  %s" res) 
       (dm::prndiv)
@@ -75,7 +75,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (pattern target dont-care ellipsis no-match-tag)
+(defun dm::match1 (pattern target dont-care ellipsis rest no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   (dm::prndiv)
@@ -114,7 +114,7 @@ in reverse order."
             (setf alist 
               (dm::merge-2-alists alist
                 (with-indentation
-                  (dm::match1 pat-head targ-head dont-care ellipsis no-match-tag)))))
+                  (dm::match1 pat-head targ-head dont-care ellipsis rest no-match-tag)))))
           ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
