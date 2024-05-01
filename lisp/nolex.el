@@ -43,6 +43,7 @@
 (defalias 'a/an?     (make-member-sym-p '(a an)))
 (defalias 'had/have? (make-member-sym-p '(had have))) 
 (defalias 'subject?  (make-member-sym-p '(i you)))
+(defalias 'modal?  (make-member-sym-p '(would should could)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -72,13 +73,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun have-to-know/knew (var val var-alist)
-  (if (eq val 'have) 'know\ that 'knew\ that))
+  (if (eq val 'have)
+    'know\ that
+    'knew\ that))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun i-to-know/knew (var val var-alist)
-  (if (eq val 'i) 'knew\ that 'know\ that))
+  (if (eq val 'i)
+    'knew\ that
+    'knew\ that
+    ;; 'know\ that ; neutered for a moment
+    ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -92,14 +99,24 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun mapswap (var val var-alist)
+  ;; (debug)
+  (let ((res (rmapcar val (lambda (v) (swap-word var v var-alist)))))
+    ;; (debug)
+    res))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
        :var-funs         ( (subject   dup-var dup-var swap-word)
-                           ($2        i-to-know/knew))
-       :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things ))
+                           ($2        i-to-know/knew)
+                           (things    mapswap))
+       :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \! ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
@@ -123,13 +140,14 @@
        :response-pattern ( why do you think that ,subject would like ,@things \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,bar ,baz)
-       :var-tests((subj subject?))
-       :var-funs((subj swap-word))
+       :var-tests        ((subj subject?))
+       :var-funs         ((subj swap-word))
        :response-pattern ( fine \, ,subj ,bar ,baz \, so what \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
-       :var-tests        ((subj subject?))
-       :response-pattern( so just go ,verb a ,thing \!))
+     ( :input-pattern    (,subject ,modal ,verb a ,@things)
+       :var-tests        ((subject subject?) (modal modal?))
+       :var-funs         ((things mapswap))
+       :response-pattern ( so just go ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
        :var-funs         ((subj swap-word))
@@ -284,7 +302,6 @@
              (i know that you have never eaten a hamburger)
              (you would never eat a hamburger)
              (you should never eat a hamburger)
-             (i could eat a hamburger)
              (foo bar baz)
              (foo bar baz quux)
              (you don\'t understand)
@@ -300,9 +317,13 @@
              (i had a dollar)
              (you had a dollar)
              (you had a coin in your pocket)
+             (you have a coin in your pocket)
+             (i could eat a hamburger and some fries)
+             (i have a fly on my arm)
              (i would like a hamburger with cheese and bacon)
              (you would like a hamburger with cheese and bacon)
-             (i would like many hamburgers with cheese and bacon)))
+             (i would like many hamburgers with cheese and bacon)
+             ))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
