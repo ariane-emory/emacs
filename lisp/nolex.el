@@ -51,16 +51,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'am/are?           (make-member-sym-p '(am are)))
 (defalias 'a/an?             (make-member-sym-p '(a an)))
-(defalias 'had/have?         (make-member-sym-p '(had have))) 
+(defalias 'had/have?         (make-member-sym-p '(had have)))
+(defalias 'do/does?          (make-member-sym-p '(do does)))
 (defalias 'desire?           (make-member-sym-p '(need want)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar    *subject-words*  '(i you))
 (defalias 'subject?          (make-member-sym-p *subject-words*))
 (defalias 'pick-subject      (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar    *modal-words*    '(would should could will can))
+(defvar    *modal-words*    '(would should could will can might have))
 (defalias 'modal?            (make-member-sym-p *modal-words*))
-(defalias 'pick-modal        (make-pick *modal-words*))
+(defalias 'pick-modal        (make-pick (cl-remove 'have *modal-words*)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar   *epistemic-words* '(know believe suspect think))
 (defalias 'epistemic?        (make-member-sym-p *epistemic-words*))
@@ -147,6 +148,15 @@
                            (things    swap-word))
        :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun)
+       :var-tests        ( (subject   subject?)
+                           (epistemic epistemic?)
+                           (subject-2 subject?)
+                           (modal     modal?))
+       :var-funs         ( (subject   swap-word)
+                           (subject-2 swap-word))
+       :response-pattern  (  do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun \?))
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
@@ -175,6 +185,14 @@
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word))
        :response-pattern ( do ,subject really ,desire ,a/an ,@things \?))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( ,do/does ,subject ,verb ,@things)
+       :var-tests        ( (do/does   do/does?)
+                           (subject   subject?))
+       :var-funs         ( (subject   swap-word))
+       :response-pattern ( :FOO))
+
+
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
        :var-tests        ( (subject   subject?))
@@ -218,14 +236,6 @@
        :response-pattern ( come on \, ,subject can\'t really ,epistemic
                            that ,subject-2 ,modal never ,verb a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject ,verb that ,subject-2 ,modal ,verb-2 a ,noun)
-       :var-tests        ( (subject   subject?)
-                           (subject-2 subject?)
-                           (modal     modal?))
-       :var-funs         ( (subject   swap-word)
-                           (subject-2 swap-word))
-       :response-pattern  (  do ,subject really ,verb that ,subject-2 ,modal ,verb-2 a ,noun \?))
-     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
        :var-tests        ( (subject   subject?)
                            (epistemic epistemic?)
@@ -245,8 +255,7 @@
                            (desire    desire?))
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word dup-var)
-                           ($1        pick-epistemic)
-                           )
+                           ($1        pick-epistemic))
        :response-pattern ( i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
@@ -430,6 +439,7 @@
              (i want to dance in the moonlight)
              (i would climb a tall tree)
              (you would climb a tall tree)
+             (do you like spicy tacos)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
@@ -439,136 +449,3 @@
 
 
 
-
-;; ============================================================
-;; START:
-;; ============================================================
-;; INPUT:     (i think that i would like a smoke)
-;; RESPONSE:  (do you really think that you would like a smoke ?)
-;; ============================================================
-;; INPUT:     (i think that you would like a smoke)
-;; RESPONSE:  (do you really think that i would like a smoke ?)
-;; ============================================================
-;; INPUT:     (i think that you should have a smoke)
-;; RESPONSE:  (do you really think that i should have a smoke ?)
-;; ============================================================
-;; INPUT:     (i know that i could have a smoke)
-;; RESPONSE:  (do you really know that you could have a smoke ?)
-;; ============================================================
-;; INPUT:     (i believe that you have seen a ghost)
-;; RESPONSE:  (do you really believe that i have seen a ghost ?)
-;; ============================================================
-;; INPUT:     (you believe that i have seen a ghost)
-;; RESPONSE:  (do i really believe that you have seen a ghost ?)
-;; ============================================================
-;; INPUT:     (i suspect that you have never seen a zebra)
-;; RESPONSE:  (come on , you can't really suspect that i have never seen a zebra !)
-;; ============================================================
-;; INPUT:     (i know that you have never eaten a hamburger)
-;; RESPONSE:  (come on , you can't really know that i have never eaten a hamburger !)
-;; ============================================================
-;; INPUT:     (you would never eat a cold hamburger)
-;; RESPONSE:  (i would eat a cold hamburger !)
-;; ============================================================
-;; INPUT:     (you should never eat a cold hamburger)
-;; RESPONSE:  (i should eat a cold hamburger !)
-;; ============================================================
-;; INPUT:     (foo bar baz)
-;; RESPONSE:  (i don't understand !)
-;; ============================================================
-;; INPUT:     (foo bar baz quux)
-;; RESPONSE:  (i don't understand !)
-;; ============================================================
-;; INPUT:     (you don't understand)
-;; RESPONSE:  (fine , i don't understand , so what ?)
-;; ============================================================
-;; INPUT:     (i don't understand !)
-;; RESPONSE:  (i don't understand !)
-;; ============================================================
-;; INPUT:     (you eat chickens)
-;; RESPONSE:  (fine , i eat chickens , so what ?)
-;; ============================================================
-;; INPUT:     (dogs eat chickens)
-;; RESPONSE:  (i don't understand !)
-;; ============================================================
-;; INPUT:     (you are stupid !)
-;; RESPONSE:  (no , it is you who are stupid !)
-;; ============================================================
-;; INPUT:     (you suck ass !)
-;; RESPONSE:  (no , it is you who suck ass !)
-;; ============================================================
-;; INPUT:     (you are an asshole)
-;; RESPONSE:  (don't be silly , i am not an asshole , you are the real asshole !)
-;; ============================================================
-;; INPUT:     (i am a bitch)
-;; RESPONSE:  (don't be silly , you are not a bitch , i am the real bitch !)
-;; ============================================================
-;; INPUT:     (i have an apple tree)
-;; RESPONSE:  (i already knew that you had an apple tree !)
-;; ============================================================
-;; INPUT:     (you have a dollar)
-;; RESPONSE:  (you already knew that i had a dollar !)
-;; ============================================================
-;; INPUT:     (i had a dollar)
-;; RESPONSE:  (i already knew that you have a dollar !)
-;; ============================================================
-;; INPUT:     (you had a dollar)
-;; RESPONSE:  (you already knew that i have a dollar !)
-;; ============================================================
-;; INPUT:     (you had a coin in your pocket)
-;; RESPONSE:  (you already knew that i have a coin in my pocket !)
-;; ============================================================
-;; INPUT:     (you have a coin in your pocket)
-;; RESPONSE:  (you already knew that i had a coin in my pocket !)
-;; ============================================================
-;; INPUT:     (i could eat a hamburger and some fries)
-;; RESPONSE:  (so just go eat a hamburger and some fries !)
-;; ============================================================
-;; INPUT:     (i have a fly on my arm)
-;; RESPONSE:  (i already knew that you had a fly on your arm !)
-;; ============================================================
-;; INPUT:     (i would like a hamburger with cheese and bacon)
-;; RESPONSE:  (why do you think that you would like a hamburger with cheese and bacon ?)
-;; ============================================================
-;; INPUT:     (i would like an orange cat)
-;; RESPONSE:  (why do you think that you would like an orange cat ?)
-;; ============================================================
-;; INPUT:     (you would like a hamburger with cheese and bacon)
-;; RESPONSE:  (why do you think that i would like a hamburger with cheese and bacon ?)
-;; ============================================================
-;; INPUT:     (i would like many hamburgers with cheese and bacon)
-;; RESPONSE:  (don't you have enough hamburgers with cheese and bacon already ?)
-;; ============================================================
-;; INPUT:     (i want a hamburger with cheese and bacon)
-;; RESPONSE:  (do you really need a hamburger with cheese and bacon ?)
-;; ============================================================
-;; INPUT:     (i need a hamburger with cheese and bacon)
-;; RESPONSE:  (do you really want a hamburger with cheese and bacon ?)
-;; ============================================================
-;; INPUT:     (you want a hamburger with cheese and bacon)
-;; RESPONSE:  (do i really need a hamburger with cheese and bacon ?)
-;; ============================================================
-;; INPUT:     (you need a hamburger with cheese and bacon)
-;; RESPONSE:  (do i really want a hamburger with cheese and bacon ?)
-;; ============================================================
-;; INPUT:     (i think that you need a drink)
-;; RESPONSE:  (after this conversation , you know that i want a drink !)
-;; ============================================================
-;; INPUT:     (you think that i need a drink)
-;; RESPONSE:  (after this conversation , i know that you want a drink !)
-;; ============================================================
-;; INPUT:     (i think that i need a drink)
-;; RESPONSE:  (after this conversation , you know that you want a drink !)
-;; ============================================================
-;; INPUT:     (you think that you need a drink)
-;; RESPONSE:  (after this conversation , i know that i want a drink !)
-;; ============================================================
-;; INPUT:     (you want to smoke a fat joint)
-;; RESPONSE:  (i don't know if i really need to smoke a fat joint)
-;; ============================================================
-;; INPUT:     (i want to smoke a fat joint)
-;; RESPONSE:  (i don't know if you really need to smoke a fat joint)
-;; ============================================================
-;; INPUT:     (i want to dance in the moonlight)
-;; RESPONSE:  (i don't know if you really need to dance in the moonlight)
-;; ============================================================
