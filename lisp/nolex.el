@@ -83,8 +83,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun i-to-know/knew (var val var-alist)
   (if (eq val 'i)
-    'knew\ that
-    'knew\ that
+    'already\ knew\ that
+    'already\ knew\ that
     ;; 'know\ that ; neutered for a moment
     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -131,44 +131,53 @@
        :response-pattern ( don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
                            the real ,thing \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject would like many ,@things)
-       :var-tests        ((subject subject?))
-       :var-funs         ((subject swap-word))
-       :response-pattern ( don\'t ,subject have enough ,@things already \?))
+     ( :input-pattern    ( ,subject would like many ,@things)
+       :var-tests        ( (subject   subject?))
+       :var-funs         ( (subject   swap-word))
+       :response-pattern (  don\'t ,subject have enough ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject would like ,@things)
-       :var-tests        ((subject subject?))
-       :var-funs         ((subject swap-word))
-       :response-pattern ( why do you think that ,subject would like ,@things \?))
+     ( :input-pattern    ( ,subject would like ,@things)
+       :var-tests        ( (subject   subject?))
+       :var-funs         ( (subject   swap-word))
+       :response-pattern (  why do you think that ,subject would like ,@things \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject ,bar ,baz)
-       :var-tests        ((subject subject?))
-       :var-funs         ((subject swap-word))
+     ( :input-pattern    ( ,subject ,bar ,baz)
+       :var-tests        ( (subject   subject?))
+       :var-funs         ( (subject   swap-word))
        :response-pattern ( fine \, ,subject ,bar ,baz \, so what \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject ,modal ,verb a ,@things)
-       :var-tests        ((subject subject?) (modal modal?))
-       :var-funs         ((things mapswap))
-       :response-pattern ( so just go ,verb a ,@things \!))
+     ( :input-pattern    ( ,subject ,modal ,verb a ,@things)
+       :var-tests        ( (subject   subject?)
+                           (modal     modal?))
+       :var-funs         ( (things    mapswap))
+       :response-pattern (  so just go ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject ,modal never ,verb a ,thing)
-       :var-tests        ((subject subject?) (modal modal?))
-       :var-funs         ((subject swap-word))
-       :response-pattern (,subject ,modal ,verb a ,thing \!))
+     ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
+       :var-tests        ( (subject   subject?)
+                           (modal     modal?))
+       :var-funs         ( (subject   swap-word))
+       :response-pattern ( ,subject ,modal ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
        :response-pattern ( no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
-       :var-tests        ((subject subject?) (epistemic epistemic?) (subject-2 subject?) (modal modal?))
-       :var-funs         ((subject swap-word) (subject-2 swap-word))
+     ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
+       :var-tests        ( (subject   subject?)
+                           (epistemic epistemic?)
+                           (subject-2 subject?)
+                           (modal     modal?))
+       :var-funs         ( (subject   swap-word)
+                           (subject-2 swap-word))
        :response-pattern ( come on \, ,subject can\'t really ,epistemic
                            that ,subject-2 ,modal never ,verb a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject ,verb that ,subject-2 ,modal ,verb-2 a ,noun)
-       :var-tests        ((subject subject?)  (subject-2 subject?) (modal modal?))
-       :var-funs         ((subject swap-word) (subject-2 swap-word))
-       :response-pattern ( do ,subject really ,verb that ,subject-2 ,modal ,verb-2 a ,noun \?))
+     ( :input-pattern    ( ,subject ,verb that ,subject-2 ,modal ,verb-2 a ,noun)
+       :var-tests        ( (subject   subject?)
+                           (subject-2 subject?)
+                           (modal     modal?))
+       :var-funs         ( (subject   swap-word)
+                           (subject-2 swap-word))
+       :response-pattern (  do ,subject really ,verb that ,subject-2 ,modal ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
@@ -304,8 +313,8 @@
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)
              (i know that you have never eaten a hamburger)
-             (you would never eat a hamburger)
-             (you should never eat a hamburger)
+             (you would never eat a cold hamburger)
+             (you should never eat a cold hamburger)
              (foo bar baz)
              (foo bar baz quux)
              (you don\'t understand)
