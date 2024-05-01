@@ -1,4 +1,4 @@
-;; -*- fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
+;; -*- lexical-binding: t; fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--destructuring-match)
@@ -6,6 +6,13 @@
 (require 'aris-funs--plists)
 (require 'aris-funs--with-gensyms)
 (require 'aris-funs--symbolicate)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun make-pick (lst)
+  (lambda (&rest _)
+    (elt lst (random (length lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -163,9 +170,7 @@
 
      ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
        :var-tests        ( (subject   subject?)
-                           (desire    desire?)
-                           ;; (a/an      a/an?)
-                           )
+                           (desire    desire?))
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word))
        :response-pattern ( i don\'t know if ,subject really ,desire to ,verb ,@things))
@@ -401,6 +406,7 @@
              (you think that you need a drink)
              (you want to smoke a fat joint)
              (i want to smoke a fat joint)
+             (i want to dance in the moonlight)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
