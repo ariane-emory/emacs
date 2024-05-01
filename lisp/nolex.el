@@ -13,7 +13,10 @@
 (defvar *swap-words*
   '( (i . you)
      (am . are)
+     (do . does)
      (my . your)
+     (think . know)
+     (need . want)
      (had . have)
      (think . thought)
      (do . don\'t)))
@@ -82,6 +85,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun i-me (var val var-alist)
+  (if (eq val 'i)
+    'me
+    'i))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun i-to-know/knew (var val var-alist)
   (if (eq val 'i)
     'already\ knew\ that
@@ -137,7 +148,8 @@
        :var-tests        ( (subject   subject?)
                            (desire    desire?)
                            (a/an      a/an?))
-       :var-funs         ( (subject   swap-word))
+       :var-funs         ( (subject   swap-word)
+                           (desire    swap-word))
        :response-pattern ( do ,subject really ,desire ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
@@ -177,7 +189,20 @@
                            (modal     modal?))
        :var-funs         ( (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern (  do ,subject really ,verb that ,subject-2 ,modal ,verb-2 a ,noun \?))
+       :response-pattern  (  do ,subject really ,verb that ,subject-2 ,modal ,verb-2 a ,noun \?))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
+       :var-tests        ( (subject   subject?)
+                           (epistemic epistemic?)
+                           (subject-2 subject?)
+                           (desire    desire?)
+                           (a/n       a/an?))
+       :var-funs         ( (subject   i-me)
+                           (subject-2 i-me)
+                           (epistemic swap-word)
+                           (desire    swap-word))
+       :response-pattern (  this conversation definitely makes ,subject
+                           ,desire ,a/n ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
@@ -350,6 +375,10 @@
              (i need a hamburger with cheese and bacon)
              (you want a hamburger with cheese and bacon)
              (you need a hamburger with cheese and bacon)
+             (i think that you need a drink)
+             (you think that i need a drink)
+             (i think that i need a drink)
+             (you think that you need a drink)
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
