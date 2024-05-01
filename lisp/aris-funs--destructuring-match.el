@@ -47,9 +47,8 @@ in reverse order."
   ;; (prn "and this:   %s" alist-2)
   (let ((alist (nreverse alist-1)))
     (dolist (kvp alist-2 alist)
-      (if (assoc (car kvp) alist-1)
-        (error "duplicate key %s" (car kvp))
-        (push kvp alist)))))
+      (dm::require-non-duplicate-key! (car kvp) alist-1)
+      (push kvp alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
   returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1)))
@@ -71,6 +70,15 @@ in reverse order."
       (dm::prn "FINAL RESULT:  %s" res) 
       (dm::prndiv)
       res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::require-non-duplicate-key! (key alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Signal an error if KEY is already in ALIST."
+  (when (assoc key alist)
+    (error "duplicate key %s" key)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -109,6 +117,7 @@ in reverse order."
               (error "unsplice must be the last element in the pattern"))
             (let ((var (cadr pat-head)))
               ;; (debug)
+              (dm::require-non-duplicate-key! var alist)
               ;; put the remainder of TARGET in VAR's key in ALIST:
               (setf alist (cons (cons var (cons targ-head target)) alist))
               ;; nullify TARGET and PATTERN:
@@ -117,8 +126,9 @@ in reverse order."
           ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
           ((eq '\, (car-safe pat-head)) 
             (let ((var (cadr pat-head)))
-              (when (assoc var alist)
-                (error "duplicate key %s" var))
+              (dm::require-non-duplicate-key! var alist)
+              ;; (when (assoc var alist)
+              ;;   (error "duplicate key %s" var))
               (setf alist (cons (cons var targ-head) alist))
               (dm::prn "ALIST:         %s" alist)))
           ;; When PAT-HEAD is a list, recurse and merge the result into ALIST:
@@ -144,16 +154,29 @@ in reverse order."
       (throw no-match-tag nil))
     ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
     ;; contain an ELLIPSIS or an UNSPLICE:
-    (unless (or (null pattern) (and ellipsis (equal pattern (list ellipsis))))
-      (throw no-match-tag nil))
+    (cond
+      ((null pattern)) ;; don't need to do anything.
+      ((and ellipsis (equal pattern (list ellipsis)))) ;; don't need to do anything.
+      ;; if PATTERN's head is an UNSPLICE, since there's no TARGET left we just need
+      ;; to set the var in ALIST to nil:
+      ((and unsplice (equal (car-safe (car pattern)) unsplice))
+        (when (cdr pattern) (error "unsplice must be the last element in the pattern"))
+        (let ((var (cadar pattern)))
+          (dm::require-non-duplicate-key! var alist)
+          (setf alist (cons (cons var nil) alist))))
+      (t (throw no-match-tag nil)))
+    
     ;; In the future, we could return t here for empty-but-successful matches?
     (let ((res (nreverse alist)))
       (dm::prn "RESULT:        %s" res)
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(dm:match '(,y ... ,@y) '(2)) ; this should be illegal
+
 ;; These two are just examples of error cases:
-;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key!
-;; (dm:match '(,y ,z) '(2 (3))) ; duplicate key!
+;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
+;; (dm:match '(,y ,y) '(2 3)) ; duplicate key in set!
+;; (dm:match '(,y ,@y) '(2 3 4 5)) ; duplicate key in unsplice!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 (confirm that (dm:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
@@ -180,6 +203,7 @@ in reverse order."
 (confirm that
   (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
   returns ((w . 1) (v . foo) (x . 2) (ys 3 4) (z . 5)))
+(confirm that (dm:match '(,x ,@ys) '(1)) returns ((x . 1) (ys)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (dm:match
@@ -249,4 +273,4 @@ in reverse order."
 
 (dm:match '(,x ,@ys) '(1 2 3 4))
 
-(dm:match '(,x ,@ys) '(1))
+
