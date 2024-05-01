@@ -38,6 +38,15 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::require-non-duplicate-key! (key alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Signal an error if KEY is already in ALIST."
+  (when (assoc key alist)
+    (error "duplicate key %s." key)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::merge-2-alists (alist-1 alist-2)
   "Merge two alists into a single alist, maintaining their relative key order
 and signaling an eror upon encountering a duplicate key. Result is returned
@@ -59,6 +68,8 @@ in reverse order."
 (cl-defun dm:match (pattern target &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A simple pattern matching/destructuring fun."
+  (unless (and (listp pattern) (listp target))
+    (error "both PATTERN and TARGET must be lists."))  
   (with-gensyms (no-match-tag)
     (dm::prndiv)
     (dm::prn "GENERATED:     %s" no-match-tag)
@@ -70,15 +81,6 @@ in reverse order."
       (dm::prn "FINAL RESULT:  %s" res) 
       (dm::prndiv)
       res)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::require-non-duplicate-key! (key alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Signal an error if KEY is already in ALIST."
-  (when (assoc key alist)
-    (error "duplicate key %s." key)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -209,15 +211,13 @@ in reverse order."
 (confirm that (dm:match '(,x ,@ys) '(1)) returns ((x . 1) (ys)))
 (confirm that (dm:match '(1 2 3) '(1 2 3)) returns t)
 (confirm that (dm:match '(,1 2 3) '(1 2 3)) returns ((1 . 1)))
+(confirm that (dm:match '(_ ,x ...) '(foo (2 . 3) (4 . 5))) returns ((x 2 . 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (dm:match
     '(one (this that) (,two three (,four ,five) ,six))
     '(one (this that) (2 three (4 5) 6)))  
-  returns ( (two . 2)
-            (four . 4)
-            (five . 5)
-            (six . 6)))
+  returns ((two . 2) (four . 4) (five . 5) (six . 6)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (when-let-alist (dm:match
@@ -280,15 +280,19 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
   returns (666 x 999 z))
-(confirm that (dm:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
+(confirm that (dm:fill
+                '(,w x ,y (,y , y) z ,w)
+                '((y . 999) (w . (333 666))))
   returns ((333 666) x 999 (999 999) z (333 666)))
-(confirm that (dm:fill '(a ,b (,c ,d)) (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-  returns (a 2 (3 4)))
 (confirm that (dm:fill '(a ,b (,c ,d))
-                (dm:match '(a ,b (,c ,d))
-                  (dm:fill '(a ,b (,c ,d))
-                    (dm:match '(a ,b (,c ,d))
-                      '(a 2 (3 4))))))
+                (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+  returns (a 2 (3 4)))
+(confirm that
+  (dm:fill '(a ,b (,c ,d))
+    (dm:match '(a ,b (,c ,d))
+      (dm:fill '(a ,b (,c ,d))
+        (dm:match '(a ,b (,c ,d))
+          '(a 2 (3 4))))))
   returns (a 2 (3 4)))
 (confirm that
   (dm:match '(a ,b (,c ,d))
@@ -298,16 +302,28 @@ This behaves very similarly to quasiquote."
           (dm:match '(a ,b (,c ,d))
             '(a 2 (3 4)))))))
   returns ((b . 2) (c . 3) (d . 4)))
+(confirm that
+  (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+         (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+    (dm:fill pattern
+      (dm:match pattern
+        (dm:fill pattern
+          (dm:match pattern
+            target)))))
+  returns (a 2 (3 4 (5 6 7 8))))
+(confirm that
+  (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+         (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+    (dm:match pattern
+      (dm:fill pattern
+        (dm:match pattern
+          (dm:fill pattern
+            (dm:match pattern
+              target))))))
+  returns ((b . 2) (d . 4) (c . 3) (e . 5) (fs 6 7 8)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(let ( (pat  '(a ,b (,c ,d ,@es)))
-       (targ '(a 2  (3  4   5 6))))
-  (dm:fill pat
-    (dm:match pat
-      targ)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;(dm:match '(_ ,x ...) '(foo (2 . 3) (4 . 5)))

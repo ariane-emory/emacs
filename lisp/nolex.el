@@ -85,7 +85,7 @@
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(current-time)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun repeat-word (word-sym)
@@ -133,7 +133,8 @@
         (setf (cdr assoc) (funcall fun (cdr assoc))))))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word)) '((subj . i) (subj-2 . you) (baz . you)))
+(confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word))
+                '((subj . i) (subj-2 . you) (baz . you)))
   returns ((subj . you) (subj-2 . i) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -178,6 +179,7 @@
 (defun get-response (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
+  (prn "get-response INPUT: %s" input)
   (with-gensyms (result continue)
     (catch result
       (dolist (rule *rules*)
@@ -222,3 +224,16 @@
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+(catch 'exit
+  (cl-tagbody
+    loop
+    (let ((input (read)))
+      (when (eq input 'bye)
+        (throw 'exit nil))
+      (prn "INPUT: %s" input)
+      (let (response (get-response input))
+        (prn "RESPONSE: %s" response))
+      (go loop))))
+(get-response '(you eat chickens))
