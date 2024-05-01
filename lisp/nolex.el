@@ -150,23 +150,23 @@
        :var-funs         ((things mapswap))
        :response-pattern ( so just go ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
+     ( :input-pattern    (,subj ,modal never ,verb a ,thing)
        :var-funs         ((subj swap-word))
-       :response-pattern (,subj ,modal-verb ,verb a ,thing \!))
+       :response-pattern (,subj ,modal ,verb a ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
        :response-pattern ( no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
+     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal never ,verb-2 a ,noun)
        :var-tests        ((subj subject?)  (subj-2 subject?))
        :var-funs         ((subj swap-word) (subj-2 swap-word))
        :response-pattern ( come on \, ,subj can\'t really ,verb
-                           that ,subj-2 ,modal-verb never ,verb-2 a ,noun \!))
+                           that ,subj-2 ,modal never ,verb-2 a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
+     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal ,verb-2 a ,noun)
        :var-tests        ((subj subject?)  (subj-2 subject?))
        :var-funs         ((subj swap-word) (subj-2 swap-word))
-       :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?))
+       :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
