@@ -830,7 +830,7 @@
            aris-funs--trees
            aris-funs--objects
            aris-funs--when-let-alist
-           aris-funs--easy-match
+           aris-funs--destructuring-match
            aris-types
            steve-loshs-funs--if-let
            guy-steeles-funs--switch

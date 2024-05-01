@@ -1,7 +1,7 @@
 ;; -*- fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
-(require 'aris-funs--easy-match)
+(require 'aris-funs--destructuring-match)
 (require 'aris-funs--lists)
 (require 'aris-funs--plists)
 (require 'aris-funs--with-gensyms)
