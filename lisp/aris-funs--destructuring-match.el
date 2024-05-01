@@ -246,3 +246,6 @@ in reverse order."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(dm:match '(,x ,@ys) '(1 2 3 4))
+
+(dm:match '(,x ,@ys) '(1))
