@@ -54,33 +54,46 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'am/are?           (make-member-sym-p '(am are)))
-(defalias 'a/an?             (make-member-sym-p '(a an)))
-(defalias 'had/have?         (make-member-sym-p '(had have)))
-(defalias 'do/does?          (make-member-sym-p '(do does)))
+(defalias 'am/are?            (make-member-sym-p '(am are)))
+(defalias 'a/an?              (make-member-sym-p '(a an)))
+(defalias 'had/have?          (make-member-sym-p '(had have)))
+(defalias 'do/does?           (make-member-sym-p '(do does)))
+(defalias 'a/another/to?      (make-member-sym-p '(a another to)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'a/another/to?     (make-member-sym-p '(a another to)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'do/would?         (make-member-sym-p '(do would)))
-(defalias 'pick-do/would?    (make-pick '(do would)))
+(defalias 'do/would?          (make-member-sym-p '(do would)))
+(defalias 'pick-do/would?     (make-pick '(do would)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar   *desire-words*     '(like need want))
-(defalias 'desire?           (make-member-sym-p '(like need want)))
-(defalias 'pick-desire       (make-pick *desire-words*))
+(defalias 'desire?            (make-member-sym-p '(like need want)))
+(defalias 'pick-desire        (make-pick *desire-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar    *subject-words*  '(i you))
-(defalias 'subject?          (make-member-sym-p *subject-words*))
-(defalias 'pick-subject      (make-pick *subject-words*))
+(defvar    *subject-words*   '(i you))
+(defalias 'subject?           (make-member-sym-p *subject-words*))
+(defalias 'pick-subject       (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar    *modal-words*    '(would should could will can might have))
-(defvar    *modal-words2*    (append *modal-words* '(wouldn\'t shouldn\'t couldn\'t won\'t can\'t)))
-(defalias 'modal?            (make-member-sym-p *modal-words*))
-(defalias 'pick-modal        (make-pick (cl-remove 'have *modal-words*)))
-(defalias 'pick-modal2       (make-pick *modal-words2*))
+(defvar    *modal-words*     '( would
+                                should
+                                could
+                                will
+                                can
+                                have))
+(defvar    *neg-modal-words* '(wouldn\'t
+                                shouldn\'t
+                                couldn\'t
+                                won\'t
+                                can\'t
+                                haven\'t))
+(defvar    *all-modal-words*  (cons 'might (append *modal-words* *neg-modal-words*)))
+(defalias 'modal?             (make-member-sym-p *modal-words*))
+(defalias 'neg-modal?         (make-member-sym-p *neg-modal-words*))
+(defalias 'any-modal?         (make-member-sym-p *any-modal-words*))
+(defalias 'pick-modal         (make-pick (cl-remove 'have *modal-words*)))
+(defalias 'pick-neg-modal     (make-pick *neg-modal-words*))
+(defalias 'pick-any-modal     (make-pick *all-modal-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar   *epistemic-words* '(know believe suspect think))
-(defalias 'epistemic?        (make-member-sym-p *epistemic-words*))
-(defalias 'pick-epistemic    (make-pick *epistemic-words*))
+(defvar   *epistemic-words*  '(know believe suspect think))
+(defalias 'epistemic?         (make-member-sym-p *epistemic-words*))
+(defalias 'pick-epistemic     (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
@@ -228,7 +241,7 @@
        :var-funs         ( (subject   dup-var dup-var dup-var swap-word)
                            ($1        pick-subject)
                            ($2        pick-epistemic)
-                           ($3        pick-modal2))
+                           ($3        pick-any-modal))
        :response-pattern ( 8 ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        :var-tests        ( (subject   subject?)
@@ -272,7 +285,7 @@
        :response-pattern ( 13 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
-       :response-pattern (i don\'t understand \!))))
+       :response-pattern (99 i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -470,11 +483,9 @@
              (would you like another cigarette)
              (you should have a cigarette)
              ))
-  (prndiv)
-  (prn "INPUT:     %s" input)
-  (prn "RESPONSE:  %s" (get-response input)))
+  ;;  (prndiv)
+  ;; (prn "INPUT:     %s" input)
+  (prn "RESPONSE:  %s" (car (get-response input))))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
