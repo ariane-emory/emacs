@@ -59,6 +59,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dup-var2 (var val var-alist)
+  (cl-loop for n from 1
+    for new-var = (intern (format "$%d" n))
+    until (not (assoc new-var var-alist))
+    finally (nconc var-alist (list (cons new-var val))))
+  nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun repeat-word (var val var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Double a symbol with a hyphen in between the two, foo ⇒ foo-foo."
@@ -90,11 +100,11 @@
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
-       :var-funs         ( (subject   dup-var swap-word)
-                           (had/have  dup-var)
-                           (had/have* have-to-know/knew)
+       :var-funs         ( (subject   dup-var2 swap-word)
+                           (had/have  dup-var2)
+                           ($2 have-to-know/knew)
                            )
-       :response-pattern (  ,subject* ,had/have*  ,subject ,had/have ,a/an ,thing ))
+       :response-pattern (  ,$1 ,$2  ,subject ,had/have ,a/an ,thing ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
@@ -283,4 +293,5 @@
   (prn "RESPONSE:  %s" (get-response input)))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
