@@ -42,7 +42,7 @@ intern them to make a symbol, ignoring nils in THINGS."
   "`symbolicate' THINGS and use the result as the argument to `gensym'.
 Example:
 (gensymbolicate \"foo\" 'bar 1) ⇒ foo-bar-11533"
-  (gensym (apply #'symbolicate `(,@things ""))))
+  (gensym (apply #'symbolicate- `(,@things ""))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
