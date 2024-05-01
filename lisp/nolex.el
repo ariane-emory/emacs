@@ -10,19 +10,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro make-member-p (lst)
+(defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
-  `(lambda (thing) (member thing ,lst)))
+  `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'am-are?   (make-member-p '(am are)))
-(defalias 'a-an?     (make-member-p '(a an)))
-(defalias 'had-have? (make-member-p '(had have))) 
-(defalias 'subject?  (make-member-p '(i you)))
+(defalias 'am/are?   (make-member-sym-p '(am are)))
+(defalias 'a/an?     (make-member-sym-p '(a an)))
+(defalias 'had/have? (make-member-sym-p '(had have))) 
+(defalias 'subject?  (make-member-sym-p '(i you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -34,6 +34,7 @@
   '( (i . you)
      (am . are)
      (had . have)
+     (think . thought)
      (do . don\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (var val var-alist)
@@ -53,7 +54,7 @@
   (let* ( (assoc (assoc var var-alist))
           (new (cons (symbolicate (car assoc) '*) (cdr assoc))))
     (nconc var-alist (list new)))
-  val)
+  nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -61,7 +62,7 @@
 (defun repeat-word (var val var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Double a symbol with a hyphen in between the two, foo ⇒ foo-foo."
-  (prn "THESE: %s %s %s" var val var-alist)
+  ;; (prn "THESE: %s %s %s" var val var-alist)
   (symbolicate- val val))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (repeat-word 'x 'bo '((x . bo))) returns bo-bo)
@@ -79,33 +80,36 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
-  '( ( :input-pattern    (,subject ,had-have ,a-an ,thing)
-       :var-tests        ((subject subject?) (had-have had-have?) (a-an a-an?))
-       :var-funs         ( (subject   swap-word)
-                           (had-have  swap-word dup-var)
-                           (had-have* repeat-word))
-       :response-pattern (well \, ,subject ,had-have ,a-an ,thing ))
+  '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,thing)
+       :var-tests        ( (subject   subject?)
+                           (had/have  had/have?)
+                           (a/an      a/an?))
+       :var-funs         ( (subject   dup-var swap-word)
+                           (had/have  swap-word dup-var)
+                           (had/have* repeat-word))
+       :response-pattern (  ,subject* think  ,subject ,had/have ,a/an ,thing ))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subject ,am-are ,a-an ,thing)
-       :var-tests        ((subject subject?) (am-are am-are?) (a-an a-an?))
-       :var-funs         ((am-are swap-word))
-       :response-pattern (don\'t be ridiculous \, ,subject ,am-are the real ,thing \!))
+     ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
+       :var-tests        ( (subject   subject?)
+                           (am/are    am/are?)
+                           (a/an      a/an?))
+       :response-pattern (  don\'t be ridiculous \, ,subject ,am/are the real ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,bar ,baz)
-       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+       :response-pattern ( fine \, ,subj ,bar ,baz \, so what \?)
        :var-tests        ((subj subject?))
        :var-funs         ((subj swap-word)))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
-       :response-pattern (so just go ,verb a ,thing \!)
+       :response-pattern ( so just go ,verb a ,thing \!)
        :var-tests        ((subj subject?)))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
        :response-pattern (,subj ,modal-verb ,verb a ,thing \!)
        :var-funs         ((subj swap-word)))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (you ,foo ,baz \!)
-       :response-pattern (no \, it is you who ,foo ,baz \!))
+     ( :input-pattern    ( you ,foo ,baz \!)
+       :response-pattern ( no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
        :response-pattern ( come on \, ,subj can\'t really ,verb
@@ -157,7 +161,8 @@
       (dolist (fun funs)
         (when-let ((res (funcall fun var (cdr assoc) var-alist)))
           (setf (cdr assoc) res))
-        (prn "ALIST: %s" var-alist))))
+        ;; (prn "ALIST: %s" var-alist)
+        )))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word))
@@ -263,8 +268,8 @@
              (you suck ass \!)
              (you are an asshole)
              (i am a bitch)
-             (you have an orange)
-             (i had an orange)))
+             (you have a dollar)
+             (i had a dollar)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))

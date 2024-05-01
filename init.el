@@ -362,7 +362,8 @@
         '( use-package ac-inf-ruby adjust-parens clhs coffee-mode company-box 
            dash devdocs devdocs-browser diminish editorconfig f
            flycheck-inline flycheck-rust macrostep markdown-mode 
-           paredit platformio-mode rust-mode swift-mode which-key))
+           paredit platformio-mode rust-mode swift-mode which-key
+           wordnut))
 
       (use-package-with-message aggressive-indent :ensure t :demand
         :diminish aggressive-indent-mode
