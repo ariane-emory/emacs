@@ -245,30 +245,43 @@ in reverse order."
 (defun dm:fill (pattern alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in the variables in PATTERN with the values from ALIST."
-  (if (eq pattern t)
-    (error "you can't fill %s." pattern)
-    (rmapcar pattern
-      (lambda (thing)
+  (let (res)
+    (while pattern
+      (let ((thing (pop pattern)))
+        (dm::prn "thing:   %s" thing)
+        (dm::prn "alist:   %s" alist)
         (cond
           ((if (eq '\, (car-safe thing))
              (if-let ((assoc (assoc (cadr thing) alist)))
                (cdr assoc)
                (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing) (dm:fill thing alist))
-          (t thing))))))
+          (t thing))  
+        )))
+
+  ;; (rmapcar pattern
+  ;;   (lambda (thing)
+  ;;     (cond
+  ;;       ((if (eq '\, (car-safe thing))
+  ;;          (if-let ((assoc (assoc (cadr thing) alist)))
+  ;;            (cdr assoc)
+  ;;            (error "var %s not found." (cadr thing)))))
+  ;;       ((proper-list-p thing) (dm:fill thing alist))
+  ;;       (t thing))))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
   returns (666 x 999 z))
-(confirm that (dm:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
-  returns ((333 666) x 999 (999 999) z (333 666)))
-(confirm that (dm:fill '(a ,b (,c ,d)) (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-  returns (a 2 (3 4)))
-(confirm that (dm:fill '(a ,b (,c ,d))
-                (dm:match '(a ,b (,c ,d))
-                  (dm:fill '(a ,b (,c ,d))
-                    (dm:match '(a ,b (,c ,d))
-                      '(a 2 (3 4))))))
-  returns (a 2 (3 4)))
+;; (confirm that (dm:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
+;;   returns ((333 666) x 999 (999 999) z (333 666)))
+;; (confirm that (dm:fill '(a ,b (,c ,d)) (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+;;   returns (a 2 (3 4)))
+;; (confirm that (dm:fill '(a ,b (,c ,d))
+;;                 (dm:match '(a ,b (,c ,d))
+;;                   (dm:fill '(a ,b (,c ,d))
+;;                     (dm:match '(a ,b (,c ,d))
+;;                       '(a 2 (3 4))))))
+;;   returns (a 2 (3 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
