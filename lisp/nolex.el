@@ -55,6 +55,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dup-var (var val var-alist)
+  (let* ( (assoc (assoc var var-alist))
+          (new (cons (symbolicate (car assoc) '*) (cdr assoc))))
+    (nconc var-alist (list new)))
+  (prn "VAR-ALIST: %s" var-alist)
+  var)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rule-keys*
   '( :input-pattern    
      :response-pattern 
@@ -67,7 +77,7 @@
 (defvar *rules*
   '( ( :input-pattern    (,subject ,had-have ,a-an ,thing)
        :var-tests        ((subject subject?) (had-have had-have?) (a-an a-an?))
-       :var-funs         ((subject swap-word) (had-have swap-word))
+       :var-funs         ((subject swap-word) (had-have swap-word dup-var))
        :response-pattern (well \, ,subject ,had-have ,a-an ,thing ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subject ,am-are ,a-an ,thing)
