@@ -300,8 +300,8 @@ This behaves very similarly to quasiquote."
   returns ((b . 2) (c . 3) (d . 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(let ( (pat '(a ,b (,c ,d ,@es)))
-       (targ '(a 2 (3 4 5 6))))
+(let ( (pat  '(a ,b (,c ,d ,@es)))
+       (targ '(a 2  (3  4   5 6))))
   (dm:fill pat
     (dm:match pat
       targ)))
