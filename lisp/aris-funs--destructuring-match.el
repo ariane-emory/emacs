@@ -242,7 +242,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm:fill (pattern alist)
+(cl-defun dm:fill (pattern alist &optional (unsplice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in the variables in PATTERN with the values from ALIST."
   (dm::prndiv)
@@ -258,12 +258,16 @@ in reverse order."
                   (if-let ((assoc (assoc (cadr thing) alist)))
                     (cdr assoc)
                     (error "var %s not found." (cadr thing))))
+                ((eq unsplice (car-safe thing))
+                  (if-let ((assoc (assoc (cadr thing) alist)))
+                    (cdr assoc)
+                    (error "var %s not found." (cadr thing))))
                 ((proper-list-p thing) (dm:fill thing alist))
                 (t thing))
           res)))
     (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+(dm:fill '(,w ,y) '((w . 666) (y 1 2 3 4)))
 
 ;; (rmapcar pattern
 ;;   (lambda (thing)
