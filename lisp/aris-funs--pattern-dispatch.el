@@ -20,17 +20,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *pd--verbose* nil
+(defcustom *pd:verbose* nil
   "Whether the pseudo-function dispatcher should print verbose messages."
   :group 'pattern-dispatch
   :type 'boolean)
 
-(defcustom *pd--print-fun* 'prn
+(defcustom *pd:print-fun* 'prn
   "The function to use to print messages."
   :group 'pattern-dispatch 
   :type 'function)
 
-(defcustom *pd--allow-match-fallback* t
+(defcustom *pd:allow-match-fallback* t
   "(TEMPORARY) Whether to fall back to match when match2 fails."
   :group 'pattern-dispatch
   :type 'boolean)
@@ -49,8 +49,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro --pd-prn (first &rest rest)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Wrap *pd--print-fun*"
-  `(when *pd--verbose* (ignore (funcall *pd--print-fun* ,first ,@rest))))
+  "Wrap *pd:print-fun*"
+  `(when *pd:verbose* (ignore (funcall *pd:print-fun* ,first ,@rest))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -118,12 +118,12 @@
                (*mp:use-dotted-pairs-in-result* nil)
                (*mp:verbatim-element?* nil))
           (--pd-prn "Trying pattern '%s on target '%s..." pattern call-pattern)
-          (let ( (match-result (pmatch2 pattern call-pattern)))
-            (when *pd--allow-match-fallback*
+          (let ( (match-result (mp:match2 pattern call-pattern)))
+            (when *pd:allow-match-fallback*
               (--pd-prn "MATCH2 FAILED, FALLING BACK TO MATCH!"))
             (let ((match-result
                     (or match-result
-                      (and *pd--allow-match-fallback* (pmatch pattern call-pattern)))))
+                      (and *pd:allow-match-fallback* (mp:match pattern call-pattern)))))
               (when match-result
                 (throw 'matched
                   (setq result (cons match-result (cdr pattern-case))))))))))
@@ -365,7 +365,7 @@ because we're gong to be stshing stuff in their symbol properties."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when nil
   (progn
-    (let ( (*pd--verbose* t)
+    (let ( (*pd:verbose* t)
            (*mp:verbose* nil)
            (*match-pattern2--verbose* nil))
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
