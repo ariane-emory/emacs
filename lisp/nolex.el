@@ -111,31 +111,36 @@
        :response-pattern ( don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
                            the real ,thing \!))
      ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    (,subject would like ,@things)
+       :var-tests        ((subject subject?))
+       :var-funs         ((subject swap-word))
+       :response-pattern ( why do you think that ,subject would like ,@things \?))
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,bar ,baz)
-       :response-pattern ( fine \, ,subj ,bar ,baz \, so what \?)
-       :var-tests        ((subj subject?))
-       :var-funs         ((subj swap-word)))
+       :var-tests((subj subject?))
+       :var-funs((subj swap-word))
+       :response-pattern ( fine \, ,subj ,bar ,baz \, so what \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb ,verb a ,thing)
-       :response-pattern ( so just go ,verb a ,thing \!)
-       :var-tests        ((subj subject?)))
+       :var-tests        ((subj subject?))
+       :response-pattern( so just go ,verb a ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,modal-verb never ,verb a ,thing)
-       :response-pattern (,subj ,modal-verb ,verb a ,thing \!)
-       :var-funs         ((subj swap-word)))
+       :var-funs         ((subj swap-word))
+       :response-pattern (,subj ,modal-verb ,verb a ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
        :response-pattern ( no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb never ,verb-2 a ,noun)
-       :response-pattern ( come on \, ,subj can\'t really ,verb
-                           that ,subj-2 ,modal-verb never ,verb-2 a ,noun \!)
        :var-tests        ((subj subject?)  (subj-2 subject?))
-       :var-funs         ((subj swap-word) (subj-2 swap-word)))
+       :var-funs         ((subj swap-word) (subj-2 swap-word))
+       :response-pattern ( come on \, ,subj can\'t really ,verb
+                           that ,subj-2 ,modal-verb never ,verb-2 a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun)
-       :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?)
-       :var-funs         ((subj swap-word) (subj-2 swap-word)))
+       :var-funs         ((subj swap-word) (subj-2 swap-word))
+       :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal-verb ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
@@ -287,7 +292,9 @@
              (i have an orange)
              (you have a dollar)
              (i had a dollar)
-             (you had a dollar)))
+             (you had a dollar)
+             (i would like a hamburger with cheese and bacon)
+             (you would like a hamburger with cheese and bacon)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
