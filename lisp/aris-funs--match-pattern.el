@@ -224,9 +224,9 @@ Examples:
                            (lookahead target "pattern-tail"))
                          (pattern-tail-matches-target-tail? ()
                            (lookahead target-tail "tails")))
-                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                ;; Body of matchrec:
-                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+               ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                (mp::prn "matching %s against %s with acc %s..."
                  pattern target accumulator)
                (with-indentation
@@ -239,7 +239,6 @@ Examples:
                                       (if result
                                         (mp::prn "case %s applies!" ,index)
                                         (mp::prn "case does not apply."))
-                                      ;; (mp::prn "case %s does not apply." ,index)
                                       result))))
                    (cond
                      ;; If `pattern' is null, match successfully when `target' is null
@@ -247,15 +246,11 @@ Examples:
                      ((case 1 "Empty pattern" (null pattern))
                        (with-indentation
                          (mp::prn "pattern is null and %s match%s!"
-                           (if target
-                             "target is not, so no"
-                             "so is target,")
-                           (if target
-                             ""
-                             " succeeded"))
-                         (if (null target)
-                           (match-successfully)
-                           (fail-to-match))))
+                           (if target "target is not, so no" "so is target,")
+                           (if target "" " succeeded"))
+                         (if target
+                           (fail-to-match)
+                           (match-successfully))))
                      ;; Fail to match if `target' is null and `pattern' isn't:
                      ((case 2 "Empty target" (null target))
                        (with-indentation
@@ -332,9 +327,9 @@ Examples:
                      ((case 9 "Error case: this case should be unrachable" t)
                        (error
                          "Unhandled case! Double-check your configuration.")))))))))
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         ;; Leave body of matchrec.
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         (let ( (*wm:indent* original-indent)
                (match-result (matchrec pattern target nil)))
           (mp::prn "Match result is %s." match-result)
