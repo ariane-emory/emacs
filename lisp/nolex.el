@@ -55,7 +55,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'am/are?           (make-member-sym-p '(am are)))
-(defalias 'a/an?             (make-member-sym-p '(a an another)))
+(defalias 'a/an?             (make-member-sym-p '(a an)))
 (defalias 'had/have?         (make-member-sym-p '(had have)))
 (defalias 'do/does?          (make-member-sym-p '(do does)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
