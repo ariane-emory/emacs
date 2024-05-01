@@ -57,7 +57,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:match (pattern target &optional (dont-care '_) (ellipsis '...) (rest '\,@))
+(cl-defun dm:match (pattern target &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A simple pattern matching/destructuring fun."
   (with-gensyms (no-match-tag)
@@ -66,7 +66,7 @@ in reverse order."
     (let ((res
             (catch no-match-tag
               (with-indentation
-                (dm::match1 pattern target dont-care ellipsis rest no-match-tag)))))
+                (dm::match1 pattern target dont-care ellipsis unsplice no-match-tag)))))
       (dm::prndiv)
       (dm::prn "FINAL RESULT:  %s" res) 
       (dm::prndiv)
@@ -75,7 +75,7 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (pattern target dont-care ellipsis rest no-match-tag)
+(defun dm::match1 (pattern target dont-care ellipsis unsplice no-match-tag)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   (dm::prndiv)
@@ -99,8 +99,21 @@ in reverse order."
           ((and ellipsis (eq pat-head ellipsis) )
             (when pattern
               (error "ellipsis must be the last element in the pattern"))
+            ;; nullify TARGET and PATTERN:
             (setf target  nil)
             (setf pattern nil))
+          ;; When PAT-HEAD is an UNSPLICE, nullify TARGET and PATTERN to break the
+          ;; loop successfully:
+          ((and unsplice (eq unsplice (car-safe pat-head)))
+            (when pattern
+              (error "unsplice must be the last element in the pattern"))
+            (let ((var (cadr pat-head)))
+              ;; (debug)
+              ;; put the remainder of TARGET in VAR's key in ALIST:
+              (setf alist (cons (cons var target) alist))
+              ;; nullify TARGET and PATTERN:
+              (setf target  nil)
+              (setf pattern nil)))
           ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
           ((eq '\, (car-safe pat-head)) 
             (let ((var (cadr pat-head)))
@@ -114,7 +127,7 @@ in reverse order."
             (setf alist 
               (dm::merge-2-alists alist
                 (with-indentation
-                  (dm::match1 pat-head targ-head dont-care ellipsis rest no-match-tag)))))
+                  (dm::match1 pat-head targ-head dont-care ellipsis unsplice no-match-tag)))))
           ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
@@ -229,3 +242,5 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(dm:match '(,x ,@ys) '(1 2 3 4))
