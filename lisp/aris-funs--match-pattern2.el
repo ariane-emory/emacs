@@ -81,10 +81,10 @@ Examples:
                              (elem-is-verbatim? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "verbatim"
                                  *mp--verbatim-element?*
-                                 *mp--capture-element?*))
+                                 *mp:capture-element?*))
                              (elem-is-capture? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "capture"
-                                 *mp--capture-element?*
+                                 *mp:capture-element?*
                                  *mp--verbatim-element?*))
                              (heads-are-equal? ()
                                (print "compare %s with %s..." pattern-head target-head)

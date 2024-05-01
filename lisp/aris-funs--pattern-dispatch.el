@@ -109,7 +109,7 @@
         (let ( (pattern (car pattern-case))
                (*mp:anything-tag* 'anything)
                (*mp:capture-can-be-predicate* nil)
-               (*mp--capture-element?* 'symbolp)
+               (*mp:capture-element?* 'symbolp)
                (*mp:get-capture-symbol-fun* (lambda (e) e))
                (*mp:get-capture-tag-fun* (lambda (e) 'anything))
                (*mp:kleene-tag* nil)
