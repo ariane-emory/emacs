@@ -186,10 +186,10 @@
             (if (eq t .:input-pattern)
               ;; t matches any input and throws it's .:RESPONSE-PATTERN:
               (throw result .:response-pattern)
-              (when-let ((var-alist (ap:match .:input-pattern input)))
+              (when-let ((var-alist (dm:match .:input-pattern input)))
                 (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
                 (run-var-funs .:var-funs var-alist)
-                (throw result (ap:fill .:response-pattern var-alist))))))))))
+                (throw result (dm:fill .:response-pattern var-alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
