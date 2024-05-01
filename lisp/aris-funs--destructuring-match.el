@@ -137,7 +137,11 @@ in reverse order."
                     (with-indentation
                       (dm::match1 pat-head targ-head
                         dont-care ellipsis unsplice no-match-tag))))
-              (unless (eq res t) (setf alist (dm::merge-2-alists alist res)))))
+              (cond
+                ((eq res t)) ; do nothing.
+                ((eq res nil) (throw match-tag))
+                (t (setf alist (dm::merge-2-alists alist res)))
+                )))
           ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
