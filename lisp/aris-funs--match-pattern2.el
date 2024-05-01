@@ -80,12 +80,12 @@ Examples:
                                  result))
                              (elem-is-verbatim? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "verbatim"
-                                 *mp--verbatim-element?*
+                                 *mp:verbatim-element?*
                                  *mp:capture-element?*))
                              (elem-is-capture? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "capture"
                                  *mp:capture-element?*
-                                 *mp--verbatim-element?*))
+                                 *mp:verbatim-element?*))
                              (heads-are-equal? ()
                                (print "compare %s with %s..." pattern-head target-head)
                                (let ((result (equal pattern-head target-head)))
@@ -110,8 +110,8 @@ Examples:
                                (capture-field-of-pattern-head
                                  *mp:get-capture-tag-fun*))
                              (pattern-head-is-invalid? ()
-                               (if *mp--invalid-element?*
-                                 (funcall *mp--invalid-element?* pattern-head)
+                               (if *mp:invalid-element?*
+                                 (funcall *mp:invalid-element?* pattern-head)
                                  (not (or (pattern-head-is-verbatim?)
                                       (pattern-head-is-capture?)))))
                              (capture-at-pattern-head-has-tag? (tag)

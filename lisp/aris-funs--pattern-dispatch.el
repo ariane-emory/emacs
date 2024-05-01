@@ -116,7 +116,7 @@
                (*mp:merge-duplicate-alist-keys* nil)
                (*mp:target-elements-must-be-verbatim* nil)
                (*mp:use-dotted-pairs-in-result* nil)
-               (*mp--verbatim-element?* nil))
+               (*mp:verbatim-element?* nil))
           (--pd-prn "Trying pattern '%s on target '%s..." pattern call-pattern)
           (let ( (match-result (pmatch2 pattern call-pattern)))
             (when *pd--allow-match-fallback*

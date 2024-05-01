@@ -56,7 +56,7 @@ non-verbatim TARGET element is encountered. This setting only applies when
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp--invalid-element?* nil
+(defcustom *mp:invalid-element?* nil
   "The function used by `match-pattern' to determine if a PATTERN element is an illegal
 element. By default, any element that is neither a capture element or a verbatim element
 is an invalid element."
@@ -89,7 +89,7 @@ elements."
   :group 'match-pattern
   :type 'boolean)
 
-(defcustom *mp--verbatim-element?* nil 
+(defcustom *mp:verbatim-element?* nil 
   "The function used by `match-pattern' to determine if a PATTERN element is a verbatim
 (non-capturing).  element. By default any element that isn't a capture element is averbatim
 element."
@@ -176,12 +176,12 @@ Examples:
                                  result))
                              (elem-is-verbatim? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "verbatim"
-                                 *mp--verbatim-element?*
+                                 *mp:verbatim-element?*
                                  *mp:capture-element?*))
                              (elem-is-capture? (elem) ;; semi-pure.
                                (elem-is-of-elem-type? elem "capture"
                                  *mp:capture-element?*
-                                 *mp--verbatim-element?*))
+                                 *mp:verbatim-element?*))
                              (heads-are-equal? ()
                                (print "compare %s with %s..." pattern-head target-head)
                                (let ((result (equal pattern-head target-head)))
@@ -206,8 +206,8 @@ Examples:
                                (capture-field-of-pattern-head
                                  *mp:get-capture-tag-fun*))
                              (pattern-head-is-invalid? ()
-                               (if *mp--invalid-element?*
-                                 (funcall *mp--invalid-element?* pattern-head)
+                               (if *mp:invalid-element?*
+                                 (funcall *mp:invalid-element?* pattern-head)
                                  (not (or (pattern-head-is-verbatim?)
                                       (pattern-head-is-capture?)))))
                              (capture-at-pattern-head-has-tag? (tag)
