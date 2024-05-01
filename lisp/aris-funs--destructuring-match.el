@@ -78,7 +78,7 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Signal an error if KEY is already in ALIST."
   (when (assoc key alist)
-    (error "duplicate key %s" key)))
+    (error "duplicate key %s." key)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -105,16 +105,14 @@ in reverse order."
           ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
           ;; loop successfully:
           ((and ellipsis (eq pat-head ellipsis) )
-            (when pattern
-              (error "ellipsis must be the last element in the pattern"))
+            (when pattern (error "ellipsis must be the last element in the pattern."))
             ;; nullify TARGET and PATTERN:
             (setf target  nil)
             (setf pattern nil))
           ;; When PAT-HEAD is an UNSPLICE, nullify TARGET and PATTERN to break the
           ;; loop successfully:
           ((and unsplice (eq unsplice (car-safe pat-head)))
-            (when pattern
-              (error "unsplice must be the last element in the pattern"))
+            (when pattern (error "unsplice must be the last element in the pattern."))
             (let ((var (cadr pat-head)))
               ;; (debug)
               (dm::require-non-duplicate-key! var alist)
@@ -156,11 +154,13 @@ in reverse order."
     ;; contain an ELLIPSIS or an UNSPLICE:
     (cond
       ((null pattern)) ;; don't need to do anything.
-      ((and ellipsis (equal pattern (list ellipsis)))) ;; don't need to do anything.
+      ((and ellipsis (equal (car pattern) ellipsis))
+        ;; don't need to do anything other than check for well formednessl'
+        (when (cdr pattern) (error "ellipsis must be the last element in the pattern."))) 
       ;; if PATTERN's head is an UNSPLICE, since there's no TARGET left we just need
       ;; to set the var in ALIST to nil:
       ((and unsplice (equal (car-safe (car pattern)) unsplice))
-        (when (cdr pattern) (error "unsplice must be the last element in the pattern"))
+        (when (cdr pattern) (error "unsplice must be the last element in the pattern."))
         (let ((var (cadar pattern)))
           (dm::require-non-duplicate-key! var alist)
           (setf alist (cons (cons var nil) alist))))
@@ -171,12 +171,12 @@ in reverse order."
       (dm::prn "RESULT:        %s" res)
       res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dm:match '(,y ... ,@y) '(2)) ; this should be illegal
-
 ;; These two are just examples of error cases:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
 ;; (dm:match '(,y ,y) '(2 3)) ; duplicate key in set!
-;; (dm:match '(,y ,@y) '(2 3 4 5)) ; duplicate key in unsplice!
+;; (dm:match '(,y ,@y) '(2 3 4 5)) ; duplicate key in UNSPLICE!
+;; (dm:match '(,y ,@zs ...) '(2)) ; malformed, elem after UNSPLICE.
+;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
 (confirm that (dm:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
@@ -241,14 +241,14 @@ in reverse order."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in the variables in PATTERN with the values from ALIST."
   (if (eq pattern t)
-    (error "You can't fill %s" pattern)
+    (error "you can't fill %s." pattern)
     (rmapcar pattern
       (lambda (thing)
         (cond
           ((if (eq '\, (car-safe thing))
              (if-let ((kvp (assoc (cadr thing) alist)))
                (cdr kvp)
-               (error "var %s not found" (cadr thing)))))
+               (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing) (dm:fill thing alist))
           (t thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
