@@ -179,7 +179,7 @@
 (defun get-response (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
-  (prn "get-response INPUT: %s" input)
+  ;; (prn "get-response INPUT: %s" input)
   (with-gensyms (result continue)
     (catch result
       (dolist (rule *rules*)
@@ -192,6 +192,23 @@
                 (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
                 (run-var-funs .:var-funs var-alist)
                 (throw result (dm:fill .:response-pattern var-alist))))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun converse ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (catch 'exit
+    (while t
+      (let ((input (read)))
+        (when (member input '(bye (bye)))
+          (throw 'exit nil))
+        (prn "INPUT:    %s" input)        
+        (let ((response
+                (if (proper-list-p input)
+                  (get-response input)
+                  '(sorry \, I didn\'t hear you \!))))
+          (prn "RESPONSE: %s" response))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -222,18 +239,8 @@
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
 (prndiv)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
-(catch 'exit
-  (cl-tagbody
-    loop
-    (let ((input (read)))
-      (when (eq input 'bye)
-        (throw 'exit nil))
-      (prn "INPUT: %s" input)
-      (let (response (get-response input))
-        (prn "RESPONSE: %s" response))
-      (go loop))))
-(get-response '(you eat chickens))
+

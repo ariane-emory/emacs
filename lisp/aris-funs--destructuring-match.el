@@ -13,7 +13,7 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:match-verbose* t
+(defcustom *dm:match-verbose* nil
   "Whether `match-pattern' should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
@@ -253,8 +253,8 @@ This behaves very similarly to quasiquote."
     (while pattern
       (let ((thing (pop pattern)))
         (dm::prndiv)
-        (dm::prn "thing:   %s" thing)
-        (dm::prn "alist:   %s" alist)
+        ;; (dm::prn "thing:   %s" thing)
+        ;; (dm::prn "alist:   %s" alist)
         (cond
           ((eq '\, (car-safe thing))
             (let ((var (cadr thing)))
@@ -264,11 +264,11 @@ This behaves very similarly to quasiquote."
           ((eq splice (car-safe thing))
             ;; (debug)
             (let ((var (cadr thing)))
-              (dm::prn "VAR:     %s" var)
+              ;; (dm::prn "VAR:     %s" var)
               (if-let ((assoc (assoc (cadr thing) alist)))
                 (let ((val (cdr assoc)))
                   ;; (debug)
-                  (dm::prn "VAL:     %s" val)
+                  ;; (dm::prn "VAL:     %s" val)
                   (unless (proper-list-p val)
                     (error "var %s's value %s cannot be spliced, not a list."))
                   (dolist (elem val)
