@@ -129,13 +129,15 @@ in reverse order."
               ;;   (error "duplicate key %s" var))
               (setf alist (cons (cons var targ-head) alist))
               (dm::prn "ALIST:         %s" alist)))
-          ;; When PAT-HEAD is a list, recurse and merge the result into ALIST:
-          ((and (proper-list-p pat-head)
-             (proper-list-p targ-head))
-            (setf alist 
-              (dm::merge-2-alists alist
-                (with-indentation
-                  (dm::match1 pat-head targ-head dont-care ellipsis unsplice no-match-tag)))))
+          ;; When PAT-HEAD is a list, recurse and merge the result into ALIST (unless
+          ;; the result was just t because the pattern being recursed over contained no
+          ;; variables):
+          ((and (proper-list-p pat-head) (proper-list-p targ-head))
+            (let ((res 
+                    (with-indentation
+                      (dm::match1 pat-head targ-head
+                        dont-care ellipsis unsplice no-match-tag))))
+              (unless (eq res t) (setf alist (dm::merge-2-alists alist res)))))
           ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
@@ -205,6 +207,8 @@ in reverse order."
   (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
   returns ((w . 1) (v . foo) (x . 2) (ys 3 4) (z . 5)))
 (confirm that (dm:match '(,x ,@ys) '(1)) returns ((x . 1) (ys)))
+(confirm that (dm:match '(1 2 3) '(1 2 3)) returns t)
+(confirm that (dm:match '(,1 2 3) '(1 2 3)) returns ((1 . 1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (dm:match
@@ -253,8 +257,6 @@ in reverse order."
           ((proper-list-p thing) (dm:fill thing alist))
           (t thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
   returns (666 x 999 z))
 (confirm that (dm:fill '(,w x ,y (,y , y) z ,w) '((y . 999) (w . (333 666))))
@@ -274,6 +276,4 @@ in reverse order."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:match '(,x ,@ys) '(1 2 3 4))
-
-
+(dm:match '(_ ,x ...) '(foo (2 . 3) (4 . 5)))
