@@ -29,15 +29,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
   `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,7 +71,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun have-to-know/knew (var val var-alist)
-  (if (eq val 'have) 'know\ that 'knew))
+  (if (eq val 'have) 'know\ that 'knew\ that))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun i-to-know/knew (var val var-alist)
+  (if (eq val 'i) 'knew\ that 'know\ that))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -93,16 +96,20 @@
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
-       :var-funs         ( (subject   dup-var swap-word)
-                           (had/have  dup-var)
-                           ($2        have-to-know/knew))
-       :response-pattern (  ,$1 ,$2  ,subject ,had/have ,a/an ,thing ))
+       :var-funs         ( (subject   dup-var dup-var swap-word)
+                           ($2        i-to-know/knew))
+       :response-pattern (  ,$1 ,$2 ,subject ,had/have ,a/an ,thing ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
                            (a/an      a/an?))
-       :response-pattern (  don\'t be ridiculous \, ,subject ,am/are the real ,thing \!))
+       :var-funs         ( (subject   dup-var)
+                           (am/are    dup-var)
+                           ($1        swap-word)
+                           ($2        swap-word))
+       :response-pattern ( don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
+                           the real ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subj ,bar ,baz)
        :response-pattern ( fine \, ,subj ,bar ,baz \, so what \?)
