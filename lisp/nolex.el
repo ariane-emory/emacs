@@ -43,7 +43,7 @@
 (defalias 'a/an?     (make-member-sym-p  '(a an)))
 (defalias 'had/have? (make-member-sym-p  '(had have))) 
 (defalias 'subject?  (make-member-sym-p  '(i you)))
-(defalias 'modal?    (make-member-sym-p  '(would should could have)))
+(defalias 'modal?    (make-member-sym-p  '(would should could have will)))
 (defalias 'epistemic? (make-member-sym-p '(know believe suspect think)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
@@ -159,16 +159,16 @@
      ( :input-pattern    ( you ,foo ,baz \!)
        :response-pattern ( no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal never ,verb-2 a ,noun)
-       :var-tests        ((subj subject?)  (subj-2 subject?))
-       :var-funs         ((subj swap-word) (subj-2 swap-word))
-       :response-pattern ( come on \, ,subj can\'t really ,verb
-                           that ,subj-2 ,modal never ,verb-2 a ,noun \!))
+     ( :input-pattern    (,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
+       :var-tests        ((subject subject?) (epistemic epistemic?) (subject-2 subject?) (modal modal?))
+       :var-funs         ((subject swap-word) (subject-2 swap-word))
+       :response-pattern ( come on \, ,subject can\'t really ,epistemic
+                           that ,subject-2 ,modal never ,verb a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,verb that ,subj-2 ,modal ,verb-2 a ,noun)
-       :var-tests        ((subj subject?)  (subj-2 subject?))
-       :var-funs         ((subj swap-word) (subj-2 swap-word))
-       :response-pattern ( do ,subj really ,verb that ,subj-2 ,modal ,verb-2 a ,noun \?))
+     ( :input-pattern    (,subject ,verb that ,subject-2 ,modal ,verb-2 a ,noun)
+       :var-tests        ((subject subject?)  (subject-2 subject?) (modal modal?))
+       :var-funs         ((subject swap-word) (subject-2 swap-word))
+       :response-pattern ( do ,subject really ,verb that ,subject-2 ,modal ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
