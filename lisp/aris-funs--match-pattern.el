@@ -96,7 +96,7 @@ element."
   :group 'match-pattern
   :type 'function)
 
-(defcustom *mp:verbose* nil
+(defcustom *mp:verbose* t
   "Whether `match-pattern' should print verbose messages."
   :group 'match-pattern
   :type 'boolean)
