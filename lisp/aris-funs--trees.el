@@ -19,7 +19,7 @@
                     ((and swap-test-order (funcall pred? head))
                       (funcall fun head))
                     ((cons? head)
-                      (transform-tree pred? fun head))
+                      (transform-tree pred? fun head swap-test-order))
                     ((and (not swap-test-order) (funcall pred? head))
                       (funcall fun head))
                     (t head)))))
