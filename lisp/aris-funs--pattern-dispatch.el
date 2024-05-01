@@ -38,7 +38,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *pd:handler-count* 0
+(defvar *pd::handler-count* 0
   "A serial number used by dispatch handler functions, not meant to be customized")
 
 (defvar *pd::pattern-dispatch-table* nil
@@ -190,8 +190,8 @@ because we're gong to be stshing stuff in their symbol properties."
   (fset symbol (eval `(--make-pd-dispatcher-fun ,symbol)))
   ;; Stash the group label and a serial numbe in properties on SYMBOL:
   (put symbol :PD-GROUP symbol)
-  (setq *pd:handler-count* (1+ *pd:handler-count*))
-  (put symbol :PD-COUNT *pd:handler-count*)
+  (setq *pd::handler-count* (1+ *pd::handler-count*))
+  (put symbol :PD-COUNT *pd::handler-count*)
   ;; Make sure the label was set properly and then return SYMBOL's plist:
   (let ( (group-label (get symbol :PD-GROUP))
          (plist (symbol-plist symbol)))
