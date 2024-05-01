@@ -483,9 +483,9 @@
              (would you like another cigarette)
              (you should have a cigarette)
              ))
-  ;;  (prndiv)
-  ;; (prn "INPUT:     %s" input)
-  (prn "RESPONSE:  %s" (car (get-response input))))
+  (prndiv)
+  (prn "INPUT:     %s" input)
+  (prn "RESPONSE:  %s" (get-response input)))
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
