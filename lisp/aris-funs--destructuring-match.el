@@ -164,8 +164,7 @@ in reverse order."
         (let ((var (cadar pattern)))
           (dm::require-non-duplicate-key! var alist)
           (setf alist (cons (cons var nil) alist))))
-      (t (throw no-match-tag nil)))
-    
+      (t (throw no-match-tag nil)))    
     ;; In the future, we could return t here for empty-but-successful matches?
     (let ((res (nreverse alist)))
       (dm::prn "RESULT:        %s" res)
@@ -246,11 +245,13 @@ in reverse order."
       (lambda (thing)
         (cond
           ((if (eq '\, (car-safe thing))
-             (if-let ((kvp (assoc (cadr thing) alist)))
-               (cdr kvp)
+             (if-let ((assoc (assoc (cadr thing) alist)))
+               (cdr assoc)
                (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing) (dm:fill thing alist))
           (t thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
   returns (666 x 999 z))
