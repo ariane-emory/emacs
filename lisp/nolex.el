@@ -79,15 +79,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun have-to-know/knew (var val var-alist)
+  (if (eq val 'have) 'know\ that 'knew))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ( :input-pattern    ( ,subject  ,had/have ,a/an ,thing)
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
        :var-funs         ( (subject   dup-var swap-word)
-                           (had/have  swap-word dup-var)
-                           (had/have* repeat-word))
-       :response-pattern (  ,subject* think  ,subject ,had/have ,a/an ,thing ))
+                           (had/have  dup-var)
+                           (had/have* have-to-know/knew)
+                           )
+       :response-pattern (  ,subject* ,had/have*  ,subject ,had/have ,a/an ,thing ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
@@ -161,7 +168,7 @@
       (dolist (fun funs)
         (when-let ((res (funcall fun var (cdr assoc) var-alist)))
           (setf (cdr assoc) res))
-        ;; (prn "ALIST: %s" var-alist)
+        (prn "ALIST: %s" var-alist)
         )))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,6 +275,7 @@
              (you suck ass \!)
              (you are an asshole)
              (i am a bitch)
+             (i have an orange)
              (you have a dollar)
              (i had a dollar)))
   (prndiv)
