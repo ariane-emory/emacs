@@ -37,7 +37,7 @@ a predicate function."
 (defcustom *mp:error-if-target-element-is-not-verbatim* t
   "Whether `match-pattern' shoud signal an error (or merely fail to match) if a
 non-verbatim TARGET element is encountered. This setting only applies when
-*MATCH-PATTERN--TARGET-ELEMENTS-MUST-BE-VERBATIM*."
+*MP:TARGET-ELEMENTS-MUST-BE-VERBATIM*."
   :group 'match-pattern
   :type 'boolean)
 
@@ -226,15 +226,13 @@ Examples:
                                        (cons kvp accumulator))))))
                              (lookahead (target label)
                                (print "looking ahead to see if %s match%s..."
-                                 label
-                                 (if (plural? label) "" "es"))
-                               (let ( (matched (car (continue pattern-tail target)))
-                                      (string label))
+                                 label (if (plural? label) "" "es"))
+                               (let ( (matched (car (continue pattern-tail target))))
                                  (print
                                    (if matched
                                      "%s matched!"
                                      "lookahead failed, %s didn't match!")
-                                   string)
+                                   label)
                                  matched))
                              (pattern-tail-matches-target? ()
                                (lookahead target "pattern-tail"))
