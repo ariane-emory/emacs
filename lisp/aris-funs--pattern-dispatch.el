@@ -373,15 +373,15 @@ because we're gong to be stshing stuff in their symbol properties."
       (pd:def (fib 0) 0)
       (pd:def (fib 1) 1)
       (pd:def (fib n)  (+ (fib (- n 1)) (fib (- n 2))))
-      (pd:def (double n) (+ n n))
+      (pd:def (doub n) (+ n n)) ;; don't clobber `double' from aris-funs--unsorted!
       (pd:def (square y) (* y y))
-      (pd:def (double-square y) (double (square y)))
-      (double-square 3)
+      (pd:def (doub-square y) (doub (square y)))
+      (doub-square 3)
 
       (prndiv)
       (error-unless "You broke (fib 4): %s" '(it) (= 3 (fib 4)))
       (error-unless "You broke (fib 10): %s" '(it) (= 55 (fib 10)))
-      (error-unless "You broke (double 9): %s" '(it) (= 18 (double 9)))
+      (error-unless "You broke (doub 9): %s" '(it) (= 18 (doub 9)))
       (error-unless "You broke (square 7): %s" '(it) (= 49 (square 7)))
       
       (prn "Printing the table:")
