@@ -55,9 +55,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'am/are?           (make-member-sym-p '(am are)))
-(defalias 'a/an?             (make-member-sym-p '(a an)))
+(defalias 'a/an?             (make-member-sym-p '(a an)))j
 (defalias 'had/have?         (make-member-sym-p '(had have)))
 (defalias 'do/does?          (make-member-sym-p '(do does)))
+(defalias 'a/another/to?     (make-member-sym-p '(a another to)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'do/would?         (make-member-sym-p '(do would)))
 (defalias 'pick-do/would?    (make-pick '(do would)))
