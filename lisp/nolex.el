@@ -39,11 +39,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'am/are?   (make-member-sym-p '(am are)))
-(defalias 'a/an?     (make-member-sym-p '(a an)))
-(defalias 'had/have? (make-member-sym-p '(had have))) 
-(defalias 'subject?  (make-member-sym-p '(i you)))
-(defalias 'modal?  (make-member-sym-p '(would should could)))
+(defalias 'am/are?   (make-member-sym-p  '(am are)))
+(defalias 'a/an?     (make-member-sym-p  '(a an)))
+(defalias 'had/have? (make-member-sym-p  '(had have))) 
+(defalias 'subject?  (make-member-sym-p  '(i you)))
+(defalias 'modal?    (make-member-sym-p  '(would should could have)))
+(defalias 'epistemic? (make-member-sym-p '(know believe suspect think)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
@@ -140,19 +141,20 @@
        :var-funs         ((subject swap-word))
        :response-pattern ( why do you think that ,subject would like ,@things \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,bar ,baz)
-       :var-tests        ((subj subject?))
-       :var-funs         ((subj swap-word))
-       :response-pattern ( fine \, ,subj ,bar ,baz \, so what \?))
+     ( :input-pattern    (,subject ,bar ,baz)
+       :var-tests        ((subject subject?))
+       :var-funs         ((subject swap-word))
+       :response-pattern ( fine \, ,subject ,bar ,baz \, so what \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    (,subject ,modal ,verb a ,@things)
        :var-tests        ((subject subject?) (modal modal?))
        :var-funs         ((things mapswap))
        :response-pattern ( so just go ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    (,subj ,modal never ,verb a ,thing)
-       :var-funs         ((subj swap-word))
-       :response-pattern (,subj ,modal ,verb a ,thing \!))
+     ( :input-pattern    (,subject ,modal never ,verb a ,thing)
+       :var-tests        ((subject subject?) (modal modal?))
+       :var-funs         ((subject swap-word))
+       :response-pattern (,subject ,modal ,verb a ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
        :response-pattern ( no \, it is you who ,foo ,baz \!))
