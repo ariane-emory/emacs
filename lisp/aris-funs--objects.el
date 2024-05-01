@@ -112,7 +112,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Define a class for object-oriented programming."
   (let-alist (aos:parse-defclass-args arglist)
-    (let* ( (constructor-name (symbolicate 'make class))
+    (let* ( (constructor-name (symbolicate- 'make class))
             ;; synthesize these methods so we can inject them into the
             ;; `cl-defun' in the expansion so that it can access the instance's
             ;; arglist:
@@ -541,7 +541,7 @@ trying to send a message to a non-object."
     interest is? method-names name parent prepr repr responds-to? signature
     signatures strepr withdraw))
 (confirm that (signatures basic-acct) returns
-  ((balance (0 . 0))
+  ( (balance (0 . 0))
     (class-name (0 . 0))
     (class-names (0 . 0))
     (deposit (1 . 1))

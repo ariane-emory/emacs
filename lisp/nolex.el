@@ -42,15 +42,15 @@
      (had . have)
      (do . don\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun swap-word (word-sym)
-  "Return the swapped word for WORD-SYM found in *SWAP-WORDS*, or WORD-SYM if none."
+(defun swap-word (var val var-alist)
+  "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
   (cond
-    ((assoc  word-sym *swap-words*) (cdr (assoc  word-sym *swap-words*)))
-    ((rassoc word-sym *swap-words*) (car (rassoc word-sym *swap-words*)))
-    (t word-sym)))
+    ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
+    ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
+    (t val)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (swap-word 'i) returns you)
-(confirm that (swap-word 'you) returns i)
+(confirm that (swap-word 'x 'i '((x . i))) returns you)
+(confirm that (swap-word 'x 'you '((x . you))) returns i)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -105,13 +105,12 @@
        :response-pattern (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(prn (get-response '(you have an orange)))
-(prn (get-response '(i had an orange)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun repeat-word (word-sym)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Double a symbol with a hyphen in between the two, foo ⇒ foo-foo."
-  (symbolicate word-sym word-sym))
+  (symbolicate- word-sym word-sym))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (repeat-word 'i) returns i-i)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,7 +149,7 @@
             (assoc (assoc var var-alist)))
       (unless assoc (error "missing var %s" var))
       (dolist (fun funs)
-        (setf (cdr assoc) (funcall fun (cdr assoc))))))
+        (setf (cdr assoc) (funcall fun var (cdr assoc) var-alist)))))
   var-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (run-var-funs '((subj swap-word) (subj-2 swap-word))
