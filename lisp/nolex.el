@@ -29,8 +29,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'am-are?   (make-member-p '(am are)))
+(defalias 'a-an?     (make-member-p '(a an)))
+(defalias 'had-have? (make-member-p '(had have))) 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *swap-words*
   '( (i . you)
+     (am . are)
+     (had . have)
      (do . don\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (word-sym)
@@ -56,7 +65,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
-  '( ( :input-pattern    (,subj ,bar ,baz)
+  '( ( :input-pattern    (,subject ,had-have ,a-an ,thing)
+       :var-tests        ((subject subject?) (had-have had-have?) (a-an a-an?))
+       :var-funs         ((subject swap-word) (had-have swap-word))
+       :response-pattern (well \, ,subject ,had-have ,a-an ,thing ))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    (,subject ,am-are ,a-an ,thing)
+       :var-tests        ((subject subject?) (am-are am-are?) (a-an a-an?))
+       :var-funs         ((am-are swap-word))
+       :response-pattern (don\'t be ridiculous \, ,subject ,am-are the real ,thing \!))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    (,subj ,bar ,baz)
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
        :var-tests        ((subj subject?))
        :var-funs         ((subj swap-word)))
@@ -85,8 +104,9 @@
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(current-time)
 
+(prn (get-response '(you have an orange)))
+(prn (get-response '(i had an orange)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun repeat-word (word-sym)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -233,7 +253,11 @@
              (you eat chickens)
              (dogs eat chickens)
              (you are stupid \!)
-             (you suck ass \!)))
+             (you suck ass \!)
+             (you are an asshole)
+             (i am a bitch)
+             (you have an orange)
+             (i had an orange)))
   (prndiv)
   (prn "INPUT:     %s" input)
   (prn "RESPONSE:  %s" (get-response input)))
