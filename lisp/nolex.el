@@ -73,7 +73,7 @@
 (defalias 'pick-subject      (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar    *modal-words*    '(would should could will can might have))
-(defvar    *modal-words2*    (append *modal-words* '(wouldn\'t shouldn\'t couldn\'t won\'t cant)))
+(defvar    *modal-words2*    (append *modal-words* '(wouldn\'t shouldn\'t couldn\'t won\'t can\'t)))
 (defalias 'modal?            (make-member-sym-p *modal-words*))
 (defalias 'pick-modal        (make-pick (cl-remove 'have *modal-words*)))
 (defalias 'pick-modal2       (make-pick *modal-words2*))
@@ -164,7 +164,7 @@
                            (had/have  swap-word)
                            ($2        i-to-know/knew)
                            (things    swap-word))
-       :response-pattern ( ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
+       :response-pattern ( 1 ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun)
        :var-tests        ( (subject   subject?)
@@ -173,7 +173,7 @@
                            (modal     modal?))
        :var-funs         ( (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern  (  do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun \?))
+       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
        :var-tests        ( (subject   subject?)
@@ -183,18 +183,18 @@
                            (am/are    dup-var)
                            ($1        swap-word)
                            ($2        swap-word))
-       :response-pattern ( don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
+       :response-pattern ( 3 don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
                            the real ,thing \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would like many ,@things)
        :var-tests        ( (subject   subject?))
        :var-funs         ( (subject   swap-word))
-       :response-pattern (  don\'t ,subject have enough ,@things already \?))
+       :response-pattern ( 4 don\'t ,subject have enough ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would like ,@things)
        :var-tests        ( (subject   subject?))
        :var-funs         ( (subject   swap-word))
-       :response-pattern (  why do you think that ,subject would like ,@things \?))
+       :response-pattern ( 5 why do you think that ,subject would like ,@things \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,desire ,a/an ,@things)
        :var-tests        ( (subject   subject?)
@@ -202,7 +202,7 @@
                            (a/an      a/an?))
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word))
-       :response-pattern ( do ,subject really ,desire ,a/an ,@things \?))
+       :response-pattern ( 6 do ,subject really ,desire ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,do/would ,subject ,desire ,@things)
        :var-tests        ( (do/would  do/would?)
@@ -211,14 +211,14 @@
        :var-funs         ( (subject   swap-word dup-var)
                            (desire    pick-desire)
                            ($1        pick-possibility))
-       :response-pattern ( ,subject ,$1 ,desire ,@things))
+       :response-pattern ( 7 ,subject ,$1 ,desire ,@things))
      
 
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
        :var-tests        ( (subject   subject?))
        :var-funs         ( (subject   swap-word))
-       :response-pattern ( fine \, ,subject ,bar ,baz \, so what \?))
+       :response-pattern ( 8 fine \, ,subject ,bar ,baz \, so what \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,modal ,verb ,a/an ,@things)
        :var-tests        ( (subject   subject?)
@@ -229,7 +229,7 @@
                            ($1        pick-subject)
                            ($2        pick-epistemic)
                            ($3        pick-modal2))
-       :response-pattern ( ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
+       :response-pattern ( 8 ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        :var-tests        ( (subject   subject?)
                            (modal     modal?))
@@ -237,7 +237,7 @@
        :response-pattern ( ,subject ,modal ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
-       :response-pattern ( no \, it is you who ,foo ,baz \!))
+       :response-pattern ( 9 no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
        :var-tests        ( (subject   subject?)
@@ -246,7 +246,7 @@
                            (modal     modal?))
        :var-funs         ( (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern ( come on \, ,subject can\'t really ,epistemic
+       :response-pattern ( 10 come on \, ,subject can\'t really ,epistemic
                            that ,subject-2 ,modal never ,verb a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
@@ -259,7 +259,7 @@
                            (subject-2 swap-word)
                            (epistemic swap-word)
                            (desire    swap-word))
-       :response-pattern (  after this conversation \, ,subject
+       :response-pattern ( 11 after this conversation \, ,subject
                            ,epistemic that ,subject-2
                            ,desire ,a/n ,noun \!))
      ;;----------------------------------------------------------------------------------------------
@@ -269,7 +269,7 @@
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word dup-var)
                            ($1        pick-epistemic))
-       :response-pattern ( i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
+       :response-pattern ( 12 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
