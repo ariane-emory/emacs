@@ -234,10 +234,10 @@
        :var-tests        ( (subject   subject?)
                            (modal     modal?))
        :var-funs         ( (subject   swap-word))
-       :response-pattern ( ,subject ,modal ,verb a ,@things \!))
+       :response-pattern ( 9 ,subject ,modal ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
-       :response-pattern ( 9 no \, it is you who ,foo ,baz \!))
+       :response-pattern ( 10 no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
        :var-tests        ( (subject   subject?)
@@ -246,7 +246,7 @@
                            (modal     modal?))
        :var-funs         ( (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern ( 10 come on \, ,subject can\'t really ,epistemic
+       :response-pattern ( 11 come on \, ,subject can\'t really ,epistemic
                            that ,subject-2 ,modal never ,verb a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
@@ -259,7 +259,7 @@
                            (subject-2 swap-word)
                            (epistemic swap-word)
                            (desire    swap-word))
-       :response-pattern ( 11 after this conversation \, ,subject
+       :response-pattern ( 12 after this conversation \, ,subject
                            ,epistemic that ,subject-2
                            ,desire ,a/n ,noun \!))
      ;;----------------------------------------------------------------------------------------------
@@ -269,7 +269,7 @@
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word dup-var)
                            ($1        pick-epistemic))
-       :response-pattern ( 12 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
+       :response-pattern ( 13 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (i don\'t understand \!))))
