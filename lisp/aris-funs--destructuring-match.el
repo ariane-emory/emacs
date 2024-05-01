@@ -165,10 +165,12 @@ in reverse order."
           (dm::require-non-duplicate-key! var alist)
           (setf alist (cons (cons var nil) alist))))
       (t (throw no-match-tag nil)))    
-    ;; In the future, we could return t here for empty-but-successful matches?
-    (let ((res (nreverse alist)))
-      (dm::prn "RESULT:        %s" res)
-      res)))
+    ;; return either the ALIST or just t:
+    (if alist
+      (let ((res (nreverse alist)))
+        (dm::prn "RESULT:        %s" res)
+        res)
+      t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These two are just examples of error cases:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
