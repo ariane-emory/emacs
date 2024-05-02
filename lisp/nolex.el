@@ -315,59 +315,58 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (with-indentation
-    (cl-flet ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
-               (prndiv2 (&rest args) (when *proc-funs-verbose* (apply #'prndiv nil))))
-      (dolist (var-funs var-funses)
-        (let ( (var     (car var-funs))
-               (funs    (cdr var-funs)))
-          (when (eq '_! var) (error "illegal var %s" var))
-          (let* ( (is-discard (eq '_ var))
-                  (new-var    (unless is-discard (new-var-name? var)))
-                  (var        (if new-var new-var var))
-                  (assoc      (unless new-var (assoc var var-alist))))
-            (cond
-              (is-discard) ;; do nothing.
-              ((and new-var assoc)         (error "key %s already taken" var))
-              ((and (not new-var) (not assoc)) (error "missing var %s"       var)))
-            (cond
-              (is-discard
-                (setf assoc     (cons var nil))) ; left unattached to VAR-ALIST!
-              (new-var
-                (setf assoc     (cons var nil)) ; this  used to set it to t...
-                (setf var-alist (cons assoc var-alist))
-                (prndiv2)
-                (prn2 "NEW-VAR:   %s" var)))
-            (dolist (fun funs)
+  (cl-flet ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
+             (prndiv2 (&rest args) (when *proc-funs-verbose* (apply #'prndiv nil))))
+    (dolist (var-funs var-funses)
+      (let ( (var     (car var-funs))
+             (funs    (cdr var-funs)))
+        (when (eq '_! var) (error "illegal var %s" var))
+        (let* ( (is-discard (eq '_ var))
+                (new-var    (unless is-discard (new-var-name? var)))
+                (var        (if new-var new-var var))
+                (assoc      (unless new-var (assoc var var-alist))))
+          (cond
+            (is-discard) ;; do nothing.
+            ((and new-var assoc)         (error "key %s already taken" var))
+            ((and (not new-var) (not assoc)) (error "missing var %s"       var)))
+          (cond
+            (is-discard
+              (setf assoc     (cons var nil))) ; left unattached to VAR-ALIST!
+            (new-var
+              (setf assoc     (cons var nil)) ; this  used to set it to t...
+              (setf var-alist (cons assoc var-alist))
               (prndiv2)
-              (prn2 "var:       %s" var)
-              (let ((val (cdr assoc)))
-                (prn2 "val:       %s" val)
-                (prn2 "fun:       %s" fun)
-                (prn2 "VAR-ALIST:")
-                (let (lisp-indent-offset)
-                  (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
-                ;; This doesn't seem necessary (with lexical-binding off:
-                ;; (when (consp fun)
-                ;;   (setf fun (eval fun)))
-                ;; (prn2 "fun2:      %s" fun)
-                (let ((res
-                        (if (consp val) ;; don't use listp here!
-                          (rmapcar val (lambda (x) (funcall fun x var var-alist)))
-                          (funcall fun val var var-alist))))
-                  (prn2 "funres:    %s" res)
-                  ;; (when res 
-                  (setf (cdr assoc) res)
-                  ;; ) ;; end of when res
-                  ))
-              (prn2 "VAR-ALIST2:")
+              (prn2 "NEW-VAR:   %s" var)))
+          (dolist (fun funs)
+            (prndiv2)
+            (prn2 "var:       %s" var)
+            (let ((val (cdr assoc)))
+              (prn2 "val:       %s" val)
+              (prn2 "fun:       %s" fun)
+              (prn2 "VAR-ALIST:")
               (let (lisp-indent-offset)
                 (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
-              ))))
-      (prndiv2)
-      (prn2 "DONE PROC FUNS.")
-      (prndiv2)
-      var-alist)))
+              ;; This doesn't seem necessary (with lexical-binding off:
+              ;; (when (consp fun)
+              ;;   (setf fun (eval fun)))
+              ;; (prn2 "fun2:      %s" fun)
+              (let ((res
+                      (if (consp val) ;; don't use listp here!
+                        (rmapcar val (lambda (x) (funcall fun x var var-alist)))
+                        (funcall fun val var var-alist))))
+                (prn2 "funres:    %s" res)
+                ;; (when res 
+                (setf (cdr assoc) res)
+                ;; ) ;; end of when res
+                ))
+            (prn2 "VAR-ALIST2:")
+            (let (lisp-indent-offset)
+              (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
+            ))))
+    (prndiv2)
+    (prn2 "DONE PROC FUNS.")
+    (prndiv2)
+    var-alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *proc-funs-verbose* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
