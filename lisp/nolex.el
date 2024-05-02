@@ -281,24 +281,24 @@
       (when new-var
         (setf assoc (cons var t))
         (setf var-alist (cons assoc var-alist)))
-      (prn "NEW-VAR:   %s" var)
-      (prn "VAR-ALIST: %s" var-alist)
+      ;; (prn "NEW-VAR:   %s" var)
+      ;; (prn "VAR-ALIST: %s" var-alist)
       (dolist (fun funs)
-        (prndiv)
-        (prn "var: %s" var)
+        ;; (prndiv)
+        ;; (prn "var: %s" var)
         (let ((val (cdr assoc)))
-          (prn "val: %s" val)
-          (prn "fun:  %s" fun)
+          ;; (prn "val: %s" val)
+          ;; (prn "fun:  %s" fun)
           (when (consp fun)
             (setf fun (eval fun)))
-          (prn "fun2: %s" fun)
+          ;; (prn "fun2: %s" fun)
           (when-let ((res
                        (if (listp val)
                          (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
                          (funcall fun var val var-alist))))
-            (prn "funres: %s" res)
+            ;; (prn "funres: %s" res)
             (setf (cdr assoc) res)))
-        (prn "ALIST: %s" var-alist)
+        ;; (prn "ALIST: %s" var-alist)
         )))
   var-alist) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -466,10 +466,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-funs         ( (subject         dup-var)
                            (iadj!           pick-insult-adj)
                            (subject*        swap-word)
+                           (am/are          swap-word)
                            (obv!            pick-obviousness))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 3 don\'t be ,iadj \, ,subject ,subject* not ,a/an/the
-                           ,@things \,,subject ,am/are ,obv the ,@things \!))
+       :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,am/are not ,a/an/the
+                           ,@things \, ,subject ,am/are ,obv the ,@things \!))
      ;;==============================================================================================
      ( ;;--------------------------------------------------------------------------------------------
        :input-pattern    ( ,subject would ,desire many ,@things)
@@ -644,8 +645,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
                            (plural-subject  swap-word)
-                           (modal (make-pick '(foo bar baz)))
-                           ;;(modal           pick-any-modal)
+                           ;;(modal (make-pick '(foo bar baz)))
+                           (modal           pick-any-modal)
                            (them-us         swap-word))
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 20 ,plural-subject ,modal ,verb ,them-us ,@things \!))
@@ -793,6 +794,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you know they can find us)
              (you know they can find us)
 
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
              ))
   
   (prndiv)
