@@ -994,16 +994,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(let-alist (fill-in-missing-rule-keys2 ,rule) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let-rule '( :input-pattern    (,subj ,bar ,baz)
-               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-               :var-tests        ((subj subject?))
-               :var-funs         ((subj swap-word)))
-    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
-  returns ( ((\, subj) (\, bar) (\, baz))
-            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
-            ((subj subject?))
-            ((subj swap-word))))
+(let-rule2
+  '( :input-pattern    ( this is the ,@things)
+     ;;--------------------------------------------------------------------------------------------
+     :var-funs         ( (persp!          pick-i-am/you-are)
+                         (certainty!      pick-certainty))
+     ;;--------------------------------------------------------------------------------------------
+     :responses
+     ( ;;------------------------------------------------------------------------------------------
+       ( :response-pattern ( 18 ,persp not really ,certainty
+                             if this is ,@things ))))
+  (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let-rule2 '( :input-pattern    (,subj ,bar ,baz)
