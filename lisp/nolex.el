@@ -45,6 +45,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
+(defalias 'a/an/the?          (make-member-sym-p '(a an the)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
 (defalias 'do/does?           (make-member-sym-p '(do does)))
 (defalias 'a/another/to?      (make-member-sym-p '(a another to)))
@@ -370,26 +371,27 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (things    swap-word))
        :response-pattern ( 1 ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 a ,@things)
+     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (epistemic epistemic?)
                            (subject-2 subject?)
-                           (modal     modal?))
+                           (modal     modal?)
+                           (a/an      a/an?))
        :var-funs         ( (epistemic pick-epistemic)
                            (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,@things \?))
+       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject  ,am/are ,a/an ,@things)
+     ( :input-pattern    ( ,subject  ,am/are ,a/an/the ,@things)
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
-                           (a/an      a/an?))
+                           (a/an/the  a/an/the?))
        :var-funs         ( (subject   dup-var dup-var)
                            (am/are    dup-var)
                            ($1        pick-insult)
                            ($2        swap-word)
                            ($3        swap-word))
-       :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an ,@things \, ,subject ,am/are
+       :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \, ,subject ,am/are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
@@ -520,7 +522,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i am a bitch)
              (i am a bitch)
              (i am a bitch)
-             
+             (i am the King of France)
+             (i am an evil robot in disguise as a human)
+
              ;; 4
              (i would like many hamburgers with cheese and bacon)
              (i would like many hamburgers with cheese and bacon)
@@ -593,8 +597,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i want to smoke a fat joint)
              (i need to smoke a fat joint)
              (i want to dance in the moonlight)
-
-             (i am a King of France)
              ))
   
   (prndiv)
