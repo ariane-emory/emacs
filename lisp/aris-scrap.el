@@ -88,28 +88,23 @@
 
 
 
-(defun weighted-random-selection (weighted-list)
-  "Select an element from WEIGHTED-LIST based on its weight."
-  (catch 'return
-    (let* ( (total-weight (apply #'+ (mapcar #'car weighted-list)))
-            (random-weight (random total-weight))
-            (cumulative-weight 0))
-      ;; (prn "total weight:  %s" total-weight)
-      (while weighted-list
-        ;; (prndiv)
-        (let ((item (pop weighted-list)))
-          ;; (prn "item:          %s" item)
-          (setq cumulative-weight (+ cumulative-weight (car item)))
-          ;; (prn "random weight: %s" random-weight)
-          ;; (prn "cw:            %s" cumulative-weight)
-          (when (< random-weight cumulative-weight)
-            ;; (prn "throw %s for %s!" (cdr item) item)
-            (throw 'return (cdr item)))) ; Otherwise, return the element itself
-        ;; (setq weighted-list (cdr weighted-list))
-        ))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun weighted-pick (weighted-list)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Select the cdr of an element from WEIGHTED-LIST based on the weight in its car."
+  (let* ( (total-weight (apply #'+ (mapcar #'car weighted-list)))
+          (random-weight (random total-weight))
+          (cumulative-weight 0))
+    (catch 'return
+      (while-let ((item (pop weighted-list)))
+        (setq cumulative-weight (+ cumulative-weight (car item)))
+        (when (< random-weight cumulative-weight)
+          (throw 'return (cdr item)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (dotimes (_ 20)
-  (message "Selected element: %S" (weighted-random-selection weighted-list)))
+  (message "Selected element: %S" (weighted-pick weighted-list)))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -17,6 +17,21 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun weighted-pick (weighted-list)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Select the cdr of an element from WEIGHTED-LIST based on the weight in its car."
+  (let* ( (total-weight (apply #'+ (mapcar #'car weighted-list)))
+          (random-weight (random total-weight))
+          (cumulative-weight 0))
+    (catch 'return
+      (while-let ((item (pop weighted-list)))
+        (setq cumulative-weight (+ cumulative-weight (car item)))
+        (when (< random-weight cumulative-weight)
+          (throw 'return (cdr item)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun all (pred? lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when all elems in LST? are PRED?"
