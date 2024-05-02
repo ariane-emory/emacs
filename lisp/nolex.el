@@ -399,6 +399,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \, ,subject ,am/are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( ,plural-subject are the ,@things)
+       :var-tests        ( (plural-subject plural-subject?))
+       :var-funs         ( (plural-subject dup-var dup-var dup-var)
+                           ($1        pick-insult)
+                           ($2        swap-word)
+                           ($3        swap-word))
+       :response-pattern ( 3 don\'t be ,$1 \, ,plural-subject are not the ,@things \, ,$2 are
+                           the ,@things \!))
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
        :var-tests        ( (subject   subject?)
                            (desire    desire?))
@@ -603,7 +612,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i need to smoke a fat joint)
              (i want to dance in the moonlight)
 
-             (we are the aliens) ; this one needs work.
+             (we are the aliens in disguise as humans) ; this one needs work.
              ))
   
   (prndiv)
