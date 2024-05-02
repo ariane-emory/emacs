@@ -29,12 +29,12 @@
 ;; (defun make-member-sym-p (lst)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Generate a membership predicate fun for LST."
-;;   (lambda (thing) (and (symbolp thing) (member thing lst))))
+;;   (lambda (thing &rest _) (and (symbolp thing) (member thing lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
-  `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
+  `(lambda (thing &rest _) (and (symbolp thing) (member thing ,lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (member 'a '(a b c)))) returns t)
 (confirm that (not (null (member 'b '(a b c)))) returns t)
@@ -287,11 +287,13 @@
       (catch result
         (dolist (var-tests var-testses)
           (let* ( (var   (car var-tests))
-                  (tests (cdr var-tests))
-                  (assoc (assoc var var-alist)))
+                  (tests (cdr var-tests)) ;; this test must just be looking at VAR-LIST.
+                  (is-no-var-test (eq '_ var))
+                  (assoc (if is-no-var-test (cons '_ nil) (assoc var var-alist)))
+                  (val   (cdr assoc)))
             (unless assoc (error "missing var %s" var))
             (dolist (test tests)
-              (unless (funcall test (cdr assoc))
+              (unless (funcall test val var var-alist)
                 (throw result nil)))))
         t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -586,7 +588,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
                            (modal           modal?)
-                           ;; (_               always-true)
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
