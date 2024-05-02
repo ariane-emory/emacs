@@ -231,11 +231,22 @@
 (defun proc-var-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (dolist (var-funs var-funses)
-    (let* ( (var   (car var-funs))
-            (funs  (cdr var-funs))
-            (assoc (assoc var var-alist))
-            (val   (cdr-safe assoc)))
+    (let* ( (var     (car var-funs))
+            (funs    (cdr var-funs))
+            (new-var (new-var-name? var))
+            (var     (if new-var new-var var))
+            (assoc   (unless new-var (assoc var var-alist)))
+            (val     (unless new-var (cdr-safe assoc))))
+
+      
+      (when new-var
+        (prn "NEW-VAR: %s" var))
+
+      (cond
+       ((and new-var assoc) (error "missing var %s" var))
+      
       (unless assoc (error "missing var %s" var))
+
       (dolist (fun funs)
         ;; (prndiv)
         ;; (prn "var: %s" var)
@@ -250,9 +261,9 @@
         )))
   var-alist) ; return value is only used by a unit test right now.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (proc-var-funs
-;;   '((subj pick-insult-adj) (new! pick-insult-noun))
-;;   '((subj . i) (subj-2 . you) (baz . you)))
+(proc-var-funs
+  '((subj pick-insult-adj) (new! pick-insult-noun))
+  '((subj . i) (subj-2 . you) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-var-funs
                 '((subj swap-word) (subj-2 swap-word))
