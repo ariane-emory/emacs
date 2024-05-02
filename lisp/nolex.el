@@ -10,18 +10,18 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ner-var-name? (symbol)
+(defun new-var-name? (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
   (when (and (symbolp symbol)          ; Check if it's a symbol
           (string-suffix-p "!" (symbol-name symbol)))  ; Check if it ends with "!"
     (intern (substring (symbol-name symbol) 0 -1))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ner-var-name? 'foo) returns nil)
-(confirm that (ner-var-name? 'bar!) returns bar)
-(confirm that (ner-var-name? 'baz!!!) returns baz!!)
-(confirm that (ner-var-name? 7) returns nil)
-(confirm that (ner-var-name? '(1 2 3)) returns nil)
+(confirm that (new-var-name? 'foo) returns nil)
+(confirm that (new-var-name? 'bar!) returns bar)
+(confirm that (new-var-name? 'baz!!!) returns baz!!)
+(confirm that (new-var-name? 7) returns nil)
+(confirm that (new-var-name? '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -527,6 +527,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            ($2 pick-certainty))
        :response-pattern ( 18 ,$1 not really ,$2 if this is ,@things ))
      ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( trigger )
+       :var-tests        ( )
+       :var-funs         ( )
+       :response-pattern ( 19 yes \, here we are ))
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -662,6 +667,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (these are the voyages of the starsshp Enterprise)
              (these are the voyages of the starsshp Enterprise)
              (this is the worst thing ever)
+             (trigger)
              ))
   
   (prndiv)
