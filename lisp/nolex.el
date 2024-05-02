@@ -624,10 +624,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                                ;; (_ (lambda (val var var-alist)
                                ;;      (prn "THIS ALSO HAPPENED! %s" var-alist)
                                ;;      t))
-                               (modal-2!        pick-modal)))
-         ;;------------------------------------------------------------------------------------------
-         :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
-                             ,modal-2 ,verb ,a/an/the ,@things)))
+                               (modal-2!        pick-modal))
+           ;;------------------------------------------------------------------------------------------
+           :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+                               ,modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,neg-modal ,verb ,a/an/the ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -659,7 +659,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;==============================================================================================
      ( :input-pattern    ( you ,foo ,baz \!)
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 11 no \, it is you who ,foo ,baz \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern ( 11 no \, it is you who ,foo ,baz \!))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal-plus never ,verb a ,noun)
        ;;--------------------------------------------------------------------------------------------
@@ -733,8 +735,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (epistemic!      pick-epistemic)
                            (noun!           pick-insult-noun))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 16 you ,adj ,noun \, I already ,epistemic
-                           that you want a ,@things))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern ( 16 you ,adj ,noun \, I already ,epistemic
+                               that you want a ,@things))))
      ;;==============================================================================================
      ( :input-pattern    ( these are ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -742,14 +746,18 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (certainty!      pick-certainty)
                            (probably-not!   pick-probably-not))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 17 ,persp ,probably-not really ,certainty that these are ,@things ))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern ( 17 ,persp ,probably-not really ,certainty that these are ,@things ))))
      ;;==============================================================================================
      ( :input-pattern    ( this is the ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (persp!          pick-i-am/you-are)
                            (certainty!      pick-certainty))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,epistemic ,plural-subject ,modal ,verb ,them-us ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -759,24 +767,30 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (modal           modal?)
                            (them-us         them-us?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (plural-subject  swap-word)
-                           ;; (modal (make-pick '(foo bar baz)))
-                           (modal           pick-any-modal)
-                           (them-us         swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 19 ,plural-subject ,modal ,verb ,them-us ,@things \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (plural-subject  swap-word)
+                               ;; (modal (make-pick '(foo bar baz)))
+                               (modal           pick-any-modal)
+                               (them-us         swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 19 ,plural-subject ,modal ,verb ,them-us ,@things \!))))
      ;;==============================================================================================
      ( :input-pattern    ( trigger )
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (adj!            pick-insult-adj)
                            (noun!           pick-insult-noun))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 98 yes \, here we are you ,adj ,noun))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern ( 98 yes \, here we are you ,adj ,noun))))
      ;;==============================================================================================
      ( :input-pattern    t
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern (99 i don\'t understand \!))))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern (99 i don\'t understand \!))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
