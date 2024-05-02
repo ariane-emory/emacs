@@ -964,19 +964,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   "Note: this also converts RULE from a plist to an alist."
   (fill-in-missing-alist-keys *fillable-rule-keys* (plist-to-alist rule)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *fillable-rule-keys*
-  '(:input-pattern :var-tests :responses))
+(defvar *fillable-rule-keys* '(:input-pattern :var-tests :responses))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (fill-in-missing-rule-keys2
     '( :input-pattern ( this is the ,@things)
        :responses
        ((:response-pattern ( 18 ,persp not really ,certainty if this is ,@things )))))
-  returns
-  ( (:var-tests)
-    (:input-pattern this is the (\,@ things))
-    (:responses
-      (:response-pattern (18 (\, persp) not really (\, certainty) if this is (\,@ things))))))
+  returns ( (:var-tests)
+            (:input-pattern this is the (\,@ things))
+            (:responses
+              (:response-pattern (18 (\, persp) not really (\, certainty) if this is (\,@ things))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -985,26 +983,43 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(let-alist (fill-in-missing-rule-keys2 ,rule) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let-rule2
-  '( :input-pattern    ( this is the ,@things)
-     ;;--------------------------------------------------------------------------------------------
-     :var-funs         ( (persp!          pick-i-am/you-are)
-                         (certainty!      pick-certainty))
-     ;;--------------------------------------------------------------------------------------------
-     :responses
-     ( ;;------------------------------------------------------------------------------------------
-       ( :response-pattern ( 18 ,persp not really ,certainty
-                             if this is ,@things ))))
-  (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
+(confirm that
+  (let-rule2
+    '( :input-pattern ( this is the ,@things)
+       :responses
+       ((:response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))))
+    (list .:input-pattern .:var-tests .:responses))
+  returns
+  ( (this is the (\,@ things))
+    nil
+    ((:response-pattern (18 (\, persp) not really (\, certainty) if this is (\,@ things))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fill-in-missing-response-keys2 (response)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: this also converts RESPONSE from a plist to an alist."
+  (fill-in-missing-alist-keys *fillable-response-keys* (plist-to-alist response)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *fillable-response-keys* '(:var-funs :response-pattern))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (let-rule2 '( :input-pattern    (,subj ,bar ,baz)
-                :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-                :var-tests        ((subj subject?))
-                :var-funs         ((subj swap-word)))
-    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
-  returns ( ((\, subj) (\, bar) (\, baz))
-            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
-            ((subj subject?))
-            ((subj swap-word))))
+  (fill-in-missing-response-keys2
+    '(:response-pattern ( 18 ,persp not really ,certainty if this is ,@things )))
+  returns ( (:var-funs)
+            (:response-pattern 18 (\, persp) not really (\, certainty) if this is (\,@ things))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro let-response2 (response &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let-alist (fill-in-missing-response-keys2 ,response) ,@body))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let-response2 '(:response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
+    (list .:var-funs .:response-pattern))
+  returns ( nil
+            (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
