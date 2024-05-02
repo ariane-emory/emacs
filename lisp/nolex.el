@@ -370,10 +370,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *proc-funs-verbose* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (proc-funs
-                '((subj swap-word) (subj-2 swap-word))
-                '((subj . i) (subj-2 . you) (baz . you)))
-  returns ((subj . you) (subj-2 . i) (baz . you)))
+(let ((*proc-funs-verbose* nil))
+  (confirm that (proc-funs
+                  '((subj swap-word) (subj-2 swap-word))
+                  '((subj . i) (subj-2 . you) (baz . you)))
+    returns ((subj . you) (subj-2 . i) (baz . you))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -474,15 +475,17 @@
           (catch 'continue
             (prn2 "try:       %s" .:input-pattern)
             (if (eq t .:input-pattern)
-              ;; t matches any input and fills using an empty list:
-              (throw 'result (select-response nil .:responses))
+              (progn
+                (prn2 "MATCHED T:   %s" .:input-pattern)
+                ;; t matches any input and fills using an empty list:
+                (throw 'result (select-response nil .:responses)))
               (when-let ((var-alist (dm:match .:input-pattern input)))
                 (let ((var-alist (if (eq t var-alist) nil var-alist)))
                   (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
                   (prn2 "MATCHED:   %s" .:input-pattern)
                   (throw 'result (select-response var-alist .:responses)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *get-response-verbose* nil)
+(defvar *get-response-verbose* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
