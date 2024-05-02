@@ -317,7 +317,7 @@
       (when new-var
         (setf assoc (cons var t))
         (setf var-alist (cons assoc var-alist)))
-      (prn "NEW-VAR:       %s" var)
+      (prn "NEW-VAR:   %s" var)
       (dolist (fun funs)
         (prndiv)
         (prn "VAR-ALIST:")
