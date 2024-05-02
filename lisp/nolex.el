@@ -368,7 +368,7 @@
     (prndiv2)
     var-alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *proc-funs-verbose* t)
+(defvar *proc-funs-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-funs
                 '((subj swap-word) (subj-2 swap-word))
@@ -519,12 +519,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (modal           modal?)
                            (a/an            a/an?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (epistemic       pick-epistemic)
-                           (subject         swap-word)
-                           (subject-2       swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal
-                           ,verb-2 ,a/an ,@things \?))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (epistemic       pick-epistemic)
+                               (subject         swap-word)
+                               (subject-2       swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal
+                               ,verb-2 ,a/an ,@things \?))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject  ,am/are ,a/an/the ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -532,15 +534,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (am/are          am/are?)
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         dup-var)
-                           (iadj!           pick-insult-adj)
-                           (subject*        swap-word)
-                           (am/are          dup-var)
-                           (am/are*         swap-word)
-                           (obv!            pick-obviousness))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,a/an/the
-                           ,@things \, ,subject ,am/are ,obv the ,@things \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         dup-var)
+                               (iadj!           pick-insult-adj)
+                               (subject*        swap-word)
+                               (am/are          dup-var)
+                               (am/are*         swap-word)
+                               (obv!            pick-obviousness))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,a/an/the
+                               ,@things \, ,subject ,am/are ,obv the ,@things \!))))
      ;;==============================================================================================
      ( ;;--------------------------------------------------------------------------------------------
        :input-pattern    ( ,subject would ,desire many ,@things)
@@ -548,18 +552,22 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests        ( (subject         subject?)
                            (desire          desire?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (qty! pick-qty))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 4 don\'t ,subject have ,qty ,@things already \?))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (qty! pick-qty))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 4 don\'t ,subject have ,qty ,@things already \?))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject would like ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 5 why do you think that ,subject would like ,@things \?))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 5 why do you think that ,subject would like ,@things \?))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,desire ,a/an ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -567,10 +575,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire          desire?)
                            (a/an            a/an?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (desire          swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 6 do ,subject really ,desire ,a/an ,@things \?))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (desire          swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 6 do ,subject really ,desire ,a/an ,@things \?))))
      ;;==============================================================================================
      ( :input-pattern    ( ,do/would ,subject ,desire ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -578,19 +588,23 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (subject         subject?)
                            (desire          desire?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (desire          pick-desire)
-                           (poss!           pick-possibility))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 7 ,subject ,poss ,desire ,@things))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         :var-funs         ( (subject         swap-word)
+                             (desire          pick-desire)
+                             (poss!           pick-possibility))
+         ;;------------------------------------------------------------------------------------------
+         :response-pattern ( 7 ,subject ,poss ,desire ,@things)))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,bar ,baz)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 8 fine \, ,subject ,bar ,baz \, so what \?))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,modal ,verb ,a/an/the ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -758,145 +772,145 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 (prn "START:")
 (dolist (input
           '(
-             ;; ;; 99
-             ;; (i don\'t understand \!)
-             ;; (foo bar baz)
-             ;; (foo bar baz quux)
+             ;; 99
+             (i don\'t understand \!)
+             (foo bar baz)
+             (foo bar baz quux)
 
-             ;; ;; 1
-             ;; (i have an apple tree)
-             ;; (you have a dollar)
-             ;; (i had a dollar)
-             ;; (you had a dollar)
-             ;; (you had a coin in your pocket)
-             ;; (you have a coin in your pocket)
-             ;; (i have a fly on my arm)
+             ;; 1
+             (i have an apple tree)
+             (you have a dollar)
+             (i had a dollar)
+             (you had a dollar)
+             (you had a coin in your pocket)
+             (you have a coin in your pocket)
+             (i have a fly on my arm)
 
-             ;; ;; 2
-             ;; (i think that i would like a smoke)
-             ;; (i think that you would like a smoke)
-             ;; (i think that you should have a smoke)
-             ;; (i know that i could have a smoke)
-             ;; (i believe that you have seen a ghost)
-             ;; (you believe that i have seen a ghost)
-             ;; (i think that you should eat a bag of dicks)
-             ;; (you know that you must eat a bag of dicks)
+             ;; 2
+             (i think that i would like a smoke)
+             (i think that you would like a smoke)
+             (i think that you should have a smoke)
+             (i know that i could have a smoke)
+             (i believe that you have seen a ghost)
+             (you believe that i have seen a ghost)
+             (i think that you should eat a bag of dicks)
+             (you know that you must eat a bag of dicks)
 
-             ;; ;; 3
-             ;; (you are an asshole)
-             ;; (you are a particularly stupid asshole)
-             ;; (i am the King of France)
-             ;; (i am an evil robot in disguise as a human)
+             ;; 3
+             (you are an asshole)
+             (you are a particularly stupid asshole)
+             (i am the King of France)
+             (i am an evil robot in disguise as a human)
              
-             ;; ;; 4
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i would need many orange cats)
-             ;; (i would need many orange cats)
-             ;; (i would need many orange cats)
+             ;; 4
+             (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
+             (i would need many orange cats)
+             (i would need many orange cats)
+             (i would need many orange cats)
              
-             ;; ;; 5
-             ;; (i would like a hamburger with cheese and bacon)
-             ;; (i would like an orange cat)
-             ;; (you would like a hamburger with cheese and bacon)
+             ;; 5
+             (i would like a hamburger with cheese and bacon)
+             (i would like an orange cat)
+             (you would like a hamburger with cheese and bacon)
 
-             ;; ;; 6
-             ;; (i want a hamburger with cheese and bacon)
-             ;; (i need a hamburger with cheese and bacon)
-             ;; (you want a hamburger with cheese and bacon)
-             ;; (you need a hamburger with cheese and bacon)
+             ;; 6
+             (i want a hamburger with cheese and bacon)
+             (i need a hamburger with cheese and bacon)
+             (you want a hamburger with cheese and bacon)
+             (you need a hamburger with cheese and bacon)
 
-             ;; ;; 7
-             ;; (do you like spicy tacos)
-             ;; (do you like spicy tacos)
-             ;; (do you like spicy tacos)
-             ;; (do you like spicy tacos)
-             ;; (would you like spicy tacos)
-             ;; (would you like spicy tacos)
-             ;; (would you like a cigarette)
-             ;; (would you like a cigarette)
-             ;; (would you like a cigarette)
-             ;; (would you like a cigarette)
-             ;; (would you like another cigarette)
-             ;; (would you like another cigarette)
-             ;; (would you like another cigarette)
-             ;; (would you like another cigarette)
+             ;; 7
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
              
-             ;; ;; 8
-             ;; (you don\'t understand)
-             ;; (dogs eat chickens)
-             ;; (you eat chickens)
+             ;; 8
+             (you don\'t understand)
+             (dogs eat chickens)
+             (you eat chickens)
 
-             ;; ;; 9
-             ;; (i could eat a hamburger and some fries)
-             ;; (i would climb a tall tree)
-             ;; (you would climb a tall tree)
-             ;; (you should have a cigarette)
+             ;; 9
+             (i could eat a hamburger and some fries)
+             (i would climb a tall tree)
+             (you would climb a tall tree)
+             (you should have a cigarette)
 
-             ;; ;; 10
-             ;; (you would never eat a cold hamburger)
-             ;; (you should never eat a cold hamburger)
-             ;; (you could never eat a cold hamburger)
-             ;; (i could never eat a cold hamburger)
+             ;; 10
+             (you would never eat a cold hamburger)
+             (you should never eat a cold hamburger)
+             (you could never eat a cold hamburger)
+             (i could never eat a cold hamburger)
 
-             ;; ;; 11
-             ;; (you are stupid \!)
-             ;; (you suck ass \!)
+             ;; 11
+             (you are stupid \!)
+             (you suck ass \!)
 
-             ;; ;; 12
-             ;; (i know that you have never eaten a hamburger)
-             ;; (i suspect that you have never seen a zebra)
+             ;; 12
+             (i know that you have never eaten a hamburger)
+             (i suspect that you have never seen a zebra)
 
-             ;; ;; 14
-             ;; (i think that you need a drink)
-             ;; (you think that i need a drink)
-             ;; (i think that i need a drink)
-             ;; (you think that you need a drink)
+             ;; 14
+             (i think that you need a drink)
+             (you think that i need a drink)
+             (i think that i need a drink)
+             (you think that you need a drink)
 
-             ;; ;; 14
-             ;; (you want to smoke a fat joint)
-             ;; (you need to smoke a fat joint)
-             ;; (i want to smoke a fat joint)
-             ;; (i need to smoke a fat joint)
-             ;; (i want to dance in the moonlight)
+             ;; 14
+             (you want to smoke a fat joint)
+             (you need to smoke a fat joint)
+             (i want to smoke a fat joint)
+             (i need to smoke a fat joint)
+             (i want to dance in the moonlight)
 
-             ;; ;; 16
-             ;; (we are aliens in disguise as humans)
-             ;; (we are aliens in disguise as humans)
-             ;; (we are aliens in disguise as humans)
-             ;; (they are the cutest kittens in the world)
-             ;; (they are the cutest kittens in the world)
-             ;; (they are the cutest kittens in the world)
+             ;; 16
+             (we are aliens in disguise as humans)
+             (we are aliens in disguise as humans)
+             (we are aliens in disguise as humans)
+             (they are the cutest kittens in the world)
+             (they are the cutest kittens in the world)
+             (they are the cutest kittens in the world)
 
-             ;; ;; 17
-             ;; (i wish that you were a fluffy cat)
-             ;; (i wish that you were a duck wearing a tophat)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (this is the worst thing ever)
-             ;; (i know we could beat them at soccer)
-             ;; (i know we could beat them at soccer)
-             ;; (i know we could beat them at soccer)
-             ;; (you know they could beat us any day)
-             ;; (you know they could beat us any day)
-             ;; (you know they could beat us any day)
-             ;; (you know they can find us)
-             ;; (you know they can find us)
-             ;; (you know they can find us)
+             ;; 17
+             (i wish that you were a fluffy cat)
+             (i wish that you were a duck wearing a tophat)
+             (these are the voyages of the starship Enterprise)
+             (these are the voyages of the starship Enterprise)
+             (these are the voyages of the starship Enterprise)
+             (these are the voyages of the starship Enterprise)
+             (this is the worst thing ever)
+             (i know we could beat them at soccer)
+             (i know we could beat them at soccer)
+             (i know we could beat them at soccer)
+             (you know they could beat us any day)
+             (you know they could beat us any day)
+             (you know they could beat us any day)
+             (you know they can find us)
+             (you know they can find us)
+             (you know they can find us)
 
-             ;; ;; 9
-             ;; (i could eat a hamburger and some fries)
-             ;; (i could eat a hamburger and some fries)
-             ;; (i could eat a hamburger and some fries)
-             ;; (i could eat a hamburger and some fries)
-             ;; (you must conquer the empire of the necromancers)
-             ;; (you cannot conquer the empire of the necromancers)
-             ;; (you won\'t conquer the empire of the necromancers)
-             ;; (i must devour the souls of the innocent)
-             ;; (i must devour the souls of the innocent)
+             ;; 9
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (you must conquer the empire of the necromancers)
+             (you cannot conquer the empire of the necromancers)
+             (you won\'t conquer the empire of the necromancers)
+             (i must devour the souls of the innocent)
+             (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
              ))
   
