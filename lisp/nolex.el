@@ -433,7 +433,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun punctuation? (sym)
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (not (null (member sym '(! \? "!" "." "?")))))
+  (not (null (member sym '(! \? \, "!" "?" "," ".")))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (punctuation? '!) returns t)
 (confirm that (punctuation? '\?) returns t)
@@ -442,20 +442,21 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun prettify-sentence (lst)
+(defun prettify-sentence (lst &optional drop-first)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Render a Nolex input/output sentence (a list of symbols) as a string."
-  (let ((str (wm::capitalize
-               (let* ( (res lst)
-                       (res (if (punctuation? (car (last res)))
-                              res
-                              (nconc res (list "."))))
-                       )
-                 (apply #'concat
-                   (cons (format "%s" (car res))
-                     (rmapcar (cdr res)
-                       (lambda (e) (format (if (punctuation? e) "%s" " %s") e) ))))))))
-    (prn "RESPONSE:  %s" str)))
+  "Render a Nolex input/output sentence (a list of symbols) as a string.
+This was very quick 'n' dirty and could probably be a lot cleaner."
+  (let* ( (lst (if drop-first (cdr lst) lst))
+          (str (wm::capitalize
+                 (let* ( (res lst)
+                         (res (if (punctuation? (car (last res)))
+                                res
+                                (append res (list ".")))))
+                   (apply #'concat
+                     (cons (format "%s" (car res))
+                       (rmapcar (cdr res)
+                         (lambda (e) (format (if (punctuation? e) "%s" " %s") e) ))))))))
+    str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -566,18 +567,8 @@
              (i want to dance in the moonlight)))
   
   (prndiv)
-  (prn "INPUT:     %s" input)
-  (let ((str (wm::capitalize
-               (let* ( (res (cdr (get-response input)))
-                       (res (if (punctuation? (car (last res)))
-                              res
-                              (nconc res (list "."))))
-                       )
-                 (apply #'concat
-                   (cons (format "%s" (car res))
-                     (rmapcar (cdr res)
-                       (lambda (e) (format (if (punctuation? e) "%s" " %s") e) ))))))))
-    (prn "RESPONSE:  %s" str)))
+  (prn "INPUT:     %s" (prettify-sentence input))
+  (prn "RESPONSE:  %s" (prettify-sentence (get-response input) t)))
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
