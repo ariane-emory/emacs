@@ -189,11 +189,171 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun run-var-tests (var-testses var-alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (if (null var-testses)
+    t
+    (with-gensyms (result)
+      (catch result
+        (dolist (var-tests var-testses)
+          (let* ( (var   (car var-tests))
+                  (tests (cdr var-tests))
+                  (assoc (assoc var var-alist)))
+            (unless assoc (error "missing var %s" var))
+            (dolist (test tests)
+              (unless (funcall test (cdr assoc))
+                (throw result nil)))))
+        t))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (run-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
+  returns t)
+(confirm that (run-var-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
+  returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun run-var-funs (var-funses var-alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (dolist (var-funs var-funses)
+    (let* ( (var   (car var-funs))
+            (funs  (cdr var-funs))
+            (assoc (assoc var var-alist))
+            (val   (cdr-safe assoc)))
+      (unless assoc (error "missing var %s" var))
+      (dolist (fun funs)
+        ;; (prndiv)
+        ;; (prn "var: %s" var)
+        ;; (prn "val: %s" val)
+        ;; (prn "fun: %s" fun)
+        (when-let ((res
+                     (if (listp val)
+                       (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
+                       (funcall fun var val var-alist))))
+          (setf (cdr assoc) res))
+        ;; (prn "ALIST: %s" var-alist)
+        )))
+  var-alist) ; return value is only used by a unit test right now.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (run-var-funs
+                '((subj swap-word) (subj-2 swap-word))
+                '((subj . i) (subj-2 . you) (baz . you)))
+  returns ((subj . you) (subj-2 . i) (baz . you)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rule-keys*
   '( :input-pattern    
      :response-pattern 
      :var-tests
      :var-funs))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fill-in-missing-rule-keys (rule)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: this also converts RULE from a plist to an alist."
+  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (fill-in-missing-rule-keys
+    '( :input-pattern (,subj ,bar ,baz)
+       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
+  returns ( (:var-funs)
+            (:var-tests)
+            (:input-pattern (\, subj) (\, bar) (\, baz))
+            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro let-rule (rule &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let-rule '( :input-pattern    (,subj ,bar ,baz)
+               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+               :var-tests        ((subj subject?))
+               :var-funs         ((subj swap-word)))
+    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
+  returns ( ((\, subj) (\, bar) (\, baz))
+            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
+            ((subj subject?))
+            ((subj swap-word))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun get-response (input)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Transform INPUT according to *RULES*, returning nil if none match."
+  ;; (prn "get-response INPUT: %s" input)
+  (with-gensyms (result continue)
+    (catch result
+      (dolist (rule *rules*)
+        (let-rule rule
+          (catch continue
+            (if (eq t .:input-pattern)
+              ;; t matches any input and throws it's .:RESPONSE-PATTERN:
+              (throw result .:response-pattern)
+              (when-let ((var-alist (dm:match .:input-pattern input)))
+                (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
+                (run-var-funs .:var-funs var-alist)
+                (throw result (dm:fill .:response-pattern var-alist))))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun converse ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Have a conversation with the bot. Enter 'bye' to exit."
+  (interactive)
+  (catch 'exit
+    (while t
+      (let ((input (read)))
+        (when (member input '(bye (bye)))
+          (throw 'exit nil))
+        (prn "INPUT:    %s" input)        
+        (let ((response
+                (if (proper-list-p input)
+                  (get-response input)
+                  '(sorry \, I didn\'t hear you \!))))
+          (prn "RESPONSE: %s" (prettify-sentence response t)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun punctuation? (sym)
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (not (null (member sym '(! \? \, "!" "?" "," ".")))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (punctuation? '!) returns t)
+(confirm that (punctuation? '\?) returns t)
+(confirm that (punctuation? 'foo) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun prettify-sentence (lst &optional drop-first)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Render a Nolex input/output sentence (a list of symbols) as a string.
+This was very quick 'n' dirty and could probably be a lot cleaner."
+  (let* ( (lst (if drop-first (cdr lst) lst))
+          (str (wm::capitalize
+                 (let* ( (res lst)
+                         (res (if (punctuation? (car (last res)))
+                                res
+                                (append res (list ".")))))
+                   (apply #'concat
+                     (cons (format "%s" (car res))
+                       (rmapcar (cdr res)
+                         (lambda (e) (format (if (punctuation? e) "%s" " %s")
+                                  (if (eq 'i e) 'I e)
+                                  )))))))))
+    str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -321,166 +481,6 @@
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun run-var-tests (var-testses var-alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (if (null var-testses)
-    t
-    (with-gensyms (result)
-      (catch result
-        (dolist (var-tests var-testses)
-          (let* ( (var   (car var-tests))
-                  (tests (cdr var-tests))
-                  (assoc (assoc var var-alist)))
-            (unless assoc (error "missing var %s" var))
-            (dolist (test tests)
-              (unless (funcall test (cdr assoc))
-                (throw result nil)))))
-        t))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
-  returns t)
-(confirm that (run-var-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
-  returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun run-var-funs (var-funses var-alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (dolist (var-funs var-funses)
-    (let* ( (var   (car var-funs))
-            (funs  (cdr var-funs))
-            (assoc (assoc var var-alist))
-            (val   (cdr-safe assoc)))
-      (unless assoc (error "missing var %s" var))
-      (dolist (fun funs)
-        ;; (prndiv)
-        ;; (prn "var: %s" var)
-        ;; (prn "val: %s" val)
-        ;; (prn "fun: %s" fun)
-        (when-let ((res
-                     (if (listp val)
-                       (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
-                       (funcall fun var val var-alist))))
-          (setf (cdr assoc) res))
-        ;; (prn "ALIST: %s" var-alist)
-        )))
-  var-alist) ; return value is only used by a unit test right now.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-funs
-                '((subj swap-word) (subj-2 swap-word))
-                '((subj . i) (subj-2 . you) (baz . you)))
-  returns ((subj . you) (subj-2 . i) (baz . you)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun fill-in-missing-rule-keys (rule)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Note: this also converts RULE from a plist to an alist."
-  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (fill-in-missing-rule-keys
-    '( :input-pattern (,subj ,bar ,baz)
-       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
-  returns ( (:var-funs)
-            (:var-tests)
-            (:input-pattern (\, subj) (\, bar) (\, baz))
-            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-rule (rule &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let-rule '( :input-pattern    (,subj ,bar ,baz)
-               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-               :var-tests        ((subj subject?))
-               :var-funs         ((subj swap-word)))
-    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
-  returns ( ((\, subj) (\, bar) (\, baz))
-            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
-            ((subj subject?))
-            ((subj swap-word))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun get-response (input)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Transform INPUT according to *RULES*, returning nil if none match."
-  ;; (prn "get-response INPUT: %s" input)
-  (with-gensyms (result continue)
-    (catch result
-      (dolist (rule *rules*)
-        (let-rule rule
-          (catch continue
-            (if (eq t .:input-pattern)
-              ;; t matches any input and throws it's .:RESPONSE-PATTERN:
-              (throw result .:response-pattern)
-              (when-let ((var-alist (dm:match .:input-pattern input)))
-                (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
-                (run-var-funs .:var-funs var-alist)
-                (throw result (dm:fill .:response-pattern var-alist))))))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun converse ()
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Have a conversation with the bot. Enter 'bye' to exit."
-  (interactive)
-  (catch 'exit
-    (while t
-      (let ((input (read)))
-        (when (member input '(bye (bye)))
-          (throw 'exit nil))
-        (prn "INPUT:    %s" input)        
-        (let ((response
-                (if (proper-list-p input)
-                  (get-response input)
-                  '(sorry \, I didn\'t hear you \!))))
-          (prn "RESPONSE: %s" (prettify-sentence response t)))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun punctuation? (sym)
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (not (null (member sym '(! \? \, "!" "?" "," ".")))))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (punctuation? '!) returns t)
-(confirm that (punctuation? '\?) returns t)
-(confirm that (punctuation? 'foo) returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun prettify-sentence (lst &optional drop-first)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Render a Nolex input/output sentence (a list of symbols) as a string.
-This was very quick 'n' dirty and could probably be a lot cleaner."
-  (let* ( (lst (if drop-first (cdr lst) lst))
-          (str (wm::capitalize
-                 (let* ( (res lst)
-                         (res (if (punctuation? (car (last res)))
-                                res
-                                (append res (list ".")))))
-                   (apply #'concat
-                     (cons (format "%s" (car res))
-                       (rmapcar (cdr res)
-                         (lambda (e) (format (if (punctuation? e) "%s" " %s")
-                                  (if (eq 'i e) 'I e)
-                                  )))))))))
-    str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
