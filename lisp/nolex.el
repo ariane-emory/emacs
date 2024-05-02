@@ -105,7 +105,7 @@
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 (defalias 'pick-obviousness
-  (make-pick '(nil nil nil clearly plainly actually secretly obviously)))
+  (make-pick '(nil nil nil nil nil nil nil nil nil clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
   (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
@@ -295,7 +295,7 @@
           ;; (prn "fun2: %s" fun)
           (when-let ((res
                        (if (listp val)
-                         (cl-remove-if #'nil/t? (rmapcar val (lambda (x) (funcall fun var x var-alist))))
+                         (rmapcar val (lambda (x) (funcall fun var x var-alist)))
                          (funcall fun var val var-alist))))
             ;; (prn "funres: %s" res)
             (setf (cdr assoc) res)))
@@ -409,6 +409,10 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Render a Nolex input/output sentence (a list of symbols) as a string.
 This was very quick 'n' dirty and could probably be a lot cleaner."
+  (prndiv)
+  (prn "RAW: %s" lst)
+  (prn "FIL: %s" lst)
+  (prndiv)
   (let* ( (lst (if drop-first (cdr lst) lst))
           (str (wm::capitalize
                  (let* ( (res lst)
@@ -418,9 +422,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                    (apply #'concat
                      (cons (format "%s" (car res))
                        (rmapcar (cdr res)
-                         (lambda (e) (format (if (punctuation? e) "%s" " %s")
-                                  (if (eq 'i e) 'I e)
-                                  )))))))))
+                         (lambda (e)
+                           (prn "this: %s" e)
+                           (format (if (punctuation? e) "%s" " %s")
+                             (if (eq 'i e) 'I e)
+                             )))))))))
     str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
