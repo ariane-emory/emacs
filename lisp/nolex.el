@@ -318,13 +318,14 @@
                 (var        (if new-var new-var var))
                 (assoc      (unless new-var (assoc var var-alist))))
           (cond
+            (is-discard) ;; do nothing.
             ((and new-var assoc)         (error "key %s already taken" var))
             ((and (not new-var) (not assoc)) (error "missing var %s"       var)))
           (cond
             (is-discard
-              (setf assoc     (cons var nil))) ; left unattached to VAR-ALIST.
+              (setf assoc     (cons var nil))) ; left unattached to VAR-ALIST!
             (new-var
-              (setf assoc     (cons var nil)) ; used to set t.
+              (setf assoc     (cons var nil)) ; used to set this to t...
               (setf var-alist (cons assoc var-alist))
               (prndiv2)
               (prn2 "NEW-VAR:   %s" var)))
@@ -591,8 +592,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (subject-2!      pick-subject)
                            (epistemic!      pick-epistemic)
                            (maybe-that!     pick-maybe-that)
-                           (modal-2!        pick-modal) 
-                           (_               pick-insult-noun))
+                           (modal-2!        pick-modal))
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
                            ,modal-2 ,verb ,a/an/the ,@things))
