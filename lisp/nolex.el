@@ -513,7 +513,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
        :var-tests        ( (subject    subject?)
                            (desire     desire?))
-       :var-funs         ( (subject    swap-word dup-var)
+       :var-funs         ( (subject    swap-word)
                            (subject-2! pick-subject)
                            (desire     swap-word dup-var)
                            (epistemic! pick-epistemic))
