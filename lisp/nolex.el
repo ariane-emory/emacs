@@ -10,35 +10,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *swap-words*
-  '( (i . you)
-     (am . are)
-     (do . does)
-     (my . your)
-     (think . know)
-     (need . want)
-     (had . have)
-     (think . thought)
-     (do . don\'t)
-     (always . never)
-     (should . shouldn\'t)
-     (could . couldn\'t)
-     (will . won\'t)
-     ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun swap-word (var val var-alist)
-  "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
-  (cond
-    ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
-    ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
-    (t val)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (swap-word 'x 'i '((x . i))) returns you)
-(confirm that (swap-word 'x 'you '((x . you))) returns i)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
@@ -83,6 +54,7 @@
                                 won\'t
                                 can\'t
                                 haven\'t))
+(defvar    *modal-pairs* (cl-pairlis *modal-words* *neg-modal-words*))
 (defvar    *all-modal-words*  (cons 'might (append *modal-words* *neg-modal-words*)))
 (defalias 'modal?             (make-member-sym-p *modal-words*))
 (defalias 'neg-modal?         (make-member-sym-p *neg-modal-words*))
@@ -101,6 +73,35 @@
 (confirm that (subject? 'i) returns (i you))
 (confirm that (subject? 'you) returns (you))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *swap-words*
+  '( (i . you)
+     (am . are)
+     (do . does)
+     (my . your)
+     (think . know)
+     (need . want)
+     (had . have)
+     (think . thought)
+     (do . don\'t)
+     (always . never)
+     (should . shouldn\'t)
+     (could . couldn\'t)
+     (will . won\'t)
+     ))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun swap-word (var val var-alist)
+  "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
+  (cond
+    ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
+    ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
+    (t val)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (swap-word 'x 'i '((x . i))) returns you)
+(confirm that (swap-word 'x 'you '((x . you))) returns i)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,8 +200,9 @@
        :response-pattern ( 3 don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
                            the real ,thing \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject would like many ,@things)
-       :var-tests        ( (subject   subject?))
+     ( :input-pattern    ( ,subject would ,desire many ,@things)
+       :var-tests        ( (subject   subject?)
+                           (desire    desire?))
        :var-funs         ( (subject   swap-word))
        :response-pattern ( 4 don\'t ,subject have enough ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
@@ -236,21 +238,21 @@
      ( :input-pattern    ( ,subject  ,modal ,verb ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (modal     modal?)
-                           (a/an      a/an?)
-                           )
+                           (a/an      a/an?))
        :var-funs         ( (subject   dup-var dup-var dup-var swap-word)
                            ($1        pick-subject)
                            ($2        pick-epistemic)
                            ($3        pick-any-modal))
-       :response-pattern ( 8 ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
+       :response-pattern ( 9 ,$1 ,$2 ,subject ,$3 ,verb ,a/an ,@things))
+     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        :var-tests        ( (subject   subject?)
                            (modal     modal?))
        :var-funs         ( (subject   swap-word))
-       :response-pattern ( 9 ,subject ,modal ,verb a ,@things \!))
+       :response-pattern ( 10 ,subject ,modal ,verb a ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( you ,foo ,baz \!)
-       :response-pattern ( 10 no \, it is you who ,foo ,baz \!))
+       :response-pattern ( 11 no \, it is you who ,foo ,baz \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
        :var-tests        ( (subject   subject?)
@@ -259,7 +261,7 @@
                            (modal     modal?))
        :var-funs         ( (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern ( 11 come on \, ,subject can\'t really ,epistemic
+       :response-pattern ( 12 come on \, ,subject can\'t really ,epistemic
                            that ,subject-2 ,modal never ,verb a ,noun \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
@@ -272,7 +274,7 @@
                            (subject-2 swap-word)
                            (epistemic swap-word)
                            (desire    swap-word))
-       :response-pattern ( 12 after this conversation \, ,subject
+       :response-pattern ( 13 after this conversation \, ,subject
                            ,epistemic that ,subject-2
                            ,desire ,a/n ,noun \!))
      ;;----------------------------------------------------------------------------------------------
@@ -282,7 +284,7 @@
        :var-funs         ( (subject   swap-word)
                            (desire    swap-word dup-var)
                            ($1        pick-epistemic))
-       :response-pattern ( 13 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
+       :response-pattern ( 14 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
@@ -420,6 +422,21 @@
 (prn "START:")
 (dolist (input
           '(
+             ;; 99
+             (i don\'t understand \!)
+             (foo bar baz)
+             (foo bar baz quux)
+
+             ;; 1
+             (i have an apple tree)
+             (you have a dollar)
+             (i had a dollar)
+             (you had a dollar)
+             (you had a coin in your pocket)
+             (you have a coin in your pocket)
+             (i have a fly on my arm)
+
+             ;; 2
              (i think that i would like a smoke)
              (i think that you would like a smoke)
              (i think that you should have a smoke)
@@ -427,65 +444,86 @@
              (i believe that you have seen a ghost)
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)
-             (i know that you have never eaten a hamburger)
-             (you would never eat a cold hamburger)
-             (you should never eat a cold hamburger)
-             (you could never eat a cold hamburger)
-             (i could never eat a cold hamburger)
-             (foo bar baz)
-             (foo bar baz quux)
-             (you don\'t understand)
-             (i don\'t understand \!)
-             (you eat chickens)
-             (dogs eat chickens)
-             (you are stupid \!)
-             (you suck ass \!)
+
+             ;; 3
              (you are an asshole)
              (i am a bitch)
-             (i have an apple tree)
-             (you have a dollar)
-             (i had a dollar)
-             (you had a dollar)
-             (you had a coin in your pocket)
-             (you have a coin in your pocket)
-             (i could eat a hamburger and some fries)
-             (i have a fly on my arm)
+
+             ;; 4
+             (i would like many hamburgers with cheese and bacon)
+             (i would need many orange cats)
+             
+             ;; 5
              (i would like a hamburger with cheese and bacon)
              (i would like an orange cat)
              (you would like a hamburger with cheese and bacon)
-             (i would like many hamburgers with cheese and bacon)
+
+             ;; 6
              (i want a hamburger with cheese and bacon)
              (i need a hamburger with cheese and bacon)
              (you want a hamburger with cheese and bacon)
              (you need a hamburger with cheese and bacon)
+
+             ;; 7
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             
+             ;; 8
+             (you don\'t understand)
+             (dogs eat chickens)
+             (you eat chickens)
+
+             ;; 9
+             (i could eat a hamburger and some fries)
+             (i would climb a tall tree)
+             (you would climb a tall tree)
+             (you should have a cigarette)
+
+             ;; 10
+             (you would never eat a cold hamburger)
+             (you should never eat a cold hamburger)
+             (you could never eat a cold hamburger)
+             (i could never eat a cold hamburger)
+
+             ;; 11
+             (you are stupid \!)
+             (you suck ass \!)
+
+             ;; 12
+             (i know that you have never eaten a hamburger)
+             
+             ;; 14
              (i think that you need a drink)
              (you think that i need a drink)
              (i think that i need a drink)
              (you think that you need a drink)
+             
+             ;; 14
              (you want to smoke a fat joint)
+             (you need to smoke a fat joint)
              (i want to smoke a fat joint)
+             (i need to smoke a fat joint)
              (i want to dance in the moonlight)
-             (i would climb a tall tree)
-             (you would climb a tall tree)
-             (do you like spicy tacos)
-             (do you like spicy tacos)
-             (do you like spicy tacos)
-             (do you like spicy tacos)
-             (would you like spicy tacos)
-             (would you like spicy tacos)
-             (would you like a cigarette)
-             (would you like a cigarette)
-             (would you like a cigarette)
-             (would you like a cigarette)
-             (would you like another cigarette)
-             (would you like another cigarette)
-             (would you like another cigarette)
-             (would you like another cigarette)
-             (you should have a cigarette)
+             
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
-  (prn "RESPONSE:  %s" (get-response input)))
+  ;; (prn "RESPONSE:  %s" (get-response input))
+  (prn "RESPONSE:  %s" (cdr-safe (get-response input)))
+  )
+
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
