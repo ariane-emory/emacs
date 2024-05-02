@@ -100,9 +100,9 @@
 (defalias 'pick-obviousness
   (make-pick '(clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
-  (make-pick '(brainded stupid silly dumb ridiculous demented deranged idiotic)))
+  (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
-  (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit)))
+  (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit dumbass)))
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t))
