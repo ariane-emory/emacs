@@ -25,6 +25,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'pick-qty           (make-pick '(some many enough)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
@@ -48,7 +50,7 @@
                                 will
                                 can
                                 have))
-(defvar    *neg-modal-words* '(wouldn\'t
+(defvar    *neg-modal-words* '( wouldn\'t
                                 shouldn\'t
                                 couldn\'t
                                 won\'t
@@ -92,12 +94,21 @@
      (will . won\'t)
      ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun make-swapper (alist)
+  (lambda (var val var-alist)
+    "Return the swapped word for VAL found in ALIST, or VAL if none."
+    (cond
+      ((assoc  val alist) (cdr (assoc  val alist)))
+      ((rassoc val alist) (car (rassoc val alist)))
+      (t val))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (var val var-alist)
   "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
   (cond
     ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
     ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
     (t val)))
+(defalias 'swap-word (make-swapper *swap-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (swap-word 'x 'i '((x . i))) returns you)
 (confirm that (swap-word 'x 'you '((x . you))) returns i)
@@ -189,7 +200,7 @@
                            (subject-2 swap-word))
        :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun \?))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject  ,am/are ,a/an ,thing)
+     ( :input-pattern    ( ,subject  ,am/are ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
                            (a/an      a/an?))
@@ -197,14 +208,16 @@
                            (am/are    dup-var)
                            ($1        swap-word)
                            ($2        swap-word))
-       :response-pattern ( 3 don\'t be silly \, ,$1 ,$2 not ,a/an ,thing \, ,subject ,am/are
-                           the real ,thing \!))
+       :response-pattern ( 3 don\'t be silly \, ,$1 ,$2 not ,a/an ,@things \, ,subject ,am/are
+                           the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
        :var-tests        ( (subject   subject?)
                            (desire    desire?))
-       :var-funs         ( (subject   swap-word))
-       :response-pattern ( 4 don\'t ,subject have enough ,@things already \?))
+       :var-funs         ( (subject   swap-word)
+                           (desire    dup-var)
+                           ($1 pick-qty))
+       :response-pattern ( 4 don\'t ,subject have ,$1 ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would like ,@things)
        :var-tests        ( (subject   subject?))
@@ -281,10 +294,11 @@
      ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
        :var-tests        ( (subject   subject?)
                            (desire    desire?))
-       :var-funs         ( (subject   swap-word)
+       :var-funs         ( (subject   swap-word dup-var)
+                           ($1        pick-subject)
                            (desire    swap-word dup-var)
-                           ($1        pick-epistemic))
-       :response-pattern ( 14 i don\'t ,$1 that ,subject really ,desire to ,verb ,@things))
+                           ($2        pick-epistemic))
+       :response-pattern ( 14 ,$1 don\'t ,$2 that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
@@ -416,6 +430,16 @@
           (prn "RESPONSE: %s" response))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun punctuation? (sym)
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (not (null (member sym '(! \?)))))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (punctuation? '!) returns t)
+(confirm that (punctuation? '\?) returns t)
+(confirm that (punctuation? 'foo) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
@@ -447,11 +471,17 @@
 
              ;; 3
              (you are an asshole)
+             (you are a particularly stupid asshole)
              (i am a bitch)
 
              ;; 4
              (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
              (i would need many orange cats)
+             (i would need many orange cats)
+             (i would need many orange cats)
+             
              
              ;; 5
              (i would like a hamburger with cheese and bacon)
@@ -520,8 +550,14 @@
              ))
   (prndiv)
   (prn "INPUT:     %s" input)
-  ;; (prn "RESPONSE:  %s" (get-response input))
-  (prn "RESPONSE:  %s" (cdr-safe (get-response input)))
+  (prn "RESPONSE:  %s" (get-response input))
+  (let ((res (cdr (get-response input))))
+    (prn (car res))
+    (prn (apply #'concat (rmapcar (cdr res) (lambda (elem)
+                                              (format (if (punctuation? elem) "%s" " %s") elem)))))
+    )
+  
+  ;; (prn "RESPONSE:  %s" (cdr-safe (get-response input)))
   )
 
 (prndiv)
