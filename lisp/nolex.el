@@ -10,6 +10,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ner-var-name? (symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
+  (when (and (symbolp symbol)          ; Check if it's a symbol
+          (string-suffix-p "!" (symbol-name symbol)))  ; Check if it ends with "!"
+    (intern (substring (symbol-name symbol) 0 -1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ner-var-name? 'foo) returns nil)
+(confirm that (ner-var-name? 'bar!) returns bar)
+(confirm that (ner-var-name? 'baz!!!) returns baz!!)
+(confirm that (ner-var-name? 7) returns nil)
+(confirm that (ner-var-name? '(1 2 3)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
@@ -448,23 +464,23 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun prettify-sentence (lst &optional drop-first)
+(defun prettify-sentence (lst &optional drop-first)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Render a Nolex input/output sentence (a list of symbols) as a string.
+  "Render a Nolex input/output sentence (a list of symbols) as a string.
 This was very quick 'n' dirty and could probably be a lot cleaner."
-    (let* ( (lst (if drop-first (cdr lst) lst))
-            (str (wm::capitalize
-                   (let* ( (res lst)
-                           (res (if (punctuation? (car (last res)))
-                                  res
-                                  (append res (list ".")))))
-                     (apply #'concat
-                       (cons (format "%s" (car res))
-                         (rmapcar (cdr res)
-                           (lambda (e) (format (if (punctuation? e) "%s" " %s")
-                                    (if (eq 'i e) 'I e)
-                                    )))))))))
-      str))
+  (let* ( (lst (if drop-first (cdr lst) lst))
+          (str (wm::capitalize
+                 (let* ( (res lst)
+                         (res (if (punctuation? (car (last res)))
+                                res
+                                (append res (list ".")))))
+                   (apply #'concat
+                     (cons (format "%s" (car res))
+                       (rmapcar (cdr res)
+                         (lambda (e) (format (if (punctuation? e) "%s" " %s")
+                                  (if (eq 'i e) 'I e)
+                                  )))))))))
+    str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
