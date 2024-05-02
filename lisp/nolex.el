@@ -61,9 +61,9 @@
 (defalias 'subject?           (make-member-sym-p *subject-words*))
 (defalias 'pick-subject       (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar    *subjects-words*  '(we they))
-(defalias 'subjects?          (make-member-sym-p *subjects-words*))
-(defalias 'pick-subjects      (make-pick *subjects-words*))
+(defvar    *plural-subject-words*  '(we they))
+(defalias 'plural-subject?          (make-member-sym-p *plural-subject-words*))
+(defalias 'pick-plural-subject      (make-pick *plural-subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar   *modal-words*      '( would
                                 should
