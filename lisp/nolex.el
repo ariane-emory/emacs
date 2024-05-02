@@ -332,7 +332,7 @@
           ;;   (setf fun (eval fun)))
           ;; (prn "fun2:      %s" fun)
           (let ((res
-                  (if (consp val) ;; don't use listp!
+                  (if (consp val) ;; don't use listp here!
                     (rmapcar val (lambda (x) (funcall fun x var var-alist)))
                     (funcall fun val var var-alist))))
             (prn "funres:    %s" res)
