@@ -314,9 +314,10 @@
             ;; t matches any input and throws it's .:RESPONSE-PATTERN:
             (throw 'result .:response-pattern)
             (when-let ((var-alist (dm:match .:input-pattern input)))
-              (unless (proc-var-tests .:var-tests var-alist) (throw 'continue nil))
-              (proc-var-funs .:var-funs var-alist)
-              (throw 'result (dm:fill .:response-pattern var-alist)))))))))
+              (let ((var-alist (if (eq t var-alist) nil var-alist)))
+                (unless (proc-var-tests .:var-tests var-alist) (throw 'continue nil))
+                (proc-var-funs .:var-funs var-alist)
+                (throw 'result (dm:fill .:response-pattern var-alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -531,7 +532,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( trigger )
        :var-tests        ( )
-       :var-funs         ( )
+       :var-funs         ( (alpha! pick-insult-noun))
        :response-pattern ( 19 yes \, here we are ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
