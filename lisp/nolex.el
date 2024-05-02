@@ -521,7 +521,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Render a Nolex input/output sentence (a list of symbols) as a string.
 This was very quick 'n' dirty and could probably be a lot cleaner."
-  (let* ( (lst (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst)))
+  (let* ( (lst (if *prettify-sentence-strip*
+                 (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst))
+                 lst))
           (str (wm::capitalize
                  (let* ( (res lst)
                          (res (if (punctuation? (car (last res)))
@@ -536,6 +538,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                              (if (eq 'i e) 'I e)
                              )))))))))
     str))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *prettify-sentence-strip* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
