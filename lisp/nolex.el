@@ -523,21 +523,20 @@
 This was very quick 'n' dirty and could probably be a lot cleaner."
   (let* ( (lst (if *prettify-sentence-strip*
                  (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst))
-                 lst))
-          (str (wm::capitalize
-                 (let* ( (res lst)
-                         (res (if (punctuation? (car (last res)))
-                                res
-                                (append res (list ".")))))
-                   (apply #'concat
-                     (cons (format "%s" (car res))
-                       (rmapcar (cdr res)
-                         (lambda (e)
-                           ;; (prn "this: %s" e)
-                           (format (if (punctuation? e) "%s" " %s")
-                             (if (eq 'i e) 'I e)
-                             )))))))))
-    str))
+                 lst)))
+    (wm::capitalize
+      (let* ( (res lst)
+              (res (if (punctuation? (car (last res)))
+                     res
+                     (append res (list ".")))))
+        (apply #'concat
+          (cons (format "%s" (car res))
+            (rmapcar (cdr res)
+              (lambda (e)
+                ;; (prn "this: %s" e)
+                (format
+                  (if (punctuation? e) "%s" " %s")
+                  (if (eq 'i e) 'I e))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *prettify-sentence-strip* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
