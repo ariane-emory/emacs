@@ -36,6 +36,9 @@
   "Generate a membership predicate fun for LST."
   `(lambda (thing &rest _) (and (symbolp thing) (member thing ,lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro make-weighted-member-sym-p (lst)
+  `(make-member-sym-p ,(tails lst)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (member 'a '(a b c)))) returns t)
 (confirm that (not (null (member 'b '(a b c)))) returns t)
 (confirm that (not (null (member 'c '(a b c)))) returns t)
@@ -129,9 +132,9 @@
 (defalias 'pick-neg-modal     (make-pick *neg-modal-words*))
 (defalias 'pick-any-modal     (make-pick *all-modal-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar   *epistemic-words*  '(know believe suspect think))
-(defalias 'epistemic?         (make-member-sym-p *epistemic-words*))
-(defalias 'pick-epistemic     (make-pick *epistemic-words*))
+(defvar   *epistemic-words*  '((2 . know) (2 . believe) (2 . think) (1 . suspect)))
+(defalias 'epistemic?         (make-member-sym-p (tails *epistemic-words*)))
+(defalias 'pick-epistemic     (make-weighted-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
