@@ -594,7 +594,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (qty!            pick-qty))
            :response:   ( 4 don\'t ,subject have ,qty ,@things already \?))))
      ;;==============================================================================================
-     ( :input: ( ,subject would like ,@things)
+     ( :input:          ( ,subject would like ,@things)
        :var-tests:      ( (subject         subject?))
        :responses:
        ( ( :var-funs:   ( (subject     swap-word))
@@ -605,8 +605,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (desire          desire?)
                           (a/an            a/an?))
        :responses:
-       ( ( :var-fun    ( (subject         swap-word)
-                         (desire          swap-word))
+       ( ( :var-fun     ( (subject         swap-word)
+                          (desire          swap-word))
            :response:   ( 6 do ,subject really ,desire ,a/an ,@things \?))))
      ;;==============================================================================================
      ( :input:          ( ,do/would ,subject ,desire ,@things)
@@ -713,11 +713,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (adj!            pick-insult-adj)
                           (noun!           pick-insult-noun)
                           (obv!            pick-obviousness))
-           :response:   ( 15 You ,adj ,noun \,,plural-subject are not the ,@things \,
+           :response:   ( 15 You ,adj ,noun \, ,plural-subject are not the ,@things \,
                           it is ,obv ,plural-subject* who are the ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( i wish that you were a ,@things)
-       ;;--------------------------------------------------------------------------------------------
        :responses:
        ( ( :var-funs:   ( (adj!            pick-insult-adj)
                           (epistemic!      pick-epistemic)
@@ -730,20 +729,20 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ( ( :var-funs:   ( (persp!          pick-i-am/you-are)
                           (certainty!      pick-certainty)
                           (probably-not!   pick-probably-not))
-           :response: ( 17 ,persp ,probably-not really ,certainty that these are ,@things ))))
+           :response:   ( 17 ,persp ,probably-not really ,certainty that these are ,@things ))))
      ;;==============================================================================================
-     ( :input:    ( this is the ,@things)
+     ( :input:          ( this is the ,@things)
        :responses:
        ( ( :var-funs:   ( (persp!          pick-i-am/you-are)
                           (certainty!      pick-certainty))
            ( :response: ( 18 ,persp not really ,certainty if this is ,@things )))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,epistemic ,plural-subject ,modal ,verb ,them-us ,@things)
-       :var-tasts      ( (subject         subject?)
-                         (epistemic       epistemic?)
-                         (plural-subject  plural-subject?)
-                         (modal           modal?)
-                         (them-us         them-us?))
+       :var-tasts       ( (subject         subject?)
+                          (epistemic       epistemic?)
+                          (plural-subject  plural-subject?)
+                          (modal           modal?)
+                          (them-us         them-us?))
        :responses:
        ( ( :var-funs:   ( (subject         swap-word)
                           (plural-subject  swap-word)
@@ -757,7 +756,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (noun!           pick-insult-noun))
            :response:   ( 98 yes \, here we are you ,adj ,noun))))
      ;;==============================================================================================
-     ( :input:    t
+     ( :input: t
        :responses:
        ( ( :response: (99 i don\'t understand \!))
          ( :response: (99 sorry \, i didn\'t hear you properly))
@@ -917,6 +916,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
+
+             ;; 14
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             
              ))
   
   (prndiv)
