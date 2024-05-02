@@ -293,8 +293,15 @@
                   (val   (cdr assoc)))
             (unless assoc (error "missing var %s" var))
             (dolist (test tests)
-              (unless (funcall test val var var-alist)
-                (throw result nil)))))
+              (let ((res
+                      ;; Not sure if this list case is a good idea yet:
+                      ;; (if (consp val) ;; don't use listp here!
+                      ;;   (cl-every (lambda (x) (funcall test x var var-alist)) val)
+                      (funcall test val var var-alist)
+                      ;;)
+                      ))
+                (unless res
+                  (throw result nil))))))
         t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
