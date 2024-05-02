@@ -287,7 +287,8 @@
       (catch result
         (dolist (var-tests var-testses)
           (let* ( (var   (car var-tests))
-                  (tests (cdr var-tests)) ;; this test must just be looking at VAR-LIST.
+                  (tests (cdr var-tests))
+                  ;; when var is _, the test must just be examining at VAR-LIST:
                   (is-no-var-test (eq '_ var))
                   (assoc (if is-no-var-test (cons '_ nil) (assoc var var-alist)))
                   (val   (cdr assoc)))
@@ -601,6 +602,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (subject-2!      pick-subject)
                            (epistemic!      pick-epistemic)
                            (maybe-that!     pick-maybe-that)
+                           (_ (lambda (&rest _) t))
                            (modal-2!        pick-modal))
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
