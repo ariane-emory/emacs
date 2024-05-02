@@ -92,6 +92,8 @@
 (defalias 'epistemic?         (make-member-sym-p *epistemic-words*))
 (defalias 'pick-epistemic     (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'pick-obviousness
+  (make-pick '(clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
   (make-pick '(stupid silly dumb ridiculous demented deranged idiotic)))
 (defalias 'pick-insult-noun
@@ -393,11 +395,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (am/are    am/are?)
                            (a/an/the  a/an/the?))
        :var-funs         ( (subject   dup-var dup-var)
-                           (am/are    dup-var)
+                           (am/are    dup-var dup-var)
                            ($1        pick-insult-adj)
                            ($2        swap-word)
-                           ($3        swap-word))
-       :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \, ,subject ,am/are
+                           ($3        swap-word)
+                           ($4        pick-obviousness))
+       :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \,
+                           ,subject ,am/are ,$4
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
@@ -489,19 +493,44 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,plural-subject are the ,@things)
        :var-tests        ( (plural-subject plural-subject?))
-       :var-funs         ( (plural-subject dup-var dup-var dup-var)
+       :var-funs         ( (plural-subject dup-var dup-var dup-var dup-var)
                            ($1        swap-word)
                            ($2        pick-insult-adj)
-                           ($3        pick-insult-noun))
+                           ($3        pick-insult-noun)
+                           ($4        pick-obviousness))
        :response-pattern ( 15 You ,$2 ,$3 \,
                            ,plural-subject are not the ,@things \,
-                           ,$1 are
+                           it is ,$4 ,$1 who are
                            the ,@things \!))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( i wish that you were a ,@things)
+       :var-tests        ( )
+       :var-funs         ( (things dup-var dup-var dup-var) 
+                           ($1 pick-insult-adj)
+                           ($2 pick-epistemic)
+                           ($3 pick-insult-noun))
+       :response-pattern ( 16 you ,$3 \, I already ,$2 that you want a ,@things))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( these are the ,@things)
+       :var-tests        ( )
+       :var-funs         ( (things dup-var dup-var)
+                           ($1 pick-i-am/you-are)
+                           ($2 pick-certainty))
+       :response-pattern ( 17 ,$1 not really ,$2 that these are ,@things ))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( this is the ,@things)
+       :var-tests        ( )
+       :var-funs         ( (things dup-var dup-var)
+                           ($1 pick-i-am/you-are)
+                           ($2 pick-certainty))
+       :response-pattern ( 18 ,$1 not really ,$2 if this is ,@things ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
+(defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
@@ -621,7 +650,16 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (we are the aliens in disguise as humans)
              (they are the cutest kittens in the world)
              (they are the cutest kittens in the world)
-             (they are the cutest kittens in the world) 
+             (they are the cutest kittens in the world)
+
+             ;; 17
+             (i wish that you were a fluffy cat)
+             (i wish that you were a duck wearing a tophat)
+             (these are the voyages of the starsshp Enterprise)
+             (these are the voyages of the starsshp Enterprise)
+             (these are the voyages of the starsshp Enterprise)
+             (these are the voyages of the starsshp Enterprise)
+             (this is the worst thing ever)
              ))
   
   (prndiv)
