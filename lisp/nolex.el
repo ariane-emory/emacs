@@ -36,6 +36,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun make-pick (lst)
   (lambda (&rest _)
+    (prn "pick: %s" lst)
     (elt lst (random (length lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -204,7 +205,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun proc-var-tests (var-testses var-alist)
+(defun proc-tests (var-testses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (if (null var-testses)
     t
@@ -220,15 +221,15 @@
                 (throw result nil)))))
         t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (proc-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
+(confirm that (proc-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
   returns t)
-(confirm that (proc-var-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
+(confirm that (proc-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun proc-var-funs (var-funses var-alist)
+(defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (dolist (var-funs var-funses)
     (let* ( (var     (car var-funs))
@@ -238,34 +239,47 @@
             (assoc   (unless new-var (assoc var var-alist)))
             (val     (unless new-var (cdr-safe assoc))))
 
-      
-      (when new-var
-        (prn "NEW-VAR: %s" var))
-
       (cond
-       ((and new-var assoc) (error "missing var %s" var))
-      
-      (unless assoc (error "missing var %s" var))
+        ((and new-var assoc) (error "key %s already taken" var))
+        ((and (not new-var) (not assoc)) (error "missing var %s" var)))
+
+      (when new-var
+        (setf var-alist (cons (cons var t) var-alist))
+        (setf assoc (assoc var var-alist))
+        (setf val   (cdr assoc)))
+
+      (prn "NEW-VAR:   %s" var)
+      (prn "VAR-ALIST: %s" var-alist)
 
       (dolist (fun funs)
-        ;; (prndiv)
-        ;; (prn "var: %s" var)
-        ;; (prn "val: %s" val)
-        ;; (prn "fun: %s" fun)
+        (prndiv)
+        (prn "var: %s" var)
+        (prn "val: %s" val)
+        (prn "fun: %s" fun)
         (when-let ((res
                      (if (listp val)
-                       (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
+                       (progn
+                         (prn "this case")
+                         (compact (rmapcar val (lambda (x) (funcall fun var x var-alist)))))
+                       (prn "got here")
                        (funcall fun var val var-alist))))
+          (prn "funres: %s" res)
           (setf (cdr assoc) res))
         ;; (prn "ALIST: %s" var-alist)
         )))
   var-alist) ; return value is only used by a unit test right now.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(proc-var-funs
+
+
+(proc-funs
   '((subj pick-insult-adj) (new! pick-insult-noun))
   '((subj . i) (subj-2 . you) (baz . you)))
+
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (proc-var-funs
+(confirm that (proc-funs
                 '((subj swap-word) (subj-2 swap-word))
                 '((subj . i) (subj-2 . you) (baz . you)))
   returns ((subj . you) (subj-2 . i) (baz . you)))
@@ -330,8 +344,8 @@
             (throw 'result .:response-pattern)
             (when-let ((var-alist (dm:match .:input-pattern input)))
               (let ((var-alist (if (eq t var-alist) nil var-alist)))
-                (unless (proc-var-tests .:var-tests var-alist) (throw 'continue nil))
-                (setf var-alist (proc-var-funs .:var-funs var-alist))
+                (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
+                (setf var-alist (proc-funs .:var-funs var-alist))
                 (throw 'result (dm:fill .:response-pattern var-alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
