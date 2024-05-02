@@ -454,7 +454,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests        ( (subject   subject?)
                            (desire    desire?))
        :var-funs         ( (subject   swap-word)
-                           (desire    dup-var)
                            (qty! pick-qty))
        :response-pattern ( 4 don\'t ,subject have ,qty ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
@@ -475,7 +474,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests        ( (do/would  do/would?)
                            (subject   subject?)
                            (desire    desire?))
-       :var-funs         ( (subject   swap-word dup-var)
+       :var-funs         ( (subject   swap-word)
                            (desire    pick-desire)
                            (poss!     pick-possibility))
        :response-pattern ( 7 ,subject ,poss ,desire ,@things))
@@ -538,12 +537,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern ( 14 ,subject-2 don\'t ,epistemic that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,plural-subject are the ,@things)
-       :var-tests        ( (plural-subject plural-subject?))
-       :var-funs         ( (plural-subject dup-var2)
+       :var-tests        ( (plural-subject  plural-subject?))
+       :var-funs         ( (plural-subject  dup-var2)
                            (plural-subject* swap-word)
-                           (adj!      pick-insult-adj)
-                           (noun!     pick-insult-noun)
-                           (obv!      pick-obviousness))
+                           (adj!            pick-insult-adj)
+                           (noun!           pick-insult-noun)
+                           (obv!            pick-obviousness))
        :response-pattern ( 15 You ,adj ,noun \,
                            ,plural-subject are not the ,@things \,
                            it is ,obv ,plural-subject* who are
