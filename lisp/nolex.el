@@ -914,19 +914,19 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun fill-in-missing-rule-keys (rule)
+(defun fill-in-missing-rule-keys2 (rule)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: this also converts RULE from a plist to an alist."
-  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
+  (fill-in-missing-alist-keys *rule-keys2* (plist-to-alist rule)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *rule-keys*
+(defvar *rule-keys2*
   '( :input-pattern    
      :response-pattern 
      :var-tests
      :var-funs))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (fill-in-missing-rule-keys
+  (fill-in-missing-rule-keys2
     '( :input-pattern (,subj ,bar ,baz)
        :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
   returns ( (:var-funs)
@@ -939,7 +939,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro let-rule2 (rule &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
+  `(let-alist (fill-in-missing-rule-keys2 ,rule) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let-rule '( :input-pattern    (,subj ,bar ,baz)
