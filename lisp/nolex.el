@@ -78,25 +78,35 @@
                                 could
                                 will
                                 can
+                                do
                                 must))
 (defvar   *modal-plus*        (append *modal-words* '(have haven\'t)))
-(defvar   *neg-modal-words*  '( wouldn\'t
+(defvar   *neg-modal-words*  '( ;; don\'t
+                                ;; do\ not
+                                wouldn\'t
                                 would\ never
+                                would\ not
                                 shouldn\'t
                                 should\ never
+                                should\ not
                                 couldn\'t
                                 could\ never
+                                could\ not
                                 won\'t
                                 will\ never
+                                will\ not
                                 can\'t
                                 can\ never
+                                can\ not
                                 musn\'t
                                 must\ never
+                                must\ not
                                 ;; haven\'t
                                 cannot))
 (defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
-(defvar   *all-modal-words*   (cons 'might ;; v include *modal-words* twie for probability:
-                                (append *modal-words* *modal-words* *neg-modal-words*)))
+(defvar   *all-modal-words*   (cons 'might ;; v include *modal-words* thrics for probability:
+                                (append *modal-words* *modal-words* *modal-words*
+                                  *neg-modal-words*)))
 (defalias 'modal?             (make-member-sym-p *modal-words*))
 (defalias 'modal-plus?        (make-member-sym-p *modal-plus*))
 (defalias 'neg-modal?         (make-member-sym-p *neg-modal-words*))
@@ -120,7 +130,8 @@
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (defalias 'pick-maybe-that   (make-pick '(that nil)))
-(make-pick '(do don\'t sometimes\ do always never might would wouldn\'t))
+(defalias 'pick-maybe-not    (make-pick '(not nil)))
+(defalias 'pick-probably-not (make-pick '(not not nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
 (confirm that (not (null (subject? 'you))) returns t)
@@ -138,8 +149,8 @@
      (think . know)
      (need . want)
      (had . have)
-     (think . thought)
-     (do . don\'t)
+     (think . believe)
+     (know . suspect)
      (always . never)
      (should . shouldn\'t)
      (could . couldn\'t)
@@ -646,9 +657,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input-pattern    ( these are ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (persp!          pick-i-am/you-are)
-                           (certainty!      pick-certainty))
+                           (certainty!      pick-certainty)
+                           (probably-not!   pick-probably-not))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 17 ,persp not really ,certainty that these are ,@things ))
+       :response-pattern ( 17 ,persp ,probably-not really ,certainty that these are ,@things ))
      ;;==============================================================================================
      ( :input-pattern    ( this is the ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -830,6 +842,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you must conquer the empire of the necromancers)
              (you cannot conquer the empire of the necromancers)
              (you won\'t conquer the empire of the necromancers)
+             (i must devour the souls of the innocent)
+             (i must devour the souls of the innocent)
+             (i must devour the souls of the innocent)
              ))
   
   (prndiv)
