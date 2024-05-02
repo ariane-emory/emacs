@@ -92,8 +92,8 @@
 (defalias 'epistemic?         (make-member-sym-p *epistemic-words*))
 (defalias 'pick-epistemic     (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'pick-insult
-  (make-pick '(stupid silly dumb ridiculous demented deranged an\ idiot)))
+(defalias 'pick-insult-adj
+  (make-pick '(stupid silly dumb ridiculous demented deranged idiotic)))
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -393,7 +393,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (a/an/the  a/an/the?))
        :var-funs         ( (subject   dup-var dup-var)
                            (am/are    dup-var)
-                           ($1        pick-insult)
+                           ($1        pick-insult-adj)
                            ($2        swap-word)
                            ($3        swap-word))
        :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \, ,subject ,am/are
@@ -401,11 +401,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,plural-subject are the ,@things)
        :var-tests        ( (plural-subject plural-subject?))
-       :var-funs         ( (plural-subject dup-var dup-var dup-var)
-                           ($1        pick-insult)
-                           ($2        swap-word)
-                           ($3        swap-word))
-       :response-pattern ( 3 don\'t be ,$1 \, ,plural-subject are not the ,@things \, ,$2 are
+       :var-funs         ( (plural-subject dup-var dup-var)
+                           ($1        pick-insult-adj)
+                           ($2        swap-word))
+       :response-pattern ( '2B You ,$1 fool \,
+                           ,plural-subject are not the ,@things \,
+                           ,$2 are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
