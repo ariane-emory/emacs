@@ -441,13 +441,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
                            (a/an/the  a/an/the?))
-       :var-funs         ( (subject   dup-var dup-var)
+       :var-funs         ( (subject   dup-var2 dup-var2)
                            (am/are    dup-var dup-var)
                            (iadj!     pick-insult-adj)
-                           ($1        swap-word)
-                           ($2        swap-word)
+                           (subject*        swap-word)
+                           (subject**        swap-word)
                            (obv!      pick-obviousness))
-       :response-pattern ( 3 don\'t be ,iadj \, ,$1 ,$2 not ,a/an/the ,@things \,
+       :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,subject** not ,a/an/the ,@things \,
                            ,subject ,am/are ,obv
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
@@ -712,7 +712,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
-  (prn "RESPONSE:  %s" (prettify-sentence (get-response input) t)))
+  (let ((response (get-response input)))
+    (prn "CASE:      %s" (car response))
+    (prn "RESPONSE:  %s" (prettify-sentence response t))))
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
