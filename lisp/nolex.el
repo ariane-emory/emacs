@@ -10,6 +10,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun new-var-name? (symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
+  (when (and (symbolp symbol)          ; Check if it's a symbol
+          (string-suffix-p "!" (symbol-name symbol)))  ; Check if it ends with "!"
+    (intern (substring (symbol-name symbol) 0 -1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (new-var-name? 'foo) returns nil)
+(confirm that (new-var-name? 'bar!) returns bar)
+(confirm that (new-var-name? 'baz!!!) returns baz!!)
+(confirm that (new-var-name? 7) returns nil)
+(confirm that (new-var-name? '(1 2 3)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun make-member-sym-p (lst)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Generate a membership predicate fun for LST."
