@@ -303,7 +303,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *proc-funs-verbose* nil)
+(defvar *proc-funs-verbose* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -591,7 +591,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (subject-2!      pick-subject)
                            (epistemic!      pick-epistemic)
                            (maybe-that!     pick-maybe-that)
-                           (modal-2!        pick-modal))
+                           (modal-2!        pick-modal) 
+                           (_               pick-insult-noun))
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
                            ,modal-2 ,verb ,a/an/the ,@things))
@@ -608,7 +609,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (maybe-that!     pick-maybe-that)
                            (neg-modal-2!    pick-neg-modal))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+       :response-pattern ( '9B ,subject-2 ,epistemic ,maybe-that ,subject
                            ,neg-modal-2 ,verb ,a/an/the ,@things))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
