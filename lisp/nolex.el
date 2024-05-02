@@ -98,7 +98,7 @@
 (defalias 'pick-obviousness
   (make-pick '(clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
-  (make-pick '(stupid silly dumb ridiculous demented deranged idiotic)))
+  (make-pick '(brainded stupid silly dumb ridiculous demented deranged idiotic)))
 (defalias 'pick-insult-noun
   (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit)))
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
@@ -552,7 +552,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern ( 18 ,persp not really ,cartainty if this is ,@things ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( trigger )
-       :var-tests        ( )
        :var-funs         ( (adj!  pick-insult-adj)
                            (noun! pick-insult-noun))
        :response-pattern ( 19 yes \, here we are you ,adj ,noun))
