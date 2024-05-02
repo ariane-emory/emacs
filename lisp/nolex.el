@@ -494,19 +494,21 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ;;==============================================================================================
-     ( :input-pattern    ( ,subject  ,had/have ,a/an ,@things)
+     ( :input-pattern    ( ,subject ,had/have ,a/an ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
                            (had/have        had/have?)
                            (a/an            a/an?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         dup-var dup-var)
-                           (had/have        swap-word)
-                           (subject*        i-to-know/knew)
-                           (subject**       swap-word)
-                           (things          swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 1 ,subject ,subject*  ,subject** ,had/have ,a/an ,@things \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         dup-var dup-var)
+                               (had/have        swap-word)
+                               (subject*        i-to-know/knew)
+                               (subject**       swap-word)
+                               (things          swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 1 ,subject ,subject*  ,subject** ,had/have ,a/an ,@things \!))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2
                            ,a/an ,@things)
@@ -922,17 +924,25 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 (defvar *rule-keys2*
   '( :input-pattern    
      :response-pattern 
-     :var-tests
-     :var-funs))
+     ;; :var-tests
+     ;; :var-funs
+     :responses))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (fill-in-missing-rule-keys2
-    '( :input-pattern (,subj ,bar ,baz)
-       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
-  returns ( (:var-funs)
-            (:var-tests)
-            (:input-pattern (\, subj) (\, bar) (\, baz))
-            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
+;; (confirm that
+(fill-in-missing-rule-keys2
+  ' ( :input-pattern    ( ,subject ,desire ,a/an ,@things)
+      :var-tests        ( (subject         subject?)
+                          (desire          desire?)
+                          (a/an            a/an?))
+      :var-funs         ( (subject         swap-word)
+                          (desire          swap-word))
+      :response-pattern ( 6 do ,subject really ,desire ,a/an ,@things \?)))
+
+
+;; returns ( (:var-funs)
+;;           (:var-tests)
+;;           (:input-pattern (\, subj) (\, bar) (\, baz))
+;;           (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
