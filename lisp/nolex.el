@@ -426,7 +426,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (things    swap-word))
        :response-pattern ( 1 ,subject ,subject*  ,subject** ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 ,a/an ,@things)
+     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2
+                           ,a/an ,@things)
        :var-tests        ( (subject   subject?)
                            (epistemic epistemic?)
                            (subject-2 subject?)
@@ -435,14 +436,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-funs         ( (epistemic pick-epistemic)
                            (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 ,a/an ,@things \?))
+       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal
+                           ,verb-2 ,a/an ,@things \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an/the ,@things)
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
                            (a/an/the  a/an/the?))
        :var-funs         ( (subject   dup-var)
-                           (am/are    dup-var)
                            (iadj!     pick-insult-adj)
                            (subject*  swap-word)
                            (obv!      pick-obviousness))
@@ -535,7 +536,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (epistemic! pick-epistemic))
        :response-pattern ( 14 ,subject-2 don\'t ,epistemic that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,plural-subject are the ,@things)
+     ( :input-pattern    ( ,plural-subject are ,@things)
        :var-tests        ( (plural-subject  plural-subject?))
        :var-funs         ( (plural-subject  dup-var)
                            (plural-subject* swap-word)
@@ -548,21 +549,18 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( i wish that you were a ,@things)
-       :var-tests        ( )
        :var-funs         ( (adj!       pick-insult-adj)
                            (epistemic! pick-epistemic)
                            (noun!      pick-insult-noun))
        :response-pattern ( 16 you ,adj ,noun \, I already ,epistemic
                            that you want a ,@things))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( these are the ,@things)
-       :var-tests        ( )
+     ( :input-pattern    ( these are ,@things)
        :var-funs         ( (persp!     pick-i-am/you-are)
                            (certainty! pick-certainty))
        :response-pattern ( 17 ,persp not really ,certainty that these are ,@things ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( this is the ,@things)
-       :var-tests        ( )
        :var-funs         ( (persp!     pick-i-am/you-are)
                            (certainty! pick-certainty))
        :response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
@@ -690,9 +688,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i want to dance in the moonlight)
 
              ;; 16
-             (we are the aliens in disguise as humans) 
-             (we are the aliens in disguise as humans) 
-             (we are the aliens in disguise as humans)
+             (we are aliens in disguise as humans)
+             (we are aliens in disguise as humans)
+             (we are aliens in disguise as humans)
              (they are the cutest kittens in the world)
              (they are the cutest kittens in the world)
              (they are the cutest kittens in the world)
@@ -711,7 +709,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
   (let ((response (get-response input)))
-    (prn "CASE:      %s" (car response))
+    ;; (prn "CASE:      %s" (car response))
     (prn "RESPONSE:  %s" (prettify-sentence response t))))
 
 (prndiv)
