@@ -142,7 +142,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun make-swapper (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (lambda (var val var-alist)
+  (lambda (val var var-alist)
     "Return the swapped word for VAL found in ALIST, or VAL if none."
     (cond
       ((assoc  val alist) (cdr (assoc  val alist)))
@@ -151,24 +151,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-swapper (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(lambda (var val var-alist)
+  `(lambda (val var var-alist)
      "Return the swapped word for VAL found in ALIST, or VAL if none."
      (cond
        ((assoc  val ,alist) (cdr (assoc  val ,alist)))
        ((rassoc val ,alist) (car (rassoc val ,alist)))
        (t val))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun swap-word (var val var-alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
-  (cond
-    ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
-    ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
-    (t val)))
+;; (defun swap-word (var val var-alist)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
+;;   (cond
+;;     ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
+;;     ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
+;;     (t val)))
 (defalias 'swap-word (make-swapper *swap-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (swap-word 'x 'i '((x . i))) returns you)
-(confirm that (swap-word 'x 'you '((x . you))) returns i)
+(confirm that (swap-word 'i 'x '((x . i))) returns you)
+(confirm that (swap-word 'you 'x '((x . you))) returns i)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -184,8 +184,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dup-var (var val var-alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dup-var (val var var-alist)
+  ;;;;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Duplicate a VAR in VAR-ALIST with a new name."
   (cl-loop for suffix from 0
     for new-var = (intern (concat (symbol-name var) (make-string suffix ?*)))
@@ -194,25 +194,25 @@
   nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (let ((var-alist '((x . i) (x* . j))))
-                (dup-var 'x 'i var-alist)
+                (dup-var 'i 'x var-alist)
                 var-alist)
   returns ((x . i) (x* . j) (x** . i)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun repeat-word (var val var-alist)
+(defun repeat-word (val var var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Double a symbol with a hyphen in between the two, foo ⇒ foo-foo."
   ;; (prn "THESE: %s %s %s" var val var-alist)
   (symbolicate- val val))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (repeat-word 'x 'bo '((x . bo))) returns bo-bo)
+(confirm that (repeat-word 'bo 'x '((x . bo))) returns bo-bo)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun have-to-know/knew (var val var-alist)
+(defun have-to-know/knew (val var var-alist)
   (if (eq val 'have)
     'know\ that
     'knew\ that))
@@ -220,7 +220,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun i-me (var val var-alist)
+(defun i-me (val var var-alist)
   (if (eq val 'i)
     'me
     'i))
@@ -228,7 +228,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun i-you (var val var-alist)
+(defun i-you (val var var-alist)
   (if (eq val 'i)
     'you
     'i))
@@ -236,7 +236,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun i-to-know/knew (var val var-alist)
+(defun i-to-know/knew (val var var-alist)
   (if (eq val 'i)
     'already\ knew\ that
     'already\ knew\ that
@@ -297,8 +297,8 @@
           ;; (prn "fun2: %s" fun)
           (when-let ((res
                        (if (listp val)
-                         (rmapcar val (lambda (x) (funcall fun var x var-alist)))
-                         (funcall fun var val var-alist))))
+                         (rmapcar val (lambda (x) (funcall fun x var var-alist)))
+                         (funcall fun val var var-alist))))
             ;; (prn "funres: %s" res)
             (setf (cdr assoc) res)))
         ;; (prn "ALIST: %s" var-alist)
@@ -528,10 +528,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 8 fine \, ,subject ,bar ,baz \, so what \?))
      ;;==============================================================================================
-     ( :input-pattern    ( ,subject ,any-modal ,verb ,a/an/the ,@things)
+     ( :input-pattern    ( ,subject ,modal ,verb ,a/an/the ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
-                           (any-modal       any-modal?)
+                           (modal           modal?)
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
@@ -542,6 +542,21 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
                            ,modal-2 ,verb ,a/an/the ,@things))
+     ;;==============================================================================================
+     ( :input-pattern    ( ,subject ,neg-modal ,verb ,a/an/the ,@things)
+       ;;--------------------------------------------------------------------------------------------
+       :var-tests        ( (subject         subject?)
+                           (neg-modal       neg-modal?)
+                           (a/an/the        a/an/the?))
+       ;;--------------------------------------------------------------------------------------------
+       :var-funs         ( (subject         swap-word)
+                           (subject-2!      pick-subject)
+                           (epistemic!      pick-epistemic)
+                           (maybe-that!     pick-maybe-that)
+                           (neg-modal-2!    pick-neg-modal))
+       ;;--------------------------------------------------------------------------------------------
+       :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+                           ,neg-modal-2 ,verb ,a/an/the ,@things))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        ;;--------------------------------------------------------------------------------------------
