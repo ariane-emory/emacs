@@ -401,24 +401,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-rule (rule &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let-rule '( :input-pattern    (,subj ,bar ,baz)
-               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-               :var-tests        ((subj subject?))
-               :var-funs         ((subj swap-word)))
-    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
-  returns ( ((\, subj) (\, bar) (\, baz))
-            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
-            ((subj subject?))
-            ((subj swap-word))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun fill-in-missing-rule-keys2 (rule)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: this also converts RULE from a plist to an alist."
@@ -482,6 +464,24 @@
     (list .:var-funs .:response-pattern))
   returns ( nil
             (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro let-rule (rule &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let-rule '( :input-pattern    (,subj ,bar ,baz)
+               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+               :var-tests        ((subj subject?))
+               :var-funs         ((subj swap-word)))
+    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
+  returns ( ((\, subj) (\, bar) (\, baz))
+            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
+            ((subj subject?))
+            ((subj swap-word))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
