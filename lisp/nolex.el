@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
+;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--destructuring-match)
@@ -145,6 +145,15 @@
       ((assoc  val alist) (cdr (assoc  val alist)))
       ((rassoc val alist) (car (rassoc val alist)))
       (t val))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro make-swapper (alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(lambda (var val var-alist)
+     "Return the swapped word for VAL found in ALIST, or VAL if none."
+     (cond
+       ((assoc  val ,alist) (cdr (assoc  val ,alist)))
+       ((rassoc val ,alist) (car (rassoc val ,alist)))
+       (t val))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun swap-word (var val var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
