@@ -703,7 +703,16 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (these are the voyages of the starship Enterprise)
              (these are the voyages of the starship Enterprise)
              (this is the worst thing ever)
-             (trigger)
+             (i know we could beat them at soccer)
+             (i know we could beat them at soccer)
+             (i know we could beat them at soccer)
+             (you know they could beat us any day)
+             (you know they could beat us any day)
+             (you know they could beat us any day)
+             (you know they can find us)
+             (you know they can find us)
+             (you know they can find us)
+
              ))
   
   (prndiv)
