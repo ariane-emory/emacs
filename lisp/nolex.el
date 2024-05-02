@@ -488,10 +488,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun select-and-fill-response (var-alist responses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (prn "s-a-f-r's var-alist: %s" var-alist)
-  (prn "s-a-f-r's responses: %s" responses)
+  ;; (prn "s-a-f-r's var-alist: %s" var-alist)
+  ;; (prn "s-a-f-r's responses: %s" responses)
   (let ((response (pick responses)))
-    (prn "s-a-f-r   picked:    %s" response)
+    ;; (prn "s-a-f-r   picked:    %s" response)
     (let-response2 response
       (setf var-alist (proc-funs .:var-funs var-alist))
       (throw 'result (dm:fill .:response-pattern var-alist)))))
@@ -513,7 +513,7 @@
             (when-let ((var-alist (dm:match .:input-pattern input)))
               (let ((var-alist (if (eq t var-alist) nil var-alist)))
                 (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
-                (prn "MATCHED:    %s" .:input-pattern)
+                ;; (prn "MATCHED:    %s" .:input-pattern)
                 (select-and-fill-response var-alist .:responses)
                 ))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
