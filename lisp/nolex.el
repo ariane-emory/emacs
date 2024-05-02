@@ -44,11 +44,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro make-weighted-pick (lst)
-  `(lambda (&rest _) (weighted-pick ,lst)))
+(defmacro make-weighted-pick (lst) `(lambda (&rest _) (weighted-pick ,lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro make-pick (lst)
-  `(lambda (&rest _) (pick ,lst)))
+(defmacro make-pick          (lst) `(lambda (&rest _) (pick          ,lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun make-pick (lst)
 ;;   (lambda (&rest _)
