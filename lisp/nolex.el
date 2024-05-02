@@ -94,8 +94,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-insult-adj
   (make-pick '(stupid silly dumb ridiculous demented deranged idiotic)))
-(defalias 'pick-insult-noin
-  '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit))
+(defalias 'pick-insult-noun
+  (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit)))
 (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
@@ -400,16 +400,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \, ,subject ,am/are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,plural-subject are the ,@things)
-       :var-tests        ( (plural-subject plural-subject?))
-       :var-funs         ( (plural-subject dup-var dup-var)
-                           ($1        swap-word)
-                           ($2        pick-insult-adj))
-       :response-pattern ( '2B You ,$2 fool \,
-                           ,plural-subject are not the ,@things \,
-                           ,$1 are
-                           the ,@things \!))
-     ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
        :var-tests        ( (subject   subject?)
                            (desire    desire?))
@@ -496,6 +486,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire    swap-word dup-var)
                            ($2        pick-epistemic))
        :response-pattern ( 14 ,$1 don\'t ,$2 that ,subject really ,desire to ,verb ,@things))
+     ;;----------------------------------------------------------------------------------------------
+     ( :input-pattern    ( ,plural-subject are the ,@things)
+       :var-tests        ( (plural-subject plural-subject?))
+       :var-funs         ( (plural-subject dup-var dup-var dup-var)
+                           ($1        swap-word)
+                           ($2        pick-insult-adj)
+                           ($3        pick-insult-noun))
+       :response-pattern ( 15 You ,$2 ,$3 \,
+                           ,plural-subject are not the ,@things \,
+                           ,$1 are
+                           the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
@@ -614,9 +615,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i need to smoke a fat joint)
              (i want to dance in the moonlight)
 
+             ;; 16
              (we are the aliens in disguise as humans) 
              (we are the aliens in disguise as humans) 
-             (we are the aliens in disguise as humans) 
+             (we are the aliens in disguise as humans)
+             (they are the cutest kittens in the world)
+             (they are the cutest kittens in the world)
+             (they are the cutest kittens in the world) 
              ))
   
   (prndiv)
