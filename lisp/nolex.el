@@ -46,6 +46,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-qty           (make-pick '(some many enough)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'nil/t?             (make-member-sym-p '(nil t)))
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
@@ -104,7 +105,7 @@
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 (defalias 'pick-obviousness
-  (make-pick '(clearly plainly actually secretly obviously)))
+  (make-pick '(nil nil nil clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
   (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
@@ -294,7 +295,7 @@
           ;; (prn "fun2: %s" fun)
           (when-let ((res
                        (if (listp val)
-                         (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
+                         (cl-remove-if #'nil/t? (rmapcar val (lambda (x) (funcall fun var x var-alist))))
                          (funcall fun var val var-alist))))
             ;; (prn "funres: %s" res)
             (setf (cdr assoc) res)))
