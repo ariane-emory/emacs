@@ -78,19 +78,25 @@
                                 could
                                 will
                                 can
-                                ;; have
                                 must))
 (defvar   *modal-plus*        (append *modal-words* '(have haven\'t)))
 (defvar   *neg-modal-words*  '( wouldn\'t
+                                would\ never
                                 shouldn\'t
+                                should\ never
                                 couldn\'t
+                                could\ never
                                 won\'t
+                                will\ never
                                 can\'t
-                                cannot
+                                can\ never
+                                musn\'t
+                                must\ never
                                 ;; haven\'t
-                                musn\'t))
+                                cannot))
 (defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
-(defvar   *all-modal-words*   (cons 'might (append *modal-words* *neg-modal-words*)))
+(defvar   *all-modal-words*   (cons 'might ;; v include *modal-words* twie for probability:
+                                (append *modal-words* *modal-words* *neg-modal-words*)))
 (defalias 'modal?             (make-member-sym-p *modal-words*))
 (defalias 'modal-plus?        (make-member-sym-p *modal-plus*))
 (defalias 'neg-modal?         (make-member-sym-p *neg-modal-words*))
