@@ -433,7 +433,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun punctuation? (sym)
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (not (null (member sym '(! \?)))))
+  (not (null (member sym '(! \? "!" "." "?")))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (punctuation? '!) returns t)
 (confirm that (punctuation? '\?) returns t)
@@ -545,20 +545,21 @@
              (you need to smoke a fat joint)
              (i want to smoke a fat joint)
              (i need to smoke a fat joint)
-             (i want to dance in the moonlight)
-             
-             ))
+             (i want to dance in the moonlight)))
+  
   (prndiv)
   (prn "INPUT:     %s" input)
-  (prn "RESPONSE:  %s" (get-response input))
-  (let ((res (cdr (get-response input))))
-    (prn (car res))
-    (prn (apply #'concat (cons (car (format "%s" res)) (rmapcar (cdr res) (lambda (elem)
-                                                                            (format (if (punctuation? elem) "%s" " %s") elem))))))
-    )
-  
-  ;; (prn "RESPONSE:  %s" (cdr-safe (get-response input)))
-  )
+  (let ((str (wm::capitalize
+               (let* ( (res (cdr (get-response input)))
+                       (res (if (punctuation? (car (last res)))
+                              res
+                              (nconc res (list "."))))
+                       )
+                 (apply #'concat
+                   (cons (format "%s" (car res))
+                     (rmapcar (cdr res)
+                       (lambda (e) (format (if (punctuation? e) "%s" " %s") e) ))))))))
+    (prn "RESPONSE:  %s" str)))
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
