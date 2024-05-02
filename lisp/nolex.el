@@ -151,19 +151,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dup-var (var val var-alist)
+;;   (cl-loop for n from 1
+;;     for new-var = (intern (format "$%d" n))
+;;     until (not (assoc new-var var-alist))
+;;     finally (nconc var-alist (list (cons new-var val))))
+;;   nil)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dup-var (var val var-alist)
-  (cl-loop for n from 1
-    for new-var = (intern (format "$%d" n))
-    until (not (assoc new-var var-alist))
-    finally (nconc var-alist (list (cons new-var val))))
-  nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dup-var2 (var val var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Duplicate a VAR in VAR-ALIST with a new name."
   (cl-loop for suffix from 0
@@ -173,7 +173,7 @@
   nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (let ((var-alist '((x . i) (x* . j))))
-                (dup-var2 'x 'i var-alist)
+                (dup-var 'x 'i var-alist)
                 var-alist)
   returns ((x . i) (x* . j) (x** . i)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -419,7 +419,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests        ( (subject   subject?)
                            (had/have  had/have?)
                            (a/an      a/an?))
-       :var-funs         ( (subject   dup-var2 dup-var2)
+       :var-funs         ( (subject   dup-var dup-var)
                            (had/have  swap-word)
                            (subject*  i-to-know/knew)
                            (subject** swap-word)
@@ -441,15 +441,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
                            (a/an/the  a/an/the?))
-       :var-funs         ( (subject   dup-var2 dup-var2)
-                           (am/are    dup-var dup-var)
+       :var-funs         ( (subject   dup-var)
+                           (am/are    dup-var)
                            (iadj!     pick-insult-adj)
-                           (subject*        swap-word)
-                           (subject**        swap-word)
+                           (subject*  swap-word)
                            (obv!      pick-obviousness))
-       :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,subject** not ,a/an/the ,@things \,
-                           ,subject ,am/are ,obv
-                           the ,@things \!))
+       :response-pattern ( 3 don\'t be ,iadj \, ,subject ,subject* not ,a/an/the
+                           ,@things \,,subject ,am/are ,obv the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
        :var-tests        ( (subject   subject?)
@@ -539,7 +537,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,plural-subject are the ,@things)
        :var-tests        ( (plural-subject  plural-subject?))
-       :var-funs         ( (plural-subject  dup-var2)
+       :var-funs         ( (plural-subject  dup-var)
                            (plural-subject* swap-word)
                            (adj!            pick-insult-adj)
                            (noun!           pick-insult-noun)
@@ -605,7 +603,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i know that i could have a smoke)
              (i believe that you have seen a ghost)
              (you believe that i have seen a ghost)
-             (i suspect that you have never seen a zebra)
              (i think that you should eat a bag of dicks)
              (you know that you must eat a bag of dicks)
 
@@ -677,6 +674,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
              ;; 12
              (i know that you have never eaten a hamburger)
+             (i suspect that you have never seen a zebra)
 
              ;; 14
              (i think that you need a drink)
