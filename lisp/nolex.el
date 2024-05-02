@@ -10,29 +10,29 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun new-var-name? (symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
-  (when (and (symbolp symbol)          ; Check if it's a symbol
-          (string-suffix-p "!" (symbol-name symbol)))  ; Check if it ends with "!"
-    (intern (substring (symbol-name symbol) 0 -1))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (new-var-name? 'foo) returns nil)
-(confirm that (new-var-name? 'bar!) returns bar)
-(confirm that (new-var-name? 'baz!!!) returns baz!!)
-(confirm that (new-var-name? 7) returns nil)
-(confirm that (new-var-name? '(1 2 3)) returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro make-member-sym-p (lst)
+(defun make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Generate a membership predicate fun for LST."
-  `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
+  (lambda (thing) (and (symbolp thing) (member thing lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro make-member-sym-p (lst)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Generate a membership predicate fun for LST."
+;;   `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (not (null (member 'a '(a b c)))) returns t)
+(confirm that (not (null (member 'b '(a b c)))) returns t)
+(confirm that (not (null (member 'c '(a b c)))) returns t)
+(confirm that (not (null (member 'd '(a b c)))) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro make-pick (lst)
+;;   `(lambda (&rest _)
+;;      ;; (prn "pick: %s" lst)
+;;      (let ((lst ,lst))
+;;        (elt lst (random (length lst))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun make-pick (lst)
   (lambda (&rest _)
@@ -90,9 +90,9 @@
 (defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
 (defvar   *all-modal-words*   (cons 'might (append *modal-words* *neg-modal-words*)))
 (defalias 'modal?             (make-member-sym-p *modal-words*))
-(defalias 'modal?             (make-member-sym-p *modal-plus*))
+(defalias 'modal-plus?        (make-member-sym-p *modal-plus*))
 (defalias 'neg-modal?         (make-member-sym-p *neg-modal-words*))
-(defalias 'any-modal?         (make-member-sym-p *any-modal-words*))
+(defalias 'any-modal?         (make-member-sym-p *all-modal-words*))
 (defalias 'pick-modal         (make-pick (cl-remove 'have *modal-words*)))
 (defalias 'pick-neg-modal     (make-pick *neg-modal-words*))
 (defalias 'pick-any-modal     (make-pick *all-modal-words*))
@@ -289,16 +289,6 @@
         ;; (prn "ALIST: %s" var-alist)
         )))
   var-alist) ; return value is only used by a unit test right now.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(proc-funs
-  '((subj pick-insult-adj) (new! pick-insult-noun))
-  '((subj . i) (subj-2 . you) (baz . you)))
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-funs
                 '((subj swap-word) (subj-2 swap-word))
@@ -642,7 +632,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
                            (plural-subject  swap-word)
-                           (modal           pick-any-modal)
+                           (modal (make-pick '(foo bar baz)))
+                           ;;(modal           pick-any-modal)
                            (them-us         swap-word))
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 20 ,plural-subject ,modal ,verb ,them-us ,@things \!))
