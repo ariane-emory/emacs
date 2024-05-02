@@ -916,8 +916,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              ;; (you have a coin in your pocket)
              ;; (i have a fly on my arm)
 
-             ;; ;; 2
-             ;; (i think that i would like a smoke)
+             ;; 2
+             (i think that i would like a smoke)
              ;; (i think that you would like a smoke)
              ;; (i think that you should have a smoke)
              ;; (i know that i could have a smoke)
