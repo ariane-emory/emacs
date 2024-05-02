@@ -250,9 +250,9 @@
         )))
   var-alist) ; return value is only used by a unit test right now.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(proc-var-funs
-  '((subj pick-insult-adj) (subj-2 pick-insult-noun))
-  '((subj . i) (subj-2 . you) (baz . you)))
+;; (proc-var-funs
+;;   '((subj pick-insult-adj) (new! pick-insult-noun))
+;;   '((subj . i) (subj-2 . you) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-var-funs
                 '((subj swap-word) (subj-2 swap-word))
