@@ -315,7 +315,7 @@
         ((and new-var assoc)         (error "key %s already taken" var))
         ((and (not new-var) (not assoc)) (error "missing var %s" var)))
       (when new-var
-        (setf assoc (cons var t))
+        (setf assoc (cons var nil))
         (setf var-alist (cons assoc var-alist))
         (prndiv)
         (prn "NEW-VAR:   %s" var))
@@ -332,7 +332,7 @@
           ;;   (setf fun (eval fun)))
           ;; (prn "fun2:      %s" fun)
           (let ((res
-                  (if (listp val)
+                  (if (consp val) ;; don't use listp!
                     (rmapcar val (lambda (x) (funcall fun x var var-alist)))
                     (funcall fun val var var-alist))))
             (prn "funres:    %s" res)
