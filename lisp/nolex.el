@@ -75,12 +75,14 @@
                                 could
                                 will
                                 can
+                                have
                                 must))
 (defvar   *neg-modal-words*  '( wouldn\'t
                                 shouldn\'t
                                 couldn\'t
                                 won\'t
                                 can\'t
+                                haven\'t
                                 musn\'t))
 (defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
 (defvar   *all-modal-words*   (cons 'might (append *modal-words* *neg-modal-words*)))
@@ -533,7 +535,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern ( 10 ,subject ,modal ,verb a ,@things \!))
      ;;==============================================================================================
      ( :input-pattern    ( you ,foo ,baz \!)
-       ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 11 no \, it is you who ,foo ,baz \!))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,modal never ,verb a ,noun)
