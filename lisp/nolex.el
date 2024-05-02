@@ -336,8 +336,12 @@
                     (funcall fun val var var-alist))))
             (prn "funres:    %s" res)
             (when res 
-              (setf (cdr assoc) res))))
-        ;; (prn "ALIST: %s" var-alist)
+              (setf (cdr assoc) res)
+              ) ;; end of when res
+            ))
+        (prn "VAR-ALIST2:")
+        (let (lisp-indent-offset)
+          (prn "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
         )))
   var-alist) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
