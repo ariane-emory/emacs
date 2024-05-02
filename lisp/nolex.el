@@ -46,8 +46,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-pick (lst)
   `(lambda (&rest _)
-     ;; (prn "pick: %s" lst)
      (let ((lst ,lst))
+       (prn "pick: %s" lst)
        (elt lst (random (length lst))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun make-pick (lst)
@@ -317,6 +317,7 @@
       (when new-var
         (setf assoc (cons var t))
         (setf var-alist (cons assoc var-alist))
+        (prndiv)
         (prn "NEW-VAR:   %s" var))
       (dolist (fun funs)
         (prndiv)
@@ -335,9 +336,9 @@
                     (rmapcar val (lambda (x) (funcall fun x var var-alist)))
                     (funcall fun val var var-alist))))
             (prn "funres:    %s" res)
-            (when res 
-              (setf (cdr assoc) res)
-              ) ;; end of when res
+            ;;            (when res 
+            (setf (cdr assoc) res)
+            ;;          ) ;; end of when res
             ))
         (prn "VAR-ALIST2:")
         (let (lisp-indent-offset)
