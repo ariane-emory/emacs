@@ -700,10 +700,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :responses:
        ( ( :var-funs:   ( (subject          swap-word)
                           (subject-2!       pick-subject)
-                          (desire           swap-word)
+                          (desire           pick-desire)
                           (epistemic!       pick-epistemic))
            :response:   ( 14 ,subject-2 don\'t ,epistemic that ,subject
-                          really ,desire to ,verb ,@things))))
+                          really ,desire to ,verb ,@things))
+         ( :var-funs:   ( (subject          swap-word)
+                          (desire           pick-desire))
+           :response:   ( 14B ,subject don\'t ,desire to ,verb ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,plural-subject are ,@things)
        :var-tests:      ( (plural-subject  plural-subject?))
@@ -878,6 +881,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i want to smoke a fat joint)
              (i need to smoke a fat joint)
              (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
+             (i want to dance in the moonlight)
 
              ;; 16
              (we are aliens in disguise as humans)
@@ -915,15 +923,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you won\'t conquer the empire of the necromancers)
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
-             (i must devour the souls of the innocent)
-
-             ;; 14
-             (i want to dance in the moonlight)
-             (i want to dance in the moonlight)
-             (i want to dance in the moonlight)
-             (i want to dance in the moonlight)
-             (i want to dance in the moonlight)
-             
+             (i must devour the souls of the innocent)             
              ))
   
   (prndiv)
