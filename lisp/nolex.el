@@ -47,7 +47,7 @@
 (defmacro make-pick (lst)
   `(lambda (&rest _)
      (let ((lst ,lst))
-       (prn "pick: %s" lst)
+       ;; (prn "pick: %s" lst)
        (elt lst (random (length lst))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun make-pick (lst)
@@ -303,56 +303,62 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *proc-funs-verbose* nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (dolist (var-funs var-funses)
-    (let* ( (var     (car var-funs))
-            (funs    (cdr var-funs))
-            (new-var (new-var-name? var))
-            (var     (if new-var new-var var))
-            (assoc   (unless new-var (assoc var var-alist))))
-      (cond
-        ((and new-var assoc)         (error "key %s already taken" var))
-        ((and (not new-var) (not assoc)) (error "missing var %s" var)))
-      (when new-var
-        (setf assoc (cons var nil))
-        (setf var-alist (cons assoc var-alist))
-        (prndiv)
-        (prn "NEW-VAR:   %s" var))
-      (dolist (fun funs)
-        (prndiv)
-        (prn "var:       %s" var)
-        (let ((val (cdr assoc)))
-          (prn "val:       %s" val)
-          (prn "fun:       %s" fun)
-          (prn "VAR-ALIST:")
-          (let (lisp-indent-offset)
-            (prn "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
-          ;; (when (consp fun)
-          ;;   (setf fun (eval fun)))
-          ;; (prn "fun2:      %s" fun)
-          (let ((res
-                  (if (consp val) ;; don't use listp here!
-                    (rmapcar val (lambda (x) (funcall fun x var var-alist)))
-                    (funcall fun val var var-alist))))
-            (prn "funres:    %s" res)
-            ;;            (when res 
-            (setf (cdr assoc) res)
-            ;;          ) ;; end of when res
-            ))
-        (prn "VAR-ALIST2:")
-        (let (lisp-indent-offset)
-          (prn "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
-        )))
-  (prndiv)
-  (prn "DONE PROC FUNS.")
-  (prndiv)
-  var-alist) 
+  (cl-flet ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
+             (prndiv2 (&rest args) (when *proc-funs-verbose* (apply #'prndiv nil))))
+    (dolist (var-funs var-funses)
+      (let ( (var     (car var-funs))
+             (funs    (cdr var-funs)))
+        (when (eq '_! var) (error "illegal var %s" var))
+        (let* ( (is-discard (eq '_ var))
+                (new-var    (unless is-discard (new-var-name? var)))
+                (var        (if new-var new-var var))
+                (assoc      (unless new-var (assoc var var-alist))))
+          (cond
+            ((and new-var assoc)         (error "key %s already taken" var))
+            ((and (not new-var) (not assoc)) (error "missing var %s"       var)))
+          (when new-var
+            (setf assoc     (cons var nil)) ; used to set t.
+            (setf var-alist (cons assoc var-alist))
+            (prndiv2)
+            (prn2 "NEW-VAR:   %s" var))
+          (dolist (fun funs)
+            (prndiv2)
+            (prn2 "var:       %s" var)
+            (let ((val (cdr assoc)))
+              (prn2 "val:       %s" val)
+              (prn2 "fun:       %s" fun)
+              (prn2 "VAR-ALIST:")
+              (let (lisp-indent-offset)
+                (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
+              ;; (when (consp fun)
+              ;;   (setf fun (eval fun)))
+              ;; (prn2 "fun2:      %s" fun)
+              (let ((res
+                      (if (consp val) ;; don't use listp here!
+                        (rmapcar val (lambda (x) (funcall fun x var var-alist)))
+                        (funcall fun val var var-alist))))
+                (prn2 "funres:    %s" res)
+                ;; (when res 
+                (setf (cdr assoc) res)
+                ;; ) ;; end of when res
+                ))
+            (prn2 "VAR-ALIST2:")
+            (let (lisp-indent-offset)
+              (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
+            ))))
+    (prndiv2)
+    (prn2 "DONE PROC FUNS.")
+    (prndiv2)
+    var-alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (proc-funs
-;;                 '((subj swap-word) (subj-2 swap-word))
-;;                 '((subj . i) (subj-2 . you) (baz . you)))
-;;   returns ((subj . you) (subj-2 . i) (baz . you)))
+(confirm that (proc-funs
+                '((subj swap-word) (subj-2 swap-word))
+                '((subj . i) (subj-2 . you) (baz . you)))
+  returns ((subj . you) (subj-2 . i) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -732,145 +738,145 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 (prn "START:")
 (dolist (input
           '(
-             ;; ;; 99
-             ;; (i don\'t understand \!)
-             ;; (foo bar baz)
-             ;; (foo bar baz quux)
+             ;; 99
+             (i don\'t understand \!)
+             (foo bar baz)
+             (foo bar baz quux)
 
-             ;; ;; 1
-             ;; (i have an apple tree)
-             ;; (you have a dollar)
-             ;; (i had a dollar)
-             ;; (you had a dollar)
-             ;; (you had a coin in your pocket)
-             ;; (you have a coin in your pocket)
-             ;; (i have a fly on my arm)
+             ;; 1
+             (i have an apple tree)
+             (you have a dollar)
+             (i had a dollar)
+             (you had a dollar)
+             (you had a coin in your pocket)
+             (you have a coin in your pocket)
+             (i have a fly on my arm)
 
-             ;; ;; 2
-             ;; (i think that i would like a smoke)
-             ;; (i think that you would like a smoke)
-             ;; (i think that you should have a smoke)
-             ;; (i know that i could have a smoke)
-             ;; (i believe that you have seen a ghost)
-             ;; (you believe that i have seen a ghost)
-             ;; (i think that you should eat a bag of dicks)
-             ;; (you know that you must eat a bag of dicks)
+             ;; 2
+             (i think that i would like a smoke)
+             (i think that you would like a smoke)
+             (i think that you should have a smoke)
+             (i know that i could have a smoke)
+             (i believe that you have seen a ghost)
+             (you believe that i have seen a ghost)
+             (i think that you should eat a bag of dicks)
+             (you know that you must eat a bag of dicks)
 
-             ;; ;; 3
-             ;; (you are an asshole)
-             ;; (you are a particularly stupid asshole)
-             ;; (i am the King of France)
-             ;; (i am an evil robot in disguise as a human)
+             ;; 3
+             (you are an asshole)
+             (you are a particularly stupid asshole)
+             (i am the King of France)
+             (i am an evil robot in disguise as a human)
              
-             ;; ;; 4
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i would like many hamburgers with cheese and bacon)
-             ;; (i would need many orange cats)
-             ;; (i would need many orange cats)
-             ;; (i would need many orange cats)
+             ;; 4
+             (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
+             (i would need many orange cats)
+             (i would need many orange cats)
+             (i would need many orange cats)
              
-             ;; ;; 5
-             ;; (i would like a hamburger with cheese and bacon)
-             ;; (i would like an orange cat)
-             ;; (you would like a hamburger with cheese and bacon)
+             ;; 5
+             (i would like a hamburger with cheese and bacon)
+             (i would like an orange cat)
+             (you would like a hamburger with cheese and bacon)
 
-             ;; ;; 6
-             ;; (i want a hamburger with cheese and bacon)
-             ;; (i need a hamburger with cheese and bacon)
-             ;; (you want a hamburger with cheese and bacon)
-             ;; (you need a hamburger with cheese and bacon)
+             ;; 6
+             (i want a hamburger with cheese and bacon)
+             (i need a hamburger with cheese and bacon)
+             (you want a hamburger with cheese and bacon)
+             (you need a hamburger with cheese and bacon)
 
-             ;; ;; 7
-             ;; (do you like spicy tacos)
-             ;; (do you like spicy tacos)
-             ;; (do you like spicy tacos)
-             ;; (do you like spicy tacos)
-             ;; (would you like spicy tacos)
-             ;; (would you like spicy tacos)
-             ;; (would you like a cigarette)
-             ;; (would you like a cigarette)
-             ;; (would you like a cigarette)
-             ;; (would you like a cigarette)
-             ;; (would you like another cigarette)
-             ;; (would you like another cigarette)
-             ;; (would you like another cigarette)
-             ;; (would you like another cigarette)
+             ;; 7
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (do you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like spicy tacos)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like a cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
+             (would you like another cigarette)
              
-             ;; ;; 8
-             ;; (you don\'t understand)
-             ;; (dogs eat chickens)
-             ;; (you eat chickens)
+             ;; 8
+             (you don\'t understand)
+             (dogs eat chickens)
+             (you eat chickens)
 
-             ;; ;; 9
-             ;; (i could eat a hamburger and some fries)
-             ;; (i would climb a tall tree)
-             ;; (you would climb a tall tree)
-             ;; (you should have a cigarette)
+             ;; 9
+             (i could eat a hamburger and some fries)
+             (i would climb a tall tree)
+             (you would climb a tall tree)
+             (you should have a cigarette)
 
-             ;; ;; 10
-             ;; (you would never eat a cold hamburger)
-             ;; (you should never eat a cold hamburger)
-             ;; (you could never eat a cold hamburger)
-             ;; (i could never eat a cold hamburger)
+             ;; 10
+             (you would never eat a cold hamburger)
+             (you should never eat a cold hamburger)
+             (you could never eat a cold hamburger)
+             (i could never eat a cold hamburger)
 
-             ;; ;; 11
-             ;; (you are stupid \!)
-             ;; (you suck ass \!)
+             ;; 11
+             (you are stupid \!)
+             (you suck ass \!)
 
-             ;; ;; 12
-             ;; (i know that you have never eaten a hamburger)
-             ;; (i suspect that you have never seen a zebra)
+             ;; 12
+             (i know that you have never eaten a hamburger)
+             (i suspect that you have never seen a zebra)
 
-             ;; ;; 14
-             ;; (i think that you need a drink)
-             ;; (you think that i need a drink)
-             ;; (i think that i need a drink)
-             ;; (you think that you need a drink)
+             ;; 14
+             (i think that you need a drink)
+             (you think that i need a drink)
+             (i think that i need a drink)
+             (you think that you need a drink)
 
-             ;; ;; 14
-             ;; (you want to smoke a fat joint)
-             ;; (you need to smoke a fat joint)
-             ;; (i want to smoke a fat joint)
-             ;; (i need to smoke a fat joint)
-             ;; (i want to dance in the moonlight)
+             ;; 14
+             (you want to smoke a fat joint)
+             (you need to smoke a fat joint)
+             (i want to smoke a fat joint)
+             (i need to smoke a fat joint)
+             (i want to dance in the moonlight)
 
-             ;; ;; 16
-             ;; (we are aliens in disguise as humans)
-             ;; (we are aliens in disguise as humans)
-             ;; (we are aliens in disguise as humans)
-             ;; (they are the cutest kittens in the world)
-             ;; (they are the cutest kittens in the world)
-             ;; (they are the cutest kittens in the world)
+             ;; 16
+             (we are aliens in disguise as humans)
+             (we are aliens in disguise as humans)
+             (we are aliens in disguise as humans)
+             (they are the cutest kittens in the world)
+             (they are the cutest kittens in the world)
+             (they are the cutest kittens in the world)
 
-             ;; ;; 17
-             ;; (i wish that you were a fluffy cat)
-             ;; (i wish that you were a duck wearing a tophat)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (these are the voyages of the starship Enterprise)
-             ;; (this is the worst thing ever)
-             ;; (i know we could beat them at soccer)
-             ;; (i know we could beat them at soccer)
-             ;; (i know we could beat them at soccer)
-             ;; (you know they could beat us any day)
-             ;; (you know they could beat us any day)
-             ;; (you know they could beat us any day)
-             ;; (you know they can find us)
-             ;; (you know they can find us)
-             ;; (you know they can find us)
+             ;; 17
+             (i wish that you were a fluffy cat)
+             (i wish that you were a duck wearing a tophat)
+             (these are the voyages of the starship Enterprise)
+             (these are the voyages of the starship Enterprise)
+             (these are the voyages of the starship Enterprise)
+             (these are the voyages of the starship Enterprise)
+             (this is the worst thing ever)
+             (i know we could beat them at soccer)
+             (i know we could beat them at soccer)
+             (i know we could beat them at soccer)
+             (you know they could beat us any day)
+             (you know they could beat us any day)
+             (you know they could beat us any day)
+             (you know they can find us)
+             (you know they can find us)
+             (you know they can find us)
 
-             ;; ;; 9
-             ;; (i could eat a hamburger and some fries)
-             ;; (i could eat a hamburger and some fries)
-             ;; (i could eat a hamburger and some fries)
-             ;; (i could eat a hamburger and some fries)
-             ;; (you must conquer the empire of the necromancers)
-             ;; (you cannot conquer the empire of the necromancers)
-             ;; (you won\'t conquer the empire of the necromancers)
-             ;; (i must devour the souls of the innocent)
-             ;; (i must devour the souls of the innocent)
+             ;; 9
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (i could eat a hamburger and some fries)
+             (you must conquer the empire of the necromancers)
+             (you cannot conquer the empire of the necromancers)
+             (you won\'t conquer the empire of the necromancers)
+             (i must devour the souls of the innocent)
+             (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
              ))
   
