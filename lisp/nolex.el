@@ -667,7 +667,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                          (maybe-that!     pick-maybe-that)
                          (neg-modal-2!    pick-neg-modal))
            ;;----------------------------------------------------------------------------------------
-           :response   ( '9B ,subject-2 ,epistemic ,maybe-that ,subject
+           :response   ( 9B ,subject-2 ,epistemic ,maybe-that ,subject
                          ,neg-modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input          ( ,subject ,modal never ,verb a ,@things)
@@ -958,7 +958,5 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
