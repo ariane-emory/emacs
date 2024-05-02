@@ -475,8 +475,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern ( 4 don\'t ,subject have ,qty ,@things already \?))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject would like ,@things)
+       ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject   subject?))
+       ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject   swap-word))
+       ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 5 why do you think that ,subject would like ,@things \?))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,desire ,a/an ,@things)
