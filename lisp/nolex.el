@@ -969,7 +969,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (fill-in-missing-rule-keys2
-    '( :input-pattern    ( this is the ,@things)
+    '( :input-pattern ( this is the ,@things)
        :responses
        ((:response-pattern ( 18 ,persp not really ,certainty if this is ,@things )))))
   returns
