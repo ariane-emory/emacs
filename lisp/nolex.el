@@ -507,13 +507,14 @@
     (dolist (rule *rules*)
       (let-rule2 rule
         (catch 'continue
+          (prn "try:       %s" .:input-pattern)
           (if (eq t .:input-pattern)
-            ;; t matches any input and throws it's .:RESPONSE-PATTERN:
-            (throw 'result .:response-pattern)
+            ;; t matches any input and fills using an empty list:
+            (select-and-fill-response nil .:responses)
             (when-let ((var-alist (dm:match .:input-pattern input)))
               (let ((var-alist (if (eq t var-alist) nil var-alist)))
                 (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
-                ;; (prn "MATCHED:    %s" .:input-pattern)
+                (prn "MATCHED:   %s" .:input-pattern)
                 (select-and-fill-response var-alist .:responses)
                 ))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -927,13 +928,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              ;; (you know that you must eat a bag of dicks)
 
              ;; ;; 3
-             ;; (you are an asshole)
+             (you are an asshole)
              ;; (you are a particularly stupid asshole)
              ;; (i am the King of France)
              ;; (i am an evil robot in disguise as a human)
              
              ;; ;; 4
-             ;; (i would like many hamburgers with cheese and bacon)
+             (i would like many hamburgers with cheese and bacon)
              ;; (i would like many hamburgers with cheese and bacon)
              ;; (i would like many hamburgers with cheese and bacon)
              ;; (i would need many orange cats)
