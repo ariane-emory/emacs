@@ -521,11 +521,11 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Render a Nolex input/output sentence (a list of symbols) as a string.
 This was very quick 'n' dirty and could probably be a lot cleaner."
-  (let* ( (lst (if *prettify-sentence-strip*
-                 (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst))
-                 lst)))
+  (let ((lst (if *prettify-sentence-strip*
+               (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst))
+               lst)))
     (wm::capitalize
-      (let* ( (lst (if (punctuation? (car (last lst))) lst (append lst (list ".")))))
+      (let ((lst (if (punctuation? (car (last lst))) lst (append lst (list ".")))))
         (apply #'concat
           (cons (format "%s" (car lst))
             (rmapcar (cdr lst)
