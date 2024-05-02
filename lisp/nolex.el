@@ -60,20 +60,22 @@
 (defalias 'subject?           (make-member-sym-p *subject-words*))
 (defalias 'pick-subject       (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar    *modal-words*     '( would
+(defvar   *modal-words*      '( would
                                 should
                                 could
                                 will
                                 can
-                                have))
-(defvar    *neg-modal-words* '( wouldn\'t
+                                have
+                                must))
+(defvar   *neg-modal-words*  '( wouldn\'t
                                 shouldn\'t
                                 couldn\'t
                                 won\'t
                                 can\'t
-                                haven\'t))
-(defvar    *modal-pairs* (cl-pairlis *modal-words* *neg-modal-words*))
-(defvar    *all-modal-words*  (cons 'might (append *modal-words* *neg-modal-words*)))
+                                haven\'t
+                                musn\'t))
+(defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
+(defvar   *all-modal-words*   (cons 'might (append *modal-words* *neg-modal-words*)))
 (defalias 'modal?             (make-member-sym-p *modal-words*))
 (defalias 'neg-modal?         (make-member-sym-p *neg-modal-words*))
 (defalias 'any-modal?         (make-member-sym-p *any-modal-words*))
@@ -189,7 +191,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun run-var-tests (var-testses var-alist)
+(defun proc-var-tests (var-testses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (if (null var-testses)
     t
@@ -205,15 +207,15 @@
                 (throw result nil)))))
         t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
+(confirm that (proc-var-tests '((subj subject?)) '((subj . i) (bar . think) (baz . you)))
   returns t)
-(confirm that (run-var-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
+(confirm that (proc-var-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun run-var-funs (var-funses var-alist)
+(defun proc-var-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (dolist (var-funs var-funses)
     (let* ( (var   (car var-funs))
@@ -235,7 +237,7 @@
         )))
   var-alist) ; return value is only used by a unit test right now.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (run-var-funs
+(confirm that (proc-var-funs
                 '((subj swap-word) (subj-2 swap-word))
                 '((subj . i) (subj-2 . you) (baz . you)))
   returns ((subj . you) (subj-2 . i) (baz . you)))
@@ -291,18 +293,17 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
   ;; (prn "get-response INPUT: %s" input)
-  (with-gensyms (result continue)
-    (catch result
-      (dolist (rule *rules*)
-        (let-rule rule
-          (catch continue
-            (if (eq t .:input-pattern)
-              ;; t matches any input and throws it's .:RESPONSE-PATTERN:
-              (throw result .:response-pattern)
-              (when-let ((var-alist (dm:match .:input-pattern input)))
-                (unless (run-var-tests .:var-tests var-alist) (throw continue nil))
-                (run-var-funs .:var-funs var-alist)
-                (throw result (dm:fill .:response-pattern var-alist))))))))))
+  (catch 'result
+    (dolist (rule *rules*)
+      (let-rule rule
+        (catch 'continue
+          (if (eq t .:input-pattern)
+            ;; t matches any input and throws it's .:RESPONSE-PATTERN:
+            (throw 'result .:response-pattern)
+            (when-let ((var-alist (dm:match .:input-pattern input)))
+              (unless (proc-var-tests .:var-tests var-alist) (throw 'continue nil))
+              (proc-var-funs .:var-funs var-alist)
+              (throw 'result (dm:fill .:response-pattern var-alist)))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -369,14 +370,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (things    swap-word))
        :response-pattern ( 1 ,$1 ,$2   ,subject ,had/have ,a/an ,@things \!))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun)
+     ( :input-pattern    ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 a ,@things)
        :var-tests        ( (subject   subject?)
                            (epistemic epistemic?)
                            (subject-2 subject?)
                            (modal     modal?))
-       :var-funs         ( (subject   swap-word)
+       :var-funs         ( (epistemic pick-epistemic)
+                           (subject   swap-word)
                            (subject-2 swap-word))
-       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,noun \?))
+       :response-pattern ( 2 do ,subject really ,epistemic that ,subject-2 ,modal ,verb-2 a ,@things \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject  ,am/are ,a/an ,@things)
        :var-tests        ( (subject   subject?)
@@ -384,10 +386,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (a/an      a/an?))
        :var-funs         ( (subject   dup-var dup-var)
                            (am/are    dup-var)
-                           ($1        swap-word)
-                           ($2        pick-insult)
+                           ($1        pick-insult)
+                           ($2        swap-word)
                            ($3        swap-word))
-       :response-pattern ( 3 don\'t be ,$2 \, ,$1 ,$3 not ,a/an ,@things \, ,subject ,am/are
+       :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an ,@things \, ,subject ,am/are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
@@ -419,8 +421,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire    pick-desire)
                            ($1        pick-possibility))
        :response-pattern ( 7 ,subject ,$1 ,desire ,@things))
-     
-
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
        :var-tests        ( (subject   subject?))
@@ -511,6 +511,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i believe that you have seen a ghost)
              (you believe that i have seen a ghost)
              (i suspect that you have never seen a zebra)
+             (i think that you should eat a bag of dicks)
+             (you know that you must eat a bag of dicks)
 
              ;; 3
              (you are an asshole)
@@ -518,7 +520,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i am a bitch)
              (i am a bitch)
              (i am a bitch)
-
+             
              ;; 4
              (i would like many hamburgers with cheese and bacon)
              (i would like many hamburgers with cheese and bacon)
@@ -578,19 +580,22 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
              ;; 12
              (i know that you have never eaten a hamburger)
-             
+
              ;; 14
              (i think that you need a drink)
              (you think that i need a drink)
              (i think that i need a drink)
              (you think that you need a drink)
-             
+
              ;; 14
              (you want to smoke a fat joint)
              (you need to smoke a fat joint)
              (i want to smoke a fat joint)
              (i need to smoke a fat joint)
-             (i want to dance in the moonlight)))
+             (i want to dance in the moonlight)
+
+             (i am a King of France)
+             ))
   
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
