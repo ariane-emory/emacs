@@ -313,8 +313,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *proc-funs-verbose* t)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cl-flet ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
@@ -335,7 +333,7 @@
             (is-discard
               (setf assoc     (cons var nil))) ; left unattached to VAR-ALIST!
             (new-var
-              (setf assoc     (cons var nil)) ; used to set this to t...
+              (setf assoc     (cons var nil)) ; this  used to set it to t...
               (setf var-alist (cons assoc var-alist))
               (prndiv2)
               (prn2 "NEW-VAR:   %s" var)))
@@ -348,6 +346,7 @@
               (prn2 "VAR-ALIST:")
               (let (lisp-indent-offset)
                 (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
+              ;; This doesn't seem necessary with lexical-binding off:
               ;; (when (consp fun)
               ;;   (setf fun (eval fun)))
               ;; (prn2 "fun2:      %s" fun)
@@ -369,6 +368,8 @@
     (prndiv2)
     var-alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *proc-funs-verbose* t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-funs
                 '((subj swap-word) (subj-2 swap-word))
                 '((subj . i) (subj-2 . you) (baz . you)))
@@ -377,19 +378,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fill-in-missing-rule-keys (rule)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: this also converts RULE from a plist to an alist."
+  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rule-keys*
   '( :input-pattern    
      :response-pattern 
      :var-tests
      :var-funs))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun fill-in-missing-rule-keys (rule)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Note: this also converts RULE from a plist to an alist."
-  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (fill-in-missing-rule-keys
@@ -596,13 +594,18 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
                            (modal           modal?)
+                           ;; (_ (lambda (val var var-alist)
+                           ;;      (prn "THIS HAPPENED! %s" var-alist)
+                           ;;      t))
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
                            (subject-2!      pick-subject)
                            (epistemic!      pick-epistemic)
                            (maybe-that!     pick-maybe-that)
-                           (_ (lambda (&rest _) t))
+                           ;; (_ (lambda (val var var-alist)
+                           ;;      (prn "THIS ALSO HAPPENED! %s" var-alist)
+                           ;;      t))
                            (modal-2!        pick-modal))
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
@@ -717,13 +720,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
      ;;==============================================================================================
-     ( :input-pattern    ( trigger )
-       ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (adj!            pick-insult-adj)
-                           (noun!           pick-insult-noun))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 19 yes \, here we are you ,adj ,noun))
-     ;;==============================================================================================
      ( :input-pattern    ( ,subject ,epistemic ,plural-subject ,modal ,verb ,them-us ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tasts        ( (subject         subject?)
@@ -738,7 +734,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (modal           pick-any-modal)
                            (them-us         swap-word))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 20 ,plural-subject ,modal ,verb ,them-us ,@things \!))
+       :response-pattern ( 19 ,plural-subject ,modal ,verb ,them-us ,@things \!))
+     ;;==============================================================================================
+     ( :input-pattern    ( trigger )
+       ;;--------------------------------------------------------------------------------------------
+       :var-funs         ( (adj!            pick-insult-adj)
+                           (noun!           pick-insult-noun))
+       ;;--------------------------------------------------------------------------------------------
+       :response-pattern ( 98 yes \, here we are you ,adj ,noun))
      ;;==============================================================================================
      ( :input-pattern    t
        ;;--------------------------------------------------------------------------------------------
@@ -905,3 +908,58 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;===================================================================================================
+;; CONSTRUCTION ZONE:
+;;===================================================================================================
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fill-in-missing-rule-keys (rule)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: this also converts RULE from a plist to an alist."
+  (fill-in-missing-alist-keys *rule-keys* (plist-to-alist rule)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *rule-keys*
+  '( :input-pattern    
+     :response-pattern 
+     :var-tests
+     :var-funs))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (fill-in-missing-rule-keys
+    '( :input-pattern (,subj ,bar ,baz)
+       :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)))
+  returns ( (:var-funs)
+            (:var-tests)
+            (:input-pattern (\, subj) (\, bar) (\, baz))
+            (:response-pattern fine \,(\, subj) (\, bar) (\, baz) \, so what \?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro let-rule2 (rule &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let-rule '( :input-pattern    (,subj ,bar ,baz)
+               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+               :var-tests        ((subj subject?))
+               :var-funs         ((subj swap-word)))
+    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
+  returns ( ((\, subj) (\, bar) (\, baz))
+            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
+            ((subj subject?))
+            ((subj swap-word))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let-rule2 '( :input-pattern    (,subj ,bar ,baz)
+                :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
+                :var-tests        ((subj subject?))
+                :var-funs         ((subj swap-word)))
+    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
+  returns ( ((\, subj) (\, bar) (\, baz))
+            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
+            ((subj subject?))
+            ((subj swap-word))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
