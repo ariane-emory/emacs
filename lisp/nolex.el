@@ -525,13 +525,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                  (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst))
                  lst)))
     (wm::capitalize
-      (let* ( (res lst)
-              (res (if (punctuation? (car (last res)))
-                     res
-                     (append res (list ".")))))
+      (let* ( (lst (if (punctuation? (car (last lst))) lst (append lst (list ".")))))
         (apply #'concat
-          (cons (format "%s" (car res))
-            (rmapcar (cdr res)
+          (cons (format "%s" (car lst))
+            (rmapcar (cdr lst)
               (lambda (e)
                 ;; (prn "this: %s" e)
                 (format
