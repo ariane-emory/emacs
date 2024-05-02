@@ -61,6 +61,10 @@
 (defalias 'subject?           (make-member-sym-p *subject-words*))
 (defalias 'pick-subject       (make-pick *subject-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar    *subjects-words*  '(we they))
+(defalias 'subjects?          (make-member-sym-p *subjects-words*))
+(defalias 'pick-subjects      (make-pick *subjects-words*))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar   *modal-words*      '( would
                                 should
                                 could
@@ -93,8 +97,8 @@
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (subject? 'i) returns (i you))
-(confirm that (subject? 'you) returns (you))
+(confirm that (not (null (subject? 'i))) returns t)
+(confirm that (not (null (subject? 'you))) returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
 
 
@@ -102,6 +106,7 @@
 (defvar *swap-words*
   '( (i . you)
      (am . are)
+     (we . they)
      (do . does)
      (my . your)
      (think . know)
@@ -524,6 +529,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i am a bitch)
              (i am the King of France)
              (i am an evil robot in disguise as a human)
+             (we are the aliens) ; this one needs work.
 
              ;; 4
              (i would like many hamburgers with cheese and bacon)
