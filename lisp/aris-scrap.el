@@ -97,7 +97,7 @@
       ;; (prn "total weight:  %s" total-weight)
       (while weighted-list
         ;; (prndiv)
-        (let ((item (car weighted-list)))
+        (let ((item (pop weighted-list)))
           ;; (prn "item:          %s" item)
           (setq cumulative-weight (+ cumulative-weight (car item)))
           ;; (prn "random weight: %s" random-weight)
@@ -105,9 +105,10 @@
           (when (< random-weight cumulative-weight)
             ;; (prn "throw %s for %s!" (cdr item) item)
             (throw 'return (cdr item)))) ; Otherwise, return the element itself
-        (setq weighted-list (cdr weighted-list))))))
+        ;; (setq weighted-list (cdr weighted-list))
+        ))))
 
-(dotimes (_ 10)
+(dotimes (_ 20)
   (message "Selected element: %S" (weighted-random-selection weighted-list)))
 
 
