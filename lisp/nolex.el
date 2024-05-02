@@ -539,17 +539,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( these are the ,@things)
        :var-tests        ( )
-       :var-funs         ( (things dup-var dup-var)
-                           ($1 pick-i-am/you-are)
-                           ($2 pick-certainty))
-       :response-pattern ( 17 ,$1 not really ,$2 that these are ,@things ))
+       :var-funs         ( (persp!     pick-i-am/you-are)
+                           (certainty! pick-certainty))
+       :response-pattern ( 17 ,persp not really ,certainty that these are ,@things ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( this is the ,@things)
        :var-tests        ( )
-       :var-funs         ( 
-                           (persp!     pick-i-am/you-are)
-                           (cartainty! pick-certainty))
-       :response-pattern ( 18 ,persp not really ,cartainty if this is ,@things ))
+       :var-funs         ( (persp!     pick-i-am/you-are)
+                           (certainty! pick-certainty))
+       :response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( trigger )
        :var-funs         ( (adj!  pick-insult-adj)
