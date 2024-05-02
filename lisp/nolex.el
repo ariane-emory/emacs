@@ -36,7 +36,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun make-pick (lst)
   (lambda (&rest _)
-    (prn "pick: %s" lst)
+    ;; (prn "pick: %s" lst)
     (elt lst (random (length lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -435,8 +435,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire    desire?))
        :var-funs         ( (subject   swap-word)
                            (desire    dup-var)
-                           ($1 pick-qty))
-       :response-pattern ( 4 don\'t ,subject have ,$1 ,@things already \?))
+                           (qty! pick-qty))
+       :response-pattern ( 4 don\'t ,subject have ,qty ,@things already \?))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would like ,@things)
        :var-tests        ( (subject   subject?))
@@ -457,8 +457,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire    desire?))
        :var-funs         ( (subject   swap-word dup-var)
                            (desire    pick-desire)
-                           ($1        pick-possibility))
-       :response-pattern ( 7 ,subject ,$1 ,desire ,@things))
+                           (poss!     pick-possibility))
+       :response-pattern ( 7 ,subject ,poss ,desire ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject ,bar ,baz)
        :var-tests        ( (subject   subject?))
