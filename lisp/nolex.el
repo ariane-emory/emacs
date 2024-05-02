@@ -10,15 +10,15 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-member-sym-p (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Generate a membership predicate fun for LST."
-  (lambda (thing) (and (symbolp thing) (member thing lst))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro make-member-sym-p (lst)
+;; (defun make-member-sym-p (lst)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Generate a membership predicate fun for LST."
-;;   `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
+;;   (lambda (thing) (and (symbolp thing) (member thing lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro make-member-sym-p (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Generate a membership predicate fun for LST."
+  `(lambda (thing) (and (symbolp thing) (member thing ,lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (member 'a '(a b c)))) returns t)
 (confirm that (not (null (member 'b '(a b c)))) returns t)
@@ -28,16 +28,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro make-pick (lst)
-;;   `(lambda (&rest _)
-;;      ;; (prn "pick: %s" lst)
-;;      (let ((lst ,lst))
-;;        (elt lst (random (length lst))))))
+(defmacro make-pick (lst)
+  `(lambda (&rest _)
+     ;; (prn "pick: %s" lst)
+     (let ((lst ,lst))
+       (elt lst (random (length lst))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun make-pick (lst)
-  (lambda (&rest _)
-    ;; (prn "pick: %s" lst)
-    (elt lst (random (length lst)))))
+;; (defun make-pick (lst)
+;;   (lambda (&rest _)
+;;     ;; (prn "pick: %s" lst)
+;;     (elt lst (random (length lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (member (funcall (make-pick '(a b c))) '(a b c)))) returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -272,23 +272,26 @@
       (when new-var
         (setf assoc (cons var t))
         (setf var-alist (cons assoc var-alist)))
-      ;; (prn "NEW-VAR:   %s" var)
-      ;; (prn "VAR-ALIST: %s" var-alist)
+      (prn "NEW-VAR:   %s" var)
+      (prn "VAR-ALIST: %s" var-alist)
       (dolist (fun funs)
-        ;; (prndiv)
-        ;; (prn "var: %s" var)
+        (prndiv)
+        (prn "var: %s" var)
         (let ((val (cdr assoc)))
-          ;; (prn "val: %s" val)
-          ;; (prn "fun: %s" fun)
+          (prn "val: %s" val)
+          (prn "fun:  %s" fun)
+          (when (consp fun)
+            (setf fun (eval fun)))
+          (prn "fun2: %s" fun)
           (when-let ((res
                        (if (listp val)
                          (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
                          (funcall fun var val var-alist))))
-            ;; (prn "funres: %s" res)
+            (prn "funres: %s" res)
             (setf (cdr assoc) res)))
-        ;; (prn "ALIST: %s" var-alist)
+        (prn "ALIST: %s" var-alist)
         )))
-  var-alist) ; return value is only used by a unit test right now.
+  var-alist) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-funs
                 '((subj swap-word) (subj-2 swap-word))
@@ -689,7 +692,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i would need many orange cats)
              (i would need many orange cats)
              (i would need many orange cats)
-             
              
              ;; 5
              (i would like a hamburger with cheese and bacon)
