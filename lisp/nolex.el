@@ -94,8 +94,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-insult-adj
   (make-pick '(stupid silly dumb ridiculous demented deranged idiotic)))
-(defalias 'pick-possibility
-  (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
+(defalias 'pick-insult-noin
+  '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit))
+(make-pick '(do don\'t sometimes\ do always never might would wouldn\'t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
 (confirm that (not (null (subject? 'you))) returns t)
