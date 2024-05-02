@@ -86,6 +86,7 @@
                                 couldn\'t
                                 won\'t
                                 can\'t
+                                cannot
                                 ;; haven\'t
                                 musn\'t))
 (defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
@@ -105,13 +106,14 @@
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 (defalias 'pick-obviousness
-  (make-pick '(nil nil nil nil nil nil nil nil nil clearly plainly actually secretly obviously)))
+  (make-pick '(nil nil nil clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
   (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
   (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit dumbass)))
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
+(defalias 'pick-maybe-that   (make-pick '(that nil)))
 (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
@@ -409,11 +411,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Render a Nolex input/output sentence (a list of symbols) as a string.
 This was very quick 'n' dirty and could probably be a lot cleaner."
-  (prndiv)
-  (prn "RAW: %s" lst)
-  (prn "FIL: %s" lst)
-  (prndiv)
-  (let* ( (lst (if drop-first (cdr lst) lst))
+  (let* ( (lst (cl-remove-if #'nil/t? (if drop-first (cdr lst) lst)))
           (str (wm::capitalize
                  (let* ( (res lst)
                          (res (if (punctuation? (car (last res)))
@@ -423,7 +421,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                      (cons (format "%s" (car res))
                        (rmapcar (cdr res)
                          (lambda (e)
-                           (prn "this: %s" e)
+                           ;; (prn "this: %s" e)
                            (format (if (punctuation? e) "%s" " %s")
                              (if (eq 'i e) 'I e)
                              )))))))))
@@ -530,18 +528,20 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 8 fine \, ,subject ,bar ,baz \, so what \?))
      ;;==============================================================================================
-     ( :input-pattern    ( ,subject     ,modal ,verb ,a/an ,@things)
+     ( :input-pattern    ( ,subject ,any-modal ,verb ,a/an/the ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
-                           (modal           modal?)
-                           (a/an            a/an?))
+                           (any-modal       any-modal?)
+                           (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
                            (subject-2!      pick-subject)
                            (epistemic!      pick-epistemic)
-                           (modal-2!        pick-any-modal))
+                           (maybe-that!     pick-maybe-that)
+                           (modal-2!        pick-modal))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 9 ,subject-2 ,epistemic ,subject ,modal-2 ,verb ,a/an ,@things))
+       :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+                           ,modal-2 ,verb ,a/an/the ,@things))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -663,6 +663,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :response-pattern (99 i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -804,21 +806,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
-             (i could eat a hamburger and some fries)
-
-             ;; 3
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
+             (you must conquer the empire of the necromancers)
+             (you cannot conquer the empire of the necromancers)
+             (you won\'t conquer the empire of the necromancers)
              ))
   
   (prndiv)
