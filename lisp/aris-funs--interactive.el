@@ -268,9 +268,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the buffer and print a messsage."
   (interactive)
-  (with-current-buffer "*Messages*"
-    (read-only-mode -1)
-    (erase-buffer))
+  ;; (with-current-buffer "*Messages*"
+  ;;   (read-only-mode -1)
+  ;;   (erase-buffer))
   (when-let ((buff (get-buffer "*Warnings*")))
     (with-current-buffer buff
       (read-only-mode -1)

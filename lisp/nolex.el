@@ -344,6 +344,8 @@
           (prn "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
         )))
   (prndiv)
+  (prn "DONE PROC FUNS.")
+  (prndiv)
   var-alist) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-funs
