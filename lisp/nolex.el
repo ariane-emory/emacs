@@ -530,10 +530,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            ($2 pick-certainty))
        :response-pattern ( 18 ,$1 not really ,$2 if this is ,@things ))
      ;;----------------------------------------------------------------------------------------------
-     ( :input-pattern    ( trigger ,this)
-       :var-tests        ( )
-       :var-funs         ( (alpha! pick-insult-noun))
-       :response-pattern ( 19 yes \, here we are at ,this ))
+     ;; ( :input-pattern    ( trigger ,this)
+     ;;   :var-tests        ( )
+     ;;   :var-funs         ( (alpha! pick-insult-noun))
+     ;;   :response-pattern ( 19 yes \, here we are at ,this ))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
