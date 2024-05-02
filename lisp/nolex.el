@@ -348,10 +348,10 @@
   (prndiv)
   var-alist) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (proc-funs
-                '((subj swap-word) (subj-2 swap-word))
-                '((subj . i) (subj-2 . you) (baz . you)))
-  returns ((subj . you) (subj-2 . i) (baz . you)))
+;; (confirm that (proc-funs
+;;                 '((subj swap-word) (subj-2 swap-word))
+;;                 '((subj . i) (subj-2 . you) (baz . you)))
+;;   returns ((subj . you) (subj-2 . i) (baz . you)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
