@@ -327,9 +327,9 @@
         (let ((val (cdr assoc)))
           (prn "val:       %s" val)
           (prn "fun:       %s" fun)
-          (when (consp fun)
-            (setf fun (eval fun)))
-          (prn "fun2:      %s" fun)
+          ;; (when (consp fun)
+          ;;   (setf fun (eval fun)))
+          ;; (prn "fun2:      %s" fun)
           (let ((res
                   (if (listp val)
                     (rmapcar val (lambda (x) (funcall fun x var var-alist)))
