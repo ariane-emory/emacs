@@ -75,14 +75,12 @@
                                 could
                                 will
                                 can
-                                have
                                 must))
 (defvar   *neg-modal-words*  '( wouldn\'t
                                 shouldn\'t
                                 couldn\'t
                                 won\'t
                                 can\'t
-                                haven\'t
                                 musn\'t))
 (defvar   *modal-pairs*       (cl-pairlis *modal-words* *neg-modal-words*))
 (defvar   *all-modal-words*   (cons 'might (append *modal-words* *neg-modal-words*)))
