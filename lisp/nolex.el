@@ -770,7 +770,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
   (let ((response (get-response input)))
-    ;; (prn "CASE:      %s" (car response))
+    (prn "CASE:      %s" (car response))
     (prn "RESPONSE:  %s" (prettify-sentence response t))))
 
 (prndiv)
