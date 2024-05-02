@@ -455,7 +455,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                    (apply #'concat
                      (cons (format "%s" (car res))
                        (rmapcar (cdr res)
-                         (lambda (e) (format (if (punctuation? e) "%s" " %s") e) ))))))))
+                         (lambda (e) (format (if (punctuation? e) "%s" " %s")
+                                  (if (eq 'i e) 'I e)
+                                  )))))))))
     str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
