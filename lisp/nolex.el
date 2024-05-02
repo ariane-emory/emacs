@@ -250,6 +250,10 @@
         )))
   var-alist) ; return value is only used by a unit test right now.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(proc-var-funs
+  '((subj pick-insult-adj) (subj-2 pick-insult-noun))
+  '((subj . i) (subj-2 . you) (baz . you)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (proc-var-funs
                 '((subj swap-word) (subj-2 swap-word))
                 '((subj . i) (subj-2 . you) (baz . you)))
@@ -316,7 +320,7 @@
             (when-let ((var-alist (dm:match .:input-pattern input)))
               (let ((var-alist (if (eq t var-alist) nil var-alist)))
                 (unless (proc-var-tests .:var-tests var-alist) (throw 'continue nil))
-                (proc-var-funs .:var-funs var-alist)
+                (setf var-alist (proc-var-funs .:var-funs var-alist))
                 (throw 'result (dm:fill .:response-pattern var-alist))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
