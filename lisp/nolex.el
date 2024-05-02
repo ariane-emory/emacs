@@ -148,6 +148,7 @@
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (defalias 'pick-maybe-that   (make-pick '(that nil)))
+(defalias 'pick-maybe-really (make-pick '(really nil)))
 (defalias 'pick-maybe-not    (make-pick '(not nil)))
 (defalias 'pick-probably-not (make-pick '(not not nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -642,7 +643,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           ;;      t))
                           (modal-2!        pick-modal))
            :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
-                          ,modal-2 ,verb ,a/an/the ,@things))))
+                          ,modal-2 ,verb ,a/an/the ,@things))
+         ( :var-funs:   ( (subject         swap-word)
+                          (modal-2!        pick-modal))
+           :response:   ( 9 ,subject ,modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,neg-modal ,verb ,a/an/the ,@things)
        :var-tests:      ( (subject         subject?)
