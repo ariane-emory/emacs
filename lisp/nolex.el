@@ -995,10 +995,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
   (let ((response (get-response input)))
-    (prn "%s" " ")
+    (prnl)
     (prndiv)
     (prn "CASE:      %s" (car response))
-    (prn "RESPONSE:  %s" (prettify-sentence response t))))
+    (prn "RESPONSE:  %s" (prettify-sentence response t))
+    (prndiv)
+    (prnl)))
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
