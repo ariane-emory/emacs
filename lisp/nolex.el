@@ -420,6 +420,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun converse ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Have a conversation with the bot. Enter 'bye' to exit."
+  (interactive)
   (catch 'exit
     (while t
       (let ((input (read)))
@@ -430,8 +432,9 @@
                 (if (proper-list-p input)
                   (get-response input)
                   '(sorry \, I didn\'t hear you \!))))
-          (prn "RESPONSE: %s" response))))))
+          (prn "RESPONSE: %s" (prettify-sentence response t)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun punctuation? (sym)
@@ -445,23 +448,23 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun prettify-sentence (lst &optional drop-first)
+  (defun prettify-sentence (lst &optional drop-first)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Render a Nolex input/output sentence (a list of symbols) as a string.
+    "Render a Nolex input/output sentence (a list of symbols) as a string.
 This was very quick 'n' dirty and could probably be a lot cleaner."
-  (let* ( (lst (if drop-first (cdr lst) lst))
-          (str (wm::capitalize
-                 (let* ( (res lst)
-                         (res (if (punctuation? (car (last res)))
-                                res
-                                (append res (list ".")))))
-                   (apply #'concat
-                     (cons (format "%s" (car res))
-                       (rmapcar (cdr res)
-                         (lambda (e) (format (if (punctuation? e) "%s" " %s")
-                                  (if (eq 'i e) 'I e)
-                                  )))))))))
-    str))
+    (let* ( (lst (if drop-first (cdr lst) lst))
+            (str (wm::capitalize
+                   (let* ( (res lst)
+                           (res (if (punctuation? (car (last res)))
+                                  res
+                                  (append res (list ".")))))
+                     (apply #'concat
+                       (cons (format "%s" (car res))
+                         (rmapcar (cdr res)
+                           (lambda (e) (format (if (punctuation? e) "%s" " %s")
+                                    (if (eq 'i e) 'I e)
+                                    )))))))))
+      str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
