@@ -553,8 +553,8 @@
   (prn "RESPONSE:  %s" (get-response input))
   (let ((res (cdr (get-response input))))
     (prn (car res))
-    (prn (apply #'concat (rmapcar (cdr res) (lambda (elem)
-                                              (format (if (punctuation? elem) "%s" " %s") elem)))))
+    (prn (apply #'concat (cons (car (format "%s" res)) (rmapcar (cdr res) (lambda (elem)
+                                                                            (format (if (punctuation? elem) "%s" " %s") elem))))))
     )
   
   ;; (prn "RESPONSE:  %s" (cdr-safe (get-response input)))
