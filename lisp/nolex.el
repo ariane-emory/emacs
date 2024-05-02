@@ -92,6 +92,8 @@
 (defalias 'epistemic?         (make-member-sym-p *epistemic-words*))
 (defalias 'pick-epistemic     (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'pick-possibility
+  (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 (defalias 'pick-obviousness
   (make-pick '(clearly plainly actually secretly obviously)))
 (defalias 'pick-insult-adj
