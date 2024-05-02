@@ -615,17 +615,19 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            ;;      t))
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (subject-2!      pick-subject)
-                           (epistemic!      pick-epistemic)
-                           (maybe-that!     pick-maybe-that)
-                           ;; (_ (lambda (val var var-alist)
-                           ;;      (prn "THIS ALSO HAPPENED! %s" var-alist)
-                           ;;      t))
-                           (modal-2!        pick-modal))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
-                           ,modal-2 ,verb ,a/an/the ,@things))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (subject-2!      pick-subject)
+                               (epistemic!      pick-epistemic)
+                               (maybe-that!     pick-maybe-that)
+                               ;; (_ (lambda (val var var-alist)
+                               ;;      (prn "THIS ALSO HAPPENED! %s" var-alist)
+                               ;;      t))
+                               (modal-2!        pick-modal)))
+         ;;------------------------------------------------------------------------------------------
+         :response-pattern ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+                             ,modal-2 ,verb ,a/an/the ,@things)))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,neg-modal ,verb ,a/an/the ,@things)
        ;;--------------------------------------------------------------------------------------------
@@ -633,23 +635,27 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (neg-modal       neg-modal?)
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (subject-2!      pick-subject)
-                           (epistemic!      pick-epistemic)
-                           (maybe-that!     pick-maybe-that)
-                           (neg-modal-2!    pick-neg-modal))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( '9B ,subject-2 ,epistemic ,maybe-that ,subject
-                           ,neg-modal-2 ,verb ,a/an/the ,@things))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (subject-2!      pick-subject)
+                               (epistemic!      pick-epistemic)
+                               (maybe-that!     pick-maybe-that)
+                               (neg-modal-2!    pick-neg-modal))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( '9B ,subject-2 ,epistemic ,maybe-that ,subject
+                               ,neg-modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,modal never ,verb a ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
                            (modal           modal?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 10 ,subject ,modal ,verb a ,@things \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 10 ,subject ,modal ,verb a ,@things \!))))
      ;;==============================================================================================
      ( :input-pattern    ( you ,foo ,baz \!)
        ;;--------------------------------------------------------------------------------------------
@@ -662,11 +668,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (subject-2       subject?)
                            (modal-plus      modal-plus?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (subject-2       swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 12 come on \, ,subject can\'t really ,epistemic
-                           that ,subject-2 ,modal-plus never ,verb a ,noun \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (subject-2       swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 12 come on \, ,subject can\'t really ,epistemic
+                               that ,subject-2 ,modal-plus never ,verb a ,noun \!))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
        ;;--------------------------------------------------------------------------------------------
@@ -676,41 +684,48 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire          desire?)
                            (a/n             a/an?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject         swap-word)
-                           (subject-2       swap-word)
-                           (epistemic       swap-word)
-                           (desire          swap-word))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 13 after this conversation \, ,subject
-                           ,epistemic that ,subject-2
-                           ,desire ,a/n ,noun \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject         swap-word)
+                               (subject-2       swap-word)
+                               (epistemic       swap-word)
+                               (desire          swap-word))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 13 after this conversation \, ,subject
+                               ,epistemic that ,subject-2
+                               ,desire ,a/n ,noun \!))))
      ;;==============================================================================================
      ( :input-pattern    ( ,subject ,desire to ,verb ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject          subject?)
                            (desire           desire?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (subject          swap-word)
-                           (subject-2!       pick-subject)
-                           (desire           swap-word)
-                           (epistemic!       pick-epistemic))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 14 ,subject-2 don\'t ,epistemic that ,subject really ,desire to ,verb ,@things))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (subject          swap-word)
+                               (subject-2!       pick-subject)
+                               (desire           swap-word)
+                               (epistemic!       pick-epistemic))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 14 ,subject-2 don\'t ,epistemic that ,subject
+                               really ,desire to ,verb ,@things))))
      ;;==============================================================================================
      ( :input-pattern    ( ,plural-subject are ,@things)
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (plural-subject  plural-subject?))
        ;;--------------------------------------------------------------------------------------------
-       :var-funs         ( (plural-subject  dup-var)
-                           (plural-subject* swap-word)
-                           (adj!            pick-insult-adj)
-                           (noun!           pick-insult-noun)
-                           (obv!            pick-obviousness))
-       ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 15 You ,adj ,noun \,
-                           ,plural-subject are not the ,@things \,
-                           it is ,obv ,plural-subject* who are
-                           the ,@things \!))
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs         ( (plural-subject  dup-var)
+                               (plural-subject* swap-word)
+                               (adj!            pick-insult-adj)
+                               (noun!           pick-insult-noun)
+                               (obv!            pick-obviousness))
+           ;;----------------------------------------------------------------------------------------
+           :response-pattern ( 15 You ,adj ,noun \,
+                               ,plural-subject are not the ,@things \,
+                               it is ,obv ,plural-subject* who are
+                               the ,@things \!))))
      ;;==============================================================================================
      ( :input-pattern    ( i wish that you were a ,@things)
        ;;--------------------------------------------------------------------------------------------
