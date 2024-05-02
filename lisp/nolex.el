@@ -532,10 +532,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input-pattern    ( i wish that you were a ,@things)
        :var-tests        ( )
        :var-funs         ( (things dup-var dup-var dup-var) 
-                           ($1 pick-insult-adj)
-                           ($2 pick-epistemic)
-                           ($3 pick-insult-noun))
-       :response-pattern ( 16 you ,$3 \, I already ,$2 that you want a ,@things))
+                           (adj!       pick-insult-adj)
+                           (epistemic! pick-epistemic)
+                           (noun!      pick-insult-noun))
+       :response-pattern ( 16 you ,adj ,noun \, I already ,epistemic
+                           that you want a ,@things))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( these are the ,@things)
        :var-tests        ( )
