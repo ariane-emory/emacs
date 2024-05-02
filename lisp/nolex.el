@@ -533,7 +533,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (desire     desire?))
        :var-funs         ( (subject    swap-word)
                            (subject-2! pick-subject)
-                           (desire     swap-word dup-var)
+                           (desire     swap-word)
                            (epistemic! pick-epistemic))
        :response-pattern ( 14 ,subject-2 don\'t ,epistemic that ,subject really ,desire to ,verb ,@things))
      ;;----------------------------------------------------------------------------------------------
