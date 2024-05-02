@@ -442,12 +442,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            (a/an/the  a/an/the?))
        :var-funs         ( (subject   dup-var dup-var)
                            (am/are    dup-var dup-var)
-                           ($1        pick-insult-adj)
+                           (iadj!     pick-insult-adj)
+                           ($1        swap-word)
                            ($2        swap-word)
-                           ($3        swap-word)
-                           ($4        pick-obviousness))
-       :response-pattern ( 3 don\'t be ,$1 \, ,$2 ,$3 not ,a/an/the ,@things \,
-                           ,subject ,am/are ,$4
+                           (obv!      pick-obviousness))
+       :response-pattern ( 3 don\'t be ,iadj \, ,$1 ,$2 not ,a/an/the ,@things \,
+                           ,subject ,am/are ,obv
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
