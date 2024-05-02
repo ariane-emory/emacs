@@ -586,6 +586,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :var-tests        ( (subject         subject?)
                            (modal           modal?)
+                           ;; (_               always-true)
                            (a/an/the        a/an/the?))
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
@@ -723,7 +724,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :var-funs         ( (subject         swap-word)
                            (plural-subject  swap-word)
-                           ;;(modal (make-pick '(foo bar baz)))
+                           ;; (modal (make-pick '(foo bar baz)))
                            (modal           pick-any-modal)
                            (them-us         swap-word))
        ;;--------------------------------------------------------------------------------------------
