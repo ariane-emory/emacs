@@ -403,11 +403,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input-pattern    ( ,plural-subject are the ,@things)
        :var-tests        ( (plural-subject plural-subject?))
        :var-funs         ( (plural-subject dup-var dup-var)
-                           ($1        pick-insult-adj)
-                           ($2        swap-word))
-       :response-pattern ( '2B You ,$1 fool \,
+                           ($1        swap-word)
+                           ($2        pick-insult-adj))
+       :response-pattern ( '2B You ,$2 fool \,
                            ,plural-subject are not the ,@things \,
-                           ,$2 are
+                           ,$1 are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
@@ -614,7 +614,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i need to smoke a fat joint)
              (i want to dance in the moonlight)
 
-             (we are the aliens in disguise as humans) ; this one needs work.
+             (we are the aliens in disguise as humans) 
+             (we are the aliens in disguise as humans) 
+             (we are the aliens in disguise as humans) 
              ))
   
   (prndiv)
