@@ -236,35 +236,27 @@
             (funs    (cdr var-funs))
             (new-var (new-var-name? var))
             (var     (if new-var new-var var))
-            (assoc   (unless new-var (assoc var var-alist)))
-            (val     (unless new-var (cdr-safe assoc))))
-
+            (assoc   (unless new-var (assoc var var-alist))))
       (cond
-        ((and new-var assoc) (error "key %s already taken" var))
+        ((and new-var assoc)         (error "key %s already taken" var))
         ((and (not new-var) (not assoc)) (error "missing var %s" var)))
-
       (when new-var
-        (setf var-alist (cons (cons var t) var-alist))
-        (setf assoc (assoc var var-alist))
-        (setf val   (cdr assoc)))
-
-      (prn "NEW-VAR:   %s" var)
-      (prn "VAR-ALIST: %s" var-alist)
-
+        (setf assoc (cons var t))
+        (setf var-alist (cons assoc var-alist)))
+      ;; (prn "NEW-VAR:   %s" var)
+      ;; (prn "VAR-ALIST: %s" var-alist)
       (dolist (fun funs)
-        (prndiv)
-        (prn "var: %s" var)
-        (prn "val: %s" val)
-        (prn "fun: %s" fun)
-        (when-let ((res
-                     (if (listp val)
-                       (progn
-                         (prn "this case")
-                         (compact (rmapcar val (lambda (x) (funcall fun var x var-alist)))))
-                       (prn "got here")
-                       (funcall fun var val var-alist))))
-          (prn "funres: %s" res)
-          (setf (cdr assoc) res))
+        ;; (prndiv)
+        ;; (prn "var: %s" var)
+        (let ((val (cdr assoc)))
+          ;; (prn "val: %s" val)
+          ;; (prn "fun: %s" fun)
+          (when-let ((res
+                       (if (listp val)
+                         (compact (rmapcar val (lambda (x) (funcall fun var x var-alist))))
+                         (funcall fun var val var-alist))))
+            ;; (prn "funres: %s" res)
+            (setf (cdr assoc) res)))
         ;; (prn "ALIST: %s" var-alist)
         )))
   var-alist) ; return value is only used by a unit test right now.
@@ -559,10 +551,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                            ($2 pick-certainty))
        :response-pattern ( 18 ,$1 not really ,$2 if this is ,@things ))
      ;;----------------------------------------------------------------------------------------------
-     ;; ( :input-pattern    ( trigger ,this)
-     ;;   :var-tests        ( )
-     ;;   :var-funs         ( (alpha! pick-insult-noun))
-     ;;   :response-pattern ( 19 yes \, here we are at ,this ))
+     ( :input-pattern    ( trigger )
+       :var-tests        ( )
+       :var-funs         ( (adj!  pick-insult-adj)
+                           (noun! pick-insult-noun))
+       :response-pattern ( 19 yes \, here we are you ,adj ,noun))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
@@ -697,7 +690,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (these are the voyages of the starsshp Enterprise)
              (these are the voyages of the starsshp Enterprise)
              (this is the worst thing ever)
-             (trigger one)
+             (trigger)
              ))
   
   (prndiv)
