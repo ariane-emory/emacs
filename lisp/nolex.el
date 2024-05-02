@@ -962,24 +962,26 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 (defun fill-in-missing-rule-keys2 (rule)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: this also converts RULE from a plist to an alist."
-  (fill-in-missing-alist-keys *rule-keys2* (plist-to-alist rule)))
+  (fill-in-missing-alist-keys *fillable-rule-keys* (plist-to-alist rule)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *rule-keys2*
-  '( :input-pattern    
-     :response-pattern 
-     ;; :var-tests
-     ;; :var-funs
-     :responses))
+(defvar *fillable-rule-keys*
+  '(:input-pattern :var-tests :responses))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that
-(fill-in-missing-rule-keys2
-  ' ( :input-pattern    ( ,subject ,desire ,a/an ,@things)
-      :var-tests        ( (subject         subject?)
-                          (desire          desire?)
-                          (a/an            a/an?))
-      :var-funs         ( (subject         swap-word)
-                          (desire          swap-word))
-      :response-pattern ( 6 do ,subject really ,desire ,a/an ,@things \?)))
+(confirm that
+  (fill-in-missing-rule-keys2
+    '( :input-pattern    ( this is the ,@things)
+       ;;--------------------------------------------------------------------------------------------
+       :responses
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response-pattern ( 18 ,persp not really ,certainty if this is ,@things )))))
+  returns
+  ( (:var-tests)
+    (:input-pattern this is the (\,@ things))
+    (:responses
+      (:response-pattern (18 (\, persp) not really (\, certainty) if this is (\,@ things))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 
 ;; returns ( (:var-funs)
