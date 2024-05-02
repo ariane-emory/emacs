@@ -503,20 +503,23 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
   ;; (prn "get-response INPUT: %s" input)
-  (catch 'result
-    (dolist (rule *rules*)
-      (let-rule2 rule
-        (catch 'continue
-          (prn "try:       %s" .:input-pattern)
-          (if (eq t .:input-pattern)
-            ;; t matches any input and fills using an empty list:
-            (select-and-fill-response nil .:responses)
-            (when-let ((var-alist (dm:match .:input-pattern input)))
-              (let ((var-alist (if (eq t var-alist) nil var-alist)))
-                (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
-                (prn "MATCHED:   %s" .:input-pattern)
-                (select-and-fill-response var-alist .:responses)
-                ))))))))
+  (cl-flet ( (prn2    (&rest args) (when *get-response-verbose* (apply #'prn    args)))
+             (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
+    (catch 'result
+      (dolist (rule *rules*)
+        (let-rule2 rule
+          (catch 'continue
+            (prn2 "try:       %s" .:input-pattern)
+            (if (eq t .:input-pattern)
+              ;; t matches any input and fills using an empty list:
+              (throw 'result (select-and-fill-response nil .:responses))
+              (when-let ((var-alist (dm:match .:input-pattern input)))
+                (let ((var-alist (if (eq t var-alist) nil var-alist)))
+                  (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
+                  (prn2 "MATCHED:   %s" .:input-pattern)
+                  (throw 'result (select-and-fill-response var-alist .:responses)))))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *get-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
