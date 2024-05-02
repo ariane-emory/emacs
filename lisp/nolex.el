@@ -69,6 +69,8 @@
 (defalias 'epistemic?         (make-member-sym-p *epistemic-words*))
 (defalias 'pick-epistemic     (make-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defalias 'pick-insult
+  (make-pick '(stupid silly dumb ridiculous demented deranged an\ idiot)))
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -204,11 +206,12 @@
        :var-tests        ( (subject   subject?)
                            (am/are    am/are?)
                            (a/an      a/an?))
-       :var-funs         ( (subject   dup-var)
+       :var-funs         ( (subject   dup-var dup-var)
                            (am/are    dup-var)
                            ($1        swap-word)
-                           ($2        swap-word))
-       :response-pattern ( 3 don\'t be silly \, ,$1 ,$2 not ,a/an ,@things \, ,subject ,am/are
+                           ($2        pick-insult)
+                           ($3        swap-word))
+       :response-pattern ( 3 don\'t be ,$2 \, ,$1 ,$3 not ,a/an ,@things \, ,subject ,am/are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,subject would ,desire many ,@things)
@@ -493,6 +496,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              ;; 3
              (you are an asshole)
              (you are a particularly stupid asshole)
+             (i am a bitch)
+             (i am a bitch)
              (i am a bitch)
 
              ;; 4
