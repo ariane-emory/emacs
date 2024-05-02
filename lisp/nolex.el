@@ -623,6 +623,21 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ;;--------------------------------------------------------------------------------------------
        :response-pattern ( 19 yes \, here we are you ,adj ,noun))
      ;;==============================================================================================
+     ( :input-pattern    ( ,subject ,epistemic ,plural-subject ,modal ,verb ,them-us ,@things)
+       ;;--------------------------------------------------------------------------------------------
+       :var-tasts        ( (subject         subject?)
+                           (epistemic       epistemic?)
+                           (plural-subject  plural-subject?)
+                           (modal           modal?)
+                           (them-us         them-us?))
+       ;;--------------------------------------------------------------------------------------------
+       :var-funs         ( (subject         swap-word)
+                           (plural-subject  swap-word)
+                           (modal           pick-any-modal)
+                           (them-us         swap-word))
+       ;;--------------------------------------------------------------------------------------------
+       :response-pattern ( 20 ,plural-subject ,modal ,verb ,them-us ,@things \!))
+     ;;==============================================================================================
      ( :input-pattern    t
        :response-pattern (99 i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
