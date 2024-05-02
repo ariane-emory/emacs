@@ -466,10 +466,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-funs         ( (subject         dup-var)
                            (iadj!           pick-insult-adj)
                            (subject*        swap-word)
-                           (am/are          swap-word)
+                           (am/are          dup-var)
+                           (am/are*         swap-word)
                            (obv!            pick-obviousness))
        ;;--------------------------------------------------------------------------------------------
-       :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,am/are not ,a/an/the
+       :response-pattern ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,a/an/the
                            ,@things \, ,subject ,am/are ,obv the ,@things \!))
      ;;==============================================================================================
      ( ;;--------------------------------------------------------------------------------------------
@@ -689,9 +690,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              ;; 3
              (you are an asshole)
              (you are a particularly stupid asshole)
-             (i am a bitch)
-             (i am a bitch)
-             (i am a bitch)
              (i am the King of France)
              (i am an evil robot in disguise as a human)
              
@@ -794,11 +792,26 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you know they can find us)
              (you know they can find us)
 
+             ;; 9
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
+
+             ;; 3
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
+             (i am a bitch)
              ))
   
   (prndiv)
