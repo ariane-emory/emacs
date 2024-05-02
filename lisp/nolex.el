@@ -486,6 +486,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun select-and-fill-response (var-alist responses)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (prn "s-a-f-r's var-alist: %s" var-alist)
+  (prn "s-a-f-r's responses: %s" responses)
+  (let ((response (pick responses)))
+    (prn "s-a-f-r    picked:   %s" response)
+    (let-response2 response
+      (setf var-alist (proc-funs .:var-funs var-alist))
+      (throw 'result (dm:fill .:response-pattern var-alist)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun get-response (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Transform INPUT according to *RULES*, returning nil if none match."
@@ -500,8 +513,10 @@
             (when-let ((var-alist (dm:match .:input-pattern input)))
               (let ((var-alist (if (eq t var-alist) nil var-alist)))
                 (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
-                (setf var-alist (proc-funs .:var-funs var-alist))
-                (throw 'result (dm:fill .:response-pattern var-alist))))))))))
+                (select-and-fill-response var-alist
+                  ;; synthesize new-style responses list:
+                  (list (list :var-funs .:var-funs :response-pattern .:response-pattern)))
+                ))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
