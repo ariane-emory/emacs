@@ -421,12 +421,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-rule2 (rule &rest body)
+(defmacro let-rule (rule &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(let-alist (fill-in-missing-rule-keys2 ,rule) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (let-rule2
+  (let-rule
     '( :input-pattern ( this is the ,@things)
        :responses
        ((:response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))))
@@ -455,12 +455,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-response2 (response &rest body)
+(defmacro let-response (response &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(let-alist (fill-in-missing-response-keys2 ,response) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (let-response2 '(:response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
+  (let-response '(:response-pattern ( 18 ,persp not really ,certainty if this is ,@things ))
     (list .:var-funs .:response-pattern))
   returns ( nil
             (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
@@ -468,33 +468,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-rule (rule &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-rule-keys ,rule) ,@body))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let-rule '( :input-pattern    (,subj ,bar ,baz)
-               :response-pattern (fine \, ,subj ,bar ,baz \, so what \?)
-               :var-tests        ((subj subject?))
-               :var-funs         ((subj swap-word)))
-    (list .:input-pattern .:response-pattern .:var-tests .:var-funs))
-  returns ( ((\, subj) (\, bar) (\, baz))
-            (fine \,(\, subj) (\, bar) (\, baz) \, so what \?)
-            ((subj subject?))
-            ((subj swap-word))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun select-and-fill-response (var-alist responses)
+(defun select-response (var-alist responses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; (prn "s-a-f-r's var-alist: %s" var-alist)
   ;; (prn "s-a-f-r's responses: %s" responses)
-  (let ((response (pick responses)))
-    ;; (prn "s-a-f-r   picked:    %s" response)
-    (let-response2 response
-      (setf var-alist (proc-funs .:var-funs var-alist))
-      (throw 'result (dm:fill .:response-pattern var-alist)))))
+  (cl-flet ( (prn2    (&rest args) (when *select-response-verbose* (apply #'prn    args)))
+             (prndiv2 (&rest args) (when *select-response-verbose* (apply #'prndiv nil))))
+    (let ((response (pick responses)))
+      ;; (prn "s-a-f-r   picked:    %s" response)
+      (let-response response
+        (setf var-alist (proc-funs .:var-funs var-alist))
+        (throw 'result (dm:fill .:response-pattern var-alist))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *select-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -507,42 +493,20 @@
              (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
     (catch 'result
       (dolist (rule *rules*)
-        (let-rule2 rule
+        (let-rule rule
           (catch 'continue
             (prn2 "try:       %s" .:input-pattern)
             (if (eq t .:input-pattern)
               ;; t matches any input and fills using an empty list:
-              (throw 'result (select-and-fill-response nil .:responses))
+              (throw 'result (select-response nil .:responses))
               (when-let ((var-alist (dm:match .:input-pattern input)))
                 (let ((var-alist (if (eq t var-alist) nil var-alist)))
                   (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
                   (prn2 "MATCHED:   %s" .:input-pattern)
-                  (throw 'result (select-and-fill-response var-alist .:responses)))))))))))
+                  (throw 'result (select-response var-alist .:responses)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *get-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun get-response (input)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Transform INPUT according to *RULES*, returning nil if none match."
-;;   ;; (prn "get-response INPUT: %s" input)
-;;   (catch 'result
-;;     (dolist (rule *rules*)
-;;       (let-rule rule
-;;         (catch 'continue
-;;           (if (eq t .:input-pattern)
-;;             ;; t matches any input and throws it's .:RESPONSE-PATTERN:
-;;             (throw 'result .:response-pattern)
-;;             (when-let ((var-alist (dm:match .:input-pattern input)))
-;;               (let ((var-alist (if (eq t var-alist) nil var-alist)))
-;;                 (unless (proc-tests .:var-tests var-alist) (throw 'continue nil))
-;;                 (select-and-fill-response var-alist
-;;                   ;; synthesize new-style responses list:
-;;                   (list (list :var-funs .:var-funs :response-pattern .:response-pattern)))
-;;                 ))))))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
