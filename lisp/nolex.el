@@ -539,20 +539,19 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( ,plural-subject are the ,@things)
        :var-tests        ( (plural-subject plural-subject?))
-       :var-funs         ( (plural-subject dup-var)
-                           ($1        swap-word)
+       :var-funs         ( (plural-subject dup-var2)
+                           (plural-subject* swap-word)
                            (adj!      pick-insult-adj)
                            (noun!     pick-insult-noun)
                            (obv!      pick-obviousness))
        :response-pattern ( 15 You ,adj ,noun \,
                            ,plural-subject are not the ,@things \,
-                           it is ,obv ,$1 who are
+                           it is ,obv ,plural-subject* who are
                            the ,@things \!))
      ;;----------------------------------------------------------------------------------------------
      ( :input-pattern    ( i wish that you were a ,@things)
        :var-tests        ( )
-       :var-funs         ( (things dup-var dup-var dup-var) 
-                           (adj!       pick-insult-adj)
+       :var-funs         ( (adj!       pick-insult-adj)
                            (epistemic! pick-epistemic)
                            (noun!      pick-insult-noun))
        :response-pattern ( 16 you ,adj ,noun \, I already ,epistemic
