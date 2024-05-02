@@ -529,8 +529,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i am a bitch)
              (i am the King of France)
              (i am an evil robot in disguise as a human)
-             (we are the aliens) ; this one needs work.
-
+             
              ;; 4
              (i would like many hamburgers with cheese and bacon)
              (i would like many hamburgers with cheese and bacon)
@@ -603,6 +602,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i want to smoke a fat joint)
              (i need to smoke a fat joint)
              (i want to dance in the moonlight)
+
+             (we are the aliens) ; this one needs work.
              ))
   
   (prndiv)
