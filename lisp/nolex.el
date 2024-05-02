@@ -100,6 +100,8 @@
   (make-pick '(stupid silly dumb ridiculous demented deranged idiotic)))
 (defalias 'pick-insult-noun
   (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit)))
+(defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
+(defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
@@ -536,8 +538,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :response-pattern (99 i don\'t understand \!))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
-(defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (prndiv)
