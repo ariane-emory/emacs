@@ -15,7 +15,7 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:match-verbose* nil
+(defcustom *dm:match-verbose* t
   "Whether `match-pattern' should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
