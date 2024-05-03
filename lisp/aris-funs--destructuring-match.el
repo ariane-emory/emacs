@@ -141,14 +141,16 @@ KEY is already present in ALIST with a different value."
                   `(progn
                      (dm::prn "THROWING %s!" 'no-match)
                      (throw 'no-match nil))))
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (dm::prndiv)
-    (dm::prn-labeled pattern "MATCHING")
-    (dm::prn-labeled target  "AGAINST")
-    ;; just rename these because it reads better:
-    (let ( (pat-tail  pattern)
-           (targ-tail target))
-      (catch 'no-match
+    ;;-----------------------------------------------------------------------------------------------
+    (catch 'no-match
+      (dm::prndiv)
+      (dm::prn-labeled pattern "MATCHING")
+      (dm::prn-labeled target  "AGAINST")
+      ;;---------------------------------------------------------------------------------------------
+      ;; Just rename these because it reads better:
+      (let ( (pat-tail  pattern)
+             (targ-tail target))
+        ;;===========================================================================================
         (while (and pat-tail targ-tail)
           (let ( (pat-head  (pop pat-tail))
                  (targ-head (pop targ-tail)))
@@ -169,7 +171,7 @@ KEY is already present in ALIST with a different value."
                 (when pat-tail
                   (error "ELLIPSIS must be the last element in the pat-tail."))
                 (dm::prn-labeled targ-tail "DISCARD")
-                ;; nullify TARG-TAIL and PAT-TAIL:
+                ;; Nullify TARG-TAIL and PAT-TAIL:
                 (setf targ-tail nil)
                 (setf pat-tail  nil))
               ;; When PAT-HEAD is an UNSPLICE, nullify TARG-TAIL and PAT-TAIL to break 
@@ -180,9 +182,9 @@ KEY is already present in ALIST with a different value."
                 (let ((var (cadr pat-head)))
                   (let ((target (cons targ-head targ-tail)))
                     (dm::prn-labeled target "unsplicing")
-                    ;; put the remainder of TARG-TAIL in VAR's key in ALIST:
+                    ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
                     (setf alist (dm::pushnew var alist target))
-                    ;; nullify TARG-TAIL and PAT-TAIL:
+                    ;; Nullify TARG-TAIL and PAT-TAIL:
                     (setf targ-tail nil)
                     (setf pat-tail  nil))))
               ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
@@ -201,9 +203,9 @@ KEY is already present in ALIST with a different value."
                                dont-care ellipsis unsplice alist))))
                   (cond
                     ((eq res t)) ; do nothing.
-                    ((eq res nil) (NO-MATCH!)) ;; sub-pattern's tail didn't match.
-                    ;; dm::match1 only returns t or lists, so we'll assume it's now a
-                    ;; list.
+                    ((eq res nil) (NO-MATCH!)) ;; Sub-pattern's tail didn't match.
+                    ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
+                    ;; now alist.
                     (t (setf alist res)))))
               ;; When PAT-HEAD and TARG-HEAD are equal literals, do nothing:
               ((equal pat-head targ-head)
@@ -212,7 +214,7 @@ KEY is already present in ALIST with a different value."
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
               (t (NO-MATCH!))))
           ;; (debug)
-          ) ;; end of (while (and pat-tail targ-tail).
+          ) ;; End of (while (and pat-tail targ-tail).
         ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
         (dm::prndiv)
         (dm::prn-labeled pat-tail  "final")
@@ -228,7 +230,7 @@ KEY is already present in ALIST with a different value."
             ;; don't need to do anything other than check for well formedness.
             (when (cdr pat-tail)
               (error "ellipsis must be the last element in the pat-tail."))) 
-          ;; if PAT-TAIL's head is an UNSPLICE, since there's no TARG-TAIL left we just 
+          ;; If PAT-TAIL's head is an UNSPLICE, since there's no TARG-TAIL left we just 
           ;; need to set the var in ALIST to nil:
           ((and unsplice (equal (car-safe (car pat-tail)) unsplice))
             (when (cdr pat-tail)
@@ -238,7 +240,7 @@ KEY is already present in ALIST with a different value."
           ;; It was something else, no match;
           (t (NO-MATCH!))) 
         (dm::prn-labeled alist "result")
-        ;; return either the ALIST or just t:
+        ;; Return either the ALIST or just t:
         (or alist t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
