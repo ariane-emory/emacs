@@ -138,9 +138,8 @@ KEY is already present in ALIST with a different value."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   (cl-macrolet ((no-match! () `(throw 'no-match nil)))
-    (dm::prndiv)
-    (dm::prn "MATCHING:          %S" pattern)
-    (dm::prn "AGAINST:           %S" target)
+    (dm::prn-labeled pattern "MATCHING")
+    (dm::prn-labeled target  "AGAINST")
     ;; just rename these because it reads better:
     (let ( (pat-tail  pattern)
            (targ-tail target))
