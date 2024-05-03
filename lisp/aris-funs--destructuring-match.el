@@ -7,8 +7,6 @@
 (require 'aris-funs--when-let-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
-;; - integrate `dm::require-duplicate-keys-equal!' and `cl-pushnew'-like behaviour for
-;;   efficiency.
 ;; - lookahead.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -17,7 +15,7 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:match-verbose* t
+(defcustom *dm:match-verbose* nil
   "Whether `match-pattern' should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
@@ -45,21 +43,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun dm::merge-2-alists (alist-1 alist-2)
-;;   "Merge two alists into a single alist, maintaining their relative key order
-;; and signaling an eror upon encountering a duplicate key. Result is returned
-;; in reverse order."
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   (let ((alist (nreverse alist-1)))
-;;     (dolist (kvp alist-2 alist)
-;;       (dm::require-duplicate-keys-equal! (car kvp) (cdr kvp) alist-1)
-;;       (push kvp alist))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (when *dm:tests-enabled*
-;;   (confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
-;;     returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::pushnew(key alist new-val)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Push KEY into ALIST with NEW-VAL unless it is already present, no match if
+KEY is already present in ALIST with a different value."
+  (when-let ( (assoc (assoc key alist))
+              (neq   (not (equal (cdr assoc) new-val))))
+    (throw 'no-match nil))
+  (cl-pushnew (cons var new-val) alist :test #'equal))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,29 +81,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::require-duplicate-keys-equal! (key alist new-val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "No match if KEY is already in ALIST with a different value."
-  (when-let ( (assoc (assoc key alist))
-              (val   (cdr assoc))
-              (neq   (not (equal val new-val))))
-    (throw 'no-match nil)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pushnew(key alist new-val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "No match if KEY is already in ALIST with a different value."
-  (when-let ( (assoc (assoc key alist))
-              (val   (cdr assoc))
-              (neq   (not (equal val new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons var new-val) alist :test #'equal))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
@@ -127,10 +97,10 @@
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
         (dm::prndiv)
-        (dm::prn "pattern:       %s" pattern)
-        (dm::prn "target:        %s" target)
         (dm::prn "pat-head:      %s" pat-head)
         (dm::prn "targ-head:     %s" targ-head)
+        (dm::prn "pattern:       %s" pattern)
+        (dm::prn "target:        %s" target)
         (cond
           ((and dont-care (eq pat-head dont-care))) ; DONT-CARE, do nothing.
           ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
@@ -246,6 +216,9 @@
   (confirm that (dm:match '(,x ,y ,x) '((7 8 . 9) 2 (7 8 . 9)))
     returns ((x 7 8 . 9) (y . 2)))
   (confirm that (dm:match '(,x y ,x) '(8 y 9)) returns nil)
+  (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil)) returns ((x)))
+  (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil)) returns nil)
+  (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (dm:match
@@ -287,8 +260,8 @@ This behaves very similarly to quasiquote."
     (while pattern
       (let ((thing (pop pattern)))
         (dm::prndiv)
-        ;; (dm::prn "thing:   %s" thing)
-        ;; (dm::prn "alist:   %s" alist)
+        (dm::prn "thing:   %s" thing)
+        (dm::prn "alist:   %s" alist)
         (cond
           ((eq '\, (car-safe thing))
             (let ((var (cadr thing)))
@@ -296,13 +269,11 @@ This behaves very similarly to quasiquote."
                 (push (cdr assoc) res)
                 (error "var %s not found." var))))
           ((eq splice (car-safe thing))
-            ;; (debug)
             (let ((var (cadr thing)))
-              ;; (dm::prn "VAR:     %s" var)
+              (dm::prn "VAR:     %s" var)
               (if-let ((assoc (assoc (cadr thing) alist)))
                 (let ((val (cdr assoc)))
-                  ;; (debug)
-                  ;; (dm::prn "VAL:     %s" val)
+                  (dm::prn "VAL:     %s" val)
                   (unless (proper-list-p val)
                     (error "var %s's value %s cannot be spliced, not a list."))
                   (dolist (elem val)
