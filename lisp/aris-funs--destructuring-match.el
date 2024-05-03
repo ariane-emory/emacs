@@ -198,6 +198,8 @@ KEY is already present in ALIST with a different value."
 ;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
+(confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
+  returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
 (when *dm:tests-enabled*
   (confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
   (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
