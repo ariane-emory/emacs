@@ -208,7 +208,7 @@ KEY is already present in ALIST with a different value."
         ) ;; end of (while (and pat-tail targ-tail).
       ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
       (dm::prndiv)
-      (dm::prn "final PAT-TAIL: %s"   pat-tail)
+      (dm::prn "final PAT-TAIL:   %s" pat-tail)
       (dm::prn "final TARG-TAIL:  %s" targ-tail)    
       (cond
         ;; When TARG-TAIL isn't nil, then PAT-TAIL must have ran out before TARG-TAIL, no match:
