@@ -78,15 +78,15 @@ KEY is already present in ALIST with a different value."
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:    %S" pattern)
   (dm::prn "AGAINST:        %S" target)
-  (let* ( (res
+  (let* ( (result
             ;; (with-indentation
             ;;   (dm::match1 pattern target dont-care ellipsis unsplice nil))
             (dm::match1 pattern target dont-care ellipsis unsplice nil))
-          (res (if (listp res) (nreverse res) res)))
+          (result (if (listp result) (nreverse result) result)))
     (dm::prndiv)
-    (dm::prn "FINAL RESULT:  %s" res) 
+    (dm::prn-labeled result "FINAL")
     (dm::prndiv)
-    res))
+    result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -95,23 +95,23 @@ KEY is already present in ALIST with a different value."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
   (if-not (consp alist)
-    (dm::prn "ALIST:         %s" alist)
+    (dm::prn-labeled alist)
     (let ((pp-str (indent-string-lines
                     (trim-trailing-whitespace
                       (pp-to-string-without-offset alist)))))
       (if (<= (count-string-lines pp-str) 1)
-        (dm::prn "ALIST:         %s" alist)
+        (dm::prn-labeled alist)
         (dm::prn "ALIST:")
         (mapc #'prn (string-lines pp-str))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 15))
+(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 18))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label and a given WIDTH."
   (let* ( (label (concat (symbol-name var) ":"))
-          (extra (if (string-equal "" extra) extra (concat extra " ")))
+          (extra (if (string-equal "" extra) extra (upcase (concat extra " "))))
           (fmt   (format "%s%s%s%%s"
                    extra
                    (upcase label)
@@ -138,8 +138,8 @@ KEY is already present in ALIST with a different value."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   (dm::prndiv)
-  (dm::prn "MATCHING:       %S" pattern)
-  (dm::prn "AGAINST:        %S" target)
+  (dm::prn "MATCHING:          %S" pattern)
+  (dm::prn "AGAINST:           %S" target)
   ;; just rename these because it reads better:
   (let ( (pat-tail  pattern)
          (targ-tail target))
@@ -208,8 +208,8 @@ KEY is already present in ALIST with a different value."
         ) ;; end of (while (and pat-tail targ-tail).
       ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
       (dm::prndiv)
-      (dm::prn "final PAT-TAIL:   %s" pat-tail)
-      (dm::prn "final TARG-TAIL:  %s" targ-tail)    
+      (dm::prn-labeled pat-tail  "final")
+      (dm::prn-labeled targ-tail "final")
       (cond
         ;; When TARG-TAIL isn't nil, then PAT-TAIL must have ran out before TARG-TAIL, no match:
         (targ-tail
@@ -229,7 +229,7 @@ KEY is already present in ALIST with a different value."
             (setf alist (dm::pushnew var alist nil))))
         ;; It was something else, no match;
         (t (throw 'no-match nil))) 
-      (dm::prn "RESULT:        %s" alist)      
+      (dm::prn-labeled alist "result")
       ;; return either the ALIST or just t:
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
