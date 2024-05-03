@@ -52,45 +52,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pushnew(key alist new-val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Push KEY into ALIST with NEW-VAL unless it is already present, no match if
-KEY is already present in ALIST with a different value."
-  (when-let ( (assoc (assoc key alist))
-              (neq   (not (equal (cdr assoc) new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons var new-val) alist :test #'equal))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:match ( pattern target
-                     &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A simple pattern matching/destructuring fun."
-  (unless (and (listp pattern)
-            (listp target)
-            (symbolp dont-care)
-            (symbolp ellipsis)
-            (symbolp unsplice))
-    (error (concat "PATTERN and TARGET must be lists, "
-             "DONT-CARE, ELLIPSIS and UNSPLICE must be symbols.")))
-  (dm::prndiv)
-  (dm::prn "BEGIN MATCH:    %S" pattern)
-  (dm::prn "AGAINST:        %S" target)
-  (let* ( (result
-            ;; (with-indentation
-            ;;   (dm::match1 pattern target dont-care ellipsis unsplice nil))
-            (dm::match1 pattern target dont-care ellipsis unsplice nil))
-          (result (if (listp result) (nreverse result) result)))
-    (dm::prndiv)
-    (dm::prn-labeled result "FINAL")
-    (dm::prndiv)
-    result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::pp-alist (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
@@ -130,6 +91,45 @@ KEY is already present in ALIST with a different value."
 ;; and print:
 ;; FOO:            123
 ;; BARBAZ:         456
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun dm:match ( pattern target
+                     &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "A simple pattern matching/destructuring fun."
+  (unless (and (listp pattern)
+            (listp target)
+            (symbolp dont-care)
+            (symbolp ellipsis)
+            (symbolp unsplice))
+    (error (concat "PATTERN and TARGET must be lists, "
+             "DONT-CARE, ELLIPSIS and UNSPLICE must be symbols.")))
+  (dm::prndiv)
+  (dm::prn "BEGIN MATCH:    %S" pattern)
+  (dm::prn "AGAINST:        %S" target)
+  (let* ( (result
+            ;; (with-indentation
+            ;;   (dm::match1 pattern target dont-care ellipsis unsplice nil))
+            (dm::match1 pattern target dont-care ellipsis unsplice nil))
+          (result (if (listp result) (nreverse result) result)))
+    (dm::prndiv)
+    (dm::prn-labeled result "FINAL")
+    (dm::prndiv)
+    result))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::pushnew(key alist new-val)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Push KEY into ALIST with NEW-VAL unless it is already present, no match if
+KEY is already present in ALIST with a different value."
+  (when-let ( (assoc (assoc key alist))
+              (neq   (not (equal (cdr assoc) new-val))))
+    (throw 'no-match nil))
+  (cl-pushnew (cons var new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
