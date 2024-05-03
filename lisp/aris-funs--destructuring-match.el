@@ -146,7 +146,6 @@ KEY is already present in ALIST with a different value."
       (dm::prndiv)
       (dm::prn-labeled pattern "MATCHING")
       (dm::prn-labeled target  "AGAINST")
-      ;;---------------------------------------------------------------------------------------------
       ;; Just rename these because it reads better:
       (let ( (pat-tail  pattern)
              (targ-tail target))
