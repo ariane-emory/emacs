@@ -59,7 +59,7 @@
 (defalias 'pick-do/would?     (make-pick '(do would)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar   *desire-words*     '(need want))
-(defalias 'desire?            (make-member-sym-p '(like need want)))
+(defalias 'desire?            (make-member-sym-p '(like need want))) ;; includes 'like.
 (defalias 'pick-desire        (make-pick *desire-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar    *subject-words*   '(i you))
@@ -371,7 +371,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *proc-funs-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((*proc-funs-verbose* t))
+(let ((*proc-funs-verbose* nil))
   (confirm that (proc-funs
                   '((subj swap-word) (subj-2 swap-word))
                   '((subj . i) (subj-2 . you) (baz . you)))
@@ -528,8 +528,8 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (not (null (member sym '(! \? \, "!" "?" "," ".")))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (punctuation? '!) returns t)
-(confirm that (punctuation? '\?) returns t)
+(confirm that (punctuation? '!)   returns t)
+(confirm that (punctuation? '\?)  returns t)
 (confirm that (punctuation? 'foo) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -631,8 +631,16 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests:      ( (subject         subject?))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject     swap-word))
-           :response:   ( 5 why do you think that ,subject would like ,@things \?))))
+         ( :var-funs:   ( (subject         swap-word))
+           :response:   ( 5 why do you think that ,subject would like ,@things \?))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really))
+           :response:   ( 5 ,subject ,maybe-really would like ,@things ))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really))
+           :response:   ( 5 ,subject would ,maybe-really like ,@things ))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,desire ,a/an ,@things)
        :var-tests:      ( (subject         subject?)
@@ -723,12 +731,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :var-tests:      ( (subject         subject?)
                           (modal           modal?))
        :responses:
-       ( ( :var-funs:   ( (subject         swap-word))
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word))
            :response:   ( 10 ,subject ,modal ,verb a ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( you ,foo ,baz \!)
        :responses:
-       ( ( :response:   ( 11 no \, it is you who ,foo ,baz \!))))
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response:   ( 11 no \, it is you who ,foo ,baz \!))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,epistemic that ,subject-2 ,modal-plus never ,verb a ,noun)
        :var-tests:      ( (subject         subject?)
@@ -1053,6 +1063,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (would you like lots of food)
              (would you like lots of food)
              (would you like lots of food)
+             (would you want lots of food)
+             (would you want lots of food)
+             (would you want lots of food)
+             (would you want lots of food)
              ))
   
   (prndiv)
