@@ -123,6 +123,7 @@ KEY is already present in ALIST with a different value."
   (dm::prn-labeled foo)
   (dm::prn-labeled barbaz)
   (dm::prn-labeled barbaz "last"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; these expand to:
 ;; (dm::prn "FOO:            %s" foo)
 ;; (dm::prn "BARBAZ:         %s" barbaz)
