@@ -6,7 +6,9 @@
 (require 'aris-funs--lists)
 (require 'aris-funs--when-let-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; TODO:
+;; - lookahead.
+;; - repeated vars test `equal' instead of signaling duplicate error.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup destructuring-match nil
@@ -14,6 +16,11 @@
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:match-verbose* nil
   "Whether `match-pattern' should print verbose messages."
+  :group 'destructuring-match
+  :type 'boolean)
+;;-----------------------------------------------------------------------------------------
+(defcustom *dm:tests-enabled* t
+  "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,8 +64,9 @@ in reverse order."
       (dm::require-non-duplicate-key! (car kvp) alist-1)
       (push kvp alist))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
-  returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1)))
+(when *dm:tests-enabled*
+  (confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
+    returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -187,61 +195,62 @@ in reverse order."
 ;; (dm:match '(,y ,@zs ...) '(2)) ; malformed, elem after UNSPLICE.
 ;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
-(confirm that (dm:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
-(confirm that (dm:match '(,a ,b ,c) '(1 2 3)) returns ((a . 1) (b . 2) (c . 3)))
-(confirm that (dm:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
-(confirm that (dm:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
-(confirm that (dm:match '(,x ...) '(1 2 3)) returns ((x . 1)))
-(confirm that (dm:match '(,x ...) '(1)) returns ((x . 1)))
-(confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
-  returns ((x . a) (y . 5)))
-(confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
-  returns ((x . a) (y . 5)))
-(confirm that (dm:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
-(confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns ((x . 1) (y . 4)))
-(confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
-(confirm that (dm:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
-  returns ((x . 1) (p . q) (y . 4)))
-(confirm that (dm:match '(1 (,foo _) 2) '(1 (,foo _) 2)) returns ((foo \, foo)))
-;; don't allow these to partially match;
-(confirm that (dm:match '(,x (,p ...) ,y) '(1 (q r) 2)) returns ((x . 1) (p . q) (y . 2)))
-(confirm that (dm:match '(,x (,p) ,y) '(1 (q r) 2)) returns nil)
-(confirm that (dm:match '(,x (,p) ,y) '(1 () 2)) returns nil)
-(confirm that (dm:match '(,x ,@ys) '(1 2 3 4)) returns ((x . 1) (ys 2 3 4)))
-(confirm that
-  (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
-  returns ((w . 1) (v . foo) (x . 2) (ys 3 4) (z . 5)))
-(confirm that (dm:match '(,x ,@ys) '(1)) returns ((x . 1) (ys)))
-(confirm that (dm:match '(1 2 3) '(1 2 3)) returns t)
-(confirm that (dm:match '(,1 2 3) '(1 2 3)) returns ((1 . 1)))
-(confirm that (dm:match '(_ ,x ...) '(foo (2 . 3) (4 . 5))) returns ((x 2 . 3)))
+(when *dm:tests-enabled*
+  (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
+  (confirm that (dm:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
+  (confirm that (dm:match '(,a ,b ,c) '(1 2 3)) returns ((a . 1) (b . 2) (c . 3)))
+  (confirm that (dm:match '(foo _ ,baz) '(foo quux poop)) returns ((baz . poop)))
+  (confirm that (dm:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
+  (confirm that (dm:match '(,x ...) '(1 2 3)) returns ((x . 1)))
+  (confirm that (dm:match '(,x ...) '(1)) returns ((x . 1)))
+  (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
+    returns ((x . a) (y . 5)))
+  (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
+    returns ((x . a) (y . 5)))
+  (confirm that (dm:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
+  (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4)) returns ((x . 1) (y . 4)))
+  (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
+  (confirm that (dm:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
+    returns ((x . 1) (p . q) (y . 4)))
+  (confirm that (dm:match '(1 (,foo _) 2) '(1 (,foo _) 2)) returns ((foo \, foo)))
+  ;; don't allow these to partially match;
+  (confirm that (dm:match '(,x (,p ...) ,y) '(1 (q r) 2)) returns ((x . 1) (p . q) (y . 2)))
+  (confirm that (dm:match '(,x (,p) ,y) '(1 (q r) 2)) returns nil)
+  (confirm that (dm:match '(,x (,p) ,y) '(1 () 2)) returns nil)
+  (confirm that (dm:match '(,x ,@ys) '(1 2 3 4)) returns ((x . 1) (ys 2 3 4)))
+  (confirm that
+    (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
+    returns ((w . 1) (v . foo) (x . 2) (ys 3 4) (z . 5)))
+  (confirm that (dm:match '(,x ,@ys) '(1)) returns ((x . 1) (ys)))
+  (confirm that (dm:match '(1 2 3) '(1 2 3)) returns t)
+  (confirm that (dm:match '(,1 2 3) '(1 2 3)) returns ((1 . 1)))
+  (confirm that (dm:match '(_ ,x ...) '(foo (2 . 3) (4 . 5))) returns ((x 2 . 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (dm:match
-    '(one (this that) (,two three (,four ,five) ,six))
-    '(one (this that) (2 three (4 5) 6)))  
-  returns ((two . 2) (four . 4) (five . 5) (six . 6)))
+  (confirm that
+    (dm:match
+      '(one (this that) (,two three (,four ,five) ,six))
+      '(one (this that) (2 three (4 5) 6)))  
+    returns ((two . 2) (four . 4) (five . 5) (six . 6)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (when-let-alist (dm:match
-                    '(i ,modal-verb ,verb a ,thing)
-                    '(i have (never seen) a (red car)))
-    (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
-  returns (Do you really believe that you have never seen a red car \?))
+  (confirm that
+    (when-let-alist (dm:match
+                      '(i ,modal-verb ,verb a ,thing)
+                      '(i have (never seen) a (red car)))
+      (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
+    returns (Do you really believe that you have never seen a red car \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (when-let-alist (dm:match
-                    '(i ,verb that ,noun ,con ,thing)
-                    '(i think that dogs are dumb))
-    (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
-  returns (Why do you think that dogs are dumb \?))
+  (confirm that
+    (when-let-alist (dm:match
+                      '(i ,verb that ,noun ,con ,thing)
+                      '(i think that dogs are dumb))
+      (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
+    returns (Why do you think that dogs are dumb \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (when-let-alist
-    (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
-    (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
-  returns (why do you think that you have never seen a red car \?))
+  (confirm that
+    (when-let-alist
+      (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
+      (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
+    returns (why do you think that you have never seen a red car \?)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -282,49 +291,50 @@ This behaves very similarly to quasiquote."
           (t (push thing res)))))
     (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
-  returns (666 x 999 z))
-(confirm that (dm:fill
-                '(,w x ,y (,y , y) z ,w)
-                '((y . 999) (w . (333 666))))
-  returns ((333 666) x 999 (999 999) z (333 666)))
-(confirm that (dm:fill '(a ,b (,c ,d))
-                (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-  returns (a 2 (3 4)))
-(confirm that
-  (dm:fill '(a ,b (,c ,d))
-    (dm:match '(a ,b (,c ,d))
-      (dm:fill '(a ,b (,c ,d))
-        (dm:match '(a ,b (,c ,d))
-          '(a 2 (3 4))))))
-  returns (a 2 (3 4)))
-(confirm that
-  (dm:match '(a ,b (,c ,d))
+(when *dm:tests-enabled*
+  (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+    returns (666 x 999 z))
+  (confirm that (dm:fill
+                  '(,w x ,y (,y , y) z ,w)
+                  '((y . 999) (w . (333 666))))
+    returns ((333 666) x 999 (999 999) z (333 666)))
+  (confirm that (dm:fill '(a ,b (,c ,d))
+                  (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+    returns (a 2 (3 4)))
+  (confirm that
     (dm:fill '(a ,b (,c ,d))
       (dm:match '(a ,b (,c ,d))
         (dm:fill '(a ,b (,c ,d))
           (dm:match '(a ,b (,c ,d))
-            '(a 2 (3 4)))))))
-  returns ((b . 2) (c . 3) (d . 4)))
-(confirm that
-  (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-         (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-    (dm:fill pattern
-      (dm:match pattern
-        (dm:fill pattern
-          (dm:match pattern
-            target)))))
-  returns (a 2 (3 4 (5 6 7 8))))
-(confirm that
-  (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-         (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-    (dm:match pattern
+            '(a 2 (3 4))))))
+    returns (a 2 (3 4)))
+  (confirm that
+    (dm:match '(a ,b (,c ,d))
+      (dm:fill '(a ,b (,c ,d))
+        (dm:match '(a ,b (,c ,d))
+          (dm:fill '(a ,b (,c ,d))
+            (dm:match '(a ,b (,c ,d))
+              '(a 2 (3 4)))))))
+    returns ((b . 2) (c . 3) (d . 4)))
+  (confirm that
+    (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+           (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
       (dm:fill pattern
         (dm:match pattern
           (dm:fill pattern
             (dm:match pattern
-              target))))))
-  returns ((b . 2) (d . 4) (c . 3) (e . 5) (fs 6 7 8)))
+              target)))))
+    returns (a 2 (3 4 (5 6 7 8))))
+  (confirm that
+    (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+           (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+      (dm:match pattern
+        (dm:fill pattern
+          (dm:match pattern
+            (dm:fill pattern
+              (dm:match pattern
+                target))))))
+    returns ((b . 2) (d . 4) (c . 3) (e . 5) (fs 6 7 8))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
