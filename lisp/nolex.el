@@ -1005,10 +1005,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defun test ()
-  (let ((lst '(1 2 3)))
-    (prn "lst: %s" lst)
-    (setf (cadr lst) (+ 1 (cadr lst)))))
+(defun counter ()
+  (lambda ()
+    (let ((lstt nil))
+      (unless lstt
+        (setf lstt (cons 0 nil))
+      (prn "lst: %s" lstt)
+      (setf (car lstt) (+ 1 (car lstt))))))
 
-(test)
+(setq q (counter))
+(setq r (counter))
+
+(funcall q)
+(funcall r)
 
