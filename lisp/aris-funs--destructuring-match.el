@@ -193,6 +193,8 @@ KEY is already present in ALIST with a different value."
     ;; return either the ALIST or just t:
     (or alist t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These are now all legal:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
 ;; (dm:match '(,y ,y) '(2 3)) ; duplicate key in set!
@@ -202,9 +204,6 @@ KEY is already present in ALIST with a different value."
 ;; (dm:match '(,y ,@zs ...) '(2)) ; malformed, elem after UNSPLICE.
 ;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
-(confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
-  returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
 (when *dm:tests-enabled*
   (confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
   (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
@@ -247,6 +246,8 @@ KEY is already present in ALIST with a different value."
   (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil)) returns ((x)))
   (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil)) returns nil)
   (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4)) returns nil)
+  (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
+    returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (dm:match
