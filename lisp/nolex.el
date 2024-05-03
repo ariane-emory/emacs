@@ -58,7 +58,7 @@
 (defalias 'do/would?          (make-member-sym-p '(do would)))
 (defalias 'pick-do/would?     (make-pick '(do would)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar   *desire-words*     '(like need want))
+(defvar   *desire-words*     '(need want))
 (defalias 'desire?            (make-member-sym-p '(like need want)))
 (defalias 'pick-desire        (make-pick *desire-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -124,7 +124,7 @@
 (defalias 'pick-possibility
   (make-pick '(do don\'t sometimes\ do always never would wouldn\'t)))
 (defalias 'pick-obviousness
-  (make-pick '(nil nil nil clearly plainly actually secretly obviously really)))
+  (make-pick '(nil nil nil clearly plainly actually secretly obviously evidently)))
 (defalias 'pick-insult-adj
   (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
@@ -752,9 +752,18 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (plural-subject* swap-word)
                           (adj!            pick-insult-adj)
                           (noun!           pick-insult-noun)
+                          (maybe-really!   pick-maybe-really)
                           (obv!            pick-obviousness))
-           :response:   ( 15 You ,adj ,noun \, ,plural-subject are not the ,@things \,
-                          it is ,obv ,plural-subject* who are the ,@things \!))))
+           :response:   ( 15 You ,adj ,noun \, ,plural-subject are not ,maybe-really the ,@things \,
+                          it is ,obv ,plural-subject* who are the ,@things \!))
+         ( :var-funs:   ( (plural-subject  dup-var)
+                          (plural-subject* swap-word)
+                          (adj!            pick-insult-adj)
+                          (noun!           pick-insult-noun)
+                          (maybe-really!   pick-maybe-really)
+                          (obv!            pick-obviousness))
+           :response:   ( 15 You ,adj ,noun \, ,plural-subject are ,obv not the ,@things \,
+                          it is ,maybe-really ,plural-subject* who are the ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( i wish that you were a ,@things)
        :responses:
@@ -965,7 +974,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you know they can find us)
              (you know they can find us)
              (you know they can find us)
+             (i know we can find them)
+             (i know we can find them)
+             (i know we can find them)
+             (i know we can find them)
+             (i know we can find them)
+             (i know we can find them)
 
+             
              ;; 9
              (i could eat a hamburger and some fries)
              (i could eat a hamburger and some fries)
@@ -1004,18 +1020,4 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(defun counter ()
-  (lambda ()
-    (let ((lstt nil))
-      (unless lstt
-        (setf lstt (cons 0 nil))
-      (prn "lst: %s" lstt)
-      (setf (car lstt) (+ 1 (car lstt))))))
-
-(setq q (counter))
-(setq r (counter))
-
-(funcall q)
-(funcall r)
 
