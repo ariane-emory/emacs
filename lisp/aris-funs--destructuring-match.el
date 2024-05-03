@@ -200,7 +200,7 @@ KEY is already present in ALIST with a different value."
                                dont-care ellipsis unsplice alist))))
                   (cond
                     ((eq res t)) ; do nothing.
-                    ((eq res nil) (NO-MATCH!)) ;; sub-pat-tail didn't match.
+                    ((eq res nil) (NO-MATCH!)) ;; sub-pattern's tail didn't match.
                     ;; dm::match1 only returns t or lists, so we'll assume it's now a
                     ;; list.
                     (t (setf alist res)))))
@@ -219,9 +219,7 @@ KEY is already present in ALIST with a different value."
         (cond
           ;; When TARG-TAIL isn't nil, then PAT-TAIL must have ran out before TARG-TAIL,
           ;; no match:
-          (targ-tail
-            (dm::prn "THROWING %s!" 'no-match)
-            (NO-MATCH!))
+          (targ-tail (NO-MATCH!))
           ;; By this line, TARG-TAIL must be nil. Unless PAT-TAIL is also nil, it had 
           ;; better contain an ELLIPSIS or an UNSPLICE.
           ((null pat-tail)) ;; don't need to do anything.
