@@ -191,8 +191,7 @@
       ;; to set the var in ALIST to nil:
       ((and unsplice (equal (car-safe (car pattern)) unsplice))
         (when (cdr pattern) (error "unsplice must be the last element in the pattern."))
-        (let* ( (var (cadar pattern))
-                (new-assoc (cons var nil)))
+        (let ((var (cadar pattern)))
           (setf alist (dm::pushnew var alist nil))))
       ;; It was something else, no match;
       (t (throw 'no-match nil))) 
