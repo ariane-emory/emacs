@@ -151,6 +151,7 @@ KEY is already present in ALIST with a different value."
           ;; the result was just t because the pattern being recursed over contained no
           ;; variables):
           ((and (proper-list-p pat-head) (proper-list-p targ-head))
+            (dm::prn "PAT-HEAD is a list, recurse...")
             (let ((res (with-indentation
                          (dm::match1 pat-head targ-head
                            dont-care ellipsis unsplice alist))))
