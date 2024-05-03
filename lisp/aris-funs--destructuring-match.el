@@ -54,20 +54,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro dm::prn-labeled (var &optional (extra "") (width 20))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Print VAR with a label and a given WIDTH."
-  (let* ( (label (concat (symbol-name var) ":"))
-          (extra (if (string-equal "" extra) extra (upcase (concat extra " "))))
-          (fmt   (format "%s%s%s%%s"
-                   extra
-                   (upcase label)
-                   (make-string (- width (+ (length extra) (length label))) ?\ ))))
+  "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
+  (let* ( (label  (concat (upcase (symbol-name var)) ":"))
+          (extra  (if (string-equal "" extra) extra (upcase (concat extra " "))))
+          (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
+          (fmt    (format "%s%s%s%%s" extra label spaces)))
     `(dm::prn ,fmt ,var)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ( (foo    123)
-       (barbaz 456))
+       (barbaz 456)
+       (barbazbarbazbarbazbarbaz 789))
   (dm::prn-labeled foo)
   (dm::prn-labeled barbaz)
-  (dm::prn-labeled barbaz "last"))
+  (dm::prn-labeled barbaz "last")
+  (dm::prn-labeled barbazbarbazbarbazbarbaz))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; these expand to:
 ;; (dm::prn "FOO:            %s" foo)
@@ -79,7 +79,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pp-alist (alist)
+(defun dm::prn-pp-alist (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
   (if-not (consp alist)
@@ -148,11 +148,11 @@ KEY is already present in ALIST with a different value."
           (let ( (pat-head  (pop pat-tail))
                  (targ-head (pop targ-tail)))
             (dm::prndiv)
-            (dm::pp-alist alist)
-            (dm::prn-labeled pat-head)
-            (dm::prn-labeled targ-head)
-            (dm::prn-labeled pat-tail)
-            (dm::prn-labeled targ-tail)
+            (dm::prn-pp-alist alist)
+            (dm::prn-labeled  pat-head)
+            (dm::prn-labeled  targ-head)
+            (dm::prn-labeled  pat-tail)
+            (dm::prn-labeled  targ-tail)
             (dm::prndiv ?\-)
             (cond
               ;; When PAT-HEAD is DONT-CARE, do nothing:
