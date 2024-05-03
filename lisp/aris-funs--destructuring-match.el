@@ -91,6 +91,22 @@ KEY is already present in ALIST with a different value."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::pp-alist (alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Pretty print ALIST."
+  (if-not (consp alist)
+    (dm::prn "ALIST:         %s" alist)
+    (let ((pp-str (indent-string-lines
+                    (trim-trailing-whitespace
+                      (pp-to-string-without-offset alist)))))
+      (if (<= (count-string-lines pp-str) 1)
+        (dm::prn "ALIST:         %s" alist)
+        (dm::prn "ALIST:")
+        (mapc #'prn (string-lines pp-str))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
@@ -105,16 +121,7 @@ KEY is already present in ALIST with a different value."
         (let ( (pat-head  (pop pat-tail))
                (targ-head (pop targ-tail)))
           (dm::prndiv)
-          ;; Print the current alist:
-          (if-not (consp alist)
-            (dm::prn "ALIST:         %s" alist)
-            (let ((pp-str (indent-string-lines
-                            (trim-trailing-whitespace
-                              (pp-to-string-without-offset alist)))))
-              (if (<= (count-string-lines pp-str) 1)
-                (dm::prn "ALIST:         %s" alist)
-                (dm::prn "ALIST:")
-                (mapc #'prn (string-lines pp-str)))))
+          (dm::pp-alist alist)
           (dm::prn "PAT-HEAD:      %s" pat-head)
           (dm::prn "TARG-HEAD:     %s" targ-head)
           (dm::prn "PAT-TAIL:      %s" pat-tail)
@@ -126,12 +133,12 @@ KEY is already present in ALIST with a different value."
               (dm::prn "DONT-CARE, do nothing."))
             ;; When PAT-HEAD is an ELLIPSIS, nullify TARG-TAIL and PAT-TAIL to break the
             ;; loop successfully:
-            ((and ellipsis (eq pat-head ellipsis) )
+            ((and ellipsis (eq pat-head ellipsis))
               (when pat-tail (error "ellipsis must be the last element in the pat-tail."))
               (dm::prn "ELLIPSIS, discard %s." targ-tail)
               ;; nullify TARG-TAIL and PAT-TAIL:
-              (setf targ-tail  nil)
-              (setf pat-tail nil))
+              (setf targ-tail nil)
+              (setf pat-tail  nil))
             ;; When PAT-HEAD is an UNSPLICE, nullify TARG-TAIL and PAT-TAIL to break the
             ;; loop successfully:
             ((and unsplice (eq unsplice (car-safe pat-head)))
@@ -142,8 +149,8 @@ KEY is already present in ALIST with a different value."
                   ;; put the remainder of TARG-TAIL in VAR's key in ALIST:
                   (setf alist (dm::pushnew var alist unsplice-val))
                   ;; nullify TARG-TAIL and PAT-TAIL:
-                  (setf targ-tail  nil)
-                  (setf pat-tail nil))))
+                  (setf targ-tail nil)
+                  (setf pat-tail  nil))))
             ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
             ((eq '\, (car-safe pat-head)) 
               (let ((var (cadr pat-head)))
@@ -174,11 +181,13 @@ KEY is already present in ALIST with a different value."
         ) ;; end of (while (and pat-tail targ-tail).
       ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
       (dm::prndiv)
-      (dm::prn "final PAT-TAIL: %s" pat-tail)
+      (dm::prn "final PAT-TAIL: %s"   pat-tail)
       (dm::prn "final TARG-TAIL:  %s" targ-tail)    
       (cond
         ;; When TARG-TAIL isn't nil, then PAT-TAIL must have ran out before TARG-TAIL, no match:
-        (targ-tail (dm::prn "THROWING %s!" 'no-match) (throw 'no-match nil))
+        (targ-tail
+          (dm::prn "THROWING %s!" 'no-match)
+          (throw 'no-match nil))
         ;; By this line, TARG-TAIL must be nil. Unless PAT-TAIL is also nil, it had better
         ;; contain an ELLIPSIS or an UNSPLICE.
         ((null pat-tail)) ;; don't need to do anything.
@@ -198,7 +207,7 @@ KEY is already present in ALIST with a different value."
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dm:match '(,x ... ,z) '(X 2 3))
-(confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
+(confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These are now all legal:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
