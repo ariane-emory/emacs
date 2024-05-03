@@ -141,6 +141,7 @@ KEY is already present in ALIST with a different value."
                   (progn
                     (dm::prn "THROWING %s!" 'no-match)
                     (throw 'no-match nil))))
+    (dm::prndiv)
     (dm::prn-labeled pattern "MATCHING")
     (dm::prn-labeled target  "AGAINST")
     ;; just rename these because it reads better:
@@ -192,8 +193,8 @@ KEY is already present in ALIST with a different value."
               ;; (unless the result was just t because the pat-tail being recursed over
               ;; contained no variables):
               ((and (proper-list-p pat-head) (proper-list-p targ-head))
-                (dm::prn "PAT-HEAD is a list, recurse...")
-                (dm::prndiv)
+                (dm::prn "PAT-HEAD is a list, recurse:")
+                ;; (dm::prndiv)
                 (let ((res (with-indentation
                              (dm::match1 pat-head targ-head
                                dont-care ellipsis unsplice alist))))
