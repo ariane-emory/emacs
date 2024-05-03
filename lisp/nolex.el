@@ -133,6 +133,7 @@
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (defalias 'pick-maybe-that   (make-pick '(that nil)))
 (defalias 'pick-maybe-really (make-pick '(really actually nil nil)))
+(defalias 'pick-really       (make-pick '(really actually)))
 (defalias 'pick-maybe-not    (make-pick '(not nil)))
 (defalias 'pick-probably-not (make-pick '(not not nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -165,8 +166,8 @@
   (lambda (val var var-alist)
     "Return the swapped word for VAL found in ALIST, or VAL if none."
     (cond
-      ((assoc  val alist) (cdr (assoc  val alist)))
-      ((rassoc val alist) (car (rassoc val alist)))
+      ((assq  val alist) (cdr (assq  val alist)))
+      ((rassq val alist) (car (rassq val alist)))
       (t val))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-swapper (alist)
@@ -174,16 +175,16 @@
   `(lambda (val var var-alist)
      "Return the swapped word for VAL found in ALIST, or VAL if none."
      (cond
-       ((assoc  val ,alist) (cdr (assoc  val ,alist)))
-       ((rassoc val ,alist) (car (rassoc val ,alist)))
+       ((assq  val ,alist) (cdr (assq  val ,alist)))
+       ((rassq val ,alist) (car (rassq val ,alist)))
        (t val))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun swap-word (var val var-alist)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
 ;;   (cond
-;;     ((assoc  val *swap-words*) (cdr (assoc  val *swap-words*)))
-;;     ((rassoc val *swap-words*) (car (rassoc val *swap-words*)))
+;;     ((assq  val *swap-words*) (cdr (assq  val *swap-words*)))
+;;     ((rassq val *swap-words*) (car (rassq val *swap-words*)))
 ;;     (t val)))
 (defalias 'swap-word (make-swapper *swap-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -196,7 +197,7 @@
 ;; (defun dup-var (var val var-alist)
 ;;   (cl-loop for n from 1
 ;;     for new-var = (intern (format "$%d" n))
-;;     until (not (assoc new-var var-alist))
+;;     until (not (assq new-var var-alist))
 ;;     finally (nconc var-alist (list (cons new-var val))))
 ;;   nil)
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -209,7 +210,7 @@
   "Duplicate a VAR in VAR-ALIST with a new name."
   (cl-loop for suffix from 0
     for new-var = (intern (concat (symbol-name var) (make-string suffix ?*)))
-    until (not (assoc new-var var-alist))
+    until (not (assq new-var var-alist))
     finally (nconc var-alist (list (cons new-var val))))
   val)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -277,9 +278,9 @@
                   (tests (cdr var-tests))
                   ;; when var is _, the test must just be examining at VAR-LIST:
                   (is-no-var-test (eq '_ var))
-                  (assoc (if is-no-var-test (cons '_ nil) (assoc var var-alist)))
-                  (val   (cdr assoc)))
-            (unless assoc (error "missing var %s" var))
+                  (kvp (if is-no-var-test (cons '_ nil) (assq var var-alist)))
+                  (val   (cdr kvp)))
+            (unless kvp (error "missing var %s" var))
             (dolist (test tests)
               (let ((res
                       ;; Not sure if this list case is a good idea yet:
@@ -318,8 +319,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-flet ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
-             (prndiv2 (&rest args) (when *proc-funs-verbose* (apply #'prndiv nil))))
+  (cl-labels ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
+               (prndiv2 (&rest args) (when *proc-funs-verbose* (apply #'prndiv nil)))
+               (prn-var-alist (&optional (ix ""))
+                 (prn2 "VAR-ALIST%s:" ix)
+                 (let (lisp-indent-offset)
+                   (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))))
     (dolist (var-funs var-funses)
       (let ( (var     (car var-funs))
              (funs    (cdr var-funs)))
@@ -327,28 +332,26 @@
         (let* ( (is-discard (eq '_ var))
                 (new-var    (unless is-discard (new-var-name? var)))
                 (var        (if new-var new-var var))
-                (assoc      (unless new-var (assoc var var-alist))))
+                (kvp        (unless new-var (assq var var-alist))))
           (cond
             (is-discard) ;; do nothing.
-            ((and new-var assoc)         (error "key %s already taken" var))
-            ((and (not new-var) (not assoc)) (error "missing var %s"       var)))
+            ((and new-var kvp)         (error "key %s already taken" var))
+            ((and (not new-var) (not kvp)) (error "missing var %s"       var)))
           (cond
             (is-discard
-              (setf assoc     (cons var nil))) ; left unattached to VAR-ALIST!
+              (setf kvp     (cons var nil))) ; left unattached to VAR-ALIST!
             (new-var
-              (setf assoc     (cons var nil)) ; this  used to set it to t...
-              (setf var-alist (cons assoc var-alist))
+              (setf kvp     (cons var nil)) ; this  used to set it to t...
+              (setf var-alist (cons kvp var-alist))
               (prndiv2)
               (prn2 "NEW-VAR:   %s" var)))
           (dolist (fun funs)
             (prndiv2)
             (prn2 "var:       %s" var)
-            (let ((val (cdr assoc)))
+            (let ((val (cdr kvp)))
               (prn2 "val:       %s" val)
               (prn2 "fun:       %s" fun)
-              (prn2 "VAR-ALIST:")
-              (let (lisp-indent-offset)
-                (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
+              (prn-var-alist)
               ;; This doesn't seem necessary (with lexical-binding off:
               ;; (when (consp fun)
               ;;   (setf fun (eval fun)))
@@ -358,14 +361,8 @@
                         (rmapcar val (lambda (x) (funcall fun x var var-alist)))
                         (funcall fun val var var-alist))))
                 (prn2 "funres:    %s" res)
-                ;; (when res 
-                (setf (cdr assoc) res)
-                ;; ) ;; end of when res
-                ))
-            (prn2 "VAR-ALIST2:")
-            (let (lisp-indent-offset)
-              (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))
-            ))))
+                (setf (cdr kvp) res)))
+            (prn-var-alist 2)))))
     (prndiv2)
     (prn2 "DONE PROC FUNS.")
     (prndiv2)
