@@ -52,22 +52,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pp-alist (alist)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Pretty print ALIST."
-  (if-not (consp alist)
-    (dm::prn-labeled alist)
-    (let ((pp-str (indent-string-lines
-                    (trim-trailing-whitespace
-                      (pp-to-string-without-offset alist)))))
-      (if (<= (count-string-lines pp-str) 1)
-        (dm::prn-labeled alist)
-        (dm::prn "ALIST:")
-        (mapc #'prn (string-lines pp-str))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro dm::prn-labeled (var &optional (extra "") (width 18))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label and a given WIDTH."
@@ -95,6 +79,34 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::pp-alist (alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Pretty print ALIST."
+  (if-not (consp alist)
+    (dm::prn-labeled alist)
+    (let ((pp-str (indent-string-lines
+                    (trim-trailing-whitespace
+                      (pp-to-string-without-offset alist)))))
+      (if (<= (count-string-lines pp-str) 1)
+        (dm::prn-labeled alist)
+        (dm::prn "ALIST:")
+        (mapc #'prn (string-lines pp-str))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::pushnew(key alist new-val)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Push KEY into ALIST with NEW-VAL unless it is already present, no match if
+KEY is already present in ALIST with a different value."
+  (when-let ( (assoc (assoc key alist))
+              (neq   (not (equal (cdr assoc) new-val))))
+    (throw 'no-match nil))
+  (cl-pushnew (cons var new-val) alist :test #'equal))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
                      &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -118,18 +130,6 @@
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
     result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pushnew(key alist new-val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Push KEY into ALIST with NEW-VAL unless it is already present, no match if
-KEY is already present in ALIST with a different value."
-  (when-let ( (assoc (assoc key alist))
-              (neq   (not (equal (cdr assoc) new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons var new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
