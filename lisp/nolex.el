@@ -10,22 +10,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun new-var-name? (symbol)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
-  (when (and (symbolp symbol)          ; Check if it's a symbol
-          (string-suffix-p "!" (symbol-name symbol)))  ; Check if it ends with "!"
-    (intern (substring (symbol-name symbol) 0 -1))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (new-var-name? 'foo) returns nil)
-(confirm that (new-var-name? 'bar!) returns bar)
-(confirm that (new-var-name? 'baz!!!) returns baz!!)
-(confirm that (new-var-name? 7) returns nil)
-(confirm that (new-var-name? '(1 2 3)) returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun make-member-sym-p (lst)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Generate a membership predicate fun for LST."
@@ -47,9 +31,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro make-weighted-pick (lst) `(lambda (&rest _) (weighted-pick ,lst)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-pick          (lst) `(lambda (&rest _) (pick          ,lst)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro make-weighted-pick (lst) `(lambda (&rest _) (weighted-pick ,lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun make-pick (lst)
 ;;   (lambda (&rest _)
@@ -138,9 +122,9 @@
 (defalias 'pick-epistemic     (make-weighted-pick *epistemic-words*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-possibility
-  (make-pick '(do don\'t sometimes\ do always never might would wouldn\'t)))
+  (make-pick '(do don\'t sometimes\ do always never would wouldn\'t)))
 (defalias 'pick-obviousness
-  (make-pick '(nil nil nil clearly plainly actually secretly obviously)))
+  (make-pick '(nil nil nil clearly plainly actually secretly obviously really)))
 (defalias 'pick-insult-adj
   (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
@@ -312,6 +296,22 @@
   returns t)
 (confirm that (proc-tests '((subj subject?)) '((subj . x) (bar . think) (baz . you)))
   returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun new-var-name? (symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
+  (when (and (symbolp symbol)          ; Check if it's a symbol
+          (string-suffix-p "!" (symbol-name symbol)))  ; Check if it ends with "!"
+    (intern (substring (symbol-name symbol) 0 -1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (new-var-name? 'foo) returns nil)
+(confirm that (new-var-name? 'bar!) returns bar)
+(confirm that (new-var-name? 'baz!!!) returns baz!!)
+(confirm that (new-var-name? 7) returns nil)
+(confirm that (new-var-name? '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -599,8 +599,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (subject*        swap-word)
                           (am/are          dup-var)
                           (am/are*         swap-word)
+                          (maybe-really!   pick-maybe-really)
                           (obv!            pick-obviousness))
-           :response:   ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,a/an/the
+           :response:   ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,maybe-really ,a/an/the
                           ,@things \, ,subject ,am/are ,obv the ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( ,subject would ,desire many ,@things)
@@ -633,8 +634,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :responses:
        ( ( :var-funs:   ( (subject         swap-word)
                           (desire          pick-desire)
+                          (maybe-really!   pick-maybe-really)
                           (poss!           pick-possibility))
-           :response:   ( 7 ,subject ,poss ,desire ,@things))))
+           :response:   ( 7 ,subject ,poss ,maybe-really ,desire ,@things))
+         ( :var-funs:   ( (subject         swap-word)
+                          (desire          pick-desire)
+                          (maybe-really!   pick-maybe-really)
+                          (poss!           pick-possibility))
+           :response:   ( 7 ,subject ,maybe-really ,poss ,desire ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,bar ,baz)
        :var-tests:      ( (subject         subject?))
@@ -847,6 +854,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you are an asshole)
              (you are a particularly stupid asshole)
              (i am the King of France)
+             (i am the King of France)
+             (i am the King of France)
+             (i am an evil robot in disguise as a human)
+             (i am an evil robot in disguise as a human)
              (i am an evil robot in disguise as a human)
              
              ;; 4
@@ -969,6 +980,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (this is the worst thing ever)
              (this is the worst thing ever)
              (this is the worst thing ever)
+             (would you like food)
+             (would you like food)
+             (would you like food)
+             (would you like food)
+             (would you like lots of food)
+             (would you like lots of food)
+             (would you like lots of food)
+             (would you like lots of food)
              ))
   
   (prndiv)
