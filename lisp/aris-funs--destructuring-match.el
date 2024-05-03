@@ -156,10 +156,11 @@ KEY is already present in ALIST with a different value."
                 ((eq res nil) (throw 'no-match nil)) ;; sub-pattern didn't match.
                 ;; dm::match1 only returns t or lists, so we'll assume it's now a list.
                 (t (setf alist res)))))
+          ;; When PAT-HEAD and TARG-HEAD are equal literals do nothing:
           ((equal pat-head targ-head)
             (dm::prn "Equal literals, do nothing."))
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
-          ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
+          ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
           (t 
             (dm::prn "THROWING %s!" 'no-match)
             (throw 'no-match nil))))) ;; end of (while (and pattern target).
