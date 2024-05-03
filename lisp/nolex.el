@@ -148,7 +148,7 @@
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (defalias 'pick-maybe-that   (make-pick '(that nil)))
-(defalias 'pick-maybe-really (make-pick '(really actually certainly nil nil)))
+(defalias 'pick-maybe-really (make-pick '(really actually nil nil)))
 (defalias 'pick-maybe-not    (make-pick '(not nil)))
 (defalias 'pick-probably-not (make-pick '(not not nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -430,7 +430,8 @@
       ;; (prn "s-a-f-r   picked:    %s" response)
       (let-response response
         (setf var-alist (proc-funs .:var-funs: var-alist))
-        (throw 'result (dm:fill .:response: var-alist))))))
+        (let ((res (dm:fill .:response: var-alist)))
+          (throw 'result res))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *select-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -440,9 +441,11 @@
 (defun fill-in-missing-response-keys (response)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: this also converts RESPONSE from a plist to an alist."
+  (unless (member :response: response)
+    (error "malformed RESPONSE, :response: missing."))
   (fill-in-missing-alist-keys *fillable-response-keys* (plist-to-alist response)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *fillable-response-keys* '(:var-funs: :response:))
+(defvar *fillable-response-keys* '(:var-funs:)) ; :response: is not fillable!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (fill-in-missing-response-keys
@@ -751,8 +754,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input:          ( this is the ,@things)
        :responses:
        ( ( :var-funs:   ( (persp!          pick-i-am/you-are)
+                          (maybe-really!   pick-maybe-really)
                           (certainty!      pick-certainty))
-           ( :response: ( 18 ,persp not really ,certainty if this is ,@things )))))
+           :response: ( 18 ,persp not ,maybe-really ,certainty that this is the ,@things ))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,epistemic ,plural-subject ,modal ,verb ,them-us ,@things)
        :var-tasts       ( (subject         subject?)
@@ -941,6 +945,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)             
+             (this is the worst thing ever)
+             (this is the worst thing ever)
              (this is the worst thing ever)
 
              ))
