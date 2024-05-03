@@ -99,14 +99,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::push-new(key alist new-val)
+(defun dm::pushnew(key alist new-val)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "No match if KEY is already in ALIST with a different value."
   (when-let ( (assoc (assoc key alist))
               (val   (cdr assoc))
               (neq   (not (equal val new-val))))
     (throw 'no-match nil))
-  (cl-pushnew (cons var val) alist :test #'equal))
+  (cl-pushnew (cons var new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -147,16 +147,14 @@
             (let ((var (cadr pat-head)))
               (let ((unsplice-val (cons targ-head target)))
                 ;; put the remainder of TARGET in VAR's key in ALIST:
-                (dm::require-duplicate-keys-equal! var alist unsplice-val)
-                (cl-pushnew (cons var unsplice-val) alist :test #'equal)
+                (setf alist (dm::pushnew var alist unsplice-val))
                 ;; nullify TARGET and PATTERN:
                 (setf target  nil)
                 (setf pattern nil))))
           ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
           ((eq '\, (car-safe pat-head)) 
             (let ((var (cadr pat-head)))
-              (dm::require-duplicate-keys-equal! var alist targ-head)
-              (cl-pushnew (cons var targ-head) alist :test #'equal)
+              (setf alist (dm::pushnew var alist targ-head))
               (dm::prn "ALIST:         %s" alist)))
           ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST (unless
           ;; the result was just t because the pattern being recursed over contained no
@@ -195,8 +193,7 @@
         (when (cdr pattern) (error "unsplice must be the last element in the pattern."))
         (let* ( (var (cadar pattern))
                 (new-assoc (cons var nil)))
-          (dm::require-duplicate-keys-equal! var alist nil)
-          (cl-pushnew new-assoc alist :test #'equal)))
+          (setf alist (dm::pushnew var alist nil))))
       ;; It was something else, no match;
       (t (throw 'no-match nil))) 
     (dm::prn "RESULT:        %s" alist)      
