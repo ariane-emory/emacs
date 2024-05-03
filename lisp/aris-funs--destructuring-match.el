@@ -91,11 +91,12 @@ KEY is already present in ALIST with a different value."
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
         (dm::prndiv)
-        (if (not (consp alist))
+        (if-not (consp alist)
           (dm::prn "ALIST:         %s" alist)
           (let ((pp-str (indent-string-lines
                           (trim-trailing-whitespace
-                            (pp-to-string-without-offset alist)))))
+                            (let (lisp-indent-offset)
+                              (pp-to-string-without-offset alist))))))
             (if (<= (count-string-lines pp-str) 1)
               (dm::prn "ALIST:         %s" alist)
               (dm::prn "ALIST:")
