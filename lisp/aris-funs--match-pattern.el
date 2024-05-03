@@ -141,15 +141,15 @@ Examples:
       (when *mp:init-fun*
         (funcall *mp:init-fun*))
       (cl-labels
-        ((matchrec (pattern target accumulator)
-           (let  ( (pattern-head (car pattern))
-                   (pattern-tail (cdr pattern))
-                   (target-head  (car target))
-                   (target-tail  (cdr target)))
+        ((matchrec (pattern target alist)
+           (let  ( (pat-head  (car pattern))
+                   (pat-tail  (cdr pattern))
+                   (targ-head (car target))
+                   (targ-tail (cdr target)))
              (cl-flet* ( (plural? (string) (equal "s" (substring string -1)))
-                         (fail-to-match         () (cons nil accumulator))
-                         (match-successfully    () (cons t   accumulator))
-                         (pattern-head-is-atom? () (atom pattern-head))
+                         (fail-to-match         () (cons nil alist))
+                         (match-successfully    () (cons t   alist))
+                         (pat-head-is-atom?     () (atom pat-head))
                          (elem-is-of-elem-type? (elem label preferred-p inverse-p)
                            (let ((result
                                    ;; If `preferred-p' isn't set, but `inverse-p' is,
@@ -169,69 +169,69 @@ Examples:
                              *mp:capture-element?*
                              *mp:verbatim-element?*))
                          (heads-are-equal? ()
-                           (mp::prn "compare %s with %s..." pattern-head target-head)
-                           (let ((result (equal pattern-head target-head)))
+                           (mp::prn "compare %s with %s..." pat-head targ-head)
+                           (let ((result (equal pat-head targ-head)))
                              (mp::prn "%sequal%s." (if result "" "not ")
-                               (if result ", consuming target-head" ""))
+                               (if result ", consuming targ-head" ""))
                              result))
-                         (pattern-head-is-capture? ()
-                           (elem-is-capture? pattern-head))
-                         (pattern-head-is-verbatim? ()
-                           (elem-is-verbatim? pattern-head))
-                         (assert-pattern-head-is-capture! ()
-                           (unless (pattern-head-is-capture?)
-                             (error "Logic error: pattern-head '%s' is not a capture."
-                               pattern-head)))
-                         (capture-field-of-pattern-head (fun)
-                           (assert-pattern-head-is-capture!)
-                           (funcall fun pattern-head))
-                         (capture-symbol-of-pattern-head ()
-                           (capture-field-of-pattern-head
+                         (pat-head-is-capture? ()
+                           (elem-is-capture? pat-head))
+                         (pat-head-is-verbatim? ()
+                           (elem-is-verbatim? pat-head))
+                         (assert-pat-head-is-capture! ()
+                           (unless (pat-head-is-capture?)
+                             (error "Logic error: pat-head '%s' is not a capture."
+                               pat-head)))
+                         (capture-field-of-pat-head (fun)
+                           (assert-pat-head-is-capture!)
+                           (funcall fun pat-head))
+                         (capture-symbol-of-pat-head ()
+                           (capture-field-of-pat-head
                              *mp:get-capture-symbol-fun*))
-                         (capture-tag-of-pattern-head ()
-                           (capture-field-of-pattern-head
+                         (capture-tag-of-pat-head ()
+                           (capture-field-of-pat-head
                              *mp:get-capture-tag-fun*))
-                         (pattern-head-is-invalid? ()
+                         (pat-head-is-invalid? ()
                            (if *mp:invalid-element?*
-                             (funcall *mp:invalid-element?* pattern-head)
-                             (not (or (pattern-head-is-verbatim?)
-                                  (pattern-head-is-capture?)))))
-                         (capture-at-pattern-head-has-tag? (tag)
+                             (funcall *mp:invalid-element?* pat-head)
+                             (not (or (pat-head-is-verbatim?)
+                                  (pat-head-is-capture?)))))
+                         (capture-at-pat-head-has-tag? (tag)
                            (when tag
-                             (assert-pattern-head-is-capture!)
-                             (eq tag (capture-tag-of-pattern-head))))
+                             (assert-pat-head-is-capture!)
+                             (eq tag (capture-tag-of-pat-head))))
                          (make-kvp (value)
-                           (cons (capture-symbol-of-pattern-head) (list value)))
+                           (cons (capture-symbol-of-pat-head) (list value)))
                          (continue (pattern target &optional (value :NOT-SUPPLIED))
                            (let ((*wm:indent* (1+ *wm:indent*)))
                              (matchrec pattern target 
                                (if (eq value :NOT-SUPPLIED)
-                                 accumulator
+                                 alist
                                  (let ((kvp (make-kvp value)))
                                    (mp::prn "accumulating %s." kvp)
-                                   (cons kvp accumulator))))))
+                                   (cons kvp alist))))))
                          (lookahead (target descr)
                            (mp::prn "looking ahead to see if %s match%s..."
                              descr (if (plural? descr) "" "es"))
-                           (let ( (matched (car (continue pattern-tail target))))
+                           (let ( (matched (car (continue pat-tail target))))
                              (mp::prn
                                (if matched
                                  "%s matched!"
                                  "lookahead failed, %s didn't match!")
                                descr)
                              matched))
-                         (pattern-tail-matches-target? ()
-                           (lookahead target "pattern-tail"))
-                         (pattern-tail-matches-target-tail? ()
-                           (lookahead target-tail "tails")))
+                         (pat-tail-matches-target? ()
+                           (lookahead target "pat-tail"))
+                         (pat-tail-matches-targ-tail? ()
+                           (lookahead targ-tail "tails")))
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                ;; Body of matchrec:
                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                (mp::prn "matching %s against %s with acc %s..."
-                 pattern target accumulator)
+                 pattern target alist)
                (with-indentation
-                 ;; (mp::prn "target-head %s is %sa verbatim element." target-head
-                 ;;   (if (elem-is-verbatim? target-head) "" "not "))
+                 ;; (mp::prn "targ-head %s is %sa verbatim element." targ-head
+                 ;;   (if (elem-is-verbatim? targ-head) "" "not "))
                  (cl-macrolet ((case (index descr &body body)
                                  `(progn
                                     (mp::prn "trying case %s: %s..." ,index ,descr)
@@ -256,73 +256,73 @@ Examples:
                        (with-indentation
                          (mp::prn "target is null and pattern isn't, no match!")
                          (fail-to-match)))
-                     ;; If `pattern-head' is a verbatim element, match if it's equal
+                     ;; If `pat-head' is a verbatim element, match if it's equal
                      ;; to (car `target'):
-                     ((case 3 "Verbatim element" (pattern-head-is-verbatim?))
+                     ((case 3 "Verbatim element" (pat-head-is-verbatim?))
                        (with-indentation
                          (if (heads-are-equal?)
-                           (continue pattern-tail target-tail)
+                           (continue pat-tail targ-tail)
                            (fail-to-match))))
                      ;; If `*mp:target-elements-must-be-verbatim*' is set, then 
-                     ;; signal an error if `target-head' isn't a verbatim element:
+                     ;; signal an error if `targ-head' isn't a verbatim element:
                      ((case 4 "Error case: non-verbatim target element"
                         (and
                           *mp:target-elements-must-be-verbatim*
-                          (not (elem-is-verbatim? target-head))))
+                          (not (elem-is-verbatim? targ-head))))
                        (with-indentation
                          (let ((complaint
-                                 (format "target-head %s is not a verbatim element."
-                                   target-head)))
+                                 (format "targ-head %s is not a verbatim element."
+                                   targ-head)))
                            (when *mp:error-if-target-element-is-not-verbatim*
                              (error complaint)
                              (mp::prn complaint)
                              (fail-to-match)))))
-                     ;; If `pattern-head' isn't either a verbatim element or a capture,
+                     ;; If `pat-head' isn't either a verbatim element or a capture,
                      ;; something has gone wrong:
                      ((case 5 "Error case: invalid pattern element"
-                        (pattern-head-is-invalid?))
-                       (error "pattern-head '%s' is an invalid element." pattern-head))
-                     ;; From here on, we know that `pattern-head' must be a capture.
-                     ;; Case when `pattern-head' is tagged with the "anything" tag:
+                        (pat-head-is-invalid?))
+                       (error "pat-head '%s' is an invalid element." pat-head))
+                     ;; From here on, we know that `pat-head' must be a capture.
+                     ;; Case when `pat-head' is tagged with the "anything" tag:
                      ((case 6 "`anything' pattern element"
-                        (capture-at-pattern-head-has-tag? *mp:anything-tag*))
+                        (capture-at-pat-head-has-tag? *mp:anything-tag*))
                        (with-indentation
                          (mp::prn "head of pattern has 'anything' tag.")
-                         (continue pattern-tail target-tail target-head)))
-                     ;; Case when `pattern-head' is tagged with the Kleene tag:
+                         (continue pat-tail targ-tail targ-head)))
+                     ;; Case when `pat-head' is tagged with the Kleene tag:
                      ((case 7 "Kleene pattern element"
-                        (capture-at-pattern-head-has-tag? *mp:kleene-tag*))
+                        (capture-at-pat-head-has-tag? *mp:kleene-tag*))
                        (with-indentation
                          (mp::prn "head of pattern has Kleene tag.")
                          (cond
-                           ((case 101 "Kleene: pattern-tail matches target-tail?"
-                              (pattern-tail-matches-target-tail?))
+                           ((case 101 "Kleene: pat-tail matches targ-tail?"
+                              (pat-tail-matches-targ-tail?))
                              (with-indentation
                                (mp::prn
                                  (concat
-                                   "pattern-pattern matches target-tail, "
-                                   "so we'll take target-head as a Kleene "
+                                   "pattern-pattern matches targ-tail, "
+                                   "so we'll take targ-head as a Kleene "
                                    "item.")))
-                             (continue pattern-tail target-tail target-head))
-                           ((case 102 "Kleene: pattern-tail matches target?"
-                              (pattern-tail-matches-target?))
+                             (continue pat-tail targ-tail targ-head))
+                           ((case 102 "Kleene: pat-tail matches target?"
+                              (pat-tail-matches-target?))
                              (with-indentation
                                (mp::prn
                                  (concat
-                                   "pattern-tail matches the entire target, so the "
+                                   "pat-tail matches the entire target, so the "
                                    "Kleene item is nil."))
-                               (continue pattern-tail target-tail nil)))
+                               (continue pat-tail targ-tail nil)))
                            ((case 103 "Kleene: consume any Kleene item." t)
                              (with-indentation
-                               (mp::prn "taking target-head as a Kleene item.")
-                               (continue pattern target-tail target-head))))))
-                     ;; Case when `pattern-head' starts with predicate form:
+                               (mp::prn "taking targ-head as a Kleene item.")
+                               (continue pattern targ-tail targ-head))))))
+                     ;; Case when `pat-head' starts with predicate form:
                      ((case 8 "Predicate pattern element"
                         (and
                           *mp:capture-can-be-predicate*
-                          (apply (capture-tag-of-pattern-head) (list target-head))))
+                          (apply (capture-tag-of-pat-head) (list targ-head))))
                        (with-indentation
-                         (continue pattern-tail target-tail target-head)))
+                         (continue pat-tail targ-tail targ-head)))
                      ;; Some unimplemented case happened, signal an error:
                      ((case 9 "Error case: this case should be unrachable" t)
                        (error
