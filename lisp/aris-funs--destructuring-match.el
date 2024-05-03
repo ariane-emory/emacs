@@ -137,7 +137,10 @@ KEY is already present in ALIST with a different value."
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
-  (cl-macrolet ((no-match! () `(throw 'no-match nil)))
+  (cl-macrolet ((no-match! () `
+                  (progn
+                    (dm::prn "THROWING %s!" 'no-match)
+                    (throw 'no-match nil))))
     (dm::prn-labeled pattern "MATCHING")
     (dm::prn-labeled target  "AGAINST")
     ;; just rename these because it reads better:
@@ -157,7 +160,7 @@ KEY is already present in ALIST with a different value."
             (cond
               ;; When PAT-HEAD is DONT-CARE, do nothing:
               ((and dont-care (eq pat-head dont-care))
-                (dm::prn "DONT-CARE, do nothing."))
+                (dm::prn "DONT-CARE, doing nothing."))
               ;; When PAT-HEAD is an ELLIPSIS, nullify TARG-TAIL and PAT-TAIL to break 
               ;; the loop successfully:
               ((and ellipsis (eq pat-head ellipsis))
@@ -190,6 +193,7 @@ KEY is already present in ALIST with a different value."
               ;; contained no variables):
               ((and (proper-list-p pat-head) (proper-list-p targ-head))
                 (dm::prn "PAT-HEAD is a list, recurse...")
+                (dm::prndiv)
                 (let ((res (with-indentation
                              (dm::match1 pat-head targ-head
                                dont-care ellipsis unsplice alist))))
@@ -199,14 +203,12 @@ KEY is already present in ALIST with a different value."
                     ;; dm::match1 only returns t or lists, so we'll assume it's now a
                     ;; list.
                     (t (setf alist res)))))
-              ;; When PAT-HEAD and TARG-HEAD are equal literals do nothing:
+              ;; When PAT-HEAD and TARG-HEAD are equal literals, do nothing:
               ((equal pat-head targ-head)
-                (dm::prn "Equal literals, do nothing."))
+                (dm::prn "Equal literals, doing nothing."))
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
-              (t 
-                (dm::prn "THROWING %s!" 'no-match)
-                (no-match!))))
+              (t (no-match!))))
           ;; (debug)
           ) ;; end of (while (and pat-tail targ-tail).
         ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
