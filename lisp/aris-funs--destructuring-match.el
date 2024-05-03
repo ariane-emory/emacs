@@ -233,8 +233,8 @@ KEY is already present in ALIST with a different value."
       ;; return either the ALIST or just t:
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (dm:match '(,x ... ,z) '(X 2 3))
 (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
+;; (dm:match '(,x ... ,z) '(X 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These are now all legal:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
