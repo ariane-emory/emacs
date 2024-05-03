@@ -99,6 +99,7 @@ KEY is already present in ALIST with a different value."
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
         (dm::prndiv)
+        ;; Print the current alist:
         (if-not (consp alist)
           (dm::prn "ALIST:         %s" alist)
           (let ((pp-str (indent-string-lines
