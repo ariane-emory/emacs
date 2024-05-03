@@ -94,12 +94,13 @@ KEY is already present in ALIST with a different value."
         (if (not (consp alist))
           (dm::prn "ALIST:         %s" alist)
           (progn
-            (let ((pp-str (trim-trailing-whitespace (pp-to-string alist))))
+            (let ((pp-str (trim-trailing-whitespace
+                            (let (lisp-indent-offset)
+                              (pp-to-string alist)))))
               (if (<= (count-string-lines pp-str) 1)
                 (dm::prn "ALIST:         %s" alist)
                 (dm::prn "ALIST:")
-                (dm::prn "%s"
-                  (indent-string-lines pp-str))))))
+                (mapc #'prn (string-lines (indent-string-lines pp-str 2)))))))
         (dm::prn "pat-head:      %s" pat-head)
         (dm::prn "targ-head:     %s" targ-head)
         (dm::prn "pattern:       %s" pattern)
