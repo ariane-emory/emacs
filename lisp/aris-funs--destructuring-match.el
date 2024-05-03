@@ -36,6 +36,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::prnl ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Internal print helper function."
+  (when *dm:match-verbose* (prnl)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::prndiv (&rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
@@ -101,16 +109,18 @@ KEY is already present in ALIST with a different value."
               (dm::prn "ALIST:         %s" alist)
               (dm::prn "ALIST:")
               (mapc #'prn (string-lines pp-str)))))
-        (dm::prn "pat-head:      %s" pat-head)
-        (dm::prn "targ-head:     %s" targ-head)
-        (dm::prn "pattern:       %s" pattern)
-        (dm::prn "target:        %s" target)
+        (dm::prn "PAT-HEAD:      %s" pat-head)
+        (dm::prn "TARG-HEAD:     %s" targ-head)
+        (dm::prn "PATTERN:       %s" pattern)
+        (dm::prn "TARGET:        %s" target)
         (cond
           ((and dont-care (eq pat-head dont-care))) ; DONT-CARE, do nothing.
           ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
           ;; loop successfully:
           ((and ellipsis (eq pat-head ellipsis) )
             (when pattern (error "ellipsis must be the last element in the pattern."))
+            (dm::prnl)
+            (dm::prn "ELLIPSIS, discard %s." target)
             ;; nullify TARGET and PATTERN:
             (setf target  nil)
             (setf pattern nil))
@@ -120,6 +130,8 @@ KEY is already present in ALIST with a different value."
             (when pattern (error "unsplice must be the last element in the pattern."))
             (let ((var (cadr pat-head)))
               (let ((unsplice-val (cons targ-head target)))
+                (dm::prnl)
+                (dm::prn "UNSPLICE, add %s to ALIST." (cons var unsplice-val))
                 ;; put the remainder of TARGET in VAR's key in ALIST:
                 (setf alist (dm::pushnew var alist unsplice-val))
                 ;; nullify TARGET and PATTERN:
@@ -128,8 +140,9 @@ KEY is already present in ALIST with a different value."
           ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
           ((eq '\, (car-safe pat-head)) 
             (let ((var (cadr pat-head)))
-              (setf alist (dm::pushnew var alist targ-head))
-              (dm::prn "ALIST:         %s" alist)))
+              (dm::prnl)
+              (dm::prn "Variable, add %s to ALIST." (cons var targ-head))
+              (setf alist (dm::pushnew var alist targ-head))))
           ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST (unless
           ;; the result was just t because the pattern being recursed over contained no
           ;; variables):
@@ -142,7 +155,9 @@ KEY is already present in ALIST with a different value."
                 ((eq res nil) (throw 'no-match nil)) ;; sub-pattern didn't match.
                 ;; dm::match1 only returns t or lists, so we'll assume it's now a list.
                 (t (setf alist res)))))
-          ((equal pat-head targ-head)) ; equal literals, do nothing. 
+          ((equal pat-head targ-head)
+            (dm::prnl)
+            (dm::prn "Equal literals, do nothing."))
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
           (t 
@@ -150,8 +165,8 @@ KEY is already present in ALIST with a different value."
             (throw 'no-match nil))))) ;; end of (while (and pattern target).
     ;; If we got this far, either PATTERN, TARGET or both are nil.
     (dm::prndiv)
-    (dm::prn "final pattern: %s" pattern)
-    (dm::prn "final target:  %s" target)    
+    (dm::prn "final PATTERN: %s" pattern)
+    (dm::prn "final TARGET:  %s" target)    
     (cond
       ;; When TARGET isn't nil, then PATTERN must have ran out before TARGET, no match:
       (target (dm::prn "THROWING %s!" 'no-match) (throw 'no-match nil))

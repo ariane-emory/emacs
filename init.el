@@ -779,7 +779,7 @@
       (add-hook 'window-buffer-change-functions
         (lambda (_)
           (when (string= (buffer-name) "*Messages*")
-            (idle-highlight-mode 1)
+            (idle-highlight-mode -1)
             (read-only-mode -1)
             (face-remap-add-relative 'default 'aris-alt-face))))
 
