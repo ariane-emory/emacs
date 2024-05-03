@@ -107,8 +107,7 @@ KEY is already present in ALIST with a different value."
           (dm::prn "ALIST:         %s" alist)
           (let ((pp-str (indent-string-lines
                           (trim-trailing-whitespace
-                            (let (lisp-indent-offset)
-                              (pp-to-string-without-offset alist))))))
+                            (pp-to-string-without-offset alist)))))
             (if (<= (count-string-lines pp-str) 1)
               (dm::prn "ALIST:         %s" alist)
               (dm::prn "ALIST:")
