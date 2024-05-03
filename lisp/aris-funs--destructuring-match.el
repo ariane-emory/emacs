@@ -116,7 +116,9 @@ KEY is already present in ALIST with a different value."
         (dm::prn "TARGET:        %s" target)
         (dm::prndiv ?\-)
         (cond
-          ((and dont-care (eq pat-head dont-care))) ; DONT-CARE, do nothing.
+          ;; When PAT-HEAD is DONT-CARE, do nothing:
+          ((and dont-care (eq pat-head dont-care))
+            (dm::prn "DONT-CARE, do nothing."))
           ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
           ;; loop successfully:
           ((and ellipsis (eq pat-head ellipsis) )
