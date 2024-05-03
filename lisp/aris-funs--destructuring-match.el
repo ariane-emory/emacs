@@ -45,35 +45,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::require-duplicate-keys-equal! (key new-val alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Signal an error if KEY is already in ALIST."
-  (when-let ( (assoc (assoc key alist))
-              (val   (cdr assoc))
-              (neq   (not (equal val new-val))))
-    ;; (error "duplicate key %s's value must be equal to last occurance: %s." key val)
-    (throw 'no-match nil)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::merge-2-alists (alist-1 alist-2)
-  "Merge two alists into a single alist, maintaining their relative key order
-and signaling an eror upon encountering a duplicate key. Result is returned
-in reverse order."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; (prn "merge this: %s" alist-1)
-  ;; (prn "and this:   %s" alist-2)
-  (let ((alist (nreverse alist-1)))
-    (dolist (kvp alist-2 alist)
-      (dm::require-duplicate-keys-equal! (car kvp) (cdr kvp) alist-1)
-      (push kvp alist))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when *dm:tests-enabled*
-  (confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
-    returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::merge-2-alists (alist-1 alist-2)
+;;   "Merge two alists into a single alist, maintaining their relative key order
+;; and signaling an eror upon encountering a duplicate key. Result is returned
+;; in reverse order."
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   (let ((alist (nreverse alist-1)))
+;;     (dolist (kvp alist-2 alist)
+;;       (dm::require-duplicate-keys-equal! (car kvp) (cdr kvp) alist-1)
+;;       (push kvp alist))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (when *dm:tests-enabled*
+;;   (confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
+;;     returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -86,7 +72,8 @@ in reverse order."
             (symbolp dont-care)
             (symbolp ellipsis)
             (symbolp unsplice))
-    (error "both PATTERN and TARGET must be lists."))  
+    (error (concat "PATTERN and TARGET must be lists, "
+             "DONT-CARE, ELLIPSIS and UNSPLICE must be symbols.")))
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:    %S" pattern)
   (dm::prn "AGAINST:        %S" target)
@@ -101,6 +88,29 @@ in reverse order."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::require-duplicate-keys-equal! (key alist new-val)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "No match if KEY is already in ALIST with a different value."
+  (when-let ( (assoc (assoc key alist))
+              (val   (cdr assoc))
+              (neq   (not (equal val new-val))))
+    (throw 'no-match nil)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::push-new(key alist new-val)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "No match if KEY is already in ALIST with a different value."
+  (when-let ( (assoc (assoc key alist))
+              (val   (cdr assoc))
+              (neq   (not (equal val new-val))))
+    (throw 'no-match nil))
+  (cl-pushnew (cons var val) alist :test #'equal))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
@@ -111,11 +121,8 @@ in reverse order."
     (progn
       (dm::prn "ALIST:")
       (dm::prn "%s" (trim-trailing-whitespace (pp-to-string alist))))
-    (dm::prn "ALIST:          %s" alist))
-  
-  ;; (dm::prndiv ?\-)
+    (dm::prn "ALIST:          %s" alist))  
   (catch 'no-match
-    ;; (let (alist)
     (while (and pattern target)
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
@@ -138,39 +145,31 @@ in reverse order."
           ((and unsplice (eq unsplice (car-safe pat-head)))
             (when pattern (error "unsplice must be the last element in the pattern."))
             (let ((var (cadr pat-head)))
-              ;; (debug)
-              (let ((unspliced-val (cons targ-head target)))
+              (let ((unsplice-val (cons targ-head target)))
                 ;; put the remainder of TARGET in VAR's key in ALIST:
-                ;; (setf alist (cons (cons var unspliced-val) alist))
+                (dm::require-duplicate-keys-equal! var alist unsplice-val)
+                (cl-pushnew (cons var unsplice-val) alist :test #'equal)
                 ;; nullify TARGET and PATTERN:
-                (dm::require-duplicate-keys-equal! var unspliced-val alist)
-                (cl-pushnew (cons var unspliced-val) alist :test #'equal)
                 (setf target  nil)
                 (setf pattern nil))))
           ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
           ((eq '\, (car-safe pat-head)) 
             (let ((var (cadr pat-head)))
-              ;; (when (assoc var alist)
-              ;;   (error "duplicate key %s" var))
-              (dm::require-duplicate-keys-equal! var targ-head alist)
+              (dm::require-duplicate-keys-equal! var alist targ-head)
               (cl-pushnew (cons var targ-head) alist :test #'equal)
-              ;; (setf alist (cons (cons var targ-head) alist))
               (dm::prn "ALIST:         %s" alist)))
-          ;; When PAT-HEAD is a list, recurse and merge the result into ALIST (unless
+          ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST (unless
           ;; the result was just t because the pattern being recursed over contained no
           ;; variables):
           ((and (proper-list-p pat-head) (proper-list-p targ-head))
-            (let ((res 
-                    (with-indentation
-                      (dm::match1 pat-head targ-head
-                        dont-care ellipsis unsplice alist))))
+            (let ((res (with-indentation
+                         (dm::match1 pat-head targ-head
+                           dont-care ellipsis unsplice alist))))
               (cond
                 ((eq res t)) ; do nothing.
-                ((eq res nil) (throw 'no-match nil))
-                ;; dm::match1 only returns t or lists, so now we'll assume it's a list.
-                (t (setf alist res))
-                ;; (t (setf alist (dm::merge-2-alists alist res)))
-                )))
+                ((eq res nil) (throw 'no-match nil)) ;; sub-pattern didn't match.
+                ;; dm::match1 only returns t or lists, so we'll assume it's now a list.
+                (t (setf alist res)))))
           ((equal pat-head targ-head)) ; equal literals, do nothing. 
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, no match
@@ -180,14 +179,12 @@ in reverse order."
     ;; If we got this far, either PATTERN, TARGET or both are nil.
     (dm::prndiv)
     (dm::prn "final pattern: %s" pattern)
-    (dm::prn "final target:  %s" target)
-    ;; When TARGET isn't nil, then PATTERN must have ran out before TARGET, no match:
-    (when target
-      (dm::prn "THROWING %s!" 'no-match)
-      (throw 'no-match nil))
-    ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
-    ;; contain an ELLIPSIS or an UNSPLICE:
+    (dm::prn "final target:  %s" target)    
     (cond
+      ;; When TARGET isn't nil, then PATTERN must have ran out before TARGET, no match:
+      (target (dm::prn "THROWING %s!" 'no-match) (throw 'no-match nil))
+      ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
+      ;; contain an ELLIPSIS or an UNSPLICE.
       ((null pattern)) ;; don't need to do anything.
       ((and ellipsis (equal (car pattern) ellipsis))
         ;; don't need to do anything other than check for well formedness.
@@ -198,16 +195,13 @@ in reverse order."
         (when (cdr pattern) (error "unsplice must be the last element in the pattern."))
         (let* ( (var (cadar pattern))
                 (new-assoc (cons var nil)))
-          (dm::require-duplicate-keys-equal! var nil alist)
+          (dm::require-duplicate-keys-equal! var alist nil)
           (cl-pushnew new-assoc alist :test #'equal)))
-      (t (throw 'no-match nil)))    
+      ;; It was something else, no match;
+      (t (throw 'no-match nil))) 
+    (dm::prn "RESULT:        %s" alist)      
     ;; return either the ALIST or just t:
-    (if (not alist)
-      t
-      ;; (let ((res (nreverse alist)))
-      (let ((res alist))
-        (dm::prn "RESULT:        %s" res)
-        res)))) ; )
+    (or alist t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These are now all legal:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
