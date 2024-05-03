@@ -99,8 +99,13 @@ KEY is already present in ALIST with a different value."
   (dm::prn "AGAINST:        %S" target)
   (catch 'no-match
     (while (and pattern target)
-      (let ( (pat-head  (pop pattern))
-             (targ-head (pop target)))
+      (let ( (pat-head  (car pattern))
+             (pat-tail  (cdr pattern))
+             (targ-head (car target))
+             (targ-tail (cdr target))
+             ;; (pat-head  (pop pattern))
+             ;; (targ-head (pop target))
+             )
         (dm::prndiv)
         ;; Print the current alist:
         (if-not (consp alist)
@@ -166,7 +171,8 @@ KEY is already present in ALIST with a different value."
           ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
           (t 
             (dm::prn "THROWING %s!" 'no-match)
-            (throw 'no-match nil))))) ;; end of (while (and pattern target).
+            (throw 'no-match nil))))
+      (debug)) ;; end of (while (and pattern target).
     ;; If we got this far, either PATTERN, TARGET or both are nil.
     (dm::prndiv)
     (dm::prn "final PATTERN: %s" pattern)
