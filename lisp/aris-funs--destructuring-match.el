@@ -52,7 +52,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 18))
+(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 20))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label and a given WIDTH."
   (let* ( (label (concat (symbol-name var) ":"))
@@ -173,10 +173,10 @@ KEY is already present in ALIST with a different value."
                 (when pat-tail
                   (error "unsplice must be the last element in the pat-tail."))
                 (let ((var (cadr pat-head)))
-                  (let ((unsplice-val (cons targ-head targ-tail)))
-                    (dm::prn "UNSPLICE, add %s to ALIST." (cons var unsplice-val))
+                  (let ((target (cons targ-head targ-tail)))
+                    (dm::prn-labeled target "unsplicing")                    
                     ;; put the remainder of TARG-TAIL in VAR's key in ALIST:
-                    (setf alist (dm::pushnew var alist unsplice-val))
+                    (setf alist (dm::pushnew var alist target))
                     ;; nullify TARG-TAIL and PAT-TAIL:
                     (setf targ-tail nil)
                     (setf pat-tail  nil))))
@@ -240,7 +240,7 @@ KEY is already present in ALIST with a different value."
         (or alist t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
-;; (dm:match '(,x ... ,z) '(X 2 3))
+(dm:match '(,x ,@ys) '(1 2 3 4));; (dm:match '(,x ... ,z) '(X 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These are now all legal:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
