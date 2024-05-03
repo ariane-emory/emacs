@@ -1005,3 +1005,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defun test ()
+  (let ((lst '(1 2 3)))
+    (prn "lst: %s" lst)
+    (setf (cadr lst) (+ 1 (cadr lst)))))
+
+(test)
+
