@@ -107,7 +107,7 @@ KEY is already present in ALIST with a different value."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro print-labeled (var width)
+(cl-defmacro dm::prn-labeled (var &optional (width 16))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label and a given WIDTH."
   (let* ( (label (concat (symbol-name var) ":"))
@@ -116,8 +116,16 @@ KEY is already present in ALIST with a different value."
                    (make-string (- width (length label)) ?\ ))))
     `(dm::prn ,fmt ,var)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((foo 123))
-  (print-labeled foo 12))
+(let ( (foo    123)
+       (barbaz 456))
+  (prn-labeled foo)
+  (prn-labeled barbaz))
+  ;; these expand to:
+  ;; (dm::prn "FOO:            %s" foo)
+  ;; (dm::prn "BARBAZ:         %s" barbaz)
+  ;; and print:
+  ;; FOO:            123
+  ;; BARBAZ:         456
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
