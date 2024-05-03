@@ -95,7 +95,7 @@
                                 could
                                 will
                                 can
-                                do
+                                ;; do
                                 must))
 (defvar   *modal-plus*        (append *modal-words* '(have haven\'t)))
 (defvar   *neg-modal-words*  '( ;; don\'t
@@ -148,7 +148,7 @@
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
 (defalias 'pick-certainty    (make-pick '(certain sure convinced)))
 (defalias 'pick-maybe-that   (make-pick '(that nil)))
-(defalias 'pick-maybe-really (make-pick '(really nil)))
+(defalias 'pick-maybe-really (make-pick '(really actually certainly nil nil)))
 (defalias 'pick-maybe-not    (make-pick '(not nil)))
 (defalias 'pick-probably-not (make-pick '(not not nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -638,15 +638,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (subject-2!      pick-subject)
                           (epistemic!      pick-epistemic)
                           (maybe-that!     pick-maybe-that)
+                          (maybe-really!   pick-maybe-really)
                           ;; (_ (lambda (val var var-alist)
                           ;;      (prn "THIS ALSO HAPPENED! %s" var-alist)
                           ;;      t))
                           (modal-2!        pick-modal))
            :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
-                          ,modal-2 ,verb ,a/an/the ,@things))
+                          ,maybe-really ,modal-2 ,verb ,a/an/the ,@things))
          ( :var-funs:   ( (subject         swap-word)
-                          (modal-2!        pick-modal))
-           :response:   ( 9 ,subject ,modal-2 ,verb ,a/an/the ,@things))))
+                          (modal-2!        pick-modal)
+                          (maybe-really!   pick-maybe-really))
+           :response:   ( 9 ,subject ,maybe-really ,modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,neg-modal ,verb ,a/an/the ,@things)
        :var-tests:      ( (subject         subject?)
@@ -657,9 +659,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (subject-2!      pick-subject)
                           (epistemic!      pick-epistemic)
                           (maybe-that!     pick-maybe-that)
+                          (maybe-really!   pick-maybe-really)
                           (neg-modal-2!    pick-neg-modal))
-           :response:   ( 9B ,subject-2 ,epistemic ,maybe-that ,subject
-                          ,neg-modal-2 ,verb ,a/an/the ,@things))))
+           :response:   ( 9B ,subject-2 ,maybe-really ,epistemic ,maybe-that ,subject
+                          ,neg-modal-2 ,verb ,a/an/the ,@things))
+         ( :var-funs:   ( (subject         swap-word)
+                          (subject-2!      pick-subject)
+                          (epistemic!      pick-epistemic)
+                          (maybe-that!     pick-maybe-that)
+                          (maybe-really!   pick-maybe-really)
+                          (neg-modal-2!    pick-neg-modal))
+           :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,subject ,modal never ,verb a ,@things)
        :var-tests:      ( (subject         subject?)
