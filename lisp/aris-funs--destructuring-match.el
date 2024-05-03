@@ -70,8 +70,7 @@ KEY is already present in ALIST with a different value."
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:    %S" pattern)
   (dm::prn "AGAINST:        %S" target)
-  (let* ( (res (with-indentation
-                 (dm::match1 pattern target dont-care ellipsis unsplice nil)))
+  (let* ( (res (dm::match1 pattern target dont-care ellipsis unsplice nil))
           (res (if (listp res) (nreverse res) res)))
     (dm::prndiv)
     (dm::prn "FINAL RESULT:  %s" res) 
@@ -87,16 +86,17 @@ KEY is already present in ALIST with a different value."
   (dm::prndiv)
   (dm::prn "MATCHING:       %S" pattern)
   (dm::prn "AGAINST:        %S" target)
-  (if (consp alist)
-    (progn
-      (dm::prn "ALIST:")
-      (dm::prn "%s" (trim-trailing-whitespace (pp-to-string alist))))
-    (dm::prn "ALIST:          %s" alist))  
   (catch 'no-match
     (while (and pattern target)
       (let ( (pat-head  (pop pattern))
              (targ-head (pop target)))
         (dm::prndiv)
+        (if (consp alist)
+          (progn
+            (dm::prn "ALIST:")
+            (dm::prn "%s"
+              (indent-string-lines(trim-trailing-whitespace (pp-to-string alist)))))
+          (dm::prn "ALIST:         %s" alist))
         (dm::prn "pat-head:      %s" pat-head)
         (dm::prn "targ-head:     %s" targ-head)
         (dm::prn "pattern:       %s" pattern)
