@@ -764,8 +764,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ( ( :var-funs:   ( (subject         swap-word)
                           (plural-subject  swap-word)
                           (modal           pick-any-modal)
+                          (maybe-really!   pick-maybe-really)
                           (them-us         swap-word))
-           :response:   ( 19 ,plural-subject ,modal ,verb ,them-us ,@things \!))))
+           :response:   ( 19 ,plural-subject ,maybe-really ,modal ,verb ,them-us ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( trigger )
        :responses:
@@ -916,13 +917,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (these are the voyages of the starship Enterprise)
              (these are the voyages of the starship Enterprise)
              (these are the voyages of the starship Enterprise)
-             (this is the worst thing ever)
              (i know we could beat them at soccer)
              (i know we could beat them at soccer)
              (i know we could beat them at soccer)
              (you know they could beat us any day)
              (you know they could beat us any day)
              (you know they could beat us any day)
+             (you know they can find us)
+             (you know they can find us)
+             (you know they can find us)
              (you know they can find us)
              (you know they can find us)
              (you know they can find us)
@@ -938,6 +941,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)             
+             (this is the worst thing ever)
+
              ))
   
   (prndiv)
