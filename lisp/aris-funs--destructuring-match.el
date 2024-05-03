@@ -137,7 +137,7 @@ KEY is already present in ALIST with a different value."
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
-  (cl-macrolet ((no-match! () `
+  (cl-macrolet ((NO-MATCH! () `
                   (progn
                     (dm::prn "THROWING %s!" 'no-match)
                     (throw 'no-match nil))))
@@ -200,7 +200,7 @@ KEY is already present in ALIST with a different value."
                                dont-care ellipsis unsplice alist))))
                   (cond
                     ((eq res t)) ; do nothing.
-                    ((eq res nil) (no-match!)) ;; sub-pat-tail didn't match.
+                    ((eq res nil) (NO-MATCH!)) ;; sub-pat-tail didn't match.
                     ;; dm::match1 only returns t or lists, so we'll assume it's now a
                     ;; list.
                     (t (setf alist res)))))
@@ -209,7 +209,7 @@ KEY is already present in ALIST with a different value."
                 (dm::prn "Equal literals, doing nothing."))
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
-              (t (no-match!))))
+              (t (NO-MATCH!))))
           ;; (debug)
           ) ;; end of (while (and pat-tail targ-tail).
         ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
@@ -221,7 +221,7 @@ KEY is already present in ALIST with a different value."
           ;; no match:
           (targ-tail
             (dm::prn "THROWING %s!" 'no-match)
-            (no-match!))
+            (NO-MATCH!))
           ;; By this line, TARG-TAIL must be nil. Unless PAT-TAIL is also nil, it had 
           ;; better contain an ELLIPSIS or an UNSPLICE.
           ((null pat-tail)) ;; don't need to do anything.
@@ -237,7 +237,7 @@ KEY is already present in ALIST with a different value."
             (let ((var (cadar pat-tail)))
               (setf alist (dm::pushnew var alist nil))))
           ;; It was something else, no match;
-          (t (no-match!))) 
+          (t (NO-MATCH!))) 
         (dm::prn-labeled alist "result")
         ;; return either the ALIST or just t:
         (or alist t)))))
