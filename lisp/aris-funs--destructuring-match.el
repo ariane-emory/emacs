@@ -99,11 +99,11 @@ KEY is already present in ALIST with a different value."
   (dm::prn "AGAINST:        %S" target)
   ;; just rename these because it reads better:
   (let ( (pat-tail  pattern)
-         (targ-head target))
+         (targ-tail target))
     (catch 'no-match
-      (while (and pattern target)
-        (let ( (pat-head  (pop pattern))
-               (targ-head (pop target)))
+      (while (and pat-tail targ-tail)
+        (let ( (pat-head  (pop pat-tail))
+               (targ-head (pop targ-tail)))
           (dm::prndiv)
           ;; Print the current alist:
           (if-not (consp alist)
@@ -117,40 +117,40 @@ KEY is already present in ALIST with a different value."
                 (mapc #'prn (string-lines pp-str)))))
           (dm::prn "PAT-HEAD:      %s" pat-head)
           (dm::prn "TARG-HEAD:     %s" targ-head)
-          (dm::prn "PATTERN:       %s" pattern)
-          (dm::prn "TARGET:        %s" target)
+          (dm::prn "PAT-TAIL:      %s" pat-tail)
+          (dm::prn "TARG-TAIL:     %s" targ-tail)
           (dm::prndiv ?\-)
           (cond
             ;; When PAT-HEAD is DONT-CARE, do nothing:
             ((and dont-care (eq pat-head dont-care))
               (dm::prn "DONT-CARE, do nothing."))
-            ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break the
+            ;; When PAT-HEAD is an ELLIPSIS, nullify TARG-TAIL and PAT-TAIL to break the
             ;; loop successfully:
             ((and ellipsis (eq pat-head ellipsis) )
-              (when pattern (error "ellipsis must be the last element in the pattern."))
-              (dm::prn "ELLIPSIS, discard %s." target)
-              ;; nullify TARGET and PATTERN:
-              (setf target  nil)
-              (setf pattern nil))
-            ;; When PAT-HEAD is an UNSPLICE, nullify TARGET and PATTERN to break the
+              (when pat-tail (error "ellipsis must be the last element in the pat-tail."))
+              (dm::prn "ELLIPSIS, discard %s." targ-tail)
+              ;; nullify TARG-TAIL and PAT-TAIL:
+              (setf targ-tail  nil)
+              (setf pat-tail nil))
+            ;; When PAT-HEAD is an UNSPLICE, nullify TARG-TAIL and PAT-TAIL to break the
             ;; loop successfully:
             ((and unsplice (eq unsplice (car-safe pat-head)))
-              (when pattern (error "unsplice must be the last element in the pattern."))
+              (when pat-tail (error "unsplice must be the last element in the pat-tail."))
               (let ((var (cadr pat-head)))
-                (let ((unsplice-val (cons targ-head target)))
+                (let ((unsplice-val (cons targ-head targ-tail)))
                   (dm::prn "UNSPLICE, add %s to ALIST." (cons var unsplice-val))
-                  ;; put the remainder of TARGET in VAR's key in ALIST:
+                  ;; put the remainder of TARG-TAIL in VAR's key in ALIST:
                   (setf alist (dm::pushnew var alist unsplice-val))
-                  ;; nullify TARGET and PATTERN:
-                  (setf target  nil)
-                  (setf pattern nil))))
+                  ;; nullify TARG-TAIL and PAT-TAIL:
+                  (setf targ-tail  nil)
+                  (setf pat-tail nil))))
             ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
             ((eq '\, (car-safe pat-head)) 
               (let ((var (cadr pat-head)))
                 (dm::prn "Variable, add %s to ALIST." (cons var targ-head))
                 (setf alist (dm::pushnew var alist targ-head))))
             ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST (unless
-            ;; the result was just t because the pattern being recursed over contained no
+            ;; the result was just t because the pat-tail being recursed over contained no
             ;; variables):
             ((and (proper-list-p pat-head) (proper-list-p targ-head))
               (dm::prn "PAT-HEAD is a list, recurse...")
@@ -159,7 +159,7 @@ KEY is already present in ALIST with a different value."
                              dont-care ellipsis unsplice alist))))
                 (cond
                   ((eq res t)) ; do nothing.
-                  ((eq res nil) (throw 'no-match nil)) ;; sub-pattern didn't match.
+                  ((eq res nil) (throw 'no-match nil)) ;; sub-pat-tail didn't match.
                   ;; dm::match1 only returns t or lists, so we'll assume it's now a list.
                   (t (setf alist res)))))
             ;; When PAT-HEAD and TARG-HEAD are equal literals do nothing:
@@ -171,25 +171,25 @@ KEY is already present in ALIST with a different value."
               (dm::prn "THROWING %s!" 'no-match)
               (throw 'no-match nil))))
         ;; (debug)
-        ) ;; end of (while (and pattern target).
-      ;; If we got this far, either PATTERN, TARGET or both are nil.
+        ) ;; end of (while (and pat-tail targ-tail).
+      ;; If we got this far, either PAT-TAIL, TARG-TAIL or both are nil.
       (dm::prndiv)
-      (dm::prn "final PATTERN: %s" pattern)
-      (dm::prn "final TARGET:  %s" target)    
+      (dm::prn "final PAT-TAIL: %s" pat-tail)
+      (dm::prn "final TARG-TAIL:  %s" targ-tail)    
       (cond
-        ;; When TARGET isn't nil, then PATTERN must have ran out before TARGET, no match:
-        (target (dm::prn "THROWING %s!" 'no-match) (throw 'no-match nil))
-        ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better
+        ;; When TARG-TAIL isn't nil, then PAT-TAIL must have ran out before TARG-TAIL, no match:
+        (targ-tail (dm::prn "THROWING %s!" 'no-match) (throw 'no-match nil))
+        ;; By this line, TARG-TAIL must be nil. Unless PAT-TAIL is also nil, it had better
         ;; contain an ELLIPSIS or an UNSPLICE.
-        ((null pattern)) ;; don't need to do anything.
-        ((and ellipsis (equal (car pattern) ellipsis))
+        ((null pat-tail)) ;; don't need to do anything.
+        ((and ellipsis (equal (car pat-tail) ellipsis))
           ;; don't need to do anything other than check for well formedness.
-          (when (cdr pattern) (error "ellipsis must be the last element in the pattern."))) 
-        ;; if PATTERN's head is an UNSPLICE, since there's no TARGET left we just need
+          (when (cdr pat-tail) (error "ellipsis must be the last element in the pat-tail."))) 
+        ;; if PAT-TAIL's head is an UNSPLICE, since there's no TARG-TAIL left we just need
         ;; to set the var in ALIST to nil:
-        ((and unsplice (equal (car-safe (car pattern)) unsplice))
-          (when (cdr pattern) (error "unsplice must be the last element in the pattern."))
-          (let ((var (cadar pattern)))
+        ((and unsplice (equal (car-safe (car pat-tail)) unsplice))
+          (when (cdr pat-tail) (error "unsplice must be the last element in the pat-tail."))
+          (let ((var (cadar pat-tail)))
             (setf alist (dm::pushnew var alist nil))))
         ;; It was something else, no match;
         (t (throw 'no-match nil))) 
@@ -283,7 +283,7 @@ KEY is already present in ALIST with a different value."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:fill (pattern alist &optional (splice '\,@))
+(cl-defun dm:fill (pat-rail alist &optional (splice '\,@))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in the variables in PATTERN with the values from ALIST.
 
