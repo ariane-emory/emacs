@@ -52,7 +52,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 20))
+(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 22))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
   (let* ( (label  (concat (upcase (symbol-name var)) ":"))
@@ -119,8 +119,8 @@ KEY is already present in ALIST with a different value."
     (error (concat "PATTERN and TARGET must be lists, "
              "DONT-CARE, ELLIPSIS and UNSPLICE must be symbols.")))
   (dm::prndiv)
-  (dm::prn "BEGIN MATCH:    %S" pattern)
-  (dm::prn "AGAINST:        %S" target)
+  (dm::prn "BEGIN MATCH:          %S" pattern)
+  (dm::prn "AGAINST:              %S" target)
   (let* ( (result
             ;; (with-indentation
             ;;   (dm::match1 pattern target dont-care ellipsis unsplice nil))
@@ -169,7 +169,7 @@ KEY is already present in ALIST with a different value."
                 ;; the loop successfully:
                 ((and ellipsis (eq pat-head ellipsis))
                   (when pat-tail (error "ELLIPSIS may only be the final element in PATTERN."))
-                  (dm::prn-labeled targ-tail "DISCARD")
+                  (dm::prn-labeled targ-tail "discarding")
                   ;; Nullify TARG-TAIL and PAT-TAIL:
                   (setf targ-tail nil)
                   (setf pat-tail  nil))
