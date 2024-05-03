@@ -137,14 +137,14 @@ KEY is already present in ALIST with a different value."
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
-  (dm::prndiv)
-  (dm::prn "MATCHING:          %S" pattern)
-  (dm::prn "AGAINST:           %S" target)
-  ;; just rename these because it reads better:
-  (let ( (pat-tail  pattern)
-         (targ-tail target))
-    ;; (cl-flet ((no-match! () (throw 'no-match nil)))
-    (cl-flet ((no-match! () (throw 'no-match nil)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cl-macrolet ((no-match! () `(throw 'no-match nil)))
+    (dm::prndiv)
+    (dm::prn "MATCHING:          %S" pattern)
+    (dm::prn "AGAINST:           %S" target)
+    ;; just rename these because it reads better:
+    (let ( (pat-tail  pattern)
+           (targ-tail target))
       (catch 'no-match
         (while (and pat-tail targ-tail)
           (let ( (pat-head  (pop pat-tail))
