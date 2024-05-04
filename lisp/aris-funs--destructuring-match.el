@@ -176,7 +176,7 @@
               (dm::prn-pp-alist alist)
               (dm::prndiv ?\-)
               (when *dm:verbose*
-                (let ((pattern (format "%-8s . %s" pat-head pat-tail)))
+                (let ((pattern (format "%-8s . %s" pat-head  pat-tail)))
                   (dm::prn-labeled pattern))
                 (let ((target (format "%-8s . %s"  targ-head targ-tail)))
                   (dm::prn-labeled target)))
