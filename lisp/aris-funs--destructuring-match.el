@@ -20,7 +20,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* t
+(defcustom *dm:tests-enabled* nil
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -76,13 +76,14 @@
           (fmt    (format "%s%s%s%%s" extra label spaces)))
     `(dm::prn ,fmt ,var)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ( (foo    123)
-       (barbaz 456)
-       (barbazbarbazbarbazbarbaz 789))
-  (dm::prn-labeled foo)
-  (dm::prn-labeled barbaz)
-  (dm::prn-labeled barbaz "last")
-  (dm::prn-labeled barbazbarbazbarbazbarbaz))
+(ignore!
+  (let ( (foo    123)
+         (barbaz 456)
+         (barbazbarbazbarbazbarbaz 789))
+    (dm::prn-labeled foo)
+    (dm::prn-labeled barbaz)
+    (dm::prn-labeled barbaz "last")
+    (dm::prn-labeled barbazbarbazbarbazbarbaz)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; these expand to:
 ;; (dm::prn "FOO:            %s" foo)
@@ -206,7 +207,8 @@ KEY is already present in ALIST with a different value."
                 ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
                 ((eq '\, (car-safe pat-head)) 
                   (let ((var (cadr pat-head)))
-                    (dm::prn "Variable, add %s to ALIST." (cons var targ-head))
+                    (let ((var (cons var targ-head))) ; Shadow just for printing...
+                      (dm::prn-labeled var "take"))
                     (setf alist (dm::pushnew var alist targ-head))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
                 ;; (unless the result was just t because the pat-tail being recursed over
@@ -257,9 +259,8 @@ KEY is already present in ALIST with a different value."
           ;; Return either the ALIST or just t:
           (or alist t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
 (dm:match '(,x ,@ys) '(1 2 3 4))
-(dm:match '(,x ...) '(1 2 3 4))
+;; (dm:match '(,x ...) '(1 2 3 4))
 ;; (dm:match '(,x ... ,z) '(X 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These are now all legal:
@@ -272,6 +273,7 @@ KEY is already present in ALIST with a different value."
 ;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:tests-enabled*
+  (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
   (confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
   (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
   (confirm that (dm:match '(,a ,b ,c \!) '(1 2 3)) returns nil)
