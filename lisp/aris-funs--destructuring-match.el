@@ -198,7 +198,8 @@ KEY is already present in ALIST with a different value."
                   (when pat-tail (error "UNSPLICE may only be the final element in PATTERN."))
                   (let ((var (cadr pat-head)))
                     (let ((target (cons targ-head targ-tail)))
-                      (dm::prn-labeled target "unsplicing")
+                      (let ((var (cons var targ-tail))) ; Shadow just for printing...
+                        (dm::prn-labeled var "unsplicing"))
                       ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
                       (setf alist (dm::pushnew var alist target))
                       ;; Nullify TARG-TAIL and PAT-TAIL:
