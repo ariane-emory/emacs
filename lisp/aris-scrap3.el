@@ -33,46 +33,37 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun alist-putnew(key new-val alist)
+(cl-defun alist-putunique(key new-val alist &optional (throw-sym 'unequal-duplicate))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Put NEW-VAL into ALIST as the association of KEY , throwing
-'no-match an association for KEY is already present in ALIST with a
+  "Put NEW-VAL into ALIST as the association of KEY, throwing
+THROWSYM if an association for KEY is already present in ALIST with a
 different (by `equal') value."
-  (when-let ( (assoc (assoc key alist))
-              (neq   (not (equal (cdr assoc) new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons key new-val) alist :test #'equal))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun alist-putnew(key new-val alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Put NEW-VAL into ALIST as the association of KEY , throwing
-'no-match an association for KEY is already present in ALIST with a
-different (by `equal') value."
-  (when-let ( (assoc (assoc key alist))
-              (neq   (not (equal (cdr assoc) new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons key new-val) alist :test #'equal))
+  (let ((assoc (assoc key alist)))
+    (cond
+      ((and assoc (equal (cdr assoc) new-val)) alist) ;; just return alist.
+      (assoc (throw throw-sym nil))   
+      (t (cons (cons key new-val) alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; new key/val:
 (confirm that
-  (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist))
+  (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'c 3 alist))
   returns ((c . 3) (a . 1) (b . 2)))
 (confirm that
-  (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)))
+  (expr-throws-sym-p 'unequal-duplicate
+    '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'c 3 alist)))
   returns nil)
 ;; existing key, equal value:
 (confirm that
-  (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist))
+  (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist))
   returns ((a . 1) (b . 2)))
 (confirm that
-  (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)))
+  (expr-throws-sym-p 'unequal-duplicate '
+    (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist)))
   returns nil)
-;; duplicate key, un-equal value:
+;; duplicate key, un-equal value. this one SHOULD throw, so we don't `confirm' it's return value,
+;; we just `confirm' if it threw:
 (confirm that
-  (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)))
+  (expr-throws-sym-p 'unequal-duplicate
+    '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 3 alist)))
   returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
