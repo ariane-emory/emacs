@@ -180,15 +180,17 @@
             (dm::prn-labeled target)))
         (dm::prndiv ?\-)
         (cond
-          ;; --------------------------------------------------------------------------------------
-          ;; When PATTERN's head is DONT-CARE, just pop the heads off:
+          ;; ----------------------------------------------------------------------------------------
+          ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
+          ;; ----------------------------------------------------------------------------------------
           ((and dont-care (eq (car pattern) dont-care))
             (dm::prn "DONT-CARE, discarding %s." (car target))
             (pop pattern)
             (pop target))
-          ;; --------------------------------------------------------------------------------------
-          ;; When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
+          ;; ----------------------------------------------------------------------------------------
+          ;; Case 2: When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
           ;; the loop successfully:
+          ;; ----------------------------------------------------------------------------------------
           ((and ellipsis (eq (car pattern) ellipsis))
             (when (and *dm:enforce-final-position* (cdr pattern))
               (error "ELLIPSIS may only be the final element in PATTERN."))
@@ -196,9 +198,10 @@
             ;; Nullify TARGET and PATTERN:
             (setf pattern nil)
             (setf target  nil))
-          ;; --------------------------------------------------------------------------------------
-          ;; When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
+          ;; ----------------------------------------------------------------------------------------
+          ;; Case 3: When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
           ;; the loop successfully:
+          ;; ----------------------------------------------------------------------------------------
           ((and unsplice (eq unsplice (car-safe (car pattern))))
             (when (and *dm:enforce-final-position* (cdr pattern))
               (error "UNSPLICE may only be the final element in PATTERN."))
@@ -213,21 +216,23 @@
             ;; Nullify TARGET and PATTERN:
             (setf pattern nil)
             (setf target  nil))
-          ;; --------------------------------------------------------------------------------------
-          ;; When PATTERN's head is a variable, put TARG-HEAD in ALIST:
+          ;; ----------------------------------------------------------------------------------------
+          ;; Case 4: When PATTERN's head is a variable, put TARG-HEAD in ALIST:
+          ;; ----------------------------------------------------------------------------------------
           ((eq '\, (car-safe (car pattern)))
             (let* ( (var-spec (car  pattern))
                     (var-val  (car  target))
                     (var-name (cadr var-spec))
-                    (assoc    (cons var-name var-val))) ; `let' ASSOC just to print it in a message.              
+                    (assoc    (cons var-name var-val))) ; `let' ASSOC just to print it in a message.
               (dm::prn-labeled assoc "take var as")
               (setf alist (alist-putunique var-name var-val alist 'no-match))
               (pop  pattern)
               (pop  target)))
-          ;; --------------------------------------------------------------------------------------
-          ;; When PATTERN's head is a list, recurse and accumulate the result into ALIST
-          ;; (unless the result was just t because the sub-pattern being recursed over
-          ;; contained no variables):
+          ;; ----------------------------------------------------------------------------------------
+          ;; Case 5: When PATTERN's head is a list, recurse and accumulate the result into 
+          ;; ALIST, unless the result was just t because the sub-pattern being recursed over
+          ;; contained no variables:
+          ;; ----------------------------------------------------------------------------------------
           ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
             (let ( (sub-pattern (car pattern))
                    (sub-target  (car target)))
@@ -244,20 +249,22 @@
                   (t (setf alist res))))
               (pop pattern)
               (pop target)))
-          ;; --------------------------------------------------------------------------------------
-          ;; When PATTERN's head and TARG-HEAD are equal literals, just pop the heads off:
+          ;; ----------------------------------------------------------------------------------------
+          ;; Case 6: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the heads off:
+          ;; ----------------------------------------------------------------------------------------
           ((equal (car pattern) (car target))
             (dm::prn "Equal literals, discarding %s." (car target))
             (pop pattern)
             (pop target))
-          ;; --------------------------------------------------------------------------------------
-          ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
+          ;; ----------------------------------------------------------------------------------------
+          ;; Otherwise: When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
+          ;; ----------------------------------------------------------------------------------------
           (t (NO-MATCH! "expected %s but found %s" (pop pattern) (pop target)))) ; End of `cond'.
         ;; ----------------------------------------------------------------------------------------
         (dm::prndiv)
         (dm::prnl)
-        );; End of (while target, if we got this far TARGET is nil!
+        );; End of (while target ...), if we got this far TARGET is nil!
       (dm::prndiv)
       (dm::prn-labeled pattern  "final")
       (dm::prn-labeled target "final")
