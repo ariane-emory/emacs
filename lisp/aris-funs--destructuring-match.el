@@ -71,7 +71,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
   (let* ( (label  (concat (upcase (symbol-name var)) ":"))
-          (extra  (if (string-equal "" extra) extra (upcase (concat extra " "))))
+          (extra  (if (string-equal "" extra) extra (capitalize (concat extra " "))))
           (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
           (fmt    (format "%s%s%s%%s" extra label spaces)))
     `(dm::prn ,fmt ,var)))
@@ -164,7 +164,7 @@ KEY is already present in ALIST with a different value."
     (catch 'no-match
       (dm::prndiv)
       (dm::prn-labeled pattern "MATCHING")
-      (dm::prn-labeled target  "AGAINST")
+      (dm::prn-labeled target  "AGAINST ")
       ;; Just rename these because it reads better:
       (let ( (pat-tail  pattern)
              (targ-tail target))
