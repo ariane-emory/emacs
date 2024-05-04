@@ -290,8 +290,7 @@
   (confirm that (dm:match '(foo _ ,baz) '(foo (2 . 3) poop)) returns ((baz . poop)))
   (confirm that (dm:match '(,x ...) '(1 2 3)) returns ((x . 1)))
   (confirm that (dm:match '(,x ...) '(1)) returns ((x . 1)))
-  (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
-    returns ((x . a) (y . 5)))
+  (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5)) returns ((x . a) (y . 5)))
   (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
     returns ((x . a) (y . 5)))
   (confirm that (dm:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a)) returns nil)
@@ -317,35 +316,30 @@
   (confirm that (dm:match '(,x ,@x) '((1 2 3) 1 2 3)) returns ((x 1 2 3)))
   (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8))) returns ((x . 8)))
   (confirm that (dm:match '(,x y ,x) '((8 9) y (8 9))) returns ((x 8 9)))
-  (confirm that (dm:match '(,x ,y ,x) '((7 8 . 9) 2 (7 8 . 9)))
-    returns ((x 7 8 . 9) (y . 2)))
+  (confirm that (dm:match '(,x ,y ,x) '((7 8 . 9) 2 (7 8 . 9))) returns ((x 7 8 . 9) (y . 2)))
   (confirm that (dm:match '(,x y ,x) '(8 y 9)) returns nil)
   (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil)) returns ((x)))
   (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil)) returns nil)
   (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4)) returns nil)
   (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
     returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (dm:match
       '(one (this that) (,two three (,four ,five) ,six))
       '(one (this that) (2 three (4 5) 6)))  
     returns ((two . 2) (four . 4) (five . 5) (six . 6)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (when-let-alist (dm:match
                       '(i ,modal-verb ,verb a ,thing)
                       '(i have (never seen) a (red car)))
       (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
     returns (Do you really believe that you have never seen a red car \?))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (when-let-alist (dm:match
                       '(i ,verb that ,noun ,con ,thing)
                       '(i think that dogs are dumb))
       (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
     returns (Why do you think that dogs are dumb \?))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (when-let-alist
       (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
