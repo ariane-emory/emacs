@@ -3,12 +3,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun expr-throws-sym-p (throw-sym expr)
+(defun expr-throws-sym-p (thrown-sym expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "t when evaluating expr throws THROW-SYM."
+  "t when evaluating expr throws THROWN-SYM."
   (with-gensyms (blk)
     (cl-block blk
-      (catch throw-sym
+      (catch thrown-sym
         (eval expr)
         (cl-return-from blk nil))
       (cl-return-from blk t))))
