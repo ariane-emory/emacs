@@ -162,27 +162,26 @@
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
       (dm::prndiv)
-      (dm::prn-labeled pattern "MATCHING")
-      (dm::prn-labeled target  "AGAINST ")
-      ;; Just rename these because it reads better:
+      (dm::prn-labeled pattern "matching")
+      (dm::prn-labeled target  "against ")
+      (dm::prndiv)
+      
       (progn ;; < useless `progn' for organization.
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET"))
           ;; We always `pop' pattern, but might not always `pop' target.
-          (let ((pat-head (pop pattern))) 
+          (let ((pat-head (pop pattern)))
+            (dm::prnl)
             (dm::prndiv)
             (dm::prn-pp-alist alist)
             (dm::prndiv ?\-)
-            ;; (when *dm:verbose*
-            ;;   (let ((pattern (format "%-8s . %s" pat-head  pattern)))
-            ;;     (dm::prn-labeled pattern))
-            ;;   (let ((target (format "%-8s . %s"  targ-head target)))
-            ;;     (dm::prn-labeled target)))
-            ;; (dm::prndiv ?\-)
             (dm::prn-labeled  pat-head)
-            ;; (dm::prn-labeled  targ-head)
             (dm::prn-labeled  pattern)
-            (dm::prn-labeled  target)
+            (when *dm:verbose*
+              (let ((target (format "%-8s . %s"  (car target) (cdr target))))
+                (dm::prn-labeled target)))
+            ;; (dm::prndiv ?\-)
+            ;; (dm::prn-labeled  target)
             ;; (dm::prndiv ?\-)
             (cond
               ;; When PAT-HEAD is DONT-CARE, do nothing:
@@ -226,7 +225,7 @@
               ;; (unless the result was just t because the pattern being recursed over
               ;; contained no variables):
               ((and (proper-list-p pat-head) (proper-list-p (car target)))
-                (dm::prn "PAT-HEAD %s is a list, recurse:" pat-head)
+                (dm::prn "The PAT-HEAD %s is a list, recurse:" pat-head)
                 ;; (dm ::prndiv)
                 (let ((res (with-indentation
                              (dm::match1 pat-head (pop target)
@@ -243,6 +242,8 @@
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
               (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))))
+
+          (dm::prndiv)
           );; End of (while (and pattern target). If we got this far TARGET is nil.
         (dm::prndiv)
         (dm::prn-labeled pattern  "final")
