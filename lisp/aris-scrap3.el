@@ -3,6 +3,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun expr-throws-sym-p (throw-sym expr)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when evaluating expr throws THROW-SYM."
+  (with-gensyms (blk)
+    (cl-block blk
+      (catch throw-sym
+        (eval expr)
+        (cl-return-from blk nil))
+      (cl-return-from blk t))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun alist-putnew(key new-val alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Put NEW-VAL into ALIST as the association of KEY , throwing
@@ -13,10 +26,21 @@ different (by `equal') value."
     (throw 'no-match nil))
   (cl-pushnew (cons key new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)) ;; new key/val.
-(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)) ;; existing key, equal value.
+;; new key/val:
+(confirm that (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist))
+  returns ((c . 3) (a . 1) (b . 2)))
+(confirm that (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)))
+  returns nil)
+;; existing key, equal value:
+(confirm that (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist))
+  returns ((a . 1) (b . 2)))
+(confirm that (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)))
+  returns nil)
 ;; duplicate key, un-equal value:
-(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)) 
+(confirm that (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)))
+  returns t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 
