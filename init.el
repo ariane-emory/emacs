@@ -17,9 +17,9 @@
   (setq aris-config-dir
     (expand-file-name
       (if (eq system-type 'windows-nt)
-	      (expand-file-name "AppData\\Roaming\\.emacs.d\\"
+	(expand-file-name "AppData\\Roaming\\.emacs.d\\"
           (getenv "USERPROFILE"))
-	      "~/.emacs.d/")))
+	"~/.emacs.d/")))
 
   "Set my lisp directory and add it to the load path:"
   (setq aris-lisp-dir (expand-file-name "lisp/" aris-config-dir))
@@ -117,22 +117,22 @@
       (setq use-dialog-box nil)
       (setq visible-bell t)
       (setq display-buffer-alist
-	      '(("\\*Buffer List\\*" display-buffer-same-window
-	          (nil))
-	         ;; ("\\*Backtrace\\*" display-buffer-same-window
-	         ;;   (nil))
-	         ("\\*Compile-Log\\*" display-buffer-same-window
-	           (nil))
+	'(("\\*Buffer List\\*" display-buffer-same-window
+	    (nil))
+	   ;; ("\\*Backtrace\\*" display-buffer-same-window
+	   ;;   (nil))
+	   ("\\*Compile-Log\\*" display-buffer-same-window
+	     (nil))
            ("\\*shell\\*" display-buffer-same-window
-	           (nil))
-	         (".*\\.el" display-buffer-same-window
-	           (nil))
-	         (".*\\.c" display-buffer-same-window
-	           (nil))
-	         (".*\\.h" display-buffer-same-window
-	           (nil))
-	         ("*Help*" display-buffer-same-window
-	           (nil)))))
+	     (nil))
+	   (".*\\.el" display-buffer-same-window
+	     (nil))
+	   (".*\\.c" display-buffer-same-window
+	     (nil))
+	   (".*\\.h" display-buffer-same-window
+	     (nil))
+	   ("*Help*" display-buffer-same-window
+	     (nil)))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Customize other properties/functions/lists:
@@ -286,7 +286,7 @@
         (emacs-lisp-mode .
           (lambda ()
             ;;(setq-local lexical-binding t)
-	          (eldoc-mode 1)
+	    (eldoc-mode 1)
             (company-posframe-mode -1)
             (company-quickhelp-mode -1)
             (aris-setup-lisp))))
@@ -300,7 +300,7 @@
           (lambda ()
             (aris-setup-lisp)
             (font-lock-add-keywords nil
-	            '( ;; AELisp's special forms are keywords.
+	      '( ;; AELisp's special forms are keywords.
                  ("(\\(apply\\_>\\)" . 1)
                  ("(\\(case\\_>\\)"  . 1)
                  ("(\\(decr\\_>\\)"  . 1)
@@ -312,7 +312,7 @@
                  ("(\\(repeat\\_>\\)"  . 1)
                  ("(\\(setq\\_>\\)"  . 1)
                  ("(\\(until\\_>\\)" . 1))
-	            'prepend))))
+	      'prepend))))
 
       (use-package-with-message paren
         :init
@@ -671,11 +671,11 @@
             (setq-local company-tooltip-minimum-width 60)
             (setq-local company-tooltip-maximum-width 80)
             (setq-local lsp-semantic-tokens-enable 1)
-	          (aggressive-indent-mode 1)
+	    (aggressive-indent-mode 1)
             (aris-prettify-symbols-rust)
             (flycheck-rust-setup)
             (lsp)
-	          )))
+	    )))
 
       (use-package-with-message slime-company :ensure t)
 
@@ -686,11 +686,11 @@
         (setq slime-kill-without-query-p t)
         (setq slime-lisp-implementations
           '( (sbcl
-	             ("/opt/homebrew/bin/sbcl"))
+	       ("/opt/homebrew/bin/sbcl"))
              (clisp
-	             ("/opt/homebrew/bin/clisp"))
+	       ("/opt/homebrew/bin/clisp"))
              (ecl
-	             ("/opt/homebrew/bin/ecl"))))
+	       ("/opt/homebrew/bin/ecl"))))
         (setq inferior-lisp-program "/opt/homebrew/bin/sbcl")
         (setq slime-compilation-finished-hook 'slime-maybe-show-compilation-log)
         (setq slime-load-failed-fasl 'never)
@@ -723,8 +723,8 @@
         (add-hook hook
           (lambda ()
             (c-set-offset 'arglist-close 0)
-	          (setq-local lsp-inlay-hint-enable nil)
-    	      (lsp)
+	    (setq-local lsp-inlay-hint-enable nil)
+    	    (lsp)
             ;; (lsp-inlay-hints-mode -1)
             ;; (lsp-lens-mode -1)
             ;; (lsp-semantic-tokens-mode -1)
@@ -764,8 +764,8 @@
 
       (add-hook 'Info-mode-hook
         (lambda ()
-	        (variable-pitch-mode 1)
-	        (face-remap-add-relative 'default '(:height 1.1))))
+	  (variable-pitch-mode 1)
+	  (face-remap-add-relative 'default '(:height 1.1))))
 
       (add-hook 'ielm-mode-hook
         (lambda ()
@@ -785,10 +785,10 @@
 
       (add-hook 'xwidget-webkit-mode-hook
         (lambda ()
-	        (setq-local global-hl-line-mode nil)
-	        (setq-local beacon-mode nil)
-	        (setq-local display-line-numbers-mode nil)
-	        (setq-local cursor-type nil))))
+	  (setq-local global-hl-line-mode nil)
+	  (setq-local beacon-mode nil)
+	  (setq-local display-line-numbers-mode nil)
+	  (setq-local cursor-type nil))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Use my own custom packages:
@@ -797,8 +797,8 @@
       (mapc
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
         '( aris-funs--confirm
-           aris--funs-expr-throws-sym-p
-	         aris-funs--aliases
+           aris-funs--expr-throws-sym-p
+	   aris-funs--aliases
            aris-funs--arglists
            aris-funs--basic-preds
            aris-funs--unsorted
@@ -931,9 +931,9 @@
                 (shell "dcp")))
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	          ;; Load desktop file:
+	    ;; Load desktop file:
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	          (with-messages "loading desktop" (desktop-read))))))
+	    (with-messages "loading desktop" (desktop-read))))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (provide 'aris-emacs-configuration))
