@@ -16,37 +16,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:verbose* t
   "Whether or not dm:match should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:tests-enabled* t
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:label-width* 21
   "Label width used by functions in the 'destructuring-match' group."
   :group 'destructuring-match
   :type 'integer)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-dont-care* '_
   "dm:match's default DONT-CARE indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-ellipsis* '...
   "dm:match's default ELLIPSIS indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-unsplice* '\,@
   "dm:match's default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:enforce-final-position* t
   "Whether or not dm:match should only allow ELLIPSIS and UNSPLICE in a pattern's final position."
   :group 'destructuring-match
