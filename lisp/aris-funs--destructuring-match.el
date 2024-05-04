@@ -225,7 +225,7 @@ KEY is already present in ALIST with a different value."
             ;; better contain an ELLIPSIS or an UNSPLICE.
             ((null pat-tail)) ;; don't need to do anything.
             ((and ellipsis (equal (car pat-tail) ellipsis))
-              ;; don't need to do anything other than check for well formedness.
+              ;; Don't need to do anything other than check for well formedness:
               (when (cdr pat-tail) (error "ELLIPSIS may only be the final element in PATTERN."))) 
             ;; If PAT-TAIL's head is an UNSPLICE, since there's no TARG-TAIL left we just 
             ;; need to set the var in ALIST to nil:
