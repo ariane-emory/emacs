@@ -27,6 +27,11 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
+(defcustom *dm:label-width* 20
+  "Label width used by functions in the 'destructuring-match' group."
+  :group 'destructuring-match
+  :type 'integer)
+;;-----------------------------------------------------------------------------------------
 (defcustom *dm:default-dont-care* '_
   "`match-pattern''s default DONT-CARE indicator."
   :group 'destructuring-match
@@ -74,7 +79,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro dm::prn-labeled (var &optional (extra "") (width 22))
+(cl-defmacro dm::prn-labeled (var &optional (extra "") (width *dm:label-width*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
   (let* ( (label  (concat (upcase (symbol-name var)) ":"))
