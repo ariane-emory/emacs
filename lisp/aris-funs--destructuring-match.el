@@ -203,7 +203,7 @@ KEY is already present in ALIST with a different value."
                       ((eq res t)) ; do nothing.
                       ((eq res nil) (NO-MATCH!)) ;; Sub-pattern's tail didn't match.
                       ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
-                      ;; now alist.
+                      ;; now a list.
                       (t (setf alist res)))))
                 ;; When PAT-HEAD and TARG-HEAD are equal literals, do nothing:
                 ((equal pat-head targ-head)
@@ -223,7 +223,7 @@ KEY is already present in ALIST with a different value."
             (targ-tail (NO-MATCH!))
             ;; By this line, TARG-TAIL must be nil. Unless PAT-TAIL is also nil, it had 
             ;; better contain an ELLIPSIS or an UNSPLICE.
-            ((null pat-tail)) ;; don't need to do anything.
+            ((null pat-tail)) ;; Don't need to do anything.
             ((and ellipsis (equal (car pat-tail) ellipsis))
               ;; Don't need to do anything other than check for well formedness:
               (when (cdr pat-tail) (error "ELLIPSIS may only be the final element in PATTERN."))) 
