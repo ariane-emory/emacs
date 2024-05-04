@@ -195,7 +195,7 @@
             ;; When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
             ;; the loop successfully:
             ((and ellipsis (eq (car pattern) ellipsis))
-              (when (and *dm:enforce-final-position* pattern)
+              (when (and *dm:enforce-final-position* (cdr pattern))
                 (error "ELLIPSIS may only be the final element in PATTERN."))
               ;; `let' TARGET just to print it in this message:
               ;; (let ((target (cons targ-head target))) 
@@ -206,7 +206,7 @@
             ;; When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
             ;; the loop successfully:
             ((and unsplice (eq unsplice (car-safe (car pattern))))
-              (when (and *dm:enforce-final-position* pattern)
+              (when (and *dm:enforce-final-position* (cdr pattern))
                 (error "UNSPLICE may only be the final element in PATTERN."))
               (let ((var (cadar pattern)))
                 ;; `let' ASSOC just to print it in this message:
@@ -263,12 +263,12 @@
           ((and ellipsis (equal (car pattern) ellipsis))
             ;; Don't need to do anything other than check for well formedness:
             (when (and *dm:enforce-final-position* (cdr pattern))
-              (error "ELLIPSIS may only be the final element in PATTERN."))) 
+              (error "ELLIPSIS may only be the final element in PATTERN (case #2)."))) 
           ;; If PATTERN's head is an UNSPLICE, since there's no TARGET left we just 
           ;; need to set the var in ALIST to nil:
           ((and unsplice (equal (car-safe (car pattern)) unsplice))
             (when (and *dm:enforce-final-position* (cdr pattern))
-              (error "UNSPLICE may only be the final element in PATTERN."))
+              (error "UNSPLICE may only be the final element in PATTERN (case #2)\."))
             (let ((var (cadar pattern)))
               (setf alist (alist-putunique var nil alist 'no-match))))
           ;; It was something else, no match;
