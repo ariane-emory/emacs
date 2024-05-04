@@ -203,13 +203,13 @@ KEY is already present in ALIST with a different value."
                 ((and unsplice (eq unsplice (car-safe pat-head)))
                   (when (and *dm:enforce-final-position* pat-tail)
                     (error "UNSPLICE may only be the final element in PATTERN."))
-                  (let ( (var (cadr pat-head))
-                         (target (cons targ-head targ-tail)))
+                  (let ( (var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var target)) )
                       (dm::prn-labeled assoc "unsplicing"))
                     ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
-                    (setf alist (dm::pushnew var alist target))
+                    (let ((target (cons targ-head targ-tail)))
+                      (setf alist (dm::pushnew var alist target)))
                     ;; Nullify TARG-TAIL and PAT-TAIL:
                     (setf targ-tail nil)
                     (setf pat-tail  nil)))
