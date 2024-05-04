@@ -131,7 +131,7 @@ different (by `equal') value."
   (when-let ( (assoc (assoc key alist))
               (neq   (not (equal (cdr assoc) new-val))))
     (throw 'no-match nil))
-  (cl-pushnew (cons var new-val) alist :test #'equal))
+  (cl-pushnew (cons key new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
