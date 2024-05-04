@@ -6,6 +6,7 @@
 (require 'aris-funs--aliases)
 (require 'aris-funs--confirm)
 (require 'aris-funs--unsorted)
+(require 'aris-funs--expr-throws-sym-p)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -497,6 +498,43 @@ maintaining ordering). Sketchy?"
 (confirm that
   (sort-symbol-keyed-alist (fill-in-missing-alist-keys '(c d e) '((a . 1) (b . 2) (c . 3))))
   returns ((a . 1) (b . 2) (c . 3) (d) (e)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun alist-putunique(key new-val alist &optional (throw-sym 'unequal-duplicate))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Put NEW-VAL into ALIST as the association of KEY, throwing
+THROWSYM if an association for KEY is already present in ALIST with a
+different (by `equal') value."
+  (let ((assoc (assoc key alist)))
+    (cond
+      ((and assoc (equal (cdr assoc) new-val)) alist) ;; just return alist.
+      (assoc (throw throw-sym nil))   
+      (t (cons (cons key new-val) alist)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; new key/val:
+(confirm that
+  (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'c 3 alist))
+  returns ((c . 3) (a . 1) (b . 2)))
+(confirm that
+  (expr-throws-sym-p 'unequal-duplicate
+    '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'c 3 alist)))
+  returns nil)
+;; existing key, equal value:
+(confirm that
+  (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist))
+  returns ((a . 1) (b . 2)))
+(confirm that
+  (expr-throws-sym-p 'unequal-duplicate '
+    (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist)))
+  returns nil)
+;; duplicate key, un-equal value. this one SHOULD throw, so we don't `confirm' it's return
+;; value, we just `confirm' if it threw:
+(confirm that
+  (expr-throws-sym-p 'unequal-duplicate
+    '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 3 alist)))
+  returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
