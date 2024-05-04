@@ -136,8 +136,8 @@
             (symbolp dont-care)
             (symbolp ellipsis)
             (symbolp unsplice))
-    (error (concat "PATTERN and TARGET must be lists, "
-             "DONT-CARE, ELLIPSIS and UNSPLICE must be symbols.")))
+    (error
+      "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:          %S" pattern)
   (dm::prn "AGAINST:              %S" target)
