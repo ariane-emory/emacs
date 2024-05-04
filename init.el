@@ -797,6 +797,7 @@
       (mapc
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
         '( aris-funs--confirm
+           aris--funs-expr-throws-sym-p
 	         aris-funs--aliases
            aris-funs--arglists
            aris-funs--basic-preds
