@@ -123,19 +123,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::alist-putnew(key new-val alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Put NEW-VAL into ALIST as the association of KEY , throwing
-'no-match an association for KEY is already present in ALIST with a
-different (by `equal') value."
-  (when-let ( (assoc (assoc key alist))
-              (neq   (not (equal (cdr assoc) new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons key new-val) alist :test #'equal))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
                      &optional
                      (dont-care *dm:default-dont-care*)
@@ -217,7 +204,7 @@ different (by `equal') value."
                       (dm::prn-labeled assoc "unsplicing as"))
                     ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
                     (let ((target (cons targ-head targ-tail)))
-                      (setf alist (dm::alist-putnew var target alist)))
+                      (setf alist (alist-putunique var target alist 'no-match)))
                     ;; Nullify TARG-TAIL and PAT-TAIL:
                     (setf targ-tail nil)
                     (setf pat-tail  nil)))
@@ -227,7 +214,7 @@ different (by `equal') value."
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var targ-head))) 
                       (dm::prn-labeled assoc "take var as"))
-                    (setf alist (dm::alist-putnew var targ-head alist))))
+                    (setf alist (alist-putunique var targ-head alist 'no-match))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
                 ;; (unless the result was just t because the pat-tail being recursed over
                 ;; contained no variables):
@@ -272,7 +259,7 @@ different (by `equal') value."
               (when (and *dm:enforce-final-position* (cdr pat-tail))
                 (error "UNSPLICE may only be the final element in PATTERN."))
               (let ((var (cadar pat-tail)))
-                (setf alist (dm::alist-putnew var nil alist))))
+                (setf alist (alist-putunique var nil alist 'no-match))))
             ;; It was something else, no match;
             (t (NO-MATCH!))) 
           (dm::prn-labeled alist "final")
