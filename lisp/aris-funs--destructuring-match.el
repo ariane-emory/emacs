@@ -186,11 +186,7 @@
                              (format "%-7s . %s" (car pattern) (cdr pattern))
                              (format "%s" (car pattern)))))
               (dm::prn-labeled pattern)))
-          ;; (dm::prn-labeled  pat-head)
-          ;; (dm::prn-labeled  pattern)
           (dm::prndiv ?\-)
-          ;; (dm::prn-labeled  target)
-          ;; (dm::prndiv ?\-)
           (cond
             ;; When PAT-HEAD is DONT-CARE, do nothing:
             ((and dont-care (eq pat-head dont-care))
