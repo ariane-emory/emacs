@@ -20,7 +20,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* nil ; t 
+(defcustom *dm:tests-enabled* t ; nil
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
