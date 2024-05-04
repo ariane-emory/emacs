@@ -511,8 +511,7 @@ different (by `equal') value (or return nil, if THROW-SYM is nil)."
     (cond
       ((and assoc (equal (cdr assoc) new-val)) alist) ;; just return alist.
       (assoc (when throw-sym ;; throw: or return nil:
-               (throw throw-sym
-                 (format "key %s value %s != %s" key new-val (cdr assoc)))))
+               (throw throw-sym nil)))
       (t (cons (cons key new-val) alist))))) ;; add the new assoc.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; new key/val:
