@@ -20,7 +20,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* nil ; t 
+(defcustom *dm:tests-enabled* t
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -145,14 +145,12 @@ KEY is already present in ALIST with a different value."
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:          %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (result
-            ;; (with-indentation
-            ;;   (dm::match1 pattern target dont-care ellipsis unsplice nil))
-            (dm::match1 pattern target dont-care ellipsis unsplice nil))
+  (let* ( (result (with-indentation (dm::match1 pattern target dont-care ellipsis unsplice nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prndiv)
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
+    (dm::prnl)
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -218,7 +216,8 @@ KEY is already present in ALIST with a different value."
                 ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
                 ((eq '\, (car-safe pat-head)) 
                   (let ((var (cadr pat-head)))
-                    (let ((var (cons var targ-head))) ; Shadow just for printing...
+                    ;; `let' ASSOC just to print it in this message:
+                    (let ((assoc (cons var targ-head))) 
                       (dm::prn-labeled var "take"))
                     (setf alist (dm::pushnew var alist targ-head))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
