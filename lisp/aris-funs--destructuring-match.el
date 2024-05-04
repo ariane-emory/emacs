@@ -174,16 +174,16 @@
                    (targ-head (pop targ-tail)))
               (dm::prndiv)
               (dm::prn-pp-alist alist)
-              (dm::prn-labeled  pat-head)
-              (dm::prn-labeled  pat-tail)
-              (dm::prn-labeled  targ-head)
-              (dm::prn-labeled  targ-tail)
-              (dm::prndiv ?\-)
               (when *dm:verbose*
                 (let ((pattern (format "%-8s . %s" pat-head pat-tail)))
                   (dm::prn-labeled pattern))
                 (let ((target (format "%-8s . %s"  targ-head targ-tail)))
                   (dm::prn-labeled target)))
+              (dm::prn-labeled  pat-head)
+              (dm::prn-labeled  pat-tail)
+              (dm::prn-labeled  targ-head)
+              (dm::prn-labeled  targ-tail)
+              (dm::prndiv ?\-)
 
               (cond
                 ;; When PAT-HEAD is DONT-CARE, do nothing:
