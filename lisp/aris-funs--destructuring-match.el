@@ -30,7 +30,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:default-ellipsis* nil ; '...
+(defcustom *dm:default-ellipsis* '...
   "`match-pattern''s default ELLIPSIS indicator."
   :group 'destructuring-match
   :type 'boolean)
