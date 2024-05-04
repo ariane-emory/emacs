@@ -20,7 +20,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* nil
+(defcustom *dm:tests-enabled* t
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -28,14 +28,19 @@
 (defcustom *dm:default-dont-care* '_
   "`match-pattern''s default DONT-CARE indicator."
   :group 'destructuring-match
-  :type 'boolean)
+  :type 'symbol)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:default-ellipsis* '...
   "`match-pattern''s default ELLIPSIS indicator."
   :group 'destructuring-match
-  :type 'boolean)
+  :type 'symbol)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:default-unsplice* '\,@
+  "`match-pattern''s default UNSPLICE indicator."
+  :group 'destructuring-match
+  :type 'symbol)
+;;-----------------------------------------------------------------------------------------
+(defcustom *dm:enforce-final-position* t
   "`match-pattern''s default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'boolean)
@@ -71,7 +76,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
   (let* ( (label  (concat (upcase (symbol-name var)) ":"))
-          (extra  (if (string-equal "" extra) extra (upcase (concat extra " "))))
+          (extra  (if (string-equal "" extra) extra (capitalize (concat extra " "))))
           (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
           (fmt    (format "%s%s%s%%s" extra label spaces)))
     `(dm::prn ,fmt ,var)))
@@ -164,7 +169,7 @@ KEY is already present in ALIST with a different value."
     (catch 'no-match
       (dm::prndiv)
       (dm::prn-labeled pattern "MATCHING")
-      (dm::prn-labeled target  "AGAINST")
+      (dm::prn-labeled target  "AGAINST ")
       ;; Just rename these because it reads better:
       (let ( (pat-tail  pattern)
              (targ-tail target))
@@ -187,7 +192,8 @@ KEY is already present in ALIST with a different value."
                 ;; When PAT-HEAD is an ELLIPSIS, nullify TARG-TAIL and PAT-TAIL to break 
                 ;; the loop successfully:
                 ((and ellipsis (eq pat-head ellipsis))
-                  (when pat-tail (error "ELLIPSIS may only be the final element in PATTERN."))
+                  (when (and *dm:enforce-final-position* pat-tail)
+                    (error "ELLIPSIS may only be the final element in PATTERN."))
                   (dm::prn-labeled targ-tail "discarding")
                   ;; Nullify TARG-TAIL and PAT-TAIL:
                   (setf targ-tail nil)
@@ -195,7 +201,8 @@ KEY is already present in ALIST with a different value."
                 ;; When PAT-HEAD is an UNSPLICE, nullify TARG-TAIL and PAT-TAIL to break 
                 ;; the loop successfully:
                 ((and unsplice (eq unsplice (car-safe pat-head)))
-                  (when pat-tail (error "UNSPLICE may only be the final element in PATTERN."))
+                  (when (and *dm:enforce-final-position* pat-tail)
+                    (error "UNSPLICE may only be the final element in PATTERN."))
                   (let ((var (cadr pat-head)))
                     (let ((target (cons targ-head targ-tail)))
                       (let ((var (cons var targ-tail))) ; Shadow just for printing...
