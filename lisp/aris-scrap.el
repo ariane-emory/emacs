@@ -87,38 +87,3 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun weighted-pick (weighted-list)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Select the cdr of an element from WEIGHTED-LIST based on the weight in its car."
-  (let* ( (total-weight (apply #'+ (mapcar #'car weighted-list)))
-          (random-weight (random total-weight))
-          (cumulative-weight 0))
-    (catch 'return
-      (while-let ((item (pop weighted-list)))
-        (setq cumulative-weight (+ cumulative-weight (car item)))
-        (when (< random-weight cumulative-weight)
-          (throw 'return (cdr item)))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(dotimes (_ 20)
-  (message "Selected element: %S" (weighted-pick weighted-list)))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; I have a list like this:
-'( (3 (prn "Chose the likely case") :LIKELY)
-   (2 . :UNLIKELY)
-   (1 . :RARE))
-
-;; I would like to randomly select the cdr of an element in this list, using the car as a
-;; weighting of how likely it is to pick that cdr.
-
-;; So, for that list, 3/6ths of the time it should select ((prn "Chose the likely case") :LIKELY).
-;; 2/6ths of the time it should select :UNLIKELY.
-;; 1/6th of the time it should select :RARE.
-
-
-
