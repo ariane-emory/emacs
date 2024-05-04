@@ -205,9 +205,7 @@
                 ;; the loop successfully:
                 ((and unsplice (eq unsplice (car-safe pat-head)))
                   (if (and *dm:enforce-final-position* pat-tail)
-                    (error "UNSPLICE may only be the final element in PATTERN.")
-                    ;; (debug) ; HERE!
-                    )
+                    (error "UNSPLICE may only be the final element in PATTERN."))
                   (let ( (var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var target)) )
