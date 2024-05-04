@@ -204,7 +204,7 @@
                 ;; When PAT-HEAD is an UNSPLICE, nullify TARG-TAIL and PAT-TAIL to break 
                 ;; the loop successfully:
                 ((and unsplice (eq unsplice (car-safe pat-head)))
-                  (if (and *dm:enforce-final-position* pat-tail)
+                  (when (and *dm:enforce-final-position* pat-tail)
                     (error "UNSPLICE may only be the final element in PATTERN."))
                   (let ( (var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
