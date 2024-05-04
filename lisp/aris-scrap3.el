@@ -14,7 +14,7 @@ different (by `equal') value."
   (cl-pushnew (cons key new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)) ;; new key/val.
-(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)) ;; existing key/value.
+(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)) ;; existing key, equal value.
 ;; duplicate key, un-equal value:
 (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)) 
 
