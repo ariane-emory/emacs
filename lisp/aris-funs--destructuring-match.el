@@ -156,7 +156,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   (cl-flet ((NO-MATCH! (fmt &rest args)
-              (let ((str (format fmt args)))
+              (let ((str (apply #'format fmt args)))
                 (dm::prn "NO-MATCH BECAUSE: %s!" str)
                 ;; (debug)
                 (throw 'no-match nil))))
@@ -244,7 +244,7 @@
                 (dm::prn "Equal literals, discarding %s." (pop target)))
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
-              (t (NO-MATCH! "expected %s" pat-head))))
+              (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))))
           ;; (debug)
           );; End of (while (and pattern target).
         ;; If we got this far TARGET is nil.
