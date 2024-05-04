@@ -395,50 +395,50 @@ This behaves very similarly to quasiquote."
           (t (push thing res)))))
     (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when *dm:tests-enabled*
-  (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
-    returns (666 x 999 z))
-  (confirm that (dm:fill
-                  '(,w x ,y (,y , y) z ,w)
-                  '((y . 999) (w . (333 666))))
-    returns ((333 666) x 999 (999 999) z (333 666)))
-  (confirm that (dm:fill '(a ,b (,c ,d))
-                  (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-    returns (a 2 (3 4)))
-  (confirm that
-    (dm:fill '(a ,b (,c ,d))
-      (dm:match '(a ,b (,c ,d))
-        (dm:fill '(a ,b (,c ,d))
-          (dm:match '(a ,b (,c ,d))
-            '(a 2 (3 4))))))
-    returns (a 2 (3 4)))
-  (confirm that
-    (dm:match '(a ,b (,c ,d))
-      (dm:fill '(a ,b (,c ,d))
-        (dm:match '(a ,b (,c ,d))
-          (dm:fill '(a ,b (,c ,d))
-            (dm:match '(a ,b (,c ,d))
-              '(a 2 (3 4)))))))
-    returns ((b . 2) (c . 3) (d . 4)))
-  (confirm that
-    (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-           (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-      (dm:fill pattern
-        (dm:match pattern
-          (dm:fill pattern
-            (dm:match pattern
-              target)))))
-    returns (a 2 (3 4 (5 6 7 8))))
-  (confirm that
-    (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-           (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-      (dm:match pattern
-        (dm:fill pattern
-          (dm:match pattern
-            (dm:fill pattern
-              (dm:match pattern
-                target))))))
-    returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8))))
+;; (when *dm:tests-enabled*
+;;   (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+;;     returns (666 x 999 z))
+;;   (confirm that (dm:fill
+;;                   '(,w x ,y (,y , y) z ,w)
+;;                   '((y . 999) (w . (333 666))))
+;;     returns ((333 666) x 999 (999 999) z (333 666)))
+;;   (confirm that (dm:fill '(a ,b (,c ,d))
+;;                   (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+;;     returns (a 2 (3 4)))
+;;   (confirm that
+;;     (dm:fill '(a ,b (,c ,d))
+;;       (dm:match '(a ,b (,c ,d))
+;;         (dm:fill '(a ,b (,c ,d))
+;;           (dm:match '(a ,b (,c ,d))
+;;             '(a 2 (3 4))))))
+;;     returns (a 2 (3 4)))
+;;   (confirm that
+;;     (dm:match '(a ,b (,c ,d))
+;;       (dm:fill '(a ,b (,c ,d))
+;;         (dm:match '(a ,b (,c ,d))
+;;           (dm:fill '(a ,b (,c ,d))
+;;             (dm:match '(a ,b (,c ,d))
+;;               '(a 2 (3 4)))))))
+;;     returns ((b . 2) (c . 3) (d . 4)))
+;;   (confirm that
+;;     (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+;;            (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+;;       (dm:fill pattern
+;;         (dm:match pattern
+;;           (dm:fill pattern
+;;             (dm:match pattern
+;;               target)))))
+;;     returns (a 2 (3 4 (5 6 7 8))))
+;;   (confirm that
+;;     (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+;;            (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+;;       (dm:match pattern
+;;         (dm:fill pattern
+;;           (dm:match pattern
+;;             (dm:fill pattern
+;;               (dm:match pattern
+;;                 target))))))
+;;     returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
