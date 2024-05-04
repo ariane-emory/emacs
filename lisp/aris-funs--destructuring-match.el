@@ -208,7 +208,7 @@
             (let* ( (unsplice-var-spec (car  pattern))
                     (unsplice-var-name (cadr unsplice-var-spec))
                     (unsplice-var-val  target)
-                    ;; `let' ASSOC just to print it in a message:
+                    ;; `let' ASSOC just to print it in the message:
                     (assoc (cons unsplice-var-name unsplice-var-val)))
               (dm::prn-labeled assoc "unsplicing as")
               ;; Put UNSPLICE-VAR-VAL in UNSPLICE-VAR-NAME's key in ALIST:
@@ -223,7 +223,8 @@
             (let* ( (var-spec (car  pattern))
                     (var-val  (car  target))
                     (var-name (cadr var-spec))
-                    (assoc    (cons var-name var-val))) ; `let' ASSOC just to print it in a message.
+                    ;; `let' ASSOC just to print it in the message:
+                    (assoc    (cons var-name var-val))) 
               (dm::prn-labeled assoc "take var as")
               (setf alist (alist-putunique var-name var-val alist 'no-match))
               (pop  pattern)
@@ -259,7 +260,7 @@
           ;; Otherwise: When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
           ;; ----------------------------------------------------------------------------------------
-          (t (NO-MATCH! "expected %s but found %s" (pop pattern) (pop target)))) ; End of `cond'.
+          (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))) ; End of `cond'.
         ;; ----------------------------------------------------------------------------------------
         (dm::prndiv)
         (dm::prnl)
