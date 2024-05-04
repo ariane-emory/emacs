@@ -47,7 +47,7 @@
   :group 'destructuring-match
   :type 'symbol)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:enforce-final-position* nil
+(defcustom *dm:enforce-final-position* t
   "Whether or not dm:match should only allow ELLIPSIS and UNSPLICE in a pattern's final position."
   :group 'destructuring-match
   :type 'boolean)
