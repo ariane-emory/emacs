@@ -17,8 +17,8 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:match-verbose* t
-  "Whether or not dm:match should print verbose messages."
+(defcustom *dm:verbose* t
+  "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@
 (defun dm::prn (&rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:match-verbose* (apply #'prn args)))
+  (when *dm:verbose* (apply #'prn args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -66,7 +66,7 @@
 (defun dm::prnl ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:match-verbose* (prnl)))
+  (when *dm:verbose* (prnl)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -74,7 +74,7 @@
 (defun dm::prndiv (&rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:match-verbose* (apply #'prndiv args)))
+  (when *dm:verbose* (apply #'prndiv args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -110,7 +110,7 @@
 (defun dm::prn-pp-alist (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
-  (when *dm:match-verbose*
+  (when *dm:verbose*
     (if-not (consp alist)
       (dm::prn-labeled alist)
       (let ((pp-str (indent-string-lines
@@ -174,6 +174,13 @@
                    (targ-head (pop targ-tail)))
               (dm::prndiv)
               (dm::prn-pp-alist alist)
+              (dm::prndiv ?\-)
+              (when *dm:verbose*
+                (let ((pattern (cons pat-head pat-tail)))
+                  (dm::prn-labeled pattern))
+                (let ((target (cons targ-head targ-tail)))
+                  (dm::prn-labeled target)))
+              (dm::prndiv ?\-)
               (dm::prn-labeled  pat-head)
               (dm::prn-labeled  pat-tail)
               (dm::prn-labeled  targ-head)
@@ -199,7 +206,7 @@
                 ((and unsplice (eq unsplice (car-safe pat-head)))
                   (if (and *dm:enforce-final-position* pat-tail)
                     (error "UNSPLICE may only be the final element in PATTERN.")
-                    ;; (debug)
+                    (debug)
                     )
                   (let ( (var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
