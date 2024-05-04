@@ -123,6 +123,19 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::alist-putnew(key new-val alist)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Put NEW-VAL into ALIST as the association of KEY , throwing
+'no-match an association for KEY is already present in ALIST with a
+different (by `equal') value."
+  (when-let ( (assoc (assoc key alist))
+              (neq   (not (equal (cdr assoc) new-val))))
+    (throw 'no-match nil))
+  (cl-pushnew (cons key new-val) alist :test #'equal))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
                      &optional
                      (dont-care *dm:default-dont-care*)
@@ -135,8 +148,8 @@
             (symbolp dont-care)
             (symbolp ellipsis)
             (symbolp unsplice))
-    (error (concat "PATTERN and TARGET must be lists, "
-             "DONT-CARE, ELLIPSIS and UNSPLICE must be symbols.")))
+    (error
+      "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:          %S" pattern)
   (dm::prn "AGAINST:              %S" target)
