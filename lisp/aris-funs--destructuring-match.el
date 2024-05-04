@@ -18,7 +18,7 @@
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:verbose* t
-  "Whether or not dm:match should print verbose messages."
+  "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
