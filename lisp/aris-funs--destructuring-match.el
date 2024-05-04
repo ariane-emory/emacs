@@ -4,6 +4,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--lists)
+(require 'aris-funs--strings)
+(require 'aris-funs--unsorted)
 (require 'aris-funs--when-let-alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
@@ -76,7 +78,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
   (let* ( (label  (concat (upcase (symbol-name var)) ":"))
-          (extra  (if (string-equal "" extra) extra (capitalize (concat extra " "))))
+          (extra  (if (string-equal "" extra) extra (capitalize1 (concat extra " "))))
           (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
           (fmt    (format "%s%s%s%%s" extra label spaces)))
     `(dm::prn ,fmt ,var)))
@@ -116,10 +118,10 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pushnew(key alist new-val)
+(defun dm::pushnew(key new-val alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Push KEY into ALIST with NEW-VAL unless it is already present, no match if
-KEY is already present in ALIST with a different value."
+  "Push KEY into ALIST with NEW-VAL as it's value unless it is already
+present, no match if KEY is already present in ALIST with a different value."
   (when-let ( (assoc (assoc key alist))
               (neq   (not (equal (cdr assoc) new-val))))
     (throw 'no-match nil))
@@ -206,10 +208,10 @@ KEY is already present in ALIST with a different value."
                   (let ( (var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var target)) )
-                      (dm::prn-labeled assoc "unsplicing"))
+                      (dm::prn-labeled assoc "unsplicing as"))
                     ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
                     (let ((target (cons targ-head targ-tail)))
-                      (setf alist (dm::pushnew var alist target)))
+                      (setf alist (dm::pushnew var target alist)))
                     ;; Nullify TARG-TAIL and PAT-TAIL:
                     (setf targ-tail nil)
                     (setf pat-tail  nil)))
@@ -218,8 +220,8 @@ KEY is already present in ALIST with a different value."
                   (let ((var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var targ-head))) 
-                      (dm::prn-labeled assoc "take"))
-                    (setf alist (dm::pushnew var alist targ-head))))
+                      (dm::prn-labeled assoc "take var as"))
+                    (setf alist (dm::pushnew var targ-head alist))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
                 ;; (unless the result was just t because the pat-tail being recursed over
                 ;; contained no variables):
@@ -264,7 +266,7 @@ KEY is already present in ALIST with a different value."
               (when (and *dm:enforce-final-position* (cdr pat-tail))
                 (error "UNSPLICE may only be the final element in PATTERN."))
               (let ((var (cadar pat-tail)))
-                (setf alist (dm::pushnew var alist nil))))
+                (setf alist (dm::pushnew var nil alist))))
             ;; It was something else, no match;
             (t (NO-MATCH!))) 
           (dm::prn-labeled alist "final")
