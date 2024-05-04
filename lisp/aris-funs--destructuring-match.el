@@ -332,16 +332,18 @@
     returns ((two . 2) (four . 4) (five . 5) (six . 6)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
-    (when-let-alist (dm:match
-                      '(i ,modal-verb ,verb a ,thing)
-                      '(i have (never seen) a (red car)))
+    (when-let-alist
+      (dm:match
+        '(i ,modal-verb ,verb a ,thing)
+        '(i have (never seen) a (red car)))
       (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
     returns (Do you really believe that you have never seen a red car \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
-    (when-let-alist (dm:match
-                      '(i ,verb that ,noun ,con ,thing)
-                      '(i think that dogs are dumb))
+    (when-let-alist
+      (dm:match
+        '(i ,verb that ,noun ,con ,thing)
+        '(i think that dogs are dumb))
       (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
     returns (Why do you think that dogs are dumb \?))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
