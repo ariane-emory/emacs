@@ -157,7 +157,7 @@
   "Internal function used by `dm:match'."
   (cl-flet ((NO-MATCH! (fmt &rest args)
               (let ((str (apply #'format fmt args)))
-                (dm::prn "NO-MATCH BECAUSE: %s!" str)
+                (dm::prn "NO-MATCH because %s!" str)
                 ;; (debug)
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
