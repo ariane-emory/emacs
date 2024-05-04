@@ -158,7 +158,6 @@
   (cl-flet ((NO-MATCH! (fmt &rest args)
               (let ((str (apply #'format fmt args)))
                 (dm::prn "NO-MATCH because %s!" str)
-                ;; (debug)
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
@@ -169,9 +168,8 @@
       (progn ;; < useless `progn' for organization.
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET"))
-          (let ( (pat-head  (pop pattern))
-                 ;; (targ-head (pop target))
-                 )
+          ;; We always `pop' pattern, but might not always `pop' target.
+          (let ((pat-head (pop pattern))) 
             (dm::prndiv)
             (dm::prn-pp-alist alist)
             (dm::prndiv ?\-)
@@ -245,9 +243,7 @@
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
               (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))))
-          ;; (debug)
-          );; End of (while (and pattern target).
-        ;; If we got this far TARGET is nil.
+          );; End of (while (and pattern target). If we got this far TARGET is nil.
         (dm::prndiv)
         (dm::prn-labeled pattern  "final")
         (dm::prn-labeled target "final")
