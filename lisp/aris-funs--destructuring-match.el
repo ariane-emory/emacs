@@ -267,7 +267,7 @@ KEY is already present in ALIST with a different value."
                 (setf alist (dm::pushnew var alist nil))))
             ;; It was something else, no match;
             (t (NO-MATCH!))) 
-          (dm::prn-labeled alist "result")
+          (dm::prn-labeled alist "final")
           ;; Return either the ALIST or just t:
           (or alist t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
