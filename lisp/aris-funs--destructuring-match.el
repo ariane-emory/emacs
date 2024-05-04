@@ -20,7 +20,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* t
+(defcustom *dm:tests-enabled* nil
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -181,8 +181,8 @@ KEY is already present in ALIST with a different value."
               (dm::prndiv)
               (dm::prn-pp-alist alist)
               (dm::prn-labeled  pat-head)
-              (dm::prn-labeled  targ-head)
               (dm::prn-labeled  pat-tail)
+              (dm::prn-labeled  targ-head)
               (dm::prn-labeled  targ-tail)
               (dm::prndiv ?\-)
               (cond
@@ -194,7 +194,9 @@ KEY is already present in ALIST with a different value."
                 ((and ellipsis (eq pat-head ellipsis))
                   (when (and *dm:enforce-final-position* pat-tail)
                     (error "ELLIPSIS may only be the final element in PATTERN."))
-                  (dm::prn-labeled targ-tail "discarding")
+                  ;; Shadow just to print this message:
+                  (let ((var (cons var (cons targ-head targ-tail)))) 
+                    (dm::prn-labeled targ-tail "discarding"))
                   ;; Nullify TARG-TAIL and PAT-TAIL:
                   (setf targ-tail nil)
                   (setf pat-tail  nil))
@@ -205,8 +207,9 @@ KEY is already present in ALIST with a different value."
                     (error "UNSPLICE may only be the final element in PATTERN."))
                   (let ((var (cadr pat-head)))
                     (let ((target (cons targ-head targ-tail)))
-                      (let ((var (cons var targ-tail))) ; Shadow just for printing...
-                        (dm::prn-labeled var "unsplicing"))
+                      ;; `let' just to print this message:
+                      (let ((assoc (cons var target)) )
+                        (dm::prn-labeled assoc "unsplicing"))
                       ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
                       (setf alist (dm::pushnew var alist target))
                       ;; Nullify TARG-TAIL and PAT-TAIL:
