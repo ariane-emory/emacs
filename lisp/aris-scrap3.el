@@ -13,5 +13,25 @@ different (by `equal') value."
     (throw 'no-match nil))
   (cl-pushnew (cons key new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((alist '((a . 1) (b . 2))))
-  (alist-putnew 'c 3 alist))
+(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)) ;; new key/val.
+(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)) ;; existing key/value.
+;; duplicate key, un-equal value:
+(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)) 
+
+
+
+(defun foo-throws-bar-p ()
+  (cl-block 'blk
+    (catch 'bar
+      (foo)
+      (cl-return-from 'blk nil))
+    (cl-return-from 'blk t)))
+
+(defun foo () (throw 'bar 123))
+(foo-throws-bar-p) ;; t
+
+(defun foo () (throw 'bar nil))
+(foo-throws-bar-p) ;; t
+
+(defun foo () 123)
+(foo-throws-bar-p) ;; nil 
