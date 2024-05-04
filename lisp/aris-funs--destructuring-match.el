@@ -6,7 +6,7 @@
 (require 'aris-funs--lists)
 (require 'aris-funs--strings)
 (require 'aris-funs--unsorted)
-(require 'aris-funs--when-let-alist)
+(require 'aris-funs--when-let-alist) ; Only used by some tests.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;; - lookahead.
