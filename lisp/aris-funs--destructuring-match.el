@@ -218,7 +218,7 @@ KEY is already present in ALIST with a different value."
                   (let ((var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var targ-head))) 
-                      (dm::prn-labeled var "take"))
+                      (dm::prn-labeled assoc "take"))
                     (setf alist (dm::pushnew var alist targ-head))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
                 ;; (unless the result was just t because the pat-tail being recursed over
