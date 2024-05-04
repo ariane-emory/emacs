@@ -170,21 +170,22 @@
         (dm::prn-pp-alist alist)
         (dm::prndiv ?\-)
         (when *dm:verbose*
-          (let ((target  (if (cdr target)
-                           (format "%-7s . %s" (car target) (cdr target))
-                           (format "%s" (car target)))))
-            (dm::prn-labeled target))
           (let ((pattern (if (cdr pattern) ; let PATTERN just for printing.
                            (format "%-7s . %s" (car pattern) (cdr pattern))
                            (format "%s" (car pattern)))))
-            (dm::prn-labeled pattern)))
+            (dm::prn-labeled pattern))
+          (let ((target  (if (cdr target)
+                           (format "%-7s . %s" (car target) (cdr target))
+                           (format "%s" (car target)))))
+            (dm::prn-labeled target)))
         (dm::prndiv ?\-)
         (cond
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head is DONT-CARE, just pop the heads off:
           ((and dont-care (eq (car pattern) dont-care))
+            (dm::prn "DONT-CARE, discarding %s." (car target))
             (pop pattern)
-            (dm::prn "DONT-CARE, discarding %s." (pop target)))
+            (pop target))
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
           ;; the loop successfully:
@@ -193,8 +194,8 @@
               (error "ELLIPSIS may only be the final element in PATTERN."))
             (dm::prn-labeled target "discarding")
             ;; Nullify TARGET and PATTERN:
-            (setf target  nil)
-            (setf pattern nil))
+            (setf pattern nil)
+            (setf target  nil))
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
           ;; the loop successfully:
@@ -210,15 +211,15 @@
               ;; Put UNSPLICE-VAR-VAL in UNSPLICE-VAR-NAME's key in ALIST:
               (setf alist (alist-putunique unsplice-var-name unsplice-var-val alist 'no-match)))
             ;; Nullify TARGET and PATTERN:
-            (setf target  nil)
-            (setf pattern nil))
+            (setf pattern nil)
+            (setf target  nil))
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head is a variable, put TARG-HEAD in ALIST:
           ((eq '\, (car-safe (car pattern)))
-            (let* ( (var-val  (pop target))
-                    (var-spec (pop pattern))
+            (let* ( (var-spec (pop  pattern))
+                    (var-val  (pop  target))
                     (var-name (cadr var-spec))
-                    (assoc (cons var-name var-val))) ; `let' ASSOC just to print it in a message.              
+                    (assoc    (cons var-name var-val))) ; `let' ASSOC just to print it in a message.              
               (dm::prn-labeled assoc "take var as")
               (setf alist (alist-putunique var-name var-val alist 'no-match))))
           ;; --------------------------------------------------------------------------------------
@@ -226,8 +227,8 @@
           ;; (unless the result was just t because the sub-pattern being recursed over
           ;; contained no variables):
           ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
-            (let ( (sub-target  (pop target))
-                   (sub-pattern (pop pattern)))
+            (let ( (sub-pattern (pop pattern))
+                   (sub-target  (pop target)))
               (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                 sub-pattern sub-target)
               ;; (dm::prndiv)
@@ -242,8 +243,9 @@
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head and TARG-HEAD are equal literals, just pop the heads off:
           ((equal (car pattern) (car target))
+            (dm::prn "Equal literals, discarding %s." (car target))
             (pop pattern)
-            (dm::prn "Equal literals, discarding %s." (pop target)))
+            (pop target))
           ;; --------------------------------------------------------------------------------------
           ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
