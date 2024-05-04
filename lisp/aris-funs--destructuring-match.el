@@ -324,13 +324,11 @@
   (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4)) returns nil)
   (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
     returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (dm:match
       '(one (this that) (,two three (,four ,five) ,six))
       '(one (this that) (2 three (4 5) 6)))  
     returns ((two . 2) (four . 4) (five . 5) (six . 6)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (when-let-alist
       (dm:match
@@ -338,7 +336,6 @@
         '(i have (never seen) a (red car)))
       (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
     returns (Do you really believe that you have never seen a red car \?))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (when-let-alist
       (dm:match
@@ -346,7 +343,6 @@
         '(i think that dogs are dumb))
       (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
     returns (Why do you think that dogs are dumb \?))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (confirm that
     (when-let-alist
       (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
