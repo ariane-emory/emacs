@@ -27,17 +27,22 @@ different (by `equal') value."
   (cl-pushnew (cons key new-val) alist :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; new key/val:
-(confirm that (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist))
+(confirm that
+  (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist))
   returns ((c . 3) (a . 1) (b . 2)))
-(confirm that (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)))
+(confirm that
+  (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'c 3 alist)))
   returns nil)
 ;; existing key, equal value:
-(confirm that (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist))
+(confirm that
+  (let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist))
   returns ((a . 1) (b . 2)))
-(confirm that (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)))
+(confirm that
+  (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 2 alist)))
   returns nil)
 ;; duplicate key, un-equal value:
-(confirm that (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)))
+(confirm that
+  (expr-throws-sym-p 'no-match '(let ((alist '((a . 1) (b . 2)))) (alist-putnew 'b 3 alist)))
   returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
