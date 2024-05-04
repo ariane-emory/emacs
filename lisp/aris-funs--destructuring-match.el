@@ -18,12 +18,12 @@
   "Ari's destructuring pattern matcher.")
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:match-verbose* t
-  "Whether `match-pattern' should print verbose messages."
+  "Whether or not dm:match should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:tests-enabled* t
-  "Whether `match-pattern''s unit tests are enabled."
+  "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
@@ -33,22 +33,22 @@
   :type 'integer)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:default-dont-care* '_
-  "`match-pattern''s default DONT-CARE indicator."
+  "dm:match's default DONT-CARE indicator."
   :group 'destructuring-match
   :type 'symbol)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:default-ellipsis* '...
-  "`match-pattern''s default ELLIPSIS indicator."
+  "dm:match's default ELLIPSIS indicator."
   :group 'destructuring-match
   :type 'symbol)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:default-unsplice* '\,@
-  "`match-pattern''s default UNSPLICE indicator."
+  "dm:match's default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'symbol)
 ;;-----------------------------------------------------------------------------------------
 (defcustom *dm:enforce-final-position* t
-  "`match-pattern''s default UNSPLICE indicator."
+  "Whether or not dm:match should only allow ELLIPSIS and UNSPLICE in a pattern's final position."
   :group 'destructuring-match
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -123,10 +123,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pushnew(key new-val alist)
+(defun dm::alist-putnew(key new-val alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Push KEY into ALIST with NEW-VAL as it's value unless it is already
-present, no match if KEY is already present in ALIST with a different value."
+  "Put NEW-VAL into ALIST as the association of KEY , throwing
+'no-match an association for KEY is already present in ALIST with a
+different (by `equal') value."
   (when-let ( (assoc (assoc key alist))
               (neq   (not (equal (cdr assoc) new-val))))
     (throw 'no-match nil))
@@ -216,7 +217,7 @@ present, no match if KEY is already present in ALIST with a different value."
                       (dm::prn-labeled assoc "unsplicing as"))
                     ;; Put the remainder of TARG-TAIL in VAR's key in ALIST:
                     (let ((target (cons targ-head targ-tail)))
-                      (setf alist (dm::pushnew var target alist)))
+                      (setf alist (dm::alist-putnew var target alist)))
                     ;; Nullify TARG-TAIL and PAT-TAIL:
                     (setf targ-tail nil)
                     (setf pat-tail  nil)))
@@ -226,7 +227,7 @@ present, no match if KEY is already present in ALIST with a different value."
                     ;; `let' ASSOC just to print it in this message:
                     (let ((assoc (cons var targ-head))) 
                       (dm::prn-labeled assoc "take var as"))
-                    (setf alist (dm::pushnew var targ-head alist))))
+                    (setf alist (dm::alist-putnew var targ-head alist))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
                 ;; (unless the result was just t because the pat-tail being recursed over
                 ;; contained no variables):
@@ -271,7 +272,7 @@ present, no match if KEY is already present in ALIST with a different value."
               (when (and *dm:enforce-final-position* (cdr pat-tail))
                 (error "UNSPLICE may only be the final element in PATTERN."))
               (let ((var (cadar pat-tail)))
-                (setf alist (dm::pushnew var nil alist))))
+                (setf alist (dm::alist-putnew var nil alist))))
             ;; It was something else, no match;
             (t (NO-MATCH!))) 
           (dm::prn-labeled alist "final")
