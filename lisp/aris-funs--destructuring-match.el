@@ -217,7 +217,7 @@
             (setf pattern nil)
             (setf target  nil))
           ;; ----------------------------------------------------------------------------------------
-          ;; Case 4: When PATTERN's head is a variable, put TARG-HEAD in ALIST:
+          ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
           ((eq '\, (car-safe (car pattern)))
             (let* ( (var-spec (car  pattern))
@@ -244,8 +244,7 @@
                 (cond
                   ((eq res t)) ; do nothing.
                   ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
-                  ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
-                  ;; now a list.
+                  ;; `dm::match1' only returns t or lists, so we'll now assume it's a list.
                   (t (setf alist res))))
               (pop pattern)
               (pop target)))
