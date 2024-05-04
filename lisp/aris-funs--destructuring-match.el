@@ -160,7 +160,7 @@
   "Internal function used by `dm:match'."
   (cl-flet ((NO-MATCH! (fmt &rest args)
               (let ((str (apply #'format fmt args)))
-                (dm::prn "NO-MATCH because %s!" str)
+                (dm::prn "No match because %s!" str)
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
@@ -276,7 +276,7 @@
           ;; Return either the ALIST or just t:
           (or alist t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dm:match '(,x ,@ys 4) '(1 2 3 4))
+;; (dm:match '(,x ,@ys 4) '(1 2 3 4))
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ...) '(1 2 3 4))
 ;; (dm:match '(,x ... ,z) '(X 2 3))
