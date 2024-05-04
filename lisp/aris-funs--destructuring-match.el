@@ -16,37 +16,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:match-verbose* t
   "Whether or not dm:match should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:tests-enabled* t
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:label-width* 21
   "Label width used by functions in the 'destructuring-match' group."
   :group 'destructuring-match
   :type 'integer)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-dont-care* '_
   "dm:match's default DONT-CARE indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-ellipsis* '...
   "dm:match's default ELLIPSIS indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-unsplice* '\,@
   "dm:match's default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;-----------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:enforce-final-position* t
   "Whether or not dm:match should only allow ELLIPSIS and UNSPLICE in a pattern's final position."
   :group 'destructuring-match
@@ -329,15 +329,17 @@
       '(one (this that) (2 three (4 5) 6)))  
     returns ((two . 2) (four . 4) (five . 5) (six . 6)))
   (confirm that
-    (when-let-alist (dm:match
-                      '(i ,modal-verb ,verb a ,thing)
-                      '(i have (never seen) a (red car)))
+    (when-let-alist
+      (dm:match
+        '(i ,modal-verb ,verb a ,thing)
+        '(i have (never seen) a (red car)))
       (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
     returns (Do you really believe that you have never seen a red car \?))
   (confirm that
-    (when-let-alist (dm:match
-                      '(i ,verb that ,noun ,con ,thing)
-                      '(i think that dogs are dumb))
+    (when-let-alist
+      (dm:match
+        '(i ,verb that ,noun ,con ,thing)
+        '(i think that dogs are dumb))
       (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
     returns (Why do you think that dogs are dumb \?))
   (confirm that
@@ -433,3 +435,5 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
