@@ -182,7 +182,10 @@
               (dm::prn-labeled  pat-head)
               (dm::prn-labeled  pat-tail)
               (when *dm:verbose*
-                (let ((target (format "%-8s . %s"  (car target) (cdr target))))
+                (let ((target (if (cdr target)
+                                ;; (format "%-8s . %s" (car target) (cdr target))
+                                (format "%s . %s" (car target) (cdr target))
+                                (format "%s" (car target)))))
                   (dm::prn-labeled target)))
               ;; (dm::prndiv ?\-)
               ;; (dm::prn-labeled  target)
