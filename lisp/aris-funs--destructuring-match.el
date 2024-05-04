@@ -178,12 +178,12 @@
             (dm::prn-pp-alist alist)
             (dm::prndiv ?\-)
             (when *dm:verbose*
-              (let ((target (if (cdr target)
-                              (format "%-5s . %s" (car target) (cdr target))
-                              (format "%s" (car target)))))
+              (let ((target  (if (cdr target)
+                               (format "%-7s . %s" (car target) (cdr target))
+                               (format "%s" (car target)))))
                 (dm::prn-labeled target))
               (let ((pattern (if pat-tail ; let PATTERN just for printing.
-                               (format "%-5s . %s" pat-head pat-tail)
+                               (format "%-7s . %s" pat-head pat-tail)
                                (format "%s" pat-head))))
                 (dm::prn-labeled pattern)))
             ;; (dm::prn-labeled  pat-head)
@@ -252,7 +252,6 @@
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
               (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))))
-
           (dm::prndiv)
           (dm::prnl)
           );; End of (while (and pat-tail target). If we got this far TARGET is nil.
