@@ -24,6 +24,21 @@
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
+;;-----------------------------------------------------------------------------------------
+(defcustom *dm:default-dont-care* '_
+  "`match-pattern''s default DONT-CARE indicator."
+  :group 'destructuring-match
+  :type 'boolean)
+;;-----------------------------------------------------------------------------------------
+(defcustom *dm:default-ellipsis* nil ; '...
+  "`match-pattern''s default ELLIPSIS indicator."
+  :group 'destructuring-match
+  :type 'boolean)
+;;-----------------------------------------------------------------------------------------
+(defcustom *dm:default-unsplice* '\,@
+  "`match-pattern''s default UNSPLICE indicator."
+  :group 'destructuring-match
+  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -108,7 +123,10 @@ KEY is already present in ALIST with a different value."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
-                     &optional (dont-care '_) (ellipsis '...) (unsplice '\,@))
+                     &optional
+                     (dont-care *dm:default-dont-care*)
+                     (ellipsis  *dm:default-ellipsis*)
+                     (unsplice  *dm:default-unsplice*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A simple pattern matching/destructuring fun."
   (unless (and (listp pattern)
