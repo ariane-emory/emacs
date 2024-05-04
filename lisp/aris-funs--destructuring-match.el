@@ -216,7 +216,8 @@ KEY is already present in ALIST with a different value."
                 ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
                 ((eq '\, (car-safe pat-head)) 
                   (let ((var (cadr pat-head)))
-                    (let ((var (cons var targ-head))) ; Shadow just for printing...
+                    ;; `let' ASSOC just to print it in this message:
+                    (let ((assoc (cons var targ-head))) 
                       (dm::prn-labeled var "take"))
                     (setf alist (dm::pushnew var alist targ-head))))
                 ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
