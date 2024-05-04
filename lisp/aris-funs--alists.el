@@ -505,12 +505,12 @@ maintaining ordering). Sketchy?"
 (cl-defun alist-putunique(key new-val alist &optional (throw-sym 'unequal-duplicate))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Put NEW-VAL into ALIST as the association of KEY, throwing
-THROWSYM if an association for KEY is already present in ALIST with a
-different (by `equal') value."
+THROW-SYM if an association for KEY is already present in ALIST with a
+different (by `equal') value (or return nil, if THROW-SYM is nil)."
   (let ((assoc (assoc key alist)))
     (cond
       ((and assoc (equal (cdr assoc) new-val)) alist) ;; just return alist.
-      (assoc (throw throw-sym nil))   
+      (assoc (if throw-sym (throw throw-sym nil) nil))
       (t (cons (cons key new-val) alist)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; new key/val:
@@ -526,8 +526,8 @@ different (by `equal') value."
   (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist))
   returns ((a . 1) (b . 2)))
 (confirm that
-  (expr-throws-sym-p 'unequal-duplicate '
-    (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist)))
+  (expr-throws-sym-p 'unequal-duplicate
+    '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist)))
   returns nil)
 ;; duplicate key, un-equal value. this one SHOULD throw, so we don't `confirm' it's return
 ;; value, we just `confirm' if it threw:
@@ -535,6 +535,10 @@ different (by `equal') value."
   (expr-throws-sym-p 'unequal-duplicate
     '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 3 alist)))
   returns t)
+;; since THROW-SYM is specified as nil, this one should not throw:
+(confirm that
+  (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 3 alist nil))
+  returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
