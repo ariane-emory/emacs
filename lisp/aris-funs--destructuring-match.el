@@ -110,28 +110,16 @@
 (defun dm::prn-pp-alist (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
-  (if-not (consp alist)
-    (dm::prn-labeled alist)
-    (let ((pp-str (indent-string-lines
-                    (trim-trailing-whitespace
-                      (pp-to-string-without-offset alist)))))
-      (if (<= (count-string-lines pp-str) 1)
-        (dm::prn-labeled alist)
-        (dm::prn "ALIST:")
-        (mapc #'prn (string-lines pp-str))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::alist-putnew(key new-val alist)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Put NEW-VAL into ALIST as the association of KEY , throwing
-'no-match an association for KEY is already present in ALIST with a
-different (by `equal') value."
-  (when-let ( (assoc (assoc key alist))
-              (neq   (not (equal (cdr assoc) new-val))))
-    (throw 'no-match nil))
-  (cl-pushnew (cons key new-val) alist :test #'equal))
+  (when *dm:match-verbose*
+    (if-not (consp alist)
+      (dm::prn-labeled alist)
+      (let ((pp-str (indent-string-lines
+                      (trim-trailing-whitespace
+                        (pp-to-string-without-offset alist)))))
+        (if (<= (count-string-lines pp-str) 1)
+          (dm::prn-labeled alist)
+          (dm::prn "ALIST:")
+          (mapc #'prn (string-lines pp-str)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
