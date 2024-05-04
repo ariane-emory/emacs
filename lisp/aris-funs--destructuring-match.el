@@ -216,19 +216,21 @@
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head is a variable, put TARG-HEAD in ALIST:
           ((eq '\, (car-safe (car pattern)))
-            (let* ( (var-spec (pop  pattern))
-                    (var-val  (pop  target))
+            (let* ( (var-spec (car  pattern))
+                    (var-val  (car  target))
                     (var-name (cadr var-spec))
                     (assoc    (cons var-name var-val))) ; `let' ASSOC just to print it in a message.              
               (dm::prn-labeled assoc "take var as")
-              (setf alist (alist-putunique var-name var-val alist 'no-match))))
+              (setf alist (alist-putunique var-name var-val alist 'no-match))
+              (pop  pattern)
+              (pop  target)))
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head is a list, recurse and accumulate the result into ALIST
           ;; (unless the result was just t because the sub-pattern being recursed over
           ;; contained no variables):
           ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
-            (let ( (sub-pattern (pop pattern))
-                   (sub-target  (pop target)))
+            (let ( (sub-pattern (car pattern))
+                   (sub-target  (car target)))
               (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                 sub-pattern sub-target)
               ;; (dm::prndiv)
@@ -239,7 +241,9 @@
                   ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
                   ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
                   ;; now a list.
-                  (t (setf alist res))))))
+                  (t (setf alist res))))
+              (pop pattern)
+              (pop target)))
           ;; --------------------------------------------------------------------------------------
           ;; When PATTERN's head and TARG-HEAD are equal literals, just pop the heads off:
           ((equal (car pattern) (car target))
