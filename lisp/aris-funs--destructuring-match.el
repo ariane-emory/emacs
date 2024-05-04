@@ -254,11 +254,13 @@ KEY is already present in ALIST with a different value."
             ((null pat-tail)) ;; Don't need to do anything.
             ((and ellipsis (equal (car pat-tail) ellipsis))
               ;; Don't need to do anything other than check for well formedness:
-              (when (cdr pat-tail) (error "ELLIPSIS may only be the final element in PATTERN."))) 
+              (when (and *dm:enforce-final-position* (cdr pat-tail))
+                (error "ELLIPSIS may only be the final element in PATTERN."))) 
             ;; If PAT-TAIL's head is an UNSPLICE, since there's no TARG-TAIL left we just 
             ;; need to set the var in ALIST to nil:
             ((and unsplice (equal (car-safe (car pat-tail)) unsplice))
-              (when (cdr pat-tail) (error "UNSPLICE may only be the final element in PATTERN."))
+              (when (and *dm:enforce-final-position* (cdr pat-tail))
+                (error "UNSPLICE may only be the final element in PATTERN."))
               (let ((var (cadar pat-tail)))
                 (setf alist (dm::pushnew var alist nil))))
             ;; It was something else, no match;
