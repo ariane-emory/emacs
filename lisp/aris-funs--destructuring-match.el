@@ -176,16 +176,16 @@
               (dm::prn-pp-alist alist)
               (dm::prndiv ?\-)
               (when *dm:verbose*
-                (let ((pattern (cons pat-head pat-tail)))
+                (let ((pattern (format "%-8s . %s" pat-head pat-tail)))
                   (dm::prn-labeled pattern))
-                (let ((target (cons targ-head targ-tail)))
+                (let ((target (format "%-8s . %s"  targ-head targ-tail)))
                   (dm::prn-labeled target)))
-              (dm::prndiv ?\-)
-              (dm::prn-labeled  pat-head)
-              (dm::prn-labeled  pat-tail)
-              (dm::prn-labeled  targ-head)
-              (dm::prn-labeled  targ-tail)
-              (dm::prndiv ?\-)
+              ;; (dm::prndiv ?\-)
+              ;; (dm::prn-labeled  pat-head)
+              ;; (dm::prn-labeled  targ-head)
+              ;; (dm::prn-labeled  pat-tail)
+              ;; (dm::prn-labeled  targ-tail)
+              ;; (dm::prndiv ?\-)
               (cond
                 ;; When PAT-HEAD is DONT-CARE, do nothing:
                 ((and dont-care (eq pat-head dont-care))
@@ -206,7 +206,7 @@
                 ((and unsplice (eq unsplice (car-safe pat-head)))
                   (if (and *dm:enforce-final-position* pat-tail)
                     (error "UNSPLICE may only be the final element in PATTERN.")
-                    (debug)
+                    ;; (debug) ; HERE!
                     )
                   (let ( (var (cadr pat-head)))
                     ;; `let' ASSOC just to print it in this message:
