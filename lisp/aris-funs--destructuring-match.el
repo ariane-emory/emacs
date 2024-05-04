@@ -179,6 +179,12 @@
               (dm::prn-labeled  targ-head)
               (dm::prn-labeled  targ-tail)
               (dm::prndiv ?\-)
+              (when *dm:verbose*
+                (let ((pattern (format "%-8s . %s" pat-head pat-tail)))
+                  (dm::prn-labeled pattern))
+                (let ((target (format "%-8s . %s"  targ-head targ-tail)))
+                  (dm::prn-labeled target)))
+
               (cond
                 ;; When PAT-HEAD is DONT-CARE, do nothing:
                 ((and dont-care (eq pat-head dont-care))
