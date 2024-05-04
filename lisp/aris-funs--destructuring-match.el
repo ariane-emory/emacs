@@ -155,7 +155,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (pat-tail target dont-care ellipsis unsplice alist)
+(defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   (cl-flet ((NO-MATCH! (fmt &rest args)
@@ -165,116 +165,116 @@
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
       ;; (dm::prndiv)
-      ;; (dm::prn-labeled pat-tail "matching")
+      ;; (dm::prn-labeled pattern "matching")
       ;; (dm::prn-labeled target  "against ")
       ;; (dm::prndiv)
       (progn ;; < useless `progn' for organization.
         (while target
-          (unless pat-tail (NO-MATCH! "pattern ran out before TARGET"))
-          ;; We always `pop' pat-tail, but might not always `pop' target.
-          (let ((pat-head (pop pat-tail)))
-            ;; (dm::prnl)
-            (dm::prndiv)
-            (dm::prn-pp-alist alist)
-            (dm::prndiv ?\-)
-            (when *dm:verbose*
-              (let ((target  (if (cdr target)
-                               (format "%-7s . %s" (car target) (cdr target))
-                               (format "%s" (car target)))))
-                (dm::prn-labeled target))
-              (let ((pattern (if pat-tail ; let PATTERN just for printing.
-                               (format "%-7s . %s" pat-head pat-tail)
-                               (format "%s" pat-head))))
-                (dm::prn-labeled pattern)))
-            ;; (dm::prn-labeled  pat-head)
-            ;; (dm::prn-labeled  pat-tail)
-            (dm::prndiv ?\-)
-            ;; (dm::prn-labeled  target)
-            ;; (dm::prndiv ?\-)
-            (cond
-              ;; When PAT-HEAD is DONT-CARE, do nothing:
-              ((and dont-care (eq pat-head dont-care))
-                (pop target)
-                (dm::prn "DONT-CARE, doing nothing."))
-              ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PAT-TAIL to break 
-              ;; the loop successfully:
-              ((and ellipsis (eq pat-head ellipsis))
-                (when (and *dm:enforce-final-position* pat-tail)
-                  (error "ELLIPSIS may only be the final element in PAT-TAIL."))
-                ;; `let' TARGET just to print it in this message:
-                ;; (let ((target (cons targ-head target))) 
-                (dm::prn-labeled target "discarding")
-                ;; Nullify TARGET and PAT-TAIL:
-                (setf target   nil)
-                (setf pat-tail nil))
-              ;; When PAT-HEAD is an UNSPLICE, nullify TARGET and PAT-TAIL to break 
-              ;; the loop successfully:
-              ((and unsplice (eq unsplice (car-safe pat-head)))
-                (when (and *dm:enforce-final-position* pat-tail)
-                  (error "UNSPLICE may only be the final element in PAT-TAIL."))
-                (let ( (var (cadr pat-head)))
-                  ;; `let' ASSOC just to print it in this message:
-                  (let ((assoc (cons var target)) )
-                    (dm::prn-labeled assoc "unsplicing as"))
-                  ;; Put the remainder of TARGET in VAR's key in ALIST:
-                  (setf alist (alist-putunique var target alist 'no-match))
-                  ;; Nullify TARGET and PAT-TAIL:
-                  (setf target nil)
-                  (setf pat-tail  nil)))
-              ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
-              ((eq '\, (car-safe pat-head))
-                (let ( (targ-head (pop target))
-                       (var (cadr pat-head)))
-                  ;; `let' ASSOC just to print it in this message:
-                  (let ((assoc (cons var targ-head))) 
-                    (dm::prn-labeled assoc "take var as"))
-                  (setf alist (alist-putunique var targ-head alist 'no-match))))
-              ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
-              ;; (unless the result was just t because the pat-tail being recursed over
-              ;; contained no variables):
-              ((and (proper-list-p pat-head) (proper-list-p (car target)))
-                (let ((targ-head (pop target)))
-                  (dm::prn "Recursively match %s against %s because PAT-HEAD:"
-                    pat-head targ-head)
-                  ;; (dm::prndiv)
-                  (let ((res (with-indentation
-                               (dm::match1 pat-head targ-head
-                                 dont-care ellipsis unsplice alist))))
-                    (cond
-                      ((eq res t)) ; do nothing.
-                      ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
-                      ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
-                      ;; now a list.
-                      (t (setf alist res))))))
-              ;; When PAT-HEAD and TARG-HEAD are equal literals, do nothing:
-              ((equal pat-head (car target))
-                (dm::prn "Equal literals, discarding %s." (pop target)))
-              ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
-              ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
-              (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))))
+          (unless pattern (NO-MATCH! "pattern ran out before TARGET"))
+          ;; We always `pop' pattern, but might not always `pop' target.
+          ;;(let ((pat-head (pop pattern)))
+          ;; (dm::prnl)
+          (dm::prndiv)
+          (dm::prn-pp-alist alist)
+          (dm::prndiv ?\-)
+          (when *dm:verbose*
+            (let ((target  (if (cdr target)
+                             (format "%-7s . %s" (car target) (cdr target))
+                             (format "%s" (car target)))))
+              (dm::prn-labeled target))
+            (let ((pattern (if (cdr pattern) ; let PATTERN just for printing.
+                             (format "%-7s . %s" (car pattern) (cdr pattern))
+                             (format "%s" (car pattern)))))
+              (dm::prn-labeled pattern)))
+          ;; (dm::prn-labeled  pat-head)
+          ;; (dm::prn-labeled  pattern)
+          (dm::prndiv ?\-)
+          ;; (dm::prn-labeled  target)
+          ;; (dm::prndiv ?\-)
+          (cond
+            ;; When PAT-HEAD is DONT-CARE, do nothing:
+            ((and dont-care (eq pat-head dont-care))
+              (pop target)
+              (dm::prn "DONT-CARE, doing nothing."))
+            ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break 
+            ;; the loop successfully:
+            ((and ellipsis (eq pat-head ellipsis))
+              (when (and *dm:enforce-final-position* pattern)
+                (error "ELLIPSIS may only be the final element in PATTERN."))
+              ;; `let' TARGET just to print it in this message:
+              ;; (let ((target (cons targ-head target))) 
+              (dm::prn-labeled target "discarding")
+              ;; Nullify TARGET and PATTERN:
+              (setf target  nil)
+              (setf pattern nil))
+            ;; When PAT-HEAD is an UNSPLICE, nullify TARGET and PATTERN to break 
+            ;; the loop successfully:
+            ((and unsplice (eq unsplice (car-safe pat-head)))
+              (when (and *dm:enforce-final-position* pattern)
+                (error "UNSPLICE may only be the final element in PATTERN."))
+              (let ( (var (cadr pat-head)))
+                ;; `let' ASSOC just to print it in this message:
+                (let ((assoc (cons var target)) )
+                  (dm::prn-labeled assoc "unsplicing as"))
+                ;; Put the remainder of TARGET in VAR's key in ALIST:
+                (setf alist (alist-putunique var target alist 'no-match))
+                ;; Nullify TARGET and PATTERN:
+                (setf target nil)
+                (setf pattern  nil)))
+            ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
+            ((eq '\, (car-safe pat-head))
+              (let ( (targ-head (pop target))
+                     (var (cadr pat-head)))
+                ;; `let' ASSOC just to print it in this message:
+                (let ((assoc (cons var targ-head))) 
+                  (dm::prn-labeled assoc "take var as"))
+                (setf alist (alist-putunique var targ-head alist 'no-match))))
+            ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
+            ;; (unless the result was just t because the pattern being recursed over
+            ;; contained no variables):
+            ((and (proper-list-p pat-head) (proper-list-p (car target)))
+              (let ((targ-head (pop target)))
+                (dm::prn "Recursively match %s against %s because PAT-HEAD:"
+                  pat-head targ-head)
+                ;; (dm::prndiv)
+                (let ((res (with-indentation
+                             (dm::match1 pat-head targ-head
+                               dont-care ellipsis unsplice alist))))
+                  (cond
+                    ((eq res t)) ; do nothing.
+                    ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
+                    ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
+                    ;; now a list.
+                    (t (setf alist res))))))
+            ;; When PAT-HEAD and TARG-HEAD are equal literals, do nothing:
+            ((equal pat-head (car target))
+              (dm::prn "Equal literals, discarding %s." (pop target)))
+            ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
+            ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
+            (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))) ;; )
           (dm::prndiv)
           (dm::prnl)
-          );; End of (while (and pat-tail target). If we got this far TARGET is nil.
+          );; End of (while (and pattern target). If we got this far TARGET is nil.
         (dm::prndiv)
-        (dm::prn-labeled pat-tail  "final")
+        (dm::prn-labeled pattern  "final")
         (dm::prn-labeled target "final")
         (cond
-          ;; By this line, TARGET must be nil. Unless PAT-TAIL is also nil, it had 
+          ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
           ;; better contain an ELLIPSIS or an UNSPLICE.
-          ((null pat-tail)) ;; Don't need to do anything.
-          ((and ellipsis (equal (car pat-tail) ellipsis))
+          ((null pattern)) ;; Don't need to do anything.
+          ((and ellipsis (equal (car pattern) ellipsis))
             ;; Don't need to do anything other than check for well formedness:
-            (when (and *dm:enforce-final-position* (cdr pat-tail))
-              (error "ELLIPSIS may only be the final element in PAT-TAIL."))) 
-          ;; If PAT-TAIL's head is an UNSPLICE, since there's no TARGET left we just 
+            (when (and *dm:enforce-final-position* (cdr pattern))
+              (error "ELLIPSIS may only be the final element in PATTERN."))) 
+          ;; If PATTERN's head is an UNSPLICE, since there's no TARGET left we just 
           ;; need to set the var in ALIST to nil:
-          ((and unsplice (equal (car-safe (car pat-tail)) unsplice))
-            (when (and *dm:enforce-final-position* (cdr pat-tail))
-              (error "UNSPLICE may only be the final element in PAT-TAIL."))
-            (let ((var (cadar pat-tail)))
+          ((and unsplice (equal (car-safe (car pattern)) unsplice))
+            (when (and *dm:enforce-final-position* (cdr pattern))
+              (error "UNSPLICE may only be the final element in PATTERN."))
+            (let ((var (cadar pattern)))
               (setf alist (alist-putunique var nil alist 'no-match))))
           ;; It was something else, no match;
-          (t (NO-MATCH! "expected %s but target is empty" pat-tail))) 
+          (t (NO-MATCH! "expected %s but target is empty" pattern))) 
         (dm::prn-labeled alist "final")
         ;; Return either the ALIST or just t:
         (or alist t)))))
