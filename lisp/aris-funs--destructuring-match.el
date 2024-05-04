@@ -27,7 +27,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:label-width* 20
+(defcustom *dm:label-width* 21
   "Label width used by functions in the 'destructuring-match' group."
   :group 'destructuring-match
   :type 'integer)
