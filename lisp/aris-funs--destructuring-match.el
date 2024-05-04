@@ -110,15 +110,16 @@
 (defun dm::prn-pp-alist (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
-  (if-not (consp alist)
-    (dm::prn-labeled alist)
-    (let ((pp-str (indent-string-lines
-                    (trim-trailing-whitespace
-                      (pp-to-string-without-offset alist)))))
-      (if (<= (count-string-lines pp-str) 1)
-        (dm::prn-labeled alist)
-        (dm::prn "ALIST:")
-        (mapc #'prn (string-lines pp-str))))))
+  (when *dm:verbose*
+    (if-not (consp alist)
+      (dm::prn-labeled alist)
+      (let ((pp-str (indent-string-lines
+                      (trim-trailing-whitespace
+                        (pp-to-string-without-offset alist)))))
+        (if (<= (count-string-lines pp-str) 1)
+          (dm::prn-labeled alist)
+          (dm::prn "ALIST:")
+          (mapc #'prn (string-lines pp-str)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
