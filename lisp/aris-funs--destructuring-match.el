@@ -188,10 +188,10 @@
               (dm::prn-labeled pattern)))
           (dm::prndiv ?\-)
           (cond
-            ;; When PATTERN's head is DONT-CARE, do nothing:
+            ;; When PATTERN's head is DONT-CARE, just pop heads off:
             ((and dont-care (eq (car pattern) dont-care))
-              (pop pattern)
-              (dm::prn "DONT-CARE, discarding %s." (pop target)))
+              (dm::prn "DONT-CARE, discarding %s." (pop target))
+              (pop pattern))
             ;; When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
             ;; the loop successfully:
             ((and ellipsis (eq (car pattern) ellipsis))
@@ -231,19 +231,18 @@
             ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
               (let ( (targ-head (pop target))
                      (pat-head  (pop pattern)))
-                (dm::prn "Recursively match %s against %s because PATTERN's head:"
+                (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                   pat-head targ-head)
                 ;; (dm::prndiv)
                 (let ((res (with-indentation
-                             (dm::match1 pat-head targ-head
-                               dont-care ellipsis unsplice alist))))
+                             (dm::match1 pat-head targ-head dont-care ellipsis unsplice alist))))
                   (cond
                     ((eq res t)) ; do nothing.
                     ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
                     ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
                     ;; now a list.
                     (t (setf alist res))))))
-            ;; When PATTERN's head and TARG-HEAD are equal literals, do nothing:
+            ;; When PATTERN's head and TARG-HEAD are equal literals, just pop heads off:
             ((equal (car pattern) (car target))
               (pop pattern)
               (dm::prn "Equal literals, discarding %s." (pop target)))
