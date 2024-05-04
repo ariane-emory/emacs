@@ -157,7 +157,8 @@
   "Internal function used by `dm:match'."
   (cl-flet ((NO-MATCH! (fmt &rest args)
               (let ((str (format fmt args)))
-                (dm::prn "THROWING %s!" 'no-match)
+                (dm::prn "NO-MATCH BECAUSE: %s!" str)
+                ;; (debug)
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
@@ -442,3 +443,4 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(dm:match '(1 (2 3)) '(1 2))
