@@ -138,15 +138,18 @@
             (symbolp unsplice))
     (error
       "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
+  (dm::prnl)
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:          %S" pattern)
   (dm::prn "AGAINST:              %S" target)
+  (dm::prndiv)
+  ;; (dm::prnl)
   (let* ( (result (with-indentation (dm::match1 pattern target dont-care ellipsis unsplice nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prndiv)
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
-    (dm::prnl)
+    ;; (dm::prnl)
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -161,7 +164,7 @@
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
-      (dm::prndiv)
+      ;; (dm::prndiv)
       (dm::prn-labeled pat-tail "matching")
       (dm::prn-labeled target  "against ")
       (dm::prndiv)
@@ -226,7 +229,9 @@
                 ;; (unless the result was just t because the pat-tail being recursed over
                 ;; contained no variables):
                 ((and (proper-list-p pat-head) (proper-list-p (car target)))
-                  (dm::prn "The PAT-HEAD %s is a list, recurse:" pat-head)
+                  (dm::prn "Recurse because PAT-HEAD %s is a list:" pat-head)
+                  (dm::prndiv)
+                  ;; (dm::prnl)
                   ;; (dm ::prndiv)
                   (let ((res (with-indentation
                                (dm::match1 pat-head (pop target)
@@ -246,6 +251,7 @@
 
             (dm::prndiv)
             );; End of (while (and pat-tail target). If we got this far TARGET is nil.
+          (dm::prnl)
           (dm::prndiv)
           (dm::prn-labeled pat-tail  "final")
           (dm::prn-labeled target "final")
