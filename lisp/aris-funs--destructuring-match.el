@@ -17,7 +17,7 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:match-verbose* t
+(defcustom *dm:verbose* t
   "Whether or not dm:match should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
@@ -58,7 +58,7 @@
 (defun dm::prn (&rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:match-verbose* (apply #'prn args)))
+  (when *dm:verbose* (apply #'prn args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -66,7 +66,7 @@
 (defun dm::prnl ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:match-verbose* (prnl)))
+  (when *dm:verbose* (prnl)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -74,7 +74,7 @@
 (defun dm::prndiv (&rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:match-verbose* (apply #'prndiv args)))
+  (when *dm:verbose* (apply #'prndiv args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
