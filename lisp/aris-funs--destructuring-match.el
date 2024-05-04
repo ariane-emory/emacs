@@ -179,13 +179,16 @@
             (dm::prndiv ?\-)
             (when *dm:verbose*
               (let ((target (if (cdr target)
-                              ;; (format "%-8s . %s" (car target) (cdr target))
-                              (format "%s . %s" (car target) (cdr target))
+                              (format "%-5s . %s" (car target) (cdr target))
                               (format "%s" (car target)))))
-                (dm::prn-labeled target)))
-            (dm::prn-labeled  pat-head)
-            (dm::prn-labeled  pat-tail)
-            ;; (dm::prndiv ?\-)
+                (dm::prn-labeled target))
+              (let ((pattern (if pat-tail ; let PATTERN just for printing.
+                               (format "%-5s . %s" pat-head pat-tail)
+                               (format "%s" pat-head))))
+                (dm::prn-labeled pattern)))
+            ;; (dm::prn-labeled  pat-head)
+            ;; (dm::prn-labeled  pat-tail)
+            (dm::prndiv ?\-)
             ;; (dm::prn-labeled  target)
             ;; (dm::prndiv ?\-)
             (cond
@@ -253,7 +256,6 @@
           (dm::prndiv)
           (dm::prnl)
           );; End of (while (and pat-tail target). If we got this far TARGET is nil.
-        (dm::prnl)
         (dm::prndiv)
         (dm::prn-labeled pat-tail  "final")
         (dm::prn-labeled target "final")
