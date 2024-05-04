@@ -176,7 +176,7 @@
             ;; (dm::prnl)
             (dm::prndiv)
             (dm::prn-pp-alist alist)
-            ;; (dm::prndiv ?\-)
+            (dm::prndiv ?\-)
             (when *dm:verbose*
               (let ((target (if (cdr target)
                               ;; (format "%-8s . %s" (car target) (cdr target))
