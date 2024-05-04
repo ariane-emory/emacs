@@ -188,13 +188,13 @@
               (dm::prn-labeled pattern)))
           (dm::prndiv ?\-)
           (cond
-            ;; When PAT-HEAD is DONT-CARE, do nothing:
-            ((and dont-care (eq pat-head dont-care))
-              (pop target)
-              (dm::prn "DONT-CARE, doing nothing."))
-            ;; When PAT-HEAD is an ELLIPSIS, nullify TARGET and PATTERN to break 
+            ;; When PATTERN's head is DONT-CARE, do nothing:
+            ((and dont-care (eq (car pattern) dont-care))
+              (pop pattern)
+              (dm::prn "DONT-CARE, discarding %s." (pop target)))
+            ;; When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
             ;; the loop successfully:
-            ((and ellipsis (eq pat-head ellipsis))
+            ((and ellipsis (eq (car pattern) ellipsis))
               (when (and *dm:enforce-final-position* pattern)
                 (error "ELLIPSIS may only be the final element in PATTERN."))
               ;; `let' TARGET just to print it in this message:
@@ -203,12 +203,12 @@
               ;; Nullify TARGET and PATTERN:
               (setf target  nil)
               (setf pattern nil))
-            ;; When PAT-HEAD is an UNSPLICE, nullify TARGET and PATTERN to break 
+            ;; When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
             ;; the loop successfully:
-            ((and unsplice (eq unsplice (car-safe pat-head)))
+            ((and unsplice (eq unsplice (car-safe (car pattern))))
               (when (and *dm:enforce-final-position* pattern)
                 (error "UNSPLICE may only be the final element in PATTERN."))
-              (let ( (var (cadr pat-head)))
+              (let ((var (cadar pattern)))
                 ;; `let' ASSOC just to print it in this message:
                 (let ((assoc (cons var target)) )
                   (dm::prn-labeled assoc "unsplicing as"))
@@ -217,20 +217,21 @@
                 ;; Nullify TARGET and PATTERN:
                 (setf target nil)
                 (setf pattern  nil)))
-            ;; When PAT-HEAD is a variable, stash TARG-HEAD in ALIST:
-            ((eq '\, (car-safe pat-head))
+            ;; When PATTERN's head is a variable, stash TARG-HEAD in ALIST:
+            ((eq '\, (car-safe (car pattern)))
               (let ( (targ-head (pop target))
-                     (var (cadr pat-head)))
+                     (var (cadr (pop pattern))))
                 ;; `let' ASSOC just to print it in this message:
                 (let ((assoc (cons var targ-head))) 
                   (dm::prn-labeled assoc "take var as"))
                 (setf alist (alist-putunique var targ-head alist 'no-match))))
-            ;; When PAT-HEAD is a list, recurse and accumulate the result into ALIST
+            ;; When PATTERN's head is a list, recurse and accumulate the result into ALIST
             ;; (unless the result was just t because the pattern being recursed over
             ;; contained no variables):
-            ((and (proper-list-p pat-head) (proper-list-p (car target)))
-              (let ((targ-head (pop target)))
-                (dm::prn "Recursively match %s against %s because PAT-HEAD:"
+            ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
+              (let ( (targ-head (pop target))
+                     (pat-head  (pop pattern)))
+                (dm::prn "Recursively match %s against %s because PATTERN's head:"
                   pat-head targ-head)
                 ;; (dm::prndiv)
                 (let ((res (with-indentation
@@ -242,12 +243,13 @@
                     ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
                     ;; now a list.
                     (t (setf alist res))))))
-            ;; When PAT-HEAD and TARG-HEAD are equal literals, do nothing:
-            ((equal pat-head (car target))
+            ;; When PATTERN's head and TARG-HEAD are equal literals, do nothing:
+            ((equal (car pattern) (car target))
+              (pop pattern)
               (dm::prn "Equal literals, discarding %s." (pop target)))
             ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
-            ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
-            (t (NO-MATCH! "expected %s but found %s" pat-head (pop target)))) ;; )
+            ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
+            (t (NO-MATCH! "expected %s but found %s" (pop pattern) (pop target)))) ;; )
           (dm::prndiv)
           (dm::prnl)
           );; End of (while (and pattern target). If we got this far TARGET is nil.
