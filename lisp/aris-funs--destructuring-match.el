@@ -155,10 +155,10 @@
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
-  (cl-macrolet ((NO-MATCH! ()
-                  `(progn
-                     (dm::prn "THROWING %s!" 'no-match)
-                     (throw 'no-match nil))))
+  (cl-flet ((NO-MATCH! (fmt &rest args)
+              (let ((str (format fmt args)))
+                (dm::prn "THROWING %s!" 'no-match)
+                (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
     (catch 'no-match
       (dm::prndiv)
@@ -167,22 +167,22 @@
       ;; Just rename these because it reads better:
       (progn ;; < useless `progn' for organization.
         (while target
-          (unless pattern (NO-MATCH!))
+          (unless pattern (NO-MATCH! "pattern ran out before TARGET"))
           (let ( (pat-head  (pop pattern))
                  (targ-head (pop target)))
             (dm::prndiv)
             (dm::prn-pp-alist alist)
             (dm::prndiv ?\-)
-            (when *dm:verbose*
-              (let ((pattern (format "%-8s . %s" pat-head  pattern)))
-                (dm::prn-labeled pattern))
-              (let ((target (format "%-8s . %s"  targ-head target)))
-                (dm::prn-labeled target)))
+            ;; (when *dm:verbose*
+            ;;   (let ((pattern (format "%-8s . %s" pat-head  pattern)))
+            ;;     (dm::prn-labeled pattern))
+            ;;   (let ((target (format "%-8s . %s"  targ-head target)))
+            ;;     (dm::prn-labeled target)))
             ;; (dm::prndiv ?\-)
             ;; (dm::prn-labeled  pat-head)
             ;; (dm::prn-labeled  targ-head)
-            ;; (dm::prn-labeled  pattern)
-            ;; (dm::prn-labeled  target)
+            (dm::prn-labeled  pattern)
+            (dm::prn-labeled  target)
             ;; (dm::prndiv ?\-)
             (cond
               ;; When PAT-HEAD is DONT-CARE, do nothing:
@@ -232,7 +232,7 @@
                                dont-care ellipsis unsplice alist))))
                   (cond
                     ((eq res t)) ; do nothing.
-                    ((eq res nil) (NO-MATCH!)) ;; Sub-pattern's tail didn't match.
+                    ((eq res nil) (NO-MATCH! "sub-pattern's tail didn't match"))
                     ;; Since`dm::match1' only returns t or lists, so we'll assume it's 
                     ;; now a list.
                     (t (setf alist res)))))
@@ -241,7 +241,7 @@
                 (dm::prn "Equal literals, doing nothing."))
               ;; When the heads aren't equal and we didn't have either a DONT-CARE, an
               ;; ELLIPSIS, a variable, or a list in PAT-HEAD, then no match:
-              (t (NO-MATCH!))))
+              (t (NO-MATCH! "expected %s" pat-head))))
           ;; (debug)
           );; End of (while (and pattern target).
         ;; If we got this far TARGET is nil.
@@ -264,7 +264,7 @@
             (let ((var (cadar pattern)))
               (setf alist (alist-putunique var nil alist 'no-match))))
           ;; It was something else, no match;
-          (t (NO-MATCH!))) 
+          (t (NO-MATCH! "expected %s but target is empty" pattern))) 
         (dm::prn-labeled alist "final")
         ;; Return either the ALIST or just t:
         (or alist t)))))
