@@ -20,7 +20,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;-----------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* t ; nil
+(defcustom *dm:tests-enabled* nil ; t
   "Whether `match-pattern''s unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -145,10 +145,7 @@ KEY is already present in ALIST with a different value."
   (dm::prndiv)
   (dm::prn "BEGIN MATCH:          %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (result
-            ;; (with-indentation
-            ;;   (dm::match1 pattern target dont-care ellipsis unsplice nil))
-            (dm::match1 pattern target dont-care ellipsis unsplice nil))
+  (let* ( (result (with-indentation (dm::match1 pattern target dont-care ellipsis unsplice nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prndiv)
     (dm::prn-labeled result "FINAL")
