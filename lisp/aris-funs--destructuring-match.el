@@ -41,7 +41,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-match* t ; (setf *dm:test* nil)
+(defcustom *dm:test-match* t ; (setf *dm:test-match* nil)
   ;; (setf *dm:test-match* t)
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
