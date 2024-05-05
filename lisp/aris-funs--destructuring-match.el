@@ -213,12 +213,12 @@
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
-  (cl-flet ((NO-MATCH! (fmt &rest args)
-              (let ((str (apply #'format fmt args)))
-                (dm::prn "No match because %s!" str)
-                (throw 'no-match nil)))
-             ((is-flexible? (pat-elem)
-                (eq unsplice (car-safe pat-elem)))))
+  (cl-flet ( (NO-MATCH! (fmt &rest args)
+               (let ((str (apply #'format fmt args)))
+                 (dm::prn "No match because %s!" str)
+                 (throw 'no-match nil)))
+             (is-flexible? (pat-elem)
+               (eq unsplice (car-safe pat-elem))))
     ;;-----------------------------------------------------------------------------------------------
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
@@ -266,11 +266,10 @@
                       (dm::prndiv)
                       (dm::prn-labeled         collect "pre")
                       (dm::prn-pp-labeled-list pattern)
-                      (dm::prn-pp-labeled-list target)
-                      
+                      (dm::prn-pp-labeled-list target)                      
                       (let* ((fake-pattern-tail
                                (let ((res (cdr pattern)))
-                                 (while (eq unsplice (car-safe (car res)))
+                                 (while (is-flexible? (car res))
                                    (dm::log-pop res))
                                  res))
                               (fake-pattern-tail-matches-target
