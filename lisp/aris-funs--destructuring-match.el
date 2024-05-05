@@ -319,7 +319,7 @@
 		                  ) ;; END OF `while'.
                     ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
-                  (dm::log-setf-alist-putunique! (cadar pattern) (nreverse collect) alist)
+                  (dm::log-setf-alist-putunique! (var-name (car pattern)) (nreverse collect) alist)
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
                   (dm::prn-labeled target  "unspliced")
