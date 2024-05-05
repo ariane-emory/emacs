@@ -5,6 +5,7 @@
   ;; If there is more than one, they won't work right.
   '(*dm:test-fill* t)
   '(*dm:test-match* t)
+  '(*dm:warn-on-consecutive-flexible-elements* nil)
   '(*pattern-dispatch--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
