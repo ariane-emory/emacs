@@ -374,15 +374,14 @@
 
       ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
       ;; better only contain ELLIPSISes and UNSPLICEs:
-      (while pattern         
-        (cond
-          ((is-flexible? (car pattern))
-            (when (and *dm:enforce-final-position* (cdr pattern))
-              (error "Flexible elements may only be the final element in PATTERN."))
-            (when (is-unsplice? (car pattern))
-              (dm::log-setf-alist-putunique! (var-name (car pattern)) nil alist))
-            (dm::log-pop pattern))
-          (t (NO-MATCH! "expected %s but target is empty" pattern))))
+      (while pattern
+        (when (not (is-flexible? (car pattern)))
+          (NO-MATCH! "expected %s but target is empty" pattern))
+        (when (and *dm:enforce-final-position* (cdr pattern))
+          (error "Flexible elements may only be the final element in PATTERN."))
+        (when (is-unsplice? (car pattern))
+          (dm::log-setf-alist-putunique! (var-name (car pattern)) nil alist))
+        (dm::log-pop pattern))
       
       (dm::prn-labeled alist "final")
       ;; Return either the ALIST or just t:
