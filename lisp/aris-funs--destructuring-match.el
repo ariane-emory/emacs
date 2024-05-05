@@ -270,12 +270,12 @@
                                (let ((*dm:verbose* t))
                                  (with-indentation
                                    (dm::match1 (cdr pattern) target
-                                     dont-care ellipsis unsplice alist))))
+                                     dont-care ellipsis unsplice nil))))
                              (pattern-tail-matches-target-tail
                                (let ((*dm:verbose* t))
                                  (with-indentation
                                    (dm::match1 (cdr pattern) (cdr target)
-                                     dont-care ellipsis unsplice alist)))))
+                                     dont-care ellipsis unsplice nil)))))
                         (dm::prndiv ?\-)
                         (dm::prn-labeled pattern-tail-matches-target "" 36)
                         (dm::prn-labeled pattern-tail-matches-target-tail "" 36)
@@ -284,25 +284,16 @@
                           ((null target)
                             (dm::prn "Out of TARGET, stop.")
                             (throw 'stop nil))
-                          ;; ((and (not pattern-tail-matches-target-tail) pattern-tail-matches-target)
-                          ;;   (dm::prn "CASE 1: Pushing %s and continuing!" (car target))
-                          ;;   (push (dm::log-pop target) collect)
-                          ;;   ;; (setf targ-head (pop targ-tail))
-                          ;;   )
                           ((and
                              pattern-tail-matches-target
                              (not pattern-tail-matches-target-tail))
-                            (dm::prn "CASE 2: Stopping!")
+                            (dm::prn "CASE 1: Stopping!")
                             ;; (dm::log-pop pattern)
                             (dm::prn "THROWING 'stop!")
                             (throw 'stop nil))
                           (t
-                            (dm::prn "CASE 3: Nothing else applies, munch %s." (car target))
-                            (push (dm::log-pop target) collect)
-                            ;; (setf targ-head (pop targ-tail))
-                            (dm::prn "THROWING 'stop!")
-                            ;; (throw 'stop nil)
-                            )))
+                            (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
+                            (push (dm::log-pop target) collect))))
                       (dm::prn-labeled collect "post")
                       (when *dm:debug* (debug 'unsplicing))
                       (dm::prndiv)
@@ -398,8 +389,11 @@
       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dm:match '(,x ,@ys foo) '(1 foo))
-(dm:match '(,x ,@ys foo) '(1 2 3 foo))
-(dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
+;; (dm:match '(,x ,@ys foo) '(1 2 3 foo))
+;; (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
+
+;; bad:
+;; (dm:match '(,x ,@ys ,@zs foo) '(1 foo))
 
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
