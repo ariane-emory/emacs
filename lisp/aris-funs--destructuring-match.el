@@ -197,6 +197,9 @@
 (defmacro is-dont-care? (pat-elem)
   `(and dont-care (eq dont-care ,pat-elem)))
 
+(defmacro is-ellipsis? (pat-elem)
+  `(and ellipsis (eq ellipsis ,pat-elem)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -220,8 +223,7 @@
                    ;;   (and unsplice (eq unsplice (car-safe pat-elem))))
                    ;; (is-dont-care? (pat-elem)
                    ;;   (and dont-care (eq dont-care pat-elem)))
-                   (is-ellipsis? (pat-elem)
-                     (and ellipsis (eq ellipsis pat-elem)))
+
                    (is-flexible? (pat-elem)
                      (or (is-unsplice? pat-elem) (is-ellipsis? pat-elem)))
                    (make-fake-pattern-tail (pattern)
