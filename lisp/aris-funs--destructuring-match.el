@@ -213,15 +213,27 @@
 (defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
-  (cl-flet ( (NO-MATCH! (fmt &rest args)
-               (let ((str (apply #'format fmt args)))
-                 (dm::prn "No match because %s!" str)
-                 (throw 'no-match nil)))
-             (is-flexible? (pat-elem)
-               (if-let ((indicator (car-safe pat-elem)))
-                 (or
-                   (and unsplice (eq unsplice indicator))
-                   (and ellipsis (eq ellipsis indicator))))))
+  (cl-labels ( (NO-MATCH! (fmt &rest args)
+                 (let ((str (apply #'format fmt args)))
+                   (dm::prn "No match because %s!" str)
+                   (throw 'no-match nil)))
+               (var-name (pat-elem)
+                 (cadr pat-elem))
+               (is-variable? (pat-elem)
+                 (eq '\, (car-safe pat-elem)))
+               (is-unsplice? (pat-elem)
+                 (and unsplice (eq unsplice (car-safe pat-elem))))
+               (is-dont-care? (pat-elem)
+                 (and dont-care (eq dont-care (car-safe pat-elem))))
+               (is-ellipsis? (pat-elem)
+                 (and ellipsis (eq ellipsis pat-elem)))
+               (is-flexible? (pat-elem)
+                 (or (is-unsplice? pat-elem) (is-ellipsis? pat-elem)))
+               (make-fake-pattern-tail (pattern)
+                 (let ((res (cdr pattern)))
+                   (while (is-flexible? (car res))
+                     (dm::log-pop res))
+                   res)))
     ;;-----------------------------------------------------------------------------------------------
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
@@ -238,7 +250,7 @@
           ;; ----------------------------------------------------------------------------------------
           ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
           ;; ----------------------------------------------------------------------------------------
-          ((and dont-care (eq (car pattern) dont-care))
+          ((is-dont-care? (car pattern))
             (dm::prn "DONT-CARE, discarding %s." (car target))
             (dm::log-pop pattern)
             (dm::log-pop target))
@@ -246,7 +258,7 @@
           ;; Case 2: When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
           ;; the loop successfully:
           ;; ----------------------------------------------------------------------------------------
-          ((and ellipsis (eq (car pattern) ellipsis))
+          ((is-ellipsis? (car pattern))
             (when (and *dm:enforce-final-position* (cdr pattern))
               (error "ELLIPSIS may only be the final element in PATTERN."))
             (dm::prn-labeled target "discarding")
@@ -257,7 +269,7 @@
           ;; Case 3: When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
           ;; the loop successfully:
           ;; ----------------------------------------------------------------------------------------
-          ((and unsplice (eq unsplice (car-safe (car pattern))))
+          ((is-unsplice? (car pattern))
             (if (and *dm:enforce-final-position* (cdr pattern))
               (error "UNSPLICE may only be the final element in PATTERN.")
               ;;(dm::prndiv)
@@ -271,10 +283,7 @@
                       (dm::prn-pp-labeled-list pattern)
                       (dm::prn-pp-labeled-list target)                      
                       (let* ((fake-pattern-tail
-                               (let ((res (cdr pattern)))
-                                 (while (is-flexible? (car res))
-                                   (dm::log-pop res))
-                                 res))
+                               (make-fake-pattern-tail pattern))
                               (fake-pattern-tail-matches-target
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
@@ -397,7 +406,7 @@
         reslt)
       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (dm:match '(,x ,@ys foo) '(1 foo))
+;; (dm:match '(,x ,@ys foo) '(1 foo)) 
 ;; (dm:match '(,x ,@ys foo) '(1 2 3 foo))
 ;; (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
 ;; (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))
@@ -583,5 +592,4 @@ This behaves very similarly to quasiquote."
 
 ;; (while (eq '\,@ (car-safe (car lst)))
 ;;   (dm::log-pop lst))
-
 
