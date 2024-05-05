@@ -195,8 +195,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::log-alist-putunique (key val alist no-match)
-  `(progn 
-     (alist-putunique ,key ,val ,alist ,no-match)
+  `(prog1
+     (dm::log-alist-putunique ,key ,val ,alist ,no-match)
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
