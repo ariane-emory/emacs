@@ -4,6 +4,8 @@
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
   '(*dm:enforce-final-position* nil)
+  '(*dm:test-fill* nil)
+  '(*dm:test-match* nil)
   '(*pattern-dispatch--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
