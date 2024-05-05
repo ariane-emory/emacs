@@ -124,6 +124,17 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::prn-pp-labeled-list(label lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let* ( ;; (,label ,lst)
+           (,label (if (cdr ,lst) 
+                     (format "%-7s . %s" (car ,lst) (cdr ,lst))
+                     (format "%s" (car ,lst)))))
+     (dm::prn-labeled ,label)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
                      &optional
                      (dont-care *dm:default-dont-care*)
@@ -170,14 +181,8 @@
         (dm::prn-pp-alist alist)
         (dm::prndiv ?\-)
         (when *dm:verbose*
-          (let ((pattern (if (cdr pattern) ; let PATTERN just for printing.
-                           (format "%-7s . %s" (car pattern) (cdr pattern))
-                           (format "%s" (car pattern)))))
-            (dm::prn-labeled pattern))
-          (let ((target  (if (cdr target)
-                           (format "%-7s . %s" (car target) (cdr target))
-                           (format "%s" (car target)))))
-            (dm::prn-labeled target)))
+          (dm::prn-pp-labeled-list pattern pattern)
+          (dm::prn-pp-labeled-list target target))
         (dm::prndiv ?\-)
         (cond
           ;; ----------------------------------------------------------------------------------------
@@ -459,5 +464,3 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(dm:match '(1 (2 3)) '(1 2))
