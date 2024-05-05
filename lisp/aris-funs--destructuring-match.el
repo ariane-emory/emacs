@@ -218,7 +218,10 @@
                  (dm::prn "No match because %s!" str)
                  (throw 'no-match nil)))
              (is-flexible? (pat-elem)
-               (eq unsplice (car-safe pat-elem))))
+               (if-let ((indicator (car-safe pat-elem)))
+                 (or
+                   (and unsplice (eq unsplice indicator))
+                   (and ellipsis (eq ellipsis indicator))))))
     ;;-----------------------------------------------------------------------------------------------
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
