@@ -216,7 +216,9 @@
   (cl-flet ((NO-MATCH! (fmt &rest args)
               (let ((str (apply #'format fmt args)))
                 (dm::prn "No match because %s!" str)
-                (throw 'no-match nil))))
+                (throw 'no-match nil)))
+             ((is-flexible? (pat-elem)
+                (eq unsplice (car-safe pat-elem)))))
     ;;-----------------------------------------------------------------------------------------------
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
@@ -396,9 +398,9 @@
 ;; (dm:match '(,x ,@ys foo) '(1 foo))
 ;; (dm:match '(,x ,@ys foo) '(1 2 3 foo))
 ;; (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
+;; (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))
 
-;; bad:
-;; (dm:match '(,x ,@ys ,@zs foo) '(1 foo))
+;; (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))
 
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
