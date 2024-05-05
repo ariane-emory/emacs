@@ -17,7 +17,7 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:verbose* t
+(defcustom *dm:verbose* t ; (setf *dm:verbose* nil)
   "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
@@ -124,13 +124,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::prn-pp-labeled-list(lst &optional extra)
+(defmacro dm::prn-pp-labeled-list(lst-name &optional extra)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let* ((,lst (if (cdr ,lst) 
-                  (format "%-7s . %s" (car ,lst) (cdr ,lst))
-                  (format "%s" (car ,lst)))))
-     (dm::prn-labeled ,lst ,extra)))
-;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Pretty print LST-NAME with a label."
+  `(let* ((,lst-name (if (cdr ,lst-name) 
+                       (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
+                       (format "%s"        (car ,lst-name)))))
+     (dm::prn-labeled ,lst-name ,extra)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,9 +180,8 @@
         (dm::prndiv)
         (dm::prn-pp-alist alist)
         (dm::prndiv ?\-)
-        (when *dm:verbose*
-          (dm::prn-pp-labeled-list pattern)
-          (dm::prn-pp-labeled-list target))
+        (dm::prn-pp-labeled-list pattern)
+        (dm::prn-pp-labeled-list target)
         (dm::prndiv ?\-)
         (cond
           ;; ----------------------------------------------------------------------------------------
