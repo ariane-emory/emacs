@@ -392,7 +392,11 @@
         (t (NO-MATCH! "expected %s but target is empty" pattern))) 
       (dm::prn-labeled alist "final")
       ;; Return either the ALIST or just t:
-      (or alist t))))
+      (let ((reslt (or alist t)))
+        (dm::prn-labeled reslt)
+        reslt)
+
+      )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dm:match '(,x ,@ys foo) '(1 foo))
 
