@@ -225,7 +225,7 @@
         (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
         (dm::prndiv)
         (dm::prn-pp-alist alist)
-        ;; (dm::prndiv ?\-)
+        (dm::prndiv ?\-)
         (dm::prn-pp-labeled-list pattern)
         (dm::prn-pp-labeled-list target)
         (dm::prndiv ?\-)
