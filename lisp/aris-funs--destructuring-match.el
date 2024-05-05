@@ -268,22 +268,22 @@
                       
                       (let* ((fake-pattern-tail
                                (let ((res (cdr pattern)))
-                                 (while (eq unsplice (car-safe (car lst)))
-                                   (dm::log-pop lst))
+                                 (while (eq unsplice (car-safe (car res)))
+                                   (dm::log-pop res))
                                  res))
                               (fake-pattern-tail-matches-target
-                                (let ((*dm:verbose* t))
+                                (let ((*dm:verbose* nil))
                                   (with-indentation
                                     (dm::match1 fake-pattern-tail target
                                       dont-care ellipsis unsplice nil))))
                               (fake-pattern-tail-matches-target-tail
-                                (let ((*dm:verbose* t))
+                                (let ((*dm:verbose* nil))
                                   (with-indentation
                                     (dm::match1 fake-pattern-tail (cdr target)
                                       dont-care ellipsis unsplice nil)))))
                         (dm::prndiv ?\-)
-                        (dm::prn-labeled fake-pattern-tail-matches-target "" 36)
-                        (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 36)
+                        (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
+                        (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
                         (dm::prndiv ?\-)
                         (cond
                           ((null target)
@@ -398,7 +398,7 @@
 ;; (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
 
 ;; bad:
-;; (dm:match '(,x ,@ys ,@zs foo) '(1 foo))
+(dm:match '(,x ,@ys ,@zs foo) '(1 foo))
 
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
