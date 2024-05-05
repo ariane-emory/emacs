@@ -17,14 +17,12 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:verbose* t ; (setf *dm:verbose* nil)
-  ;; (setf *dm:verbose* t)
+(defcustom *dm:verbose* nil
   "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:debug* nil ; (setf *dm:debug* nil)
-  ;; (setf *dm:debug* t)
+(defcustom *dm:debug* nil 
   "Whether or not the debug breakpoints in 'destructuring-match' are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -34,14 +32,12 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-match* t ; (setf *dm:test-fill* nil)
-  ;; (setf *dm:test-match* t)
+(defcustom *dm:test-match* t 
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-fill* t ; (setf *dm:test-fill* nil)
-  ;; (setf *dm:test-fill* t)
+(defcustom *dm:test-fill* t
   "Whether or not dm:fill's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -189,7 +185,7 @@
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
   (let* ( (result (with-indentation
-                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
+                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
@@ -198,7 +194,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist warned)
+(defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   ;;-------------------------------------------------------------------------------------------------
@@ -229,19 +225,22 @@
                        (while (is-flexible? (car res))
                          (dm::log-pop res))
                        res))
-                   (warn-when-consecutive-flexible-elements-in-pattern (n)
-                     (unless warned
-                       (when (and *dm:warn-on-consecutive-flexible-elements*
-                               last-pattern-elem-was-flexible)
-                         (setf warned t)
-                         (let ((warn-msg (format
-                                           (concat "WARNING: %d Using consecutive flexible elements "
-                                             "generally does not make sense, pattern was: %s")
-                                           n pattern)))
-                           (let ((*dm:verbose* t))
-                             (dm::prn warn-msg))
-                           (warn warn-msg)
-                           )))))
+                   (warn-when-consecutive-flexible-elements-in-pattern ()
+                     ;; Due to `dm::match1's recursive calls to perform lookahead and match 
+                     ;; sub-patterns, a call to `dm:match' may trigger this warning may be triggered
+                     ;; more than once: preventing this wasn't worth the bother, just fix your 
+                     ;; crappy PATTERN!
+                     (when (and *dm:warn-on-consecutive-flexible-elements*
+                             last-pattern-elem-was-flexible)
+                       (let ((warn-msg (format
+                                         (concat "WARNING: Using consecutive flexible elements "
+                                           "generally does not make sense, pattern was: %s")
+                                         initial-pattern)))
+                         (let ( (*dm:verbose* t)
+                                (*wm:indent* 0))
+                           (dm::prn warn-msg))
+                         (warn warn-msg)
+                         ))))
         ;;-------------------------------------------------------------------------------------------
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
@@ -267,7 +266,7 @@
             ;; Case 2: When PATTERN's head is flexible, collect items:
             ;; --------------------------------------------------------------------------------------
             ((is-flexible? (car pattern))
-              (warn-when-consecutive-flexible-elements-in-pattern 1)
+              (warn-when-consecutive-flexible-elements-in-pattern)
               (setf last-pattern-elem-was-flexible t)
               (dm::prn "Collecting flexible element...")
               (with-indentation
@@ -279,18 +278,16 @@
                       (dm::prn-pp-labeled-list pattern)
                       (dm::prn-pp-labeled-list target)                      
                       (let* ( (fake-pattern-tail (make-fake-pattern-tail pattern))
-                              ;; we don't need warnings from these recursive calls so we pass t
-                              ;; as warned:
                               (fake-pattern-tail-matches-target
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
                                     (dm::match1 initial-pattern fake-pattern-tail target
-                                      dont-care ellipsis unsplice nil t))))
+                                      dont-care ellipsis unsplice nil))))
                               (fake-pattern-tail-matches-target-tail
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
                                     (dm::match1 initial-pattern fake-pattern-tail (cdr target)
-                                      dont-care ellipsis unsplice nil t)))))
+                                      dont-care ellipsis unsplice nil)))))
                         (dm::prndiv ?\-)
                         (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
                         (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
@@ -354,7 +351,7 @@
                 (let ((res
                         (with-indentation
                           (dm::match1 initial-pattern sub-pattern sub-target
-                            dont-care ellipsis unsplice alist warned))))
+                            dont-care ellipsis unsplice alist))))
                   (cond
                     ((eq res t)) ; do nothing.
                     ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
@@ -390,12 +387,12 @@
         ;; better only contain ELLIPSISes and UNSPLICEs. Run out the remainder of pattern:
         ;; ------------------------------------------------------------------------------------------
         (when pattern
-          (dm::prn "RUNOUT: %s %s" last-pattern-elem-was-flexible pattern))
+          (dm::prn "RUNOUT REMAINING PATTERN: %s" pattern))
         (dolist (pat-elem pattern)
-          (dm::prn "Running out: %s" pat-elem)
+          (dm::prn "Running out elem: %s" pat-elem)
           (unless (is-flexible? pat-elem)
             (NO-MATCH! "expected %s but target is empty" pattern))
-          (warn-when-consecutive-flexible-elements-in-pattern 2) 
+          (warn-when-consecutive-flexible-elements-in-pattern)
           (setf last-pattern-elem-was-flexible t)
           (when (is-unsplice? pat-elem)
             (dm::log-setf-alist-putunique! (var-name pat-elem) nil alist)))
@@ -588,6 +585,3 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))
-
-(dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))
