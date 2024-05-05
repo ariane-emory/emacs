@@ -398,7 +398,7 @@
 ;; (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
 
 ;; bad:
-(dm:match '(,x ,@ys ,@zs foo) '(1 foo))
+;; (dm:match '(,x ,@ys ,@zs foo) '(1 foo))
 
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
