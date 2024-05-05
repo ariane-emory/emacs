@@ -227,19 +227,90 @@
           ;; the loop successfully:
           ;; ----------------------------------------------------------------------------------------
           ((and unsplice (eq unsplice (car-safe (car pattern))))
-            (when (and *dm:enforce-final-position* (cdr pattern))
-              (error "UNSPLICE may only be the final element in PATTERN."))
-            (let* ( (unsplice-var-spec (car  pattern))
-                    (unsplice-var-name (cadr unsplice-var-spec))
-                    (unsplice-var-val  target)
-                    ;; `let' ASSOC just to print it in the message:
-                    (assoc (cons unsplice-var-name unsplice-var-val)))
-              (dm::prn-labeled assoc "unsplicing as")
-              ;; Put UNSPLICE-VAR-VAL in UNSPLICE-VAR-NAME's key in ALIST:
-              (setf alist (alist-putunique unsplice-var-name unsplice-var-val alist 'no-match)))
-            ;; Nullify TARGET and PATTERN:
-            (setf pattern nil)
-            (setf target  nil))
+            (if (and *dm:enforce-final-position* (cdr pattern))
+              (error "UNSPLICE may only be the final element in PATTERN.")
+              (dm::prndiv)
+              (dm::prn "UNSPLICING...")
+              (with-indentation
+                (let (collect)
+                  (catch 'stop
+
+                    (while t
+                      (dm::prndiv)
+                      (dm::prn-labeled         collect)
+                      (dm::prn-pp-labeled-list pattern)
+                      (dm::prn-pp-labeled-list target)
+                      
+                      (let ( (match-targ-tail
+                               (let ((*dm:verbose* t))
+                                 (with-indentation
+                                   (dm::match1 (cdr pattern) (cdr target)
+                                     dont-care ellipsis unsplice alist))))
+                             (match-targ-tail-tail
+                               (let ((*dm:verbose* t))
+                                 (with-indentation
+                                   (dm::match1 (cdr pattern) (cddr target)
+                                     dont-care ellipsis unsplice alist)))))
+                        (dm::prn-labeled match-targ-tail)
+                        (dm::prn-labeled match-targ-tail-tail)
+                        (dm::prndiv ?\-)
+
+                        (cond
+                          ((null (cdr target))
+                            (dm::prn "Out of TARGET, stop.")
+                            (throw 'stop nil))
+                          ((and (not match-targ-tail) match-targ-tail-tail)
+                            (dm::prn "CASE 1: Pushing %s and continuing!" (car target))
+                            (push (pop target) collect)
+                            ;; (setf targ-head (pop targ-tail))
+                            )
+                          ((and match-targ-tail (not match-targ-tail-tail))
+                            (dm::prn "CASE 2: Pushing %s and stopping!" (car target))
+                            (push (pop target) collect)
+                            ;;(setf targ-head (pop targ-tail))
+                            (dm::prn "THROWING 'stop!")
+                            (throw 'stop nil))
+                          (t
+                            (dm::prn "CASE 3: Nothing else applies, munch %s." (car target))
+                            (push (pop target) collect)
+                            ;; (setf targ-head (pop targ-tail))
+                            (dm::prn "THROWING 'stop!")
+                            ;; (throw 'stop nil)
+                            )))
+                      
+                      (dm::prn-labeled collect)
+
+                      (when *dm:debug* (debug 'unsplicing))
+                      ) ;; END OF `while'.
+                    ) ;; END OF `catch'.
+
+                  
+                  (dm::prn-labeled collect "unspliced")
+                  (dm::prn-labeled pattern "unspliced")
+                  (dm::prn-labeled target  "unspliced")
+                  
+                  (when *dm:debug* (debug 'before-set-unspliced))
+                  (setf alist
+                    (alist-putunique (cadar pattern)
+                      (nreverse collect) alist 'no-match))
+
+                  (pop pattern)
+                  
+                  (when *dm:debug* (debug 'after-set-unspliced))
+                  ) ; end of `let' COLLECT.
+                ) ; end of `with-indentation'.
+              ;; (let* ( (unsplice-var-spec (car  pattern))
+              ;;         (unsplice-var-name (cadr unsplice-var-spec))
+              ;;         (unsplice-var-val  target)
+              ;;         ;; `let' ASSOC just to print it in the message:
+              ;;         (assoc (cons unsplice-var-name unsplice-var-val)))
+              ;;   (dm::prn-labeled assoc "unsplicing as")
+              ;;   ;; Put UNSPLICE-VAR-VAL in UNSPLICE-VAR-NAME's key in ALIST:
+              ;;   (setf alist (alist-putunique unsplice-var-name unsplice-var-val alist 'no-match)))
+              ;; Nullify TARGET and PATTERN:
+              ;; (setf pattern nil)
+              ;; (setf target  nil)
+              ))
           ;; ----------------------------------------------------------------------------------------
           ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
@@ -313,7 +384,7 @@
       ;; Return either the ALIST or just t:
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (dm:match '(,x ,@ys 4) '(1 2 3 4))
+(dm:match '(,x ,@ys ,z) '(1 2 3 4))
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ...) '(1 2 3 4))
 ;; (dm:match '(,x ... ,z) '(X 2 3))
