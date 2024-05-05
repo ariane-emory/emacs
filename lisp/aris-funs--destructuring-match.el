@@ -66,11 +66,6 @@
   "dm:match's default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'symbol)
-;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:enforce-final-position* t
-  "Whether or not dm:match should only allow ELLIPSIS and UNSPLICE in a pattern's final position."
-  :group 'destructuring-match
-  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -147,13 +142,12 @@
 (defmacro dm::prn-pp-labeled-list(lst-name &optional extra)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print LST-NAME with a label."
-  ;; `(let* ((,lst-name (if (cdr ,lst-name) 
-  ;;                      (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
-  ;;                      (format "%s"        (car ,lst-name)))))
-  ;; `(let* ((,lst-name (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))))
-  ;;    (dm::prn-labeled ,lst-name ,extra)))
-  `(let* ((,lst-name (format "%s"        ,lst-name)))
-     (dm::prn-labeled ,lst-name ,extra)))
+  `(let* ((,lst-name (if (cdr ,lst-name) 
+                       (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
+                       (format "%s"        (car ,lst-name))))))
+  ;; `(let* ((,lst-name (format "%s"        ,lst-name)))
+  ;;    (dm::prn-labeled ,lst-name ,extra))
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -174,16 +168,12 @@
       "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
   (dm::prnl)
   (dm::prndiv)
-  (dm::prn "BEGIN MATCH:          %S" pattern)
+  (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  ;; (dm::prndiv)
-  ;; (dm::prnl)
   (let* ( (result (with-indentation (dm::match1 pattern target dont-care ellipsis unsplice nil)))
           (result (if (listp result) (nreverse result) result)))
-    ;; (dm::prndiv)
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
-    ;; (dm::prnl)
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -258,67 +248,63 @@
           ;; Case 2: When PATTERN's head is flexible, collect items:
           ;; ----------------------------------------------------------------------------------------
           ((is-flexible? (car pattern))
-            (if (and *dm:enforce-final-position* (cdr pattern))
-              (error "Flexible elements must be the final element in PATTERN.")
-              ;;(dm::prndiv)
-              (dm::prn "Collecting...")
-              (with-indentation
-                (let (collect)
-                  (catch 'stop
-                    (while t
-                      (dm::prndiv)
-                      (dm::prn-labeled         collect "pre")
-                      (dm::prn-pp-labeled-list pattern)
-                      (dm::prn-pp-labeled-list target)                      
-                      (let* ((fake-pattern-tail
-                               (make-fake-pattern-tail pattern))
-                              (fake-pattern-tail-matches-target
-                                (let ((*dm:verbose* nil))
-                                  (with-indentation
-                                    (dm::match1 fake-pattern-tail target
-                                      dont-care ellipsis unsplice nil))))
-                              (fake-pattern-tail-matches-target-tail
-                                (let ((*dm:verbose* nil))
-                                  (with-indentation
-                                    (dm::match1 fake-pattern-tail (cdr target)
-                                      dont-care ellipsis unsplice nil)))))
-                        (dm::prndiv ?\-)
-                        (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
-                        (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
-                        (dm::prndiv ?\-)
-                        (cond
-                          ((null target)
-                            (dm::prn "Out of TARGET, stop.")
-                            (throw 'stop nil))
-                          ((and
-                             fake-pattern-tail-matches-target
-                             (not fake-pattern-tail-matches-target-tail))
-                            (dm::prn "CASE 1: Stopping!")
-                            ;; (dm::log-pop pattern)
-                            (dm::prn "THROWING 'stop!")
-                            (throw 'stop nil))
-                          (t
-                            (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
-                            (push (dm::log-pop target) collect))))
-                      (dm::prn-labeled collect "post")
-                      (when *dm:debug* (debug 'unsplicing))
-                      (dm::prndiv)
-                      (dm::prnl)
-		                  ) ;; END OF `while'.
-                    ) ;; END OF `catch'.                  
-                  (when *dm:debug* (debug 'before-set-unspliced))
-                  (when (is-unsplice? (car pattern))
-                    (dm::log-setf-alist-putunique!
-                      (var-name (car pattern)) (nreverse collect) alist))
-                  (dm::prn-labeled collect "unspliced")
-                  (dm::prn-labeled pattern "unspliced")
-                  (dm::prn-labeled target  "unspliced")
-                  (dm::prn-labeled alist   "unspliced")
-                  (dm::log-pop pattern)
-                  (when *dm:debug* (debug 'after-set-unspliced))
-                  ) ; end of `let' COLLECT.
-                ) ; end of `with-indentation'.
-              ))
+            (dm::prn "Collecting...")
+            (with-indentation
+              (let (collect)
+                (catch 'stop
+                  (while t
+                    (dm::prndiv)
+                    (dm::prn-labeled         collect "pre")
+                    (dm::prn-pp-labeled-list pattern)
+                    (dm::prn-pp-labeled-list target)                      
+                    (let* ((fake-pattern-tail
+                             (make-fake-pattern-tail pattern))
+                            (fake-pattern-tail-matches-target
+                              (let ((*dm:verbose* nil))
+                                (with-indentation
+                                  (dm::match1 fake-pattern-tail target
+                                    dont-care ellipsis unsplice nil))))
+                            (fake-pattern-tail-matches-target-tail
+                              (let ((*dm:verbose* nil))
+                                (with-indentation
+                                  (dm::match1 fake-pattern-tail (cdr target)
+                                    dont-care ellipsis unsplice nil)))))
+                      (dm::prndiv ?\-)
+                      (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
+                      (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
+                      (dm::prndiv ?\-)
+                      (cond
+                        ((null target)
+                          (dm::prn "Out of TARGET, stop.")
+                          (throw 'stop nil))
+                        ((and
+                           fake-pattern-tail-matches-target
+                           (not fake-pattern-tail-matches-target-tail))
+                          (dm::prn "CASE 1: Stopping!")
+                          ;; (dm::log-pop pattern)
+                          (dm::prn "THROWING 'stop!")
+                          (throw 'stop nil))
+                        (t
+                          (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
+                          (push (dm::log-pop target) collect))))
+                    (dm::prn-labeled collect "post")
+                    (when *dm:debug* (debug 'unsplicing))
+                    (dm::prndiv)
+                    (dm::prnl)
+		                ) ;; END OF `while'.
+                  ) ;; END OF `catch'.                  
+                (when *dm:debug* (debug 'before-set-unspliced))
+                (when (is-unsplice? (car pattern))
+                  (dm::log-setf-alist-putunique! (var-name (car pattern)) (nreverse collect) alist))
+                (dm::prn-labeled collect "unspliced")
+                (dm::prn-labeled pattern "unspliced")
+                (dm::prn-labeled target  "unspliced")
+                (dm::prn-labeled alist   "unspliced")
+                (dm::log-pop pattern)
+                (when *dm:debug* (debug 'after-set-unspliced))
+                ) ; end of `let' COLLECT.
+              ) ; end of `with-indentation'.
+            )
           ;; ----------------------------------------------------------------------------------------
           ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
@@ -329,8 +315,8 @@
                     (assoc    (cons var-name var-val))) 
               (dm::prn-labeled assoc "take var as")
               (dm::log-setf-alist-putunique! var-name var-val alist)
-              (pop  pattern)
-              (pop  target)))
+              (dm::log-pop pattern)
+              (dm::log-pop target)))
           ;; ----------------------------------------------------------------------------------------
           ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
           ;; ALIST, unless the result was just t because the sub-pattern being recursed over
@@ -349,15 +335,15 @@
                   ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
                   ;; `dm::match1' only returns t or lists, so we'll now assume it's a list.
                   (t (setf alist res))))
-              (pop pattern)
-              (pop target)))
+              (dm::log-pop pattern)
+              (dm::log-pop target)))
           ;; ----------------------------------------------------------------------------------------
           ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the heads off:
           ;; ----------------------------------------------------------------------------------------
           ((equal (car pattern) (car target))
             (dm::prn "Equal literals, discarding %s." (car target))
-            (pop pattern)
-            (pop target))
+            (dm::log-pop pattern)
+            (dm::log-pop target))
           ;; ----------------------------------------------------------------------------------------
           ;; Otherwise: When the heads aren't equal and we didn't have either a DONT-CARE, an
           ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
@@ -377,8 +363,6 @@
       (while pattern
         (when (not (is-flexible? (car pattern)))
           (NO-MATCH! "expected %s but target is empty" pattern))
-        (when (and *dm:enforce-final-position* (cdr pattern))
-          (error "Flexible elements may only be the final element in PATTERN."))
         (when (is-unsplice? (car pattern))
           (dm::log-setf-alist-putunique! (var-name (car pattern)) nil alist))
         (dm::log-pop pattern))
@@ -496,7 +480,7 @@ This behaves very similarly to quasiquote."
   (dm::prn "FILL:")
   (let (res)
     (while pattern
-      (let ((thing (pop pattern)))
+      (let ((thing (dm::log-pop pattern)))
         (dm::prndiv)
         (dm::prn "thing:   %s" thing)
         (dm::prn "alist:   %s" alist)
