@@ -147,10 +147,12 @@
 (defmacro dm::prn-pp-labeled-list(lst-name &optional extra)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print LST-NAME with a label."
-  `(let* ((,lst-name (if (cdr ,lst-name) 
-                       (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
-                       (format "%s"        (car ,lst-name)))))
-     (dm::prn-labeled ,lst-name ,extra)))
+  ;; `(let* ((,lst-name (if (cdr ,lst-name) 
+  ;;                      (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
+  ;;                      (format "%s"        (car ,lst-name)))))
+  ;; `(let* ((,lst-name (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))))
+  ;;    (dm::prn-labeled ,lst-name ,extra)))
+  `(let* ((,lst-name (format "%s"        (car ,lst-name))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -215,12 +217,14 @@
                 (dm::prn "No match because %s!" str)
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
+    (dm::prn-pp-labeled-list pattern)
+    (dm::prn-pp-labeled-list target)
     (catch 'no-match
       (while target
         (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
         (dm::prndiv)
         (dm::prn-pp-alist alist)
-        (dm::prndiv ?\-)
+        ;; (dm::prndiv ?\-)
         (dm::prn-pp-labeled-list pattern)
         (dm::prn-pp-labeled-list target)
         (dm::prndiv ?\-)
@@ -250,14 +254,12 @@
           ((and unsplice (eq unsplice (car-safe (car pattern))))
             (if (and *dm:enforce-final-position* (cdr pattern))
               (error "UNSPLICE may only be the final element in PATTERN.")
-              (dm::prndiv)
+              ;;(dm::prndiv)
               (dm::prn "UNSPLICING...")
               (with-indentation
                 (let (collect)
                   (catch 'stop
-
                     (while t
-                      (dm::prnl)
                       (dm::prndiv)
                       (dm::prn-labeled         collect "pre")
                       (dm::prn-pp-labeled-list pattern)
@@ -302,7 +304,8 @@
                       (dm::prn-labeled collect "post")
                       (when *dm:debug* (debug 'unsplicing))
                       (dm::prndiv)
-                      ) ;; END OF `while'.
+                      (dm::prnl)
+		      ) ;; END OF `while'.
                     ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
                   (dm::log-setf-alist-putunique! (cadar pattern) (nreverse collect) alist)
@@ -389,7 +392,9 @@
       ;; Return either the ALIST or just t:
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (dm:match '(,x ,@ys foo) '(1 foo))
+(dm:match '(,x ,@ys foo) '(1 foo))
+
+
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
 
