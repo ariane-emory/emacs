@@ -153,6 +153,27 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::log-pop (lst)
+  `(let ((popped (pop ,lst)))
+     (dm::prn "Popped %s from %s, remaining: %s" popped ',lst ,lst)
+     popped))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::log-setf-alist-putunique! (key val alist-name)
+  `(prog1
+     (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match))
+     (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setf alist nil)
+;; (dm::log-setf-alist-putunique! 'a 123 alist)
+;; (prog1 (setf alist (alist-putunique 'a 123 alist 'no-match))
+;;   (dm::prn "Set %s to %s in %s: %s." 'a 123 'alist alist))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
                      &optional
                      (dont-care *dm:default-dont-care*)
@@ -176,27 +197,6 @@
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
     result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-pop (lst)
-  `(let ((popped (pop ,lst)))
-     (dm::prn "Popped %s from %s, remaining: %s" popped ',lst ,lst)
-     popped))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-setf-alist-putunique! (key val alist-name)
-  `(prog1
-     (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match))
-     (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setf alist nil)
-;; (dm::log-setf-alist-putunique! 'a 123 alist)
-;; (prog1 (setf alist (alist-putunique 'a 123 alist 'no-match))
-;;   (dm::prn "Set %s to %s in %s: %s." 'a 123 'alist alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -353,38 +353,31 @@
           ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
           ;; ----------------------------------------------------------------------------------------
           (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))) ; End of `cond'.
-        ;; ----------------------------------------------------------------------------------------
+        ;; ------------------------------------------------------------------------------------------
         (dm::prndiv)
         (dm::prnl)
         );; End of (while target ...), if we got this far TARGET is nil!
-
       (dm::prndiv)
       (dm::prn-labeled pattern "final")
       (dm::prn-labeled target  "final")
-
       ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
       ;; better only contain ELLIPSISes and UNSPLICEs:
       (while pattern
-        (when (not (is-flexible? (car pattern)))
+        (unless (is-flexible? (car pattern))
           (NO-MATCH! "expected %s but target is empty" pattern))
         (when (is-unsplice? (car pattern))
           (dm::log-setf-alist-putunique! (var-name (car pattern)) nil alist))
-        (dm::log-pop pattern))
-      
-      (dm::prn-labeled alist "final")
+        (dm::log-pop pattern))      
       ;; Return either the ALIST or just t:
-      (let ((reslt (or alist t)))
-        (dm::prn-labeled reslt)
-        reslt)
-      )))
+      (let ((match1-result (or alist t)))
+        (dm::prn-labeled match1-result)
+        match1-result))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dm:match '(,x ,@ys foo) '(1 foo)) 
 ;; (dm:match '(,x ,@ys foo) '(1 2 3 foo))
 ;; (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
 ;; (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))
-
 ;; (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))
-
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
@@ -395,14 +388,10 @@
 ;; (dm:match '(,x ...) '(1 2 3 4))
 ;; (dm:match '(,x ... ,z) '(X 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; These are now all legal:
+;; Duplicated keys, these are now all legal:
 ;; (dm:match '(,y (,y)) '(2 (3))) ; duplicate key in merge!
 ;; (dm:match '(,y ,y) '(2 3)) ; duplicate key in set!
 ;; (dm:match '(,y ,@y) '(2 3 4 5)) ; duplicate key in UNSPLICE!
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; These two are just examples of error cases:
-;; (dm:match '(,y ,@zs ...) '(2)) ; malformed, elem after UNSPLICE.
-;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
   (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
