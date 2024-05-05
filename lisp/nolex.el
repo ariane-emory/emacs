@@ -494,7 +494,9 @@
                 (prn2 "MATCHED T:   %s" .:input:)
                 ;; t matches any input and fills using an empty list:
                 (throw 'result (select-response nil .:responses:)))
-              (when-let ((var-alist (dm:match .:input: input)))
+              (when-let ((var-alist
+                           (let (*dm:verbose*) ; shadow!
+                             (dm:match .:input: input))))
                 (let ((var-alist (if (eq t var-alist) nil var-alist)))
                   (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
                   (prn2 "MATCHED:   %s" .:input:)
@@ -1072,13 +1074,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
   (let ((response (get-response input)))
-    ;;(prnl)
-    ;;(prndiv)
     (prn "CASE:      %s" (car response))
-    (prn "RESPONSE:  %s" (prettify-sentence response t))
-    ;;(prndiv)
-    ;;(prnl)
-    ))
+    (prn "RESPONSE:  %s" (prettify-sentence response t))))
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

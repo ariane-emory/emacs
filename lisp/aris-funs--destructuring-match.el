@@ -284,8 +284,6 @@
                            fake-pattern-tail-matches-target
                            (not fake-pattern-tail-matches-target-tail))
                           (dm::prn "CASE 1: Stopping!")
-                          ;; (dm::log-pop pattern)
-                          (dm::prn "THROWING 'stop!")
                           (throw 'stop nil))
                         (t
                           (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
@@ -355,18 +353,19 @@
         ;; ------------------------------------------------------------------------------------------
         (dm::prndiv)
         (dm::prnl)
-        );; End of (while target ...), if we got this far TARGET is nil!
+        ) ;  end of (while target ...).
       (dm::prndiv)
       (dm::prn-labeled pattern "final")
       (dm::prn-labeled target  "final")
+
       ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
       ;; better only contain ELLIPSISes and UNSPLICEs:
-      (while pattern
-        (unless (is-flexible? (car pattern))
+      (dolist (pat-elem pattern)
+        (unless (is-flexible? pat-elem)
           (NO-MATCH! "expected %s but target is empty" pattern))
-        (when (is-unsplice? (car pattern))
-          (dm::log-setf-alist-putunique! (var-name (car pattern)) nil alist))
-        (dm::log-pop pattern))      
+        (when (is-unsplice? pat-elem)
+          (dm::log-setf-alist-putunique! (var-name pat-elem) nil alist)))
+
       ;; Return either the ALIST or just t:
       (let ((match1-result (or alist t)))
         (dm::prn-labeled match1-result)
