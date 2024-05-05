@@ -196,8 +196,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::log-alist-putunique (key val alist no-match)
   `(progn 
-     (dm::prn "Set %s to %s in %s." ,key ,val ,alist)
-     (alist-putunique ,key ,val ,alist ,no-match)))
+     (alist-putunique ,key ,val ,alist ,no-match)
+     (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -307,14 +307,13 @@
                   (when *dm:debug* (debug 'before-set-unspliced))
 
                   (setf alist
-                    (dm::log-alist-putunique (cadar pattern)
+                    (alist-putunique (cadar pattern)
                       (nreverse collect) alist 'no-match))
 
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
                   (dm::prn-labeled target  "unspliced")
                   (dm::prn-labeled alist   "unspliced")
-
                   (dm::log-pop pattern)
                   
                   (when *dm:debug* (debug 'after-set-unspliced))
@@ -342,7 +341,7 @@
                     ;; `let' ASSOC just to print it in the message:
                     (assoc    (cons var-name var-val))) 
               (dm::prn-labeled assoc "take var as")
-              (setf alist (dm::log-alist-putunique var-name var-val alist 'no-match))
+              (setf alist (alist-putunique var-name var-val alist 'no-match))
               (pop  pattern)
               (pop  target)))
           ;; ----------------------------------------------------------------------------------------
@@ -399,7 +398,7 @@
           (when (and *dm:enforce-final-position* (cdr pattern))
             (error "UNSPLICE may only be the final element in PATTERN (case #2)\."))
           (let ((var (cadar pattern)))
-            (setf alist (dm::log-alist-putunique var nil alist 'no-match))))
+            (setf alist (alist-putunique var nil alist 'no-match))))
         ;; It was something else, no match;
         (t (NO-MATCH! "expected %s but target is empty" pattern))) 
       (dm::prn-labeled alist "final")
@@ -407,6 +406,7 @@
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (dm:match '(,x ,@ys) '(1 2 3 4))
+(dm:match '(,x ,@ys) '(1))
 ;; (dm:match '(,x ,@ys) '(1))
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ...) '(1 2 3 4))
