@@ -152,7 +152,8 @@
   ;;                      (format "%s"        (car ,lst-name)))))
   ;; `(let* ((,lst-name (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))))
   ;;    (dm::prn-labeled ,lst-name ,extra)))
-  `(let* ((,lst-name (format "%s"        (car ,lst-name))))))
+  `(let* ((,lst-name (format "%s"        ,lst-name)))
+     (dm::prn-labeled ,lst-name ,extra)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -217,8 +218,8 @@
                 (dm::prn "No match because %s!" str)
                 (throw 'no-match nil))))
     ;;-----------------------------------------------------------------------------------------------
-    (dm::prn-pp-labeled-list pattern)
-    (dm::prn-pp-labeled-list target)
+    (dm::prn-labeled pattern "initial")
+    (dm::prn-labeled target  "initial")
     (catch 'no-match
       (while target
         (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
