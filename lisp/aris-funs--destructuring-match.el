@@ -194,13 +194,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-alist-putunique (key val alist-name)
+(defmacro dm::log-setf-alist-putunique! (key val alist-name)
   `(prog1
      (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match))
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setf alist nil)
-;; (dm::log-alist-putunique 'a 123 alist)
+;; (dm::log-setf-alist-putunique! 'a 123 alist)
 ;; (prog1 (setf alist (alist-putunique 'a 123 alist 'no-match))
 ;;   (dm::prn "Set %s to %s in %s: %s." 'a 123 'alist alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -305,7 +305,7 @@
                       ) ;; END OF `while'.
                     ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
-                  (dm::log-alist-putunique (cadar pattern) (nreverse collect) alist)
+                  (dm::log-setf-alist-putunique! (cadar pattern) (nreverse collect) alist)
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
                   (dm::prn-labeled target  "unspliced")
@@ -325,7 +325,7 @@
                     ;; `let' ASSOC just to print it in the message:
                     (assoc    (cons var-name var-val))) 
               (dm::prn-labeled assoc "take var as")
-              (dm::log-alist-putunique var-name var-val alist)
+              (dm::log-setf-alist-putunique! var-name var-val alist)
               (pop  pattern)
               (pop  target)))
           ;; ----------------------------------------------------------------------------------------
@@ -382,7 +382,7 @@
           (when (and *dm:enforce-final-position* (cdr pattern))
             (error "UNSPLICE may only be the final element in PATTERN (case #2)."))
           (let ((var (cadar pattern)))
-            (dm::log-alist-putunique var nil alist)))
+            (dm::log-setf-alist-putunique! var nil alist)))
         ;; It was something else, no match;
         (t (NO-MATCH! "expected %s but target is empty" pattern))) 
       (dm::prn-labeled alist "final")
