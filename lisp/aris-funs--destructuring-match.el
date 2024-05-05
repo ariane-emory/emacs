@@ -232,8 +232,7 @@
                      (warn (concat "Using consecutive flexible elements generally does not make "
                              "sense, pattern was: %s")
                        initial-pattern)))
-        (let ( ;; (initial-pattern pattern)
-               )
+        (progn
           ;;-------------------------------------------------------------------------------------------
           (while target
             (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
