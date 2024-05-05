@@ -254,7 +254,7 @@
                     (while t
                       (dm::prnl)
                       (dm::prndiv)
-                      (dm::prn-labeled         collect)
+                      (dm::prn-labeled         collect "pre")
                       (dm::prn-pp-labeled-list pattern)
                       (dm::prn-pp-labeled-list target)
                       
@@ -272,7 +272,6 @@
                         (dm::prn-labeled match-targ-tail)
                         (dm::prn-labeled match-targ-tail-tail)
                         (dm::prndiv ?\-)
-
                         (cond
                           ((null target) ; (null (cdr target))
                             (dm::prn "Out of TARGET, stop.")
@@ -295,41 +294,23 @@
                             (dm::prn "THROWING 'stop!")
                             ;; (throw 'stop nil)
                             )))
-                      
-                      (dm::prn-labeled collect)
-
+                      (dm::prn-labeled collect "post")
                       (when *dm:debug* (debug 'unsplicing))
                       (dm::prndiv)
                       ) ;; END OF `while'.
-                    ) ;; END OF `catch'.
-
-                  
+                    ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
-
                   (setf alist
                     (dm::log-alist-putunique (cadar pattern)
                       (nreverse collect) alist 'no-match))
-
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
                   (dm::prn-labeled target  "unspliced")
                   (dm::prn-labeled alist   "unspliced")
                   (dm::log-pop pattern)
-                  
                   (when *dm:debug* (debug 'after-set-unspliced))
                   ) ; end of `let' COLLECT.
                 ) ; end of `with-indentation'.
-              ;; (let* ( (unsplice-var-spec (car  pattern))
-              ;;         (unsplice-var-name (cadr unsplice-var-spec))
-              ;;         (unsplice-var-val  target)
-              ;;         ;; `let' ASSOC just to print it in the message:
-              ;;         (assoc (cons unsplice-var-name unsplice-var-val)))
-              ;;   (dm::prn-labeled assoc "unsplicing as")
-              ;;   ;; Put UNSPLICE-VAR-VAL in UNSPLICE-VAR-NAME's key in ALIST:
-              ;;   (setf alist (dm::log-alist-putunique unsplice-var-name unsplice-var-val alist 'no-match)))
-              ;; Nullify TARGET and PATTERN:
-              ;; (setf pattern nil)
-              ;; (setf target  nil)
               ))
           ;; ----------------------------------------------------------------------------------------
           ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
@@ -405,8 +386,13 @@
       ;; Return either the ALIST or just t:
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dm:match '(,x ,@ys) '(1 2 3 4))
-(dm:match '(,x ,@ys) '(1))
+(dm:match '(,x ,@ys foo) '(1 foo))
+;; (dm:match '(,x ,@ys) '(1 2 3 4))
+;; (dm:match '(,x ,@ys) '(1))
+;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
+;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
+;; (dm:match '(,x ,@ys) '(1))
+;; (dm:match '(,x ,@ys ,@zs) '(1))
 ;; (dm:match '(,x ,@ys) '(1))
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ...) '(1 2 3 4))
