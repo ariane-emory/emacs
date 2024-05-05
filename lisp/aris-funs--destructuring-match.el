@@ -207,6 +207,7 @@
     ;;-----------------------------------------------------------------------------------------------
     (let ( (initial-pattern pattern)
            (last-pattern-elem-was-flexible nil))
+      ;;---------------------------------------------------------------------------------------------
       (cl-labels ( (NO-MATCH! (fmt &rest args)
                      (let ((str (apply #'format fmt args)))
                        (dm::prn "No match because %s!" str)
@@ -228,10 +229,12 @@
                        (while (is-flexible? (car res))
                          (dm::log-pop res))
                        res))
-                   (warn-about-consecutive-flexible-elements-in-pattern ()
-                     (warn (concat "Using consecutive flexible elements generally does not make "
-                             "sense, pattern was: %s")
-                       initial-pattern)))        
+                   (warn-when-consecutive-flexible-elements-in-pattern ()
+                     (when (and *dm:warn-on-consecutive-flexible-elements*
+                             last-pattern-elem-was-flexible)
+                       (warn (concat "Using consecutive flexible elements generally does not make "
+                               "sense, pattern was: %s")
+                         initial-pattern))))
         ;;-------------------------------------------------------------------------------------------
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
@@ -244,7 +247,7 @@
                            (format "%s" (car target))))))
           (dm::prndiv ?\-)
           ;; ----------------------------------------------------------------------------------------
-          (cond ;; The big `cond'!
+          (cond ;; Enter the big `cond'!
             ;; --------------------------------------------------------------------------------------
             ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
             ;; --------------------------------------------------------------------------------------
@@ -257,8 +260,7 @@
             ;; Case 2: When PATTERN's head is flexible, collect items:
             ;; --------------------------------------------------------------------------------------
             ((is-flexible? (car pattern))
-              (when (and *dm:warn-on-consecutive-flexible-elements* last-pattern-elem-was-flexible)
-                (warn-about-consecutive-flexible-elements-in-pattern))
+              (warn-when-consecutive-flexible-elements-in-pattern)
               (setf last-pattern-elem-was-flexible t)
               (dm::prn "Collecting flexible element...")
               (with-indentation
@@ -304,7 +306,8 @@
                     ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
                   (when (is-unsplice? (car pattern))
-                    (dm::log-setf-alist-putunique! (var-name (car pattern)) (nreverse collect) alist))
+                    (dm::log-setf-alist-putunique! (var-name (car pattern))
+                      (nreverse collect) alist))
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
                   (dm::prn-labeled target  "unspliced")
@@ -358,30 +361,33 @@
               (dm::log-pop pattern)
               (dm::log-pop target))
             ;; --------------------------------------------------------------------------------------
-            ;; Otherwise: When the heads aren't equal and we didn't have either a DONT-CARE, an
+            ;; Otherwise: When the heads aren't `equal' and we didn't have either a DONT-CARE, an
             ;; ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
             ;; --------------------------------------------------------------------------------------
             (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))) ; End of `cond'.
           ;; ----------------------------------------------------------------------------------------
           (dm::prndiv)
           (dm::prnl)
+          ;; ----------------------------------------------------------------------------------------
           ) ;  end of (while target ...).
+        ;; ------------------------------------------------------------------------------------------
         (dm::prndiv)
         (dm::prn-labeled pattern "final")
         (dm::prn-labeled target  "final")
         ;; ------------------------------------------------------------------------------------------
         ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
-        ;; better only contain ELLIPSISes and UNSPLICEs:
+        ;; better only contain ELLIPSISes and UNSPLICEs. Run out the remainder of pattern:
+        ;; ------------------------------------------------------------------------------------------
         (dolist (pat-elem pattern)
           (unless (is-flexible? pat-elem)
             (NO-MATCH! "expected %s but target is empty" pattern))
-          (when (and *dm:warn-on-consecutive-flexible-elements* last-pattern-elem-was-flexible)
-            (warn-about-consecutive-flexible-elements-in-pattern))
+          (warn-when-consecutive-flexible-elements-in-pattern)
           (setf last-pattern-elem-was-flexible t)
           (when (is-unsplice? pat-elem)
             (dm::log-setf-alist-putunique! (var-name pat-elem) nil alist)))
         ;; ------------------------------------------------------------------------------------------
         ;; Return either the ALIST or just t:
+        ;; ------------------------------------------------------------------------------------------
         (let ((match1-result (or alist t)))
           (dm::prn-labeled match1-result)
           match1-result)))))
