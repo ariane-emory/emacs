@@ -332,7 +332,7 @@
           ;; ----------------------------------------------------------------------------------------
           ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
-          ((eq '\, (car-safe (car pattern)))
+          ((is-variable? (car pattern))
             (let* ( (var-spec (car  pattern))
                     (var-val  (car  target))
                     (var-name (cadr var-spec))
