@@ -279,16 +279,18 @@
                       (dm::prn-pp-labeled-list pattern)
                       (dm::prn-pp-labeled-list target)                      
                       (let* ( (fake-pattern-tail (make-fake-pattern-tail pattern))
+                              ;; we don't need warnings from these recursive calls so we pass t
+                              ;; as warned:
                               (fake-pattern-tail-matches-target
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
                                     (dm::match1 initial-pattern fake-pattern-tail target
-                                      dont-care ellipsis unsplice nil warned))))
+                                      dont-care ellipsis unsplice nil t))))
                               (fake-pattern-tail-matches-target-tail
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
                                     (dm::match1 initial-pattern fake-pattern-tail (cdr target)
-                                      dont-care ellipsis unsplice nil warned)))))
+                                      dont-care ellipsis unsplice nil t)))))
                         (dm::prndiv ?\-)
                         (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
                         (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
@@ -390,6 +392,7 @@
         (when pattern
           (dm::prn "RUNOUT: %s %s" last-pattern-elem-was-flexible pattern))
         (dolist (pat-elem pattern)
+          (dm::prn "Running out: %s" pat-elem)
           (unless (is-flexible? pat-elem)
             (NO-MATCH! "expected %s but target is empty" pattern))
           (warn-when-consecutive-flexible-elements-in-pattern 2) 
@@ -585,4 +588,6 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+(dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))
+
+(dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))
