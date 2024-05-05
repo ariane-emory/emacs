@@ -224,7 +224,7 @@
                (is-unsplice? (pat-elem)
                  (and unsplice (eq unsplice (car-safe pat-elem))))
                (is-dont-care? (pat-elem)
-                 (and dont-care (eq dont-care (car-safe pat-elem))))
+                 (and dont-care (eq dont-care pat-elem)))
                (is-ellipsis? (pat-elem)
                  (and ellipsis (eq ellipsis pat-elem)))
                (is-flexible? (pat-elem)
@@ -333,9 +333,8 @@
           ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
           ((is-variable? (car pattern))
-            (let* ( (var-spec (car  pattern))
-                    (var-val  (car  target))
-                    (var-name (cadr var-spec))
+            (let* ( (var-name (var-name (car pattern)))
+                    (var-val  (car target))
                     ;; `let' ASSOC just to print it in the message:
                     (assoc    (cons var-name var-val))) 
               (dm::prn-labeled assoc "take var as")
