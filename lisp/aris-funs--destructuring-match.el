@@ -264,12 +264,12 @@
                       (dm::prn-pp-labeled-list target)
                       
                       (let ( (match-targ-tail
-                               (let ((*dm:verbose* nil))
+                               (let ((*dm:verbose* t))
                                  (with-indentation
                                    (dm::match1 (cdr pattern) (cdr target)
                                      dont-care ellipsis unsplice alist))))
                              (match-targ-tail-tail
-                               (let ((*dm:verbose* nil))
+                               (let ((*dm:verbose* t))
                                  (with-indentation
                                    (dm::match1 (cdr pattern) (cddr target)
                                      dont-care ellipsis unsplice alist)))))
@@ -366,8 +366,8 @@
         );; End of (while target ...), if we got this far TARGET is nil!
 
       (dm::prndiv)
-      (dm::prn-labeled pattern  "final")
-      (dm::prn-labeled target "final")
+      (dm::prn-labeled pattern "final")
+      (dm::prn-labeled target  "final")
       (cond
         ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
         ;; better contain an ELLIPSIS or an UNSPLICE.
@@ -389,13 +389,13 @@
       ;; Return either the ALIST or just t:
       (or alist t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dm:match '(,x ,@ys foo) '(1 foo))
+;; (dm:match '(,x ,@ys foo) '(1 foo))
+;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
+;; (dm:match '(,x ,@ys ,@zs) '(1))
+
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ,@ys) '(1))
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
-;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
-;; (dm:match '(,x ,@ys) '(1))
-;; (dm:match '(,x ,@ys ,@zs) '(1))
 ;; (dm:match '(,x ,@ys) '(1))
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ...) '(1 2 3 4))
