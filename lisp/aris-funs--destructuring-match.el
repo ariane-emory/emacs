@@ -23,14 +23,26 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:debug-enabled* t ; (setf *dm:debug-enabled* nil)
-  ;; (setf *dm:debug-enabled* t)
+(defcustom *dm:debug* t ; (setf *dm:debug* nil)
+  ;; (setf *dm:debug* t)
   "Whether or not the debug breakpoints in 'destructuring-match' are enables."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* t ; (setf *dm:tests-enabled* nil)
-  ;; (setf *dm:tests-enabled* t)
+(defcustom *dm:test-match* t ; (setf *dm:test-fill* nil)
+  ;; (setf *dm:test-match* t)
+  "Whether or not dm:match's unit tests are enabled."
+  :group 'destructuring-match
+  :type 'boolean)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:test-fill* t ; (setf *dm:test-fill* nil)
+  ;; (setf *dm:test-fill* t)
+  "Whether or not dm:fill's unit tests are enabled."
+  :group 'destructuring-match
+  :type 'boolean)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:test-match* t ; (setf *dm:test* nil)
+  ;; (setf *dm:test-match* t)
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -315,7 +327,7 @@
 ;; (dm:match '(,y ,@zs ...) '(2)) ; malformed, elem after UNSPLICE.
 ;; (dm:match '(,y ... ,@zs) '(2)) ; malformed, elem after ELLIPSIS.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when *dm:tests-enabled*
+(when *dm:test-match*
   (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3)) returns ((x . 1) (y . 2) (z . 3)))
   (confirm that (dm:match '(x ,y ,z) '(x 2 3)) returns ((y . 2) (z . 3)))
   (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5))) returns ((y . 2) (z 3 4 5)))
@@ -420,50 +432,50 @@ This behaves very similarly to quasiquote."
           (t (push thing res)))))
     (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (when *dm:tests-enabled*
-;;   (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
-;;     returns (666 x 999 z))
-;;   (confirm that (dm:fill
-;;                   '(,w x ,y (,y , y) z ,w)
-;;                   '((y . 999) (w . (333 666))))
-;;     returns ((333 666) x 999 (999 999) z (333 666)))
-;;   (confirm that (dm:fill '(a ,b (,c ,d))
-;;                   (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-;;     returns (a 2 (3 4)))
-;;   (confirm that
-;;     (dm:fill '(a ,b (,c ,d))
-;;       (dm:match '(a ,b (,c ,d))
-;;         (dm:fill '(a ,b (,c ,d))
-;;           (dm:match '(a ,b (,c ,d))
-;;             '(a 2 (3 4))))))
-;;     returns (a 2 (3 4)))
-;;   (confirm that
-;;     (dm:match '(a ,b (,c ,d))
-;;       (dm:fill '(a ,b (,c ,d))
-;;         (dm:match '(a ,b (,c ,d))
-;;           (dm:fill '(a ,b (,c ,d))
-;;             (dm:match '(a ,b (,c ,d))
-;;               '(a 2 (3 4)))))))
-;;     returns ((b . 2) (c . 3) (d . 4)))
-;;   (confirm that
-;;     (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-;;            (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-;;       (dm:fill pattern
-;;         (dm:match pattern
-;;           (dm:fill pattern
-;;             (dm:match pattern
-;;               target)))))
-;;     returns (a 2 (3 4 (5 6 7 8))))
-;;   (confirm that
-;;     (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-;;            (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-;;       (dm:match pattern
-;;         (dm:fill pattern
-;;           (dm:match pattern
-;;             (dm:fill pattern
-;;               (dm:match pattern
-;;                 target))))))
-;;     returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8))))
+(when *dm:test-fill*
+  (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+    returns (666 x 999 z))
+  (confirm that (dm:fill
+                  '(,w x ,y (,y , y) z ,w)
+                  '((y . 999) (w . (333 666))))
+    returns ((333 666) x 999 (999 999) z (333 666)))
+  (confirm that (dm:fill '(a ,b (,c ,d))
+                  (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+    returns (a 2 (3 4)))
+  (confirm that
+    (dm:fill '(a ,b (,c ,d))
+      (dm:match '(a ,b (,c ,d))
+        (dm:fill '(a ,b (,c ,d))
+          (dm:match '(a ,b (,c ,d))
+            '(a 2 (3 4))))))
+    returns (a 2 (3 4)))
+  (confirm that
+    (dm:match '(a ,b (,c ,d))
+      (dm:fill '(a ,b (,c ,d))
+        (dm:match '(a ,b (,c ,d))
+          (dm:fill '(a ,b (,c ,d))
+            (dm:match '(a ,b (,c ,d))
+              '(a 2 (3 4)))))))
+    returns ((b . 2) (c . 3) (d . 4)))
+  (confirm that
+    (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+           (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+      (dm:fill pattern
+        (dm:match pattern
+          (dm:fill pattern
+            (dm:match pattern
+              target)))))
+    returns (a 2 (3 4 (5 6 7 8))))
+  (confirm that
+    (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+           (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+      (dm:match pattern
+        (dm:fill pattern
+          (dm:match pattern
+            (dm:fill pattern
+              (dm:match pattern
+                target))))))
+    returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
