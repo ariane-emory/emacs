@@ -136,10 +136,10 @@
       (let ((pp-str (indent-string-lines
                       (trim-trailing-whitespace
                         (pp-to-string-without-offset alist)))))
-        ;; (if (<= (count-string-lines pp-str) 1)
-        ;;   (dm::prn-labeled alist)
-        (dm::prn "ALIST:")
-        (mapc #'prn (string-lines pp-str)))))) ; )
+        (if (<= (count-string-lines pp-str) 1)
+          (dm::prn-labeled alist)
+          (dm::prn "ALIST:")
+          (mapc #'prn (string-lines pp-str)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -266,34 +266,34 @@
                       (dm::prn-pp-labeled-list pattern)
                       (dm::prn-pp-labeled-list target)
                       
-                      (let ( (match-targ
+                      (let ( (pattern-tail-matches-target
                                (let ((*dm:verbose* t))
                                  (with-indentation
                                    (dm::match1 (cdr pattern) target
                                      dont-care ellipsis unsplice alist))))
-                             (match-targ-tail
+                             (pattern-tail-matches-target-tail
                                (let ((*dm:verbose* t))
                                  (with-indentation
                                    (dm::match1 (cdr pattern) (cdr target)
                                      dont-care ellipsis unsplice alist)))))
                         (dm::prndiv ?\-)
-                        (dm::prn-labeled match-targ)
-                        (dm::prn-labeled match-targ-tail)
+                        (dm::prn-labeled pattern-tail-matches-target "" 36)
+                        (dm::prn-labeled pattern-tail-matches-target-tail "" 36)
                         (dm::prndiv ?\-)
                         (cond
-                          ((null target) ; (null (cdr target))
+                          ((null target)
                             (dm::prn "Out of TARGET, stop.")
                             (throw 'stop nil))
-                          ((and (not match-targ-tail) match-targ-tail)
-                            (dm::prn "CASE 1: Pushing %s and continuing!" (car target))
-                            (push (dm::log-pop target) collect)
-                            ;; (setf targ-head (pop targ-tail))
-                            )
-                          ((and match-targ (not match-targ-tail))
-                            (dm::prn "CASE 2: Stopping!" (car target))
-                            (dm::log-pop pattern)
-                            ;; (push (dm::log-pop target) collect)
-                            ;;(setf targ-head (pop targ-tail))
+                          ;; ((and (not pattern-tail-matches-target-tail) pattern-tail-matches-target)
+                          ;;   (dm::prn "CASE 1: Pushing %s and continuing!" (car target))
+                          ;;   (push (dm::log-pop target) collect)
+                          ;;   ;; (setf targ-head (pop targ-tail))
+                          ;;   )
+                          ((and
+                             pattern-tail-matches-target
+                             (not pattern-tail-matches-target-tail))
+                            (dm::prn "CASE 2: Stopping!")
+                            ;; (dm::log-pop pattern)
                             (dm::prn "THROWING 'stop!")
                             (throw 'stop nil))
                           (t
@@ -395,15 +395,14 @@
       (let ((reslt (or alist t)))
         (dm::prn-labeled reslt)
         reslt)
-
       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dm:match '(,x ,@ys foo) '(1 foo))
-
+(dm:match '(,x ,@ys foo) '(1 2 3 foo))
+(dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))
 
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
 ;; (dm:match '(,x ,@ys ,@zs) '(1))
-
 ;; (dm:match '(,x ,@ys) '(1 2 3 4))
 ;; (dm:match '(,x ,@ys) '(1))
 ;; (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
