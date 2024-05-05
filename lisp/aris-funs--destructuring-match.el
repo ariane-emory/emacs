@@ -255,25 +255,13 @@
             (dm::log-pop pattern)
             (dm::log-pop target))
           ;; ----------------------------------------------------------------------------------------
-          ;; Case 2: When PATTERN's head is an ELLIPSIS, nullify TARGET and PATTERN to break 
-          ;; the loop successfully:
+          ;; Case 2: When PATTERN's head is flexible, collect items:
           ;; ----------------------------------------------------------------------------------------
-          ((is-ellipsis? (car pattern))
-            (when (and *dm:enforce-final-position* (cdr pattern))
-              (error "ELLIPSIS may only be the final element in PATTERN."))
-            (dm::prn-labeled target "discarding")
-            ;; Nullify TARGET and PATTERN:
-            (setf pattern nil)
-            (setf target  nil))
-          ;; ----------------------------------------------------------------------------------------
-          ;; Case 3: When PATTERN's head is an UNSPLICE, nullify TARGET and PATTERN to break 
-          ;; the loop successfully:
-          ;; ----------------------------------------------------------------------------------------
-          ((is-unsplice? (car pattern))
+          ((is-flexible? (car pattern))
             (if (and *dm:enforce-final-position* (cdr pattern))
-              (error "UNSPLICE may only be the final element in PATTERN.")
+              (error "Flexible elements must be the final element in PATTERN.")
               ;;(dm::prndiv)
-              (dm::prn "UNSPLICING...")
+              (dm::prn "Collecting...")
               (with-indentation
                 (let (collect)
                   (catch 'stop
@@ -319,7 +307,9 @@
 		                  ) ;; END OF `while'.
                     ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
-                  (dm::log-setf-alist-putunique! (var-name (car pattern)) (nreverse collect) alist)
+                  (when (is-unsplice? (car pattern))
+                    (dm::log-setf-alist-putunique!
+                      (var-name (car pattern)) (nreverse collect) alist))
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
                   (dm::prn-labeled target  "unspliced")
@@ -330,7 +320,7 @@
                 ) ; end of `with-indentation'.
               ))
           ;; ----------------------------------------------------------------------------------------
-          ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
+          ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
           ((is-variable? (car pattern))
             (let* ( (var-name (var-name (car pattern)))
@@ -342,7 +332,7 @@
               (pop  pattern)
               (pop  target)))
           ;; ----------------------------------------------------------------------------------------
-          ;; Case 5: When PATTERN's head is a list, recurse and accumulate the result into 
+          ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
           ;; ALIST, unless the result was just t because the sub-pattern being recursed over
           ;; contained no variables:
           ;; ----------------------------------------------------------------------------------------
@@ -362,7 +352,7 @@
               (pop pattern)
               (pop target)))
           ;; ----------------------------------------------------------------------------------------
-          ;; Case 6: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the heads off:
+          ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the heads off:
           ;; ----------------------------------------------------------------------------------------
           ((equal (car pattern) (car target))
             (dm::prn "Equal literals, discarding %s." (car target))
