@@ -196,7 +196,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::log-alist-putunique (key val alist no-match)
   `(prog1
-     (log-alist-putunique ,key ,val ,alist ,no-match)
+     (alist-putunique ,key ,val ,alist ,no-match)
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -341,7 +341,7 @@
                     ;; `let' ASSOC just to print it in the message:
                     (assoc    (cons var-name var-val))) 
               (dm::prn-labeled assoc "take var as")
-              (setf alist (alist-putunique var-name var-val alist 'no-match))
+              (setf alist (dm::log-alist-putunique var-name var-val alist 'no-match))
               (pop  pattern)
               (pop  target)))
           ;; ----------------------------------------------------------------------------------------
@@ -396,9 +396,9 @@
         ;; need to set the var in ALIST to nil:
         ((and unsplice (equal (car-safe (car pattern)) unsplice))
           (when (and *dm:enforce-final-position* (cdr pattern))
-            (error "UNSPLICE may only be the final element in PATTERN (case #2)\."))
+            (error "UNSPLICE may only be the final element in PATTERN (case #2)."))
           (let ((var (cadar pattern)))
-            (setf alist (alist-putunique var nil alist 'no-match))))
+            (setf alist (dm::log-alist-putunique var nil alist 'no-match))))
         ;; It was something else, no match;
         (t (NO-MATCH! "expected %s but target is empty" pattern))) 
       (dm::prn-labeled alist "final")
