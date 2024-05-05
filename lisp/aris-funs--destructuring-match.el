@@ -124,14 +124,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::prn-pp-labeled-list(label lst)
+(defmacro dm::prn-pp-labeled-list(lst &optional extra)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let* ( ;; (,label ,lst)
-           (,label (if (cdr ,lst) 
-                     (format "%-7s . %s" (car ,lst) (cdr ,lst))
-                     (format "%s" (car ,lst)))))
-     (dm::prn-labeled ,label)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  `(let* ((,lst (if (cdr ,lst) 
+                  (format "%-7s . %s" (car ,lst) (cdr ,lst))
+                  (format "%s" (car ,lst)))))
+     (dm::prn-labeled ,lst ,extra)))
+;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -181,8 +180,8 @@
         (dm::prn-pp-alist alist)
         (dm::prndiv ?\-)
         (when *dm:verbose*
-          (dm::prn-pp-labeled-list pattern pattern)
-          (dm::prn-pp-labeled-list target target))
+          (dm::prn-pp-labeled-list pattern)
+          (dm::prn-pp-labeled-list target))
         (dm::prndiv ?\-)
         (cond
           ;; ----------------------------------------------------------------------------------------
