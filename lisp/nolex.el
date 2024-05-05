@@ -1081,3 +1081,4 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(get-response '(hello))
