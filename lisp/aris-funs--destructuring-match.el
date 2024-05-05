@@ -234,9 +234,14 @@
                        (when (and *dm:warn-on-consecutive-flexible-elements*
                                last-pattern-elem-was-flexible)
                          (setf warned t)
-                         (warn (concat "Using consecutive flexible elements generally does not make "
-                                 "sense, pattern was: %s")
-                           pattern)))))
+                         (let ((warn-msg (format
+                                           (concat "WARNING: %d Using consecutive flexible elements "
+                                             "generally does not make sense, pattern was: %s")
+                                           n pattern)))
+                           (let ((*dm:verbose* t))
+                             (dm::prn warn-msg))
+                           (warn warn-msg)
+                           )))))
         ;;-------------------------------------------------------------------------------------------
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
@@ -382,6 +387,8 @@
         ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
         ;; better only contain ELLIPSISes and UNSPLICEs. Run out the remainder of pattern:
         ;; ------------------------------------------------------------------------------------------
+        (when pattern
+          (dm::prn "RUNOUT: %s %s" last-pattern-elem-was-flexible pattern))
         (dolist (pat-elem pattern)
           (unless (is-flexible? pat-elem)
             (NO-MATCH! "expected %s but target is empty" pattern))
@@ -578,3 +585,4 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+  (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
