@@ -205,7 +205,8 @@
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
     ;;-----------------------------------------------------------------------------------------------
-    (let ((initial-pattern pattern))
+    (let ( (initial-pattern pattern)
+           (last-pattern-elem-was-flexible nil))
       (cl-labels ( (NO-MATCH! (fmt &rest args)
                      (let ((str (apply #'format fmt args)))
                        (dm::prn "No match because %s!" str)
@@ -232,7 +233,7 @@
                              "sense, pattern was: %s")
                        initial-pattern)))
         (let ( ;; (initial-pattern pattern)
-               (last-pattern-elem-was-flexible nil))
+               )
           ;;-------------------------------------------------------------------------------------------
           (while target
             (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
