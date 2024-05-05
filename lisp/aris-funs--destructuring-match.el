@@ -196,7 +196,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::log-alist-putunique (key val alist no-match)
   `(prog1
-     (dm::log-alist-putunique ,key ,val ,alist ,no-match)
+     (log-alist-putunique ,key ,val ,alist ,no-match)
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -307,7 +307,7 @@
                   (when *dm:debug* (debug 'before-set-unspliced))
 
                   (setf alist
-                    (alist-putunique (cadar pattern)
+                    (dm::log-alist-putunique (cadar pattern)
                       (nreverse collect) alist 'no-match))
 
                   (dm::prn-labeled collect "unspliced")
