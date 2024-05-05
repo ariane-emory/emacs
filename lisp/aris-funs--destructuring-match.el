@@ -23,7 +23,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:debug* t ; (setf *dm:debug* nil)
+(defcustom *dm:debug* nil ; (setf *dm:debug* nil)
   ;; (setf *dm:debug* t)
   "Whether or not the debug breakpoints in 'destructuring-match' are enables."
   :group 'destructuring-match
