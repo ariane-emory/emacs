@@ -271,27 +271,27 @@
                                  (while (eq unsplice (car-safe (car lst)))
                                    (dm::log-pop lst))
                                  res))
-                              (pattern-tail-matches-target
+                              (fake-pattern-tail-matches-target
                                 (let ((*dm:verbose* t))
                                   (with-indentation
-                                    (dm::match1 (cdr pattern) target
+                                    (dm::match1 fake-pattern-tail target
                                       dont-care ellipsis unsplice nil))))
-                              (pattern-tail-matches-target-tail
+                              (fake-pattern-tail-matches-target-tail
                                 (let ((*dm:verbose* t))
                                   (with-indentation
-                                    (dm::match1 (cdr pattern) (cdr target)
+                                    (dm::match1 fake-pattern-tail (cdr target)
                                       dont-care ellipsis unsplice nil)))))
                         (dm::prndiv ?\-)
-                        (dm::prn-labeled pattern-tail-matches-target "" 36)
-                        (dm::prn-labeled pattern-tail-matches-target-tail "" 36)
+                        (dm::prn-labeled fake-pattern-tail-matches-target "" 36)
+                        (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 36)
                         (dm::prndiv ?\-)
                         (cond
                           ((null target)
                             (dm::prn "Out of TARGET, stop.")
                             (throw 'stop nil))
                           ((and
-                             pattern-tail-matches-target
-                             (not pattern-tail-matches-target-tail))
+                             fake-pattern-tail-matches-target
+                             (not fake-pattern-tail-matches-target-tail))
                             (dm::prn "CASE 1: Stopping!")
                             ;; (dm::log-pop pattern)
                             (dm::prn "THROWING 'stop!")
