@@ -8,9 +8,6 @@
 (require 'aris-funs--unsorted)
 (require 'aris-funs--when-let-alist) ; Only used by some tests.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO:
-;; - lookahead.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -227,9 +224,8 @@
                        res))
                    (warn-when-consecutive-flexible-elements-in-pattern ()
                      ;; Due to `dm::match1's recursive calls to perform lookahead and match 
-                     ;; sub-patterns, a call to `dm:match' may trigger this warning may be triggered
-                     ;; more than once: preventing this wasn't worth the bother, just fix your 
-                     ;; crappy PATTERN!
+                     ;; sub-patterns, a call to `dm:match' may trigger this warning more than once:
+                     ;; preventing this wasn't worth the bother, just fix your crappy PATTERN!
                      (when (and *dm:warn-on-consecutive-flexible-elements*
                              last-pattern-elem-was-flexible)
                        (let ((warn-msg (format
@@ -239,8 +235,7 @@
                          (let ( (*dm:verbose* t)
                                 (*wm:indent* 0))
                            (dm::prn warn-msg))
-                         (warn warn-msg)
-                         ))))
+                         (warn warn-msg)))))
         ;;-------------------------------------------------------------------------------------------
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
@@ -383,11 +378,11 @@
         (dm::prn-labeled pattern "final")
         (dm::prn-labeled target  "final")
         ;; ------------------------------------------------------------------------------------------
-        ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
-        ;; better only contain ELLIPSISes and UNSPLICEs. Run out the remainder of pattern:
+        ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only contain
+        ;; ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
         ;; ------------------------------------------------------------------------------------------
         (when pattern
-          (dm::prn "RUNOUT REMAINING PATTERN: %s" pattern))
+          (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern))
         (dolist (pat-elem pattern)
           (dm::prn "Running out elem: %s" pat-elem)
           (unless (is-flexible? pat-elem)
@@ -585,3 +580,4 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(confirm that (= 5 (* 2 2)) returns t)
