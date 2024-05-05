@@ -494,11 +494,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:fill (pattern alist &optional (splice '\,@))
+(cl-defun dm:fill (pattern alist
+                    &optional (splice *dm:default-unsplice*) (dont-care *dm:default-dont-care*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Fill in the variables in PATTERN with the values from ALIST.
 
-This behaves very similarly to quasiquote."
+This behaves very similarly to quasiquote."  
   (dm::prndiv)
   (dm::prn "FILL:")
   (let (res)
@@ -564,7 +565,7 @@ This behaves very similarly to quasiquote."
                 target)))))
       returns (a 2 (3 4 (5 6 7 8))))
     (confirm that
-      (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+      (let ( (pattern '(a ,b (,c ,d (,e ,@fs    ))))
              (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
         (dm:match pattern
           (dm:fill pattern
@@ -580,4 +581,4 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(confirm that (= 5 (* 2 2)) returns t)
+
