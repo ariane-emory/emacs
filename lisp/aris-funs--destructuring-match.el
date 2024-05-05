@@ -22,7 +22,12 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:tests-enabled* t
+(defcustom *dm:debug-enabled* t ; (setf *dm:debug-enabled* nil)
+  "Whether or not the debug breakpoints in 'destructuring-match' are enables."
+  :group 'destructuring-match
+  :type 'boolean)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:tests-enabled* t ; (setf *dm:tests-enabled* nil)
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
