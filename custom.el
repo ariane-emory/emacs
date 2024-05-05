@@ -5,7 +5,7 @@
   ;; If there is more than one, they won't work right.
   '(*dm:enforce-final-position* nil)
   '(*dm:test-fill* nil)
-  '(*dm:test-match* nil)
+  '(*dm:test-match* t)
   '(*pattern-dispatch--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)

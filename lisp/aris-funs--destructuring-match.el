@@ -371,23 +371,19 @@
       (dm::prndiv)
       (dm::prn-labeled pattern "final")
       (dm::prn-labeled target  "final")
-      (cond
-        ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
-        ;; better contain an ELLIPSIS or an UNSPLICE.
-        ((null pattern)) ;; Don't need to do anything.
-        ((and ellipsis (equal (car pattern) ellipsis))
-          ;; Don't need to do anything other than check for well formedness:
-          (when (and *dm:enforce-final-position* (cdr pattern))
-            (error "ELLIPSIS may only be the final element in PATTERN (case #2)."))) 
-        ;; If PATTERN's head is an UNSPLICE, since there's no TARGET left we just 
-        ;; need to set the var in ALIST to nil:
-        ((and unsplice (equal (car-safe (car pattern)) unsplice))
-          (when (and *dm:enforce-final-position* (cdr pattern))
-            (error "UNSPLICE may only be the final element in PATTERN (case #2)."))
-          (let ((var (cadar pattern)))
-            (dm::log-setf-alist-putunique! var nil alist)))
-        ;; It was something else, no match;
-        (t (NO-MATCH! "expected %s but target is empty" pattern))) 
+
+      ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had 
+      ;; better only contain ELLIPSISes and UNSPLICEs:
+      (while pattern         
+        (cond
+          ((is-flexible? (car pattern))
+            (when (and *dm:enforce-final-position* (cdr pattern))
+              (error "Flexible elements may only be the final element in PATTERN."))
+            (when (is-unsplice? (car pattern))
+              (dm::log-setf-alist-putunique! (var-name (car pattern)) nil alist))
+            (dm::log-pop pattern))
+          (t (NO-MATCH! "expected %s but target is empty" pattern))))
+      
       (dm::prn-labeled alist "final")
       ;; Return either the ALIST or just t:
       (let ((reslt (or alist t)))
