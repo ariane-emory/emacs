@@ -252,7 +252,7 @@
           ;; Case 2: When PATTERN's head is flexible, collect items:
           ;; ----------------------------------------------------------------------------------------
           ((is-flexible? (car pattern))
-            (dm::prn "Collecting...")
+            (dm::prn "Collecting flexible element...")
             (with-indentation
               (let (collect)
                 (catch 'stop
@@ -305,7 +305,7 @@
                 (when *dm:debug* (debug 'after-set-unspliced))
                 ) ; end of `let' COLLECT.
               ) ; end of `with-indentation'.
-            )
+            ) ; end of `is-flexible?'s case.
           ;; ----------------------------------------------------------------------------------------
           ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
           ;; ----------------------------------------------------------------------------------------
