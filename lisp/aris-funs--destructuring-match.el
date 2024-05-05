@@ -166,10 +166,7 @@
      (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match))
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setf alist nil)
-;; (dm::log-setf-alist-putunique! 'a 123 alist)
-;; (prog1 (setf alist (alist-putunique 'a 123 alist 'no-match))
-;;   (dm::prn "Set %s to %s in %s: %s." 'a 123 'alist alist))
+(confirm that (let (al) (dm::log-setf-alist-putunique! 'a 123 al)) returns ((a . 123)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -180,7 +177,7 @@
                      (ellipsis  *dm:default-ellipsis*)
                      (unsplice  *dm:default-unsplice*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A simple pattern matching/destructuring fun."
+  "My pattern matching/destructuring fun."
   (unless (and (listp pattern)
             (listp target)
             (symbolp dont-care)
