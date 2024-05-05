@@ -18,21 +18,24 @@
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:verbose* t ; (setf *dm:verbose* nil)
+  ;; (setf *dm:verbose* t)
   "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:debug-enabled* t ; (setf *dm:debug-enabled* nil)
+  ;; (setf *dm:debug-enabled* t)
   "Whether or not the debug breakpoints in 'destructuring-match' are enables."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:tests-enabled* t ; (setf *dm:tests-enabled* nil)
+  ;; (setf *dm:tests-enabled* t)
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:label-width* 21
+(defcustom *dm:label-width* 23
   "Label width used by functions in the 'destructuring-match' group."
   :group 'destructuring-match
   :type 'integer)
