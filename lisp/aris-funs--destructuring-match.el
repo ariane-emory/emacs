@@ -266,16 +266,21 @@
                       (dm::prn-pp-labeled-list pattern)
                       (dm::prn-pp-labeled-list target)
                       
-                      (let ( (pattern-tail-matches-target
-                               (let ((*dm:verbose* t))
-                                 (with-indentation
-                                   (dm::match1 (cdr pattern) target
-                                     dont-care ellipsis unsplice nil))))
-                             (pattern-tail-matches-target-tail
-                               (let ((*dm:verbose* t))
-                                 (with-indentation
-                                   (dm::match1 (cdr pattern) (cdr target)
-                                     dont-care ellipsis unsplice nil)))))
+                      (let* ((fake-pattern-tail
+                               (let ((res (cdr pattern)))
+                                 (while (eq unsplice (car-safe (car lst)))
+                                   (dm::log-pop lst))
+                                 res))
+                              (pattern-tail-matches-target
+                                (let ((*dm:verbose* t))
+                                  (with-indentation
+                                    (dm::match1 (cdr pattern) target
+                                      dont-care ellipsis unsplice nil))))
+                              (pattern-tail-matches-target-tail
+                                (let ((*dm:verbose* t))
+                                  (with-indentation
+                                    (dm::match1 (cdr pattern) (cdr target)
+                                      dont-care ellipsis unsplice nil)))))
                         (dm::prndiv ?\-)
                         (dm::prn-labeled pattern-tail-matches-target "" 36)
                         (dm::prn-labeled pattern-tail-matches-target-tail "" 36)
@@ -569,4 +574,10 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (setq lst '(,@foos ,@bars baz ,@quuxes))
+
+;; (while (eq '\,@ (car-safe (car lst)))
+;;   (dm::log-pop lst))
+
 
