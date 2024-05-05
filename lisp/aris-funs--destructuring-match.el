@@ -14,7 +14,7 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:verbose* nil
+(defcustom *dm:verbose* t
   "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
   :type 'boolean)
@@ -190,6 +190,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+(defmacro is-unsplice? (pat-elem)
+  `(and unsplice (eq unsplice (car-safe ,pat-elem))))
+
+(defmacro is-dont-care? (pat-elem)
+  `(and dont-care (eq dont-care ,pat-elem)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -209,10 +216,10 @@
                      (cadr pat-elem))
                    (is-variable? (pat-elem)
                      (eq '\, (car-safe pat-elem)))
-                   (is-unsplice? (pat-elem)
-                     (and unsplice (eq unsplice (car-safe pat-elem))))
-                   (is-dont-care? (pat-elem)
-                     (and dont-care (eq dont-care pat-elem)))
+                   ;; (is-unsplice? (pat-elem)
+                   ;;   (and unsplice (eq unsplice (car-safe pat-elem))))
+                   ;; (is-dont-care? (pat-elem)
+                   ;;   (and dont-care (eq dont-care pat-elem)))
                    (is-ellipsis? (pat-elem)
                      (and ellipsis (eq ellipsis pat-elem)))
                    (is-flexible? (pat-elem)
@@ -491,6 +498,8 @@
     (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
       returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
