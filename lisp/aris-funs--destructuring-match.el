@@ -144,7 +144,8 @@
   "Pretty print LST-NAME with a label."
   `(let* ((,lst-name (if (cdr ,lst-name) 
                        (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
-                       (format "%s"        (car ,lst-name))))))
+                       (format "%s"        (car ,lst-name)))))
+     (dm::prn-labeled ,lst-name ,extra))
   ;; `(let* ((,lst-name (format "%s"        ,lst-name)))
   ;;    (dm::prn-labeled ,lst-name ,extra))
   )
@@ -232,9 +233,12 @@
         (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
         (dm::prndiv)
         (dm::prn-pp-alist alist)
-        (dm::prndiv ?\-)
         (dm::prn-pp-labeled-list pattern)
         (dm::prn-pp-labeled-list target)
+        (let* ((target (if (cdr target)
+                         (format "%-7s . %s" (car target) (cdr target))
+                         (format "%s" (car target))))))
+
         (dm::prndiv ?\-)
         (cond
           ;; ----------------------------------------------------------------------------------------
