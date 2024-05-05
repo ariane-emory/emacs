@@ -188,7 +188,8 @@
   (dm::prndiv)
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (result (with-indentation (dm::match1 pattern target dont-care ellipsis unsplice nil)))
+  (let* ( (result (with-indentation
+                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
@@ -197,7 +198,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (pattern target dont-care ellipsis unsplice alist)
+(defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist warned)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   ;;-------------------------------------------------------------------------------------------------
@@ -205,8 +206,7 @@
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
     ;;-----------------------------------------------------------------------------------------------
-    (let ( (initial-pattern pattern)
-           (last-pattern-elem-was-flexible nil))
+    (let ( (last-pattern-elem-was-flexible nil))
       ;;---------------------------------------------------------------------------------------------
       (cl-labels ( (NO-MATCH! (fmt &rest args)
                      (let ((str (apply #'format fmt args)))
@@ -229,12 +229,14 @@
                        (while (is-flexible? (car res))
                          (dm::log-pop res))
                        res))
-                   (warn-when-consecutive-flexible-elements-in-pattern ()
-                     (when (and *dm:warn-on-consecutive-flexible-elements*
-                             last-pattern-elem-was-flexible)
-                       (warn (concat "Using consecutive flexible elements generally does not make "
-                               "sense, pattern was: %s")
-                         initial-pattern))))
+                   (warn-when-consecutive-flexible-elements-in-pattern (n)
+                     (unless warned
+                       (when (and *dm:warn-on-consecutive-flexible-elements*
+                               last-pattern-elem-was-flexible)
+                         (setf warned t)
+                         (warn (concat "Using consecutive flexible elements generally does not make "
+                                 "sense, pattern was: %s")
+                           pattern)))))
         ;;-------------------------------------------------------------------------------------------
         (while target
           (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
@@ -260,7 +262,7 @@
             ;; Case 2: When PATTERN's head is flexible, collect items:
             ;; --------------------------------------------------------------------------------------
             ((is-flexible? (car pattern))
-              (warn-when-consecutive-flexible-elements-in-pattern)
+              (warn-when-consecutive-flexible-elements-in-pattern 1)
               (setf last-pattern-elem-was-flexible t)
               (dm::prn "Collecting flexible element...")
               (with-indentation
@@ -275,13 +277,13 @@
                               (fake-pattern-tail-matches-target
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
-                                    (dm::match1 fake-pattern-tail target
-                                      dont-care ellipsis unsplice nil))))
+                                    (dm::match1 initial-pattern fake-pattern-tail target
+                                      dont-care ellipsis unsplice nil warned))))
                               (fake-pattern-tail-matches-target-tail
                                 (let ((*dm:verbose* nil))
                                   (with-indentation
-                                    (dm::match1 fake-pattern-tail (cdr target)
-                                      dont-care ellipsis unsplice nil)))))
+                                    (dm::match1 initial-pattern fake-pattern-tail (cdr target)
+                                      dont-care ellipsis unsplice nil warned)))))
                         (dm::prndiv ?\-)
                         (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
                         (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
@@ -342,8 +344,10 @@
                 (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                   sub-pattern sub-target)
                 ;; (dm::prndiv)
-                (let ((res (with-indentation
-                             (dm::match1 sub-pattern sub-target dont-care ellipsis unsplice alist))))
+                (let ((res
+                        (with-indentation
+                          (dm::match1 initial-pattern sub-pattern sub-target
+                            dont-care ellipsis unsplice alist warned))))
                   (cond
                     ((eq res t)) ; do nothing.
                     ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
@@ -381,7 +385,7 @@
         (dolist (pat-elem pattern)
           (unless (is-flexible? pat-elem)
             (NO-MATCH! "expected %s but target is empty" pattern))
-          (warn-when-consecutive-flexible-elements-in-pattern)
+          (warn-when-consecutive-flexible-elements-in-pattern 2) 
           (setf last-pattern-elem-was-flexible t)
           (when (is-unsplice? pat-elem)
             (dm::log-setf-alist-putunique! (var-name pat-elem) nil alist)))
@@ -464,10 +468,11 @@
     ;; Greediness test cases:
     (confirm that (dm:match '(,x ,@ys foo) '(1 foo))               returns ((x . 1) (ys)))
     (confirm that (dm:match '(,x ,@ys foo) '(1 2 3 foo))           returns ((x . 1) (ys 2 3)))
-    (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))      returns ((x . 1) (ys 2 3) (zs)))
-    (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))     returns ((w . 1) (xs) (ys) (zs)))
-    (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))     returns ((w . 1) (xs) (ys) (zs)))
-    (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                  returns ((x . 1) (ys) (zs)))
+    (let (*dm:warn-on-consecutive-flexible-elements*)
+      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs))) 
+      (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))  
+      (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+      (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs)))) 
     (confirm that (dm:match '(,x ,@ys) '(1 2 3 4))                 returns ((x . 1) (ys 2 3 4)))
     (confirm that (dm:match '(,x ,@ys) '(1))                       returns ((x . 1) (ys)))
     (confirm that (dm:match '(,x ,@ys) '(1))                       returns ((x . 1) (ys)))
