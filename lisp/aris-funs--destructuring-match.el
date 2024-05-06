@@ -424,7 +424,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-a-variable? (car pattern))
                   (setf last-pattern-elem-was-flexible nil)
-                  (let* ( (var-sym (dm::pat-elem-var-sym (car pattern)))
+                  (let* ( (var-sym   (dm::pat-elem-var-sym   (car pattern)))
                           (var-preds (dm::pat-elem-var-preds (car pattern)))
                           (var-val  (car target))
                           ;; `let' ASSOC just to print it in the message:
@@ -437,7 +437,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                     (throw 'pred-failed nil)))
                                 t))))
                     (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
-                    (dm::log-setf-alist-putunique! var-sym var-val alist alist)
+                    (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)
+                      (dm::log-setf-alist-putunique! var-sym var-val alist alist))
                     (dm::prn-labeled assoc "take var as")
                     (dm::log-pop* pattern target)))
                 ;; ----------------------------------------------------------------------------------
@@ -592,8 +593,18 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(foo ,(bar integer?) ,(bar odd?)          quux) '(foo 4 4 quux))
       returns nil)
     ;;-----------------------------------------------------------------------------------------------
-    (confirm that (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 3   quux))
+    (confirm that (dm:match '(... ,(bar integer? odd? (lambda (n) (> n 4))) ...) '(foo 3   quux))
       returns nil)
+    (confirm that (dm:match '(... ,(bar integer? odd? (lambda (n) (> n 4))) ...) '(1 2 3 4))
+      returns nil)
+    (confirm that (dm:match '(... ,(bar integer? odd? (lambda (n) (> n 4))) ...) '(1 2 3 5))
+      returns ((bar . 5)))
+    (confirm that (dm:match '(... ,(bar integer? odd? (lambda (n) (> n 4))) ...) '(1 2 3 5 6 7))
+      returns ((bar . 5)))
+    (confirm that (dm:match '(... ,(_ integer? odd? (lambda (n) (> n 4))) ...) '(5 6 7 8 9 10))
+      returns t)
+    (confirm that (dm:match '(... ,(m integer? odd? (lambda (n) (> n 4))) ...) '(5 6 7 8 9 10))
+      returns ((m . 5)))
     ;;-----------------------------------------------------------------------------------------------
     ;; Greediness test cases:
     (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
@@ -672,121 +683,121 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-defun dm:fill (pattern alist
-                      &optional
-                      (unsplice *dm:default-unsplice*)
-                      (ellipsis  *dm:default-ellipsis*)
-                      (dont-care *dm:default-dont-care*))
+(cl-defun dm:fill (pattern alist
+                    &optional
+                    (unsplice *dm:default-unsplice*)
+                    (ellipsis  *dm:default-ellipsis*)
+                    (dont-care *dm:default-dont-care*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Fill in the variables in PATTERN with the values from ALIST.
+  "Fill in the variables in PATTERN with the values from ALIST.
 
 This behaves very similarly to quasiquote."  
-    (dm::prndiv)
-    (dm::prn "FILL:")
-    (let (res)
-      (while pattern
-        (let ((thing (dm::log-pop* pattern)))
-          (dm::prndiv)
-          (dm::prn "thing:   %s" thing)
-          (dm::prn "alist:   %s" alist)
-          (cond
-            ((dm::pat-elem-is-the-symbol? dont-care thing)
-              (push (when alist (cdr-safe (pick alist))) res))
-            ((dm::pat-elem-is-the-symbol? ellipsis thing)
-              (let (random-var-values)
-                (while (= 0 (% (random) 2))
-                  (push (when alist (cdr-safe (pick alist))) random-var-values))
-                (dolist (elem random-var-values)
-                  (push elem res))))
-            ((dm::pat-elem-is-a-variable? thing)
-              (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
-                (push (cdr assoc) res)
-                (error "var %s not found." (dm::pat-elem-var-sym thing))))
-            ((dm::pat-elem-is-an-unsplice? thing)
-              (let ((var (dm::pat-elem-var-sym thing)))
-                (dm::prn "VAR:     %s" var)
-                (if-let ((assoc (assoc (cadr thing) alist)))
-                  (let ((val (cdr assoc)))
-                    (dm::prn "VAL:     %s" val)
-                    (unless (proper-list-p val)
-                      (error "var %s's value %s cannot be spliced, not a list."))
-                    (dolist (elem val)
-                      (push elem res)))
-                  (error "var %s not found." (cadr thing)))))
-            ((proper-list-p thing)
-              (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
-            (t (push thing res)))))
-      (nreverse res)))
+  (dm::prndiv)
+  (dm::prn "FILL:")
+  (let (res)
+    (while pattern
+      (let ((thing (dm::log-pop* pattern)))
+        (dm::prndiv)
+        (dm::prn "thing:   %s" thing)
+        (dm::prn "alist:   %s" alist)
+        (cond
+          ((dm::pat-elem-is-the-symbol? dont-care thing)
+            (push (when alist (cdr-safe (pick alist))) res))
+          ((dm::pat-elem-is-the-symbol? ellipsis thing)
+            (let (random-var-values)
+              (while (= 0 (% (random) 2))
+                (push (when alist (cdr-safe (pick alist))) random-var-values))
+              (dolist (elem random-var-values)
+                (push elem res))))
+          ((dm::pat-elem-is-a-variable? thing)
+            (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
+              (push (cdr assoc) res)
+              (error "var %s not found." (dm::pat-elem-var-sym thing))))
+          ((dm::pat-elem-is-an-unsplice? thing)
+            (let ((var (dm::pat-elem-var-sym thing)))
+              (dm::prn "VAR:     %s" var)
+              (if-let ((assoc (assoc (cadr thing) alist)))
+                (let ((val (cdr assoc)))
+                  (dm::prn "VAL:     %s" val)
+                  (unless (proper-list-p val)
+                    (error "var %s's value %s cannot be spliced, not a list."))
+                  (dolist (elem val)
+                    (push elem res)))
+                (error "var %s not found." (cadr thing)))))
+          ((proper-list-p thing)
+            (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
+          (t (push thing res)))))
+    (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (when *dm:test-fill*
-    (let (*dm:verbose*)
-      (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 888 777)))
-        returns (666 x 999 888 777 z))
-      (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
-        returns (666 x 999 z))
-      (confirm that (dm:fill
-                      '(,w x ,y (,y , y) z ,w)
-                      '((y . 999) (w . (333 666))))
-        returns ((333 666) x 999 (999 999) z (333 666)))
-      (confirm that (dm:fill '(a ,b (,c ,d))
-                      (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-        returns (a 2 (3 4)))
-      (confirm that
+(when *dm:test-fill*
+  (let (*dm:verbose*)
+    (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 888 777)))
+      returns (666 x 999 888 777 z))
+    (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+      returns (666 x 999 z))
+    (confirm that (dm:fill
+                    '(,w x ,y (,y , y) z ,w)
+                    '((y . 999) (w . (333 666))))
+      returns ((333 666) x 999 (999 999) z (333 666)))
+    (confirm that (dm:fill '(a ,b (,c ,d))
+                    (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+      returns (a 2 (3 4)))
+    (confirm that
+      (dm:fill '(a ,b (,c ,d))
+        (dm:match '(a ,b (,c ,d))
+          (dm:fill '(a ,b (,c ,d))
+            (dm:match '(a ,b (,c ,d))
+              '(a 2 (3 4))))))
+      returns (a 2 (3 4)))
+    (confirm that
+      (dm:match '(a ,b (,c ,d))
         (dm:fill '(a ,b (,c ,d))
           (dm:match '(a ,b (,c ,d))
             (dm:fill '(a ,b (,c ,d))
               (dm:match '(a ,b (,c ,d))
-                '(a 2 (3 4))))))
-        returns (a 2 (3 4)))
-      (confirm that
-        (dm:match '(a ,b (,c ,d))
-          (dm:fill '(a ,b (,c ,d))
-            (dm:match '(a ,b (,c ,d))
-              (dm:fill '(a ,b (,c ,d))
-                (dm:match '(a ,b (,c ,d))
-                  '(a 2 (3 4)))))))
-        returns ((b . 2) (c . 3) (d . 4)))
-      (confirm that
-        (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-               (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+                '(a 2 (3 4)))))))
+      returns ((b . 2) (c . 3) (d . 4)))
+    (confirm that
+      (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+             (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+        (dm:fill pattern
+          (dm:match pattern
+            (dm:fill pattern
+              (dm:match pattern
+                target)))))
+      returns (a 2 (3 4 (5 6 7 8))))
+    (confirm that
+      (let ( (pattern '(a ,b (,c ,d (,e ,@fs    ))))
+             (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+        (dm:match pattern
           (dm:fill pattern
             (dm:match pattern
               (dm:fill pattern
                 (dm:match pattern
-                  target)))))
-        returns (a 2 (3 4 (5 6 7 8))))
-      (confirm that
-        (let ( (pattern '(a ,b (,c ,d (,e ,@fs    ))))
-               (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-          (dm:match pattern
-            (dm:fill pattern
-              (dm:match pattern
-                (dm:fill pattern
-                  (dm:match pattern
-                    target))))))
-        returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))
-      (confirm that
-        (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
-          (dm:match '(,form ,name (,arg) ,@body)
-            '(defun foo (bar) (prn "foo") :FOO (car bar))))
-        returns (defmacro foo (bar)
-                  `(progn
-                     (prn "foo")
-                     :FOO
-                     (car bar))))))
+                  target))))))
+      returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))
+    (confirm that
+      (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
+        (dm:match '(,form ,name (,arg) ,@body)
+          '(defun foo (bar) (prn "foo") :FOO (car bar))))
+      returns (defmacro foo (bar)
+                `(progn
+                   (prn "foo")
+                   :FOO
+                   (car bar))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (provide 'aris-funs--destructuring-match)
+(provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
+;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
 
-  ;; (defun dm::pat-elem-var-sym2 (pat-elem)
-  ;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
-  ;;     (if (atom 2nd)
-  ;;       2nd
-  ;;       (car 2nd))))
+;; (defun dm::pat-elem-var-sym2 (pat-elem)
+;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
+;;     (if (atom 2nd)
+;;       2nd
+;;       (car 2nd))))
 
 
