@@ -320,8 +320,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                         (dm::log-pop* remaining-non-flexible))
                       ;; If there are no more non-flexible elements in PATTERN we can return early:
                       (unless remaining-non-flexible
-                        ;; We already know that (car pattern) is flexible, so, it has a var-sym then
-                        ;; it must be an UNSPLICE.
+                        ;; We know that (car pattern) is flexible, so if it has a var-sym then it
+                        ;; must be an UNSPLICE.
                         (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
                           (dm::log-setf-alist-putunique! var-sym target alist alist))
                         (when pattern
@@ -329,7 +329,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dolist (pat-elem pattern)
                             (dm::prn "Running out elem: %s" pat-elem)
                             (warn-when-consecutive-flexible-elements-in-pattern)
-                            ;; We know it's flexible, so, if it has a var-sym it must be an UNSPLICE.
+                            ;; We know it's flexible, so if it has a var-sym it must be an UNSPLICE.
                             (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
                               (dm::log-setf-alist-putunique! var-sym nil alist alist))))
                         (dm::prn-labeled alist "early return")
@@ -370,7 +370,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                           (cons (dm::pat-elem-var-sym (car pattern))
                                             (nreverse collect))))
                                       alist))
-                                  (dm::prn "CASE 1: Stopping with munged %s!" alist)                                    
+                                  (dm::prn "CASE 1: Stopping with munged %s!" alist)
                                   (throw 'match alist))
                                 (t
                                   (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
