@@ -182,7 +182,7 @@
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
   (let* ( (result (with-indentation
-                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil)))
+                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
@@ -227,7 +227,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist)
+(defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist reference-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   ;;-------------------------------------------------------------------------------------------------
@@ -235,10 +235,10 @@
     (dm::prn-labeled pattern "initial")
     (dm::prn-labeled target  "initial")
     ;;-----------------------------------------------------------------------------------------------
-    (cl-macrolet ((recurse (pattern target)
+    (cl-macrolet ((recurse (pattern target &optional reference-alist)
                     `(with-indentation
                        (dm::match1 initial-pattern ,pattern ,target
-                         dont-care ellipsis unsplice alist))))
+                         dont-care ellipsis unsplice alist reference-alist))))
       ;;---------------------------------------------------------------------------------------------
       (let (last-pattern-elem-was-flexible)
         ;;-------------------------------------------------------------------------------------------
@@ -628,22 +628,22 @@ This behaves very similarly to quasiquote."
               (dm:fill pattern
                 (dm:match pattern
                   target))))))
-      returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))))
-(confirm that
-  (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
-    (dm:match '(,form ,name (,arg) ,@body)
-      '(defun foo (bar) (prn "foo") :FOO (car bar))))
-  returns (defmacro foo (bar)
-            `(progn
-               (prn "foo")
-               :FOO
-               (car bar))))
+      returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))
+    (confirm that
+      (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
+        (dm:match '(,form ,name (,arg) ,@body)
+          '(defun foo (bar) (prn "foo") :FOO (car bar))))
+      returns (defmacro foo (bar)
+                `(progn
+                   (prn "foo")
+                   :FOO
+                   (car bar))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(dm:fill '(_ (_ (this ... that) (_ _ _)) _)
-  (dm:match '(,t (,u ,v) ,w ,x ... ,y bobo ,@zs)
-    '(foo (bar baz) quux sprungy poop bobo yoyo higgs)))
+;; (dm:fill '(_ (_ (this ... that) (_ _ _)) _)
+;;   (dm:match '(,t (,u ,v) ,w ,x ... ,y bobo ,@zs)
+;;     '(foo (bar baz) quux sprungy poop bobo yoyo higgs)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
