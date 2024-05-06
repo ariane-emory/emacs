@@ -511,7 +511,7 @@ different (by `equal') value (or return nil, if THROW-SYM is nil).
 
 If REFERENCE is supplied, values are compared with the KVPs in
 reference instead of ALIST."
-  (let ((assoc (assoc key alist)))
+  (let ((assoc (assoc key (or reference alist))))
     (cond
       ((and assoc (equal (cdr assoc) new-val)) alist) ;; just return alist.
       (assoc (when throw-sym ;; throw or return nil:

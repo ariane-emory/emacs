@@ -158,7 +158,22 @@
      (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match ,reference-alist-name))
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (let (al *dm:verbose*) (dm::log-setf-alist-putunique! 'a 123 al)) returns ((a . 123)))
+(confirm that
+  (let ( (al '((b . 2) (c . 3)))
+         (*dm:verbose* nil))
+    (dm::log-setf-alist-putunique! 'a 123 al))
+  returns ((a . 123) (b . 2) (c . 3)))
+(confirm that
+  (let ( (al '((a . 123) (b . 2) (c . 3)))
+         (*dm:verbose* nil))
+    (dm::log-setf-alist-putunique! 'a 123 al))
+  returns ((a . 123) (b . 2) (c . 3)))
+(confirm that
+  (let ( (al '((b . 2) (c . 3)))
+         (ref '((a . 123)))
+         (*dm:verbose* nil))
+    (dm::log-setf-alist-putunique! 'a 123 al ref))
+  returns ((b . 2) (c . 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
