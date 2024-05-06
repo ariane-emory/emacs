@@ -198,16 +198,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-dont-care? (pat-elem)
+(defmacro dm::pat-elem-is-symbol? (symbol pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(and dont-care (eq dont-care ,pat-elem)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-ellipsis? (pat-elem)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(and ellipsis (eq ellipsis ,pat-elem)))
+  `(and dont-care (eq ,symbol ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -222,7 +215,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-is-flexible? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(or (dm::pat-elem-is-unsplice? ,pat-elem) (dm::pat-elem-is-ellipsis? ,pat-elem)))
+  `(or (dm::pat-elem-is-unsplice? ,pat-elem) (dm::pat-elem-is-symbol? ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -288,7 +281,7 @@
               ;; ------------------------------------------------------------------------------------
               ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
               ;; ------------------------------------------------------------------------------------
-              ((dm::pat-elem-is-dont-care? (car pattern))
+              ((dm::pat-elem-is-symbol? dont-care (car pattern))
                 (setf last-pattern-elem-was-flexible nil)
                 (dm::prn "DONT-CARE, discarding %s." (car target))
                 (dm::log-pop pattern)
@@ -488,16 +481,8 @@
       returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
     ;; parse fun bodies:
     (confirm that
-      (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
-        (dm:match '(,form ,name (,arg) ,@body)
-          '(defun foo (bar) (prn "foo") :FOO (car bar))))
-      returns (defmacro foo (bar)
-                `(progn
-                   (prn "foo")
-                   :FOO
-                   (car bar))))
-    (confirm that (dm:match '(,form ,name (,@args) ,@body)
-                    '(defmacro foo () (prn "foo") :FOO (car bazes)))
+      (dm:match '(,form ,name (,@args) ,@body)
+        '(defmacro foo () (prn "foo") :FOO (car bazes)))
       returns ( (form . defmacro) (name . foo) (args)
                 (body
                   (prn "foo")
@@ -569,9 +554,9 @@ This behaves very similarly to quasiquote."
         (dm::prn "thing:   %s" thing)
         (dm::prn "alist:   %s" alist)
         (cond
-          ((dm::pat-elem-is-dont-care? thing)
+          ((dm::pat-elem-is-symbol? dont-care thing)
             (push (when alist (cdr-safe (pick alist))) res))
-          ((dm::pat-elem-is-ellipsis? thing)
+          ((dm::pat-elem-is-symbol? ellipsis thing)
             (let (random-var-values)
               (while (= 0 (% (random) 2))
                 (push (when alist (cdr-safe (pick alist))) random-var-values))
@@ -645,6 +630,15 @@ This behaves very similarly to quasiquote."
                 (dm:match pattern
                   target))))))
       returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))))
+(confirm that
+  (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
+    (dm:match '(,form ,name (,arg) ,@body)
+      '(defun foo (bar) (prn "foo") :FOO (car bar))))
+  returns (defmacro foo (bar)
+            `(progn
+               (prn "foo")
+               :FOO
+               (car bar))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
