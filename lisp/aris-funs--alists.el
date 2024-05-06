@@ -502,11 +502,15 @@ maintaining ordering). Sketchy?"
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun alist-putunique(key new-val alist &optional (throw-sym 'unequal-duplicate))
+(cl-defun alist-putunique(key new-val alist &optional (throw-sym 'unequal-duplicate)
+                           reference)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Put NEW-VAL into ALIST as the association of KEY, throwing
 THROW-SYM if an association for KEY is already present in ALIST with a
-different (by `equal') value (or return nil, if THROW-SYM is nil)."
+different (by `equal') value (or return nil, if THROW-SYM is nil).
+
+If REFERENCE is supplied, values are compared with the KVPs in
+reference instead of ALIST."
   (let ((assoc (assoc key alist)))
     (cond
       ((and assoc (equal (cdr assoc) new-val)) alist) ;; just return alist.

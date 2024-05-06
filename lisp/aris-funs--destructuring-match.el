@@ -153,9 +153,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-setf-alist-putunique! (key val alist-name)
+(defmacro dm::log-setf-alist-putunique! (key val alist-name &optional reference-alist-name)
   `(prog1
-     (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match))
+     (setf ,alist-name (alist-putunique ,key ,val ,alist-name 'no-match ,reference-alist-name))
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (let (al *dm:verbose*) (dm::log-setf-alist-putunique! 'a 123 al)) returns ((a . 123)))
