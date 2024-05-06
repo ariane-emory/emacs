@@ -160,7 +160,8 @@
 KEY has a non-`equal' VAL in REFERENCE-ALIST."
   `(prog1
      (setf ,alist (alist-putunique ,key ,val ,alist ,reference-alist 'no-match))
-     (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)))
+     ;; (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)
+     (dm::prn "Set %s to %s in %s." ,key ,val ',alist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ( (al '((b . 2) (c . 3)))
@@ -184,28 +185,32 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-is-symbol? (symbol pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(and dont-care (eq ,symbol ,pat-elem)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-unsplice? (pat-elem)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(and unsplice (eq unsplice (car-safe ,pat-elem))))
+  "t when SYMBOL is non-nil and `eq' to PAT-ELEM."
+  `(and ,symbol (eq ,symbol ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-is-variable? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when PAT-ELEM describes a variable."
   (let ((comma '\,))
     `(eq ',comma (car-safe ,pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-is-unsplice? (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Expects to be expanded in an environment where UNSPLICE is bound."
+  `(and unsplice (eq unsplice (car-safe ,pat-elem))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-is-flexible? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Expects to be expanded in an environment where ELLIPSIS is bound."
   `(or (dm::pat-elem-is-unsplice? ,pat-elem) (dm::pat-elem-is-symbol? ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -213,19 +218,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-var-sym (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "If PAT-ELEM is a variable / unscplice, return it's name, otherwise return nil."
   `(car-safe (cdr-safe ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun dm::require-duplicate-keys-equal! (key alist new-val)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "No match if KEY is already in ALIST with a different value."
-;;   (when-let ( (assoc (assoc key alist))
-;;               (val   (cdr assoc))
-;;               (neq   (not (equal val new-val))))
-;;     (throw 'no-match nil)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -319,21 +314,32 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   ((dm::pat-elem-is-flexible? (car pattern))
                     (warn-when-consecutive-flexible-elements-in-pattern)
                     (setf last-pattern-elem-was-flexible t)
+                    (let ((remaining-non-flexible (cdr pattern)))
+                      (while (dm::pat-elem-is-flexible? (car remaining-non-flexible))
+                        (dm::log-pop* remaining-non-flexible))
+                      ;; if there are no more non-flexible elements in PATTERN we can return early:
+                      (unless remaining-non-flexible 
+                        ;; We already know that (car pattern) is flexible, if it has a var name then
+                        ;; it must be an UNSPLICE.
+                        (when-let ((var (dm::pat-elem-var-sym (dm::log-pop* pattern))))
+                          (dm::log-setf-alist-putunique! var target alist alist))
+                        (dm::prn-labeled alist "early return")
+                        (throw 'match alist)))
                     (dm::prn "Collecting flexible element...")
                     (with-indentation
                       (let (collect)
-                        (catch 'stop
+                        (catch 'stop-collecting
                           (while t
                             (dm::prndiv)
                             (dm::prn-labeled         collect "pre")
                             (dm::prn-pp-labeled-list pattern)
                             (dm::prn-pp-labeled-list target)                      
-                            (let* ( (look-0
-                                      (let (*dm:verbose*)
-                                        (recurse (cdr pattern) target       nil alist)))
-                                    (look-1
-                                      (let (*dm:verbose*)
-                                        (recurse (cdr pattern) (cdr target) nil alist))))
+                            (let ( (look-0
+                                     (let (*dm:verbose*)
+                                       (recurse (cdr pattern)      target  nil alist)))
+                                   (look-1
+                                     (let (*dm:verbose*)
+                                       (recurse (cdr pattern) (cdr target) nil alist))))
                               (dm::prndiv ?\-)
                               (dm::prn-labeled look-0)
                               (dm::prn-labeled look-1)
@@ -341,7 +347,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                               (cond
                                 ((null target)
                                   (dm::prn "Emptied TARGET, stop.")
-                                  (throw 'stop nil))
+                                  (throw 'stop-collecting nil))
                                 ((and look-0 (not look-1))
                                   ;; If LOOK-0 matched the whole TARGET then we can munge
                                   ;; LOOK-0 + ALIST into the right shape and return successfully
@@ -363,16 +369,13 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (when *dm:debug* (debug 'unsplicing))
                             (dm::prndiv)
                             (dm::prnl)
-		                        ) ;; END OF `while'.
-                          ) ;; END OF `catch' STOP.
+		                        ) ;; END OF `while' t.
+                          ) ;; END OF `catch' STOP-COLLECTING.
                         ;; We already know that (car pattern) is flexible, if it has a var name then
-                        ;; it musst be an unsplice.
+                        ;; it must be an UNSPLICE.
                         (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                          (dm::log-setf-alist-putunique! var
-                            (nreverse collect) alist alist))
-                        ;; (dm::prn-labeled collect "unspliced")
+                          (dm::log-setf-alist-putunique! var (nreverse collect) alist alist))
                         (dm::log-pop* pattern)
-                        ;; (when *dm:debug* (debug 'after-set-unspliced))
                         ) ; end of `let' COLLECT.
                       ) ; end of `with-indentation'.
                     ) ; end of `dm::pat-elem-is-flexible?'s case.
@@ -447,35 +450,34 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     ;; ----------------------------------------------------------------------------------------------
     ;; Return either the ALIST or just t:
     ;; ----------------------------------------------------------------------------------------------
-    (dm::prn "alist is %s" alist)
     (let ((match1-result (or alist t)))
       (dm::prn-labeled match1-result)
       match1-result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
   (let ((*dm:verbose* t))
-    (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3))              returns ((x . 1) (y . 2) (z . 3)))
-    (confirm that (dm:match '(x ,y ,z) '(x 2 3))                   returns ((y . 2) (z . 3)))
-    (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5)))             returns ((y . 2) (z 3 4 5)))
-    (confirm that (dm:match '(,a ,b ,c \!) '(1 2 3))               returns nil)
-    (confirm that (dm:match '(,a ,b ,c) '(1 2 3))                  returns ((a . 1) (b . 2) (c . 3)))
-    (confirm that (dm:match '(foo _ ,baz) '(foo quux poop))        returns ((baz . poop)))
-    (confirm that (dm:match '(foo _ ,baz) '(foo (2 . 3) poop))     returns ((baz . poop)))
-    (confirm that (dm:match '(,x (...)) '(1 nil))                  returns ((x . 1)))
-    (confirm that (dm:match '(,x ...) '(1 2 3))                    returns ((x . 1)))
-    (confirm that (dm:match '(,x ...) '(1))                        returns ((x . 1)))
-    (confirm that (dm:match '(,x ,y (,z 4) ) '(1 2 a (3 4) a))     returns nil)
+    (confirm that (dm:match '(w ,x ,y ,z)      '(w 1 2 3))         returns ((x . 1) (y . 2) (z . 3)))
+    (confirm that (dm:match '(x ,y ,z)         '(x 2 3))           returns ((y . 2) (z . 3)))
+    (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
+    (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
+    (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
+    (confirm that (dm:match '(foo _ ,baz)      '(foo quux bar))    returns ((baz . bar)))
+    (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
+    (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
+    (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
+    (confirm that (dm:match '(,x ...)          '(1))               returns ((x . 1)))
+    (confirm that (dm:match '(,x ,y (,z 4) )   '(1 2 a (3 4) a))   returns nil)
     (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4))      returns ((x . 1) (y . 4)))
     (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
-    (confirm that (dm:match '(1 (,foo _) 2) '(1 (,foo _) 2))       returns ((foo \, foo)))
-    (confirm that (dm:match '(,x (,p ...) ,y) '(1 (q r) 2))        returns ((x . 1) (p . q) (y . 2)))
-    (confirm that (dm:match '(,x (,p) ,y) '(1 (q r) 2))            returns nil)
-    (confirm that (dm:match '(,x (,p) ,y) '(1 () 2))               returns nil)
-    (confirm that (dm:match '(,x ,@ys) '(1 2 3 4))                 returns ((x . 1) (ys 2 3 4)))
-    (confirm that (dm:match '(,x ,@ys) '(1))                       returns ((x . 1) (ys)))
-    (confirm that (dm:match '(1 2 3) '(1 2 3))                     returns t)
-    (confirm that (dm:match '(,1 2 3) '(1 2 3))                    returns ((1 . 1)))
-    (confirm that (dm:match '(_ ,x ...) '(foo (2 . 3) (4 . 5)))    returns ((x 2 . 3)))
+    (confirm that (dm:match '(1 (,foo _) 2)    '(1 (,foo _) 2))    returns ((foo \, foo)))
+    (confirm that (dm:match '(,x (,p ...) ,y)  '(1 (q r) 2))       returns ((x . 1) (p . q) (y . 2)))
+    (confirm that (dm:match '(,x (,p) ,y)      '(1 (q r) 2))       returns nil)
+    (confirm that (dm:match '(,x (,p) ,y)      '(1 () 2))          returns nil)
+    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+    (confirm that (dm:match '(1 2 3)           '(1 2 3))           returns t)
+    (confirm that (dm:match '(,1 2 3)          '(1 2 3))           returns ((1 . 1)))
+    (confirm that (dm:match '(_ ,x ...)        '(foo (2 . 3) 4))   returns ((x 2 . 3)))
     (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
       returns ((x . a) (y . 5)))
     (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
@@ -485,6 +487,46 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that
       (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
       returns ((v . foo) (w . 1) (x . 2) (ys 3 4) (z . 5)))
+    ;; duplicate var examples:
+    (confirm that (dm:match '(,x y ,x)   '(8 y 8))                 returns ((x . 8)))
+    (confirm that (dm:match '(,x ,@x)    '((1 2 3) 1 2 3))         returns ((x 1 2 3)))
+    (confirm that (dm:match '(,x y ,x)   '((8 9) y (8 9)))         returns ((x 8 9)))
+    (confirm that (dm:match '(,x ,y ,x)  '((7 8 . 9) 2 (7 8 . 9))) returns ((x 7 8 . 9) (y . 2)))
+    (confirm that (dm:match '(,x y ,x)   '(8 y 9))                 returns nil)
+    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil))           returns ((x)))
+    (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
+    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
+    (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
+    ;; Greediness test cases:
+    (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
+    (confirm that (dm:match '(,x ,@ys foo)     '(1 2 3 foo))       returns ((x . 1) (ys 2 3)))
+    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+    (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
+    (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
+    (let (*dm:warn-on-consecutive-flexible-elements*)
+      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs))) 
+      (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+      (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+      (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs))))
+    (confirm that (dm:match '(xx ,@xxs xx)    '(xx xx xx xx xx))   returns ((xxs xx xx xx)))
+    (confirm that (dm:match '(... the ,x ...) '(this is your prize))  returns nil)
+    (confirm that (dm:match '(... the ,x ...) '(this is the prize))   returns ((x . prize)))
+    (confirm that (dm:match '(... the ,x ...) '(the prize is yours))  returns ((x . prize)))
+    (confirm that (dm:match '(... the ,x ...) '(here is the prize is you found it))
+      returns ((x . prize)))
+    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
+    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
+      returns ((foo . FOO) (baz . 111)))
+    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
+      returns ((foo . FOO) (baz . 111)))
+    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
+      returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
+    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
+      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
+    
     (confirm that
       (dm:match
         '(one (this that) (,two three (,four ,five) ,six))
@@ -525,45 +567,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns ( (form . defmacro) (name . foo) (args)
                 (body
                   (prn "foo")
-                  :FOO :BAR)))
-    ;; duplicate var examples:
-    (confirm that (dm:match '(,x y ,x) '(8 y 8))                   returns ((x . 8)))
-    (confirm that (dm:match '(,x ,@x) '((1 2 3) 1 2 3))            returns ((x 1 2 3)))
-    (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
-    (confirm that (dm:match '(,x y ,x) '((8 9) y (8 9)))           returns ((x 8 9)))
-    (confirm that (dm:match '(,x ,y ,x) '((7 8 . 9) 2 (7 8 . 9)))  returns ((x 7 8 . 9) (y . 2)))
-    (confirm that (dm:match '(,x y ,x) '(8 y 9))                   returns nil)
-    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil))           returns ((x)))
-    (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
-    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
-    ;; Greediness test cases:
-    (confirm that (dm:match '(,x ,@ys foo) '(1 foo))               returns ((x . 1) (ys)))
-    (confirm that (dm:match '(,x ,@ys foo) '(1 2 3 foo))           returns ((x . 1) (ys 2 3)))
-    (let (*dm:warn-on-consecutive-flexible-elements*)
-      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs))) 
-      (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))  
-      (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
-      (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs)))) 
-    (confirm that (dm:match '(,x ,@ys) '(1 2 3 4))                 returns ((x . 1) (ys 2 3 4)))
-    (confirm that (dm:match '(,x ,@ys) '(1))                       returns ((x . 1) (ys)))
-    (confirm that (dm:match '(,x ,@ys) '(1))                       returns ((x . 1) (ys)))
-    (confirm that (dm:match '(,x ,@ys) '(1 2 3 4))                 returns ((x . 1) (ys 2 3 4)))
-    (confirm that (dm:match '(,x ...) '(1 2 3 4))                  returns ((x . 1)))
-    (confirm that (dm:match '(,x ... ,z) '(X 2 3))                 returns ((x . X) (z . 3)))
-    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
-    (confirm that (dm:match '(... the ,x ...) '(this is your prize)) returns nil)
-    (confirm that (dm:match '(... the ,x ...) '(this is the prize)) returns ((x . prize)))
-    (confirm that (dm:match '(... the ,x ...) '(the prize is yours)) returns ((x . prize)))
-    (confirm that (dm:match '(... the ,x ...) '(here is the prize is you found it))
-      returns ((x . prize)))
-    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
-      returns ((foo . FOO) (baz . 111)))
-    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
-      returns ((foo . FOO) (baz . 111)))
-    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
-      returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
-    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
-      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))))
+                  :FOO :BAR)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -676,4 +680,3 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
