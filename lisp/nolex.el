@@ -435,7 +435,9 @@
       ;; (prn "s-a-f-r   picked:    %s" response)
       (let-response response
         (setf var-alist (proc-funs .:var-funs: var-alist))
-        (let ((res (dm:fill .:response: var-alist)))
+        (let ((res
+                (let (*dm:verbose*) ; shadow!
+                  (dm:fill .:response: var-alist))))
           (throw 'result res))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *select-response-verbose* nil)
@@ -454,81 +456,83 @@
   (fill-in-missing-alist-keys *fillable-response-keys* (plist-to-alist response)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *fillable-response-keys* '(:var-funs:)) ; :response: is not fillable!
-(defvar *response-keys*          '(:var-funs: :response:)) ; :response: is not fillable!
+  (defvar *response-keys*          '(:var-funs: :response:)) ; :response: is not fillable!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (fill-in-missing-response-keys
-    '(:response: ( 18 ,persp not really ,certainty if this is ,@things )))
-  returns ( (:var-funs:)
-            (:response: 18 (\, persp) not really (\, certainty) if this is (\,@ things))))
+  (confirm that
+    (fill-in-missing-response-keys
+      '(:response: ( 18 ,persp not really ,certainty if this is ,@things )))
+    returns ( (:var-funs:)
+              (:response: 18 (\, persp) not really (\, certainty) if this is (\,@ things))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-response (response &rest body)
+  (defmacro let-response (response &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let-alist (fill-in-missing-response-keys ,response) ,@body))
+    `(let-alist (fill-in-missing-response-keys ,response) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let-response '(:response: ( 18 ,persp not really ,certainty if this is ,@things ))
-    (list .:var-funs: .:response:))
-  returns ( nil
-            (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
+  (confirm that
+    (let-response '(:response: ( 18 ,persp not really ,certainty if this is ,@things ))
+      (list .:var-funs: .:response:))
+    returns ( nil
+              (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun get-response (input)
+  (defun get-response (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Transform INPUT according to *RULES*, returning nil if none match."
-  ;; (prn "get-response INPUT: %s" input)
-  (cl-flet ( (prn2    (&rest args) (when *get-response-verbose* (apply #'prn    args)))
-             (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
-    (catch 'result
-      (dolist (rule *rules*)
-        (let-rule rule
-          (catch 'continue
-            (prn2 "try:       %s" .:input:)
-            (if (eq t .:input:)
-              (progn
-                (prn2 "MATCHED T:   %s" .:input:)
-                ;; t matches any input and fills using an empty list:
-                (throw 'result (select-response nil .:responses:)))
-              (when-let ((var-alist (dm:match .:input: input)))
-                (let ((var-alist (if (eq t var-alist) nil var-alist)))
-                  (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
-                  (prn2 "MATCHED:   %s" .:input:)
-                  (throw 'result (select-response var-alist .:responses:)))))))))))
+    "Transform INPUT according to *RULES*, returning nil if none match."
+    ;; (prn "get-response INPUT: %s" input)
+    (cl-flet ( (prn2    (&rest args) (when *get-response-verbose* (apply #'prn    args)))
+               (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
+      (catch 'result
+        (dolist (rule *rules*)
+          (let-rule rule
+            (catch 'continue
+              (prn2 "try:       %s" .:input:)
+              (if (eq t .:input:)
+                (progn
+                  (prn2 "MATCHED T:   %s" .:input:)
+                  ;; t matches any input and fills using an empty list:
+                  (throw 'result (select-response nil .:responses:)))
+                (when-let ((var-alist
+                             (let (*dm:verbose*) ; shadow!
+                               (dm:match .:input: input))))
+                  (let ((var-alist (if (eq t var-alist) nil var-alist)))
+                    (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
+                    (prn2 "MATCHED:   %s" .:input:)
+                    (throw 'result (select-response var-alist .:responses:)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *get-response-verbose* nil)
+  (defvar *get-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun converse ()
+  (defun converse ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Have a conversation with the bot. Enter 'bye' to exit."
-  (interactive)
-  (catch 'exit
-    (while t
-      (let ((input (read)))
-        (when (member input '(bye (bye)))
-          (throw 'exit nil))
-        (prn "INPUT:    %s" input)        
-        (let ((response
-                (if (proper-list-p input)
-                  (get-response input)
-                  '(sorry \, I didn\'t hear you \!))))
-          (prn "RESPONSE: %s" (prettify-sentence response t)))))))
+    "Have a conversation with the bot. Enter 'bye' to exit."
+    (interactive)
+    (catch 'exit
+      (while t
+        (let ((input (read)))
+          (when (member input '(bye (bye)))
+            (throw 'exit nil))
+          (prn "INPUT:    %s" input)        
+          (let ((response
+                  (if (proper-list-p input)
+                    (get-response input)
+                    '(sorry \, I didn\'t hear you \!))))
+            (prn "RESPONSE: %s" (prettify-sentence response t)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun punctuation? (sym)
+  (defun punctuation? (sym)
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (not (null (member sym '(! \? \, "!" "?" "," ".")))))
+    (not (null (member sym '(! \? \, "!" "?" "," ".")))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (punctuation? '!)   returns t)
+  (confirm that (punctuation? '!)   returns t)
 (confirm that (punctuation? '\?)  returns t)
 (confirm that (punctuation? 'foo) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1072,15 +1076,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
   (prndiv)
   (prn "INPUT:     %s" (prettify-sentence input))
   (let ((response (get-response input)))
-    ;;(prnl)
-    ;;(prndiv)
     (prn "CASE:      %s" (car response))
-    (prn "RESPONSE:  %s" (prettify-sentence response t))
-    ;;(prndiv)
-    ;;(prnl)
-    ))
+    (prn "RESPONSE:  %s" (prettify-sentence response t))))
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(get-response '(hello))

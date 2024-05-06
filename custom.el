@@ -3,8 +3,6 @@
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
-  '(*dm:enforce-final-position* nil)
-  '(*dm:tests-enabled* t)
   '(*pattern-dispatch--verbose* t)
   '(auto-encryption-mode nil)
   '(auto-revert-verbose nil)
@@ -55,7 +53,6 @@
   '(truncate-lines t)
   '(use-short-answers t)
   '(word-wrap t)
-  '(zoom-mode t nil (zoom))
   '(zoom-size '(106 . 22)))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
