@@ -302,7 +302,7 @@ in reverse order."
                          (warn-when-consecutive-flexible-elements-in-pattern ()
                            ;; Due to `dm::match1's recursive calls to perform lookahead and match 
                            ;; sub-patterns, a call to `dm:match' may trigger this warning more than 
-                           ;; once preventing this wasn't worth the bother, just fix your crappy
+                           ;; once: preventing this wasn't worth the bother, just fix your crappy
                            ;; PATTERN!
                            (when (and *dm:warn-on-consecutive-flexible-elements*
                                    last-pattern-elem-was-flexible)
