@@ -364,7 +364,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (dm::prndiv)
                             (dm::prnl)
 		                        ) ;; END OF `while'.
-                          ) ;; END OF `catch' 'stop.
+                          ) ;; END OF `catch' STOP.
                         ;; We already know that (car pattern) is flexible, if it has a var name then
                         ;; it musst be an unsplice.
                         (when-let ((var (dm::pat-elem-var-sym (car pattern))))
@@ -439,10 +439,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (NO-MATCH! "expected %s but target is empty" pattern))
                 (warn-when-consecutive-flexible-elements-in-pattern)
                 (setf last-pattern-elem-was-flexible t)
-                (when (dm::pat-elem-is-unsplice? pat-elem)
-                  (dm::log-setf-alist-putunique!
-                    (dm::pat-elem-var-sym pat-elem) nil alist alist))))))
-        alist))
+                ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE:
+                (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                  (dm::log-setf-alist-putunique! var-sym nil alist alist))))))
+        alist) ; end of `catch' MATCH.
+      ) ; end of `setf' ALIST.
     ;; ----------------------------------------------------------------------------------------------
     ;; Return either the ALIST or just t:
     ;; ----------------------------------------------------------------------------------------------
