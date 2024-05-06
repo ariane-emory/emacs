@@ -223,11 +223,41 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dm::pat-elem-var-sym (pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "If PAT-ELEM is a variable / unscplice, return it's name, otherwise return nil."
+;;   `(car-safe (cdr-safe ,pat-elem)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-var-sym (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "If PAT-ELEM is a variable / unscplice, return it's name, otherwise return nil."
-  `(car-safe (cdr-safe ,pat-elem)))
+  "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
+  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+     (if (atom 2nd)
+       2nd
+       (car 2nd))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::pat-elem-var-sym  123)        returns nil)
+(confirm that (dm::pat-elem-var-sym  ',x)        returns x)
+(confirm that (dm::pat-elem-var-sym  ',(x y z))  returns x)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-var-preds (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
+  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+     (if (atom 2nd)
+       nil
+       (cdr 2nd))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::pat-elem-var-preds 123)       returns nil)
+(confirm that (dm::pat-elem-var-preds ',x)       returns nil)
+(confirm that (dm::pat-elem-var-preds ',(x y z)) returns (y z))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -703,15 +733,12 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (dm:match '(foo ,(bar integer?) quux) '(foo qqq quux))
+;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
 
-(defun dm::pat-elem-var-sym2 (pat-elem)
-  (let ((2nd (car-safe (cdr-safe pat-elem))))
-    (if (atom 2nd)
-      2nd
-      (car 2nd))))
+;; (defun dm::pat-elem-var-sym2 (pat-elem)
+;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
+;;     (if (atom 2nd)
+;;       2nd
+;;       (car 2nd))))
 
 
-(dm::pat-elem-var-sym2 ',x)
-
-(dm::pat-elem-var-sym2 ',(x y z))
