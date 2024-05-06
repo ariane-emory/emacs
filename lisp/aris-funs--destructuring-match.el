@@ -131,32 +131,36 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::prn-pp-labeled-list(lst-name &optional extra)
+(defmacro dm::prn-pp-labeled-list (lst-sym &optional extra)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Pretty print LST-NAME with a label."
-  `(let* ((,lst-name (if (cdr ,lst-name) 
-                       (format "%-7s . %s" (car ,lst-name) (cdr ,lst-name))
-                       (format "%s"        (car ,lst-name)))))
-     (dm::prn-labeled ,lst-name ,extra))
-  ;; `(let* ((,lst-name (format "%s"        ,lst-name)))
-  ;;    (dm::prn-labeled ,lst-name ,extra))
-  )
+  "Pretty print LST-SYM with a label."
+  `(let* ((,lst-sym (if (cdr ,lst-sym) 
+                      (format "%-7s . %s" (car ,lst-sym) (cdr ,lst-sym))
+                      (format "%s"        (car ,lst-sym)))))
+     (dm::prn-labeled ,lst-sym ,extra)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-pop (lst)
-  `(let ((popped (pop ,lst)))
-     (dm::prn "Popped %s from %s, remaining: %s" popped ',lst ,lst)
-     popped))
+(defmacro dm::log-pop* (&rest lsts)
+  "Pop LSTS, logging what was popped from each and returning the value popped from the last list in LSTs."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (macroexp-progn
+    (rmapcar lsts
+      (lambda (lst)
+        `(let ((popped (pop ,lst)))
+           (dm::prn "Popped %s from %s, remaining: %s" popped ',lst ,lst)
+           popped)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-setf-alist-putunique! (key val alist-name reference-alist-name)
+(defmacro dm::log-setf-alist-putunique! (key val alist reference-alist)
+  "Set KEY to VAL in ALIST, logging the operation and throwing 'no-match if
+KEY has a non-`equal' VAL in REFERENCE-ALIST."
   `(prog1
-     (setf ,alist-name (alist-putunique ,key ,val ,alist-name ,reference-alist-name 'no-match))
-     (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
+     (setf ,alist (alist-putunique ,key ,val ,alist ,reference-alist 'no-match))
+     (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ( (al '((b . 2) (c . 3)))
@@ -235,7 +239,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-var-name (pat-elem)
+(defmacro dm::pat-elem-var-sym (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(car-safe (cdr-safe ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -288,31 +292,25 @@
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
-            (cl-labels ( (NO-MATCH! (fmt &rest args)
-                           (let ((str (apply #'format fmt args)))
-                             (dm::prn "No match because %s!" str)
-                             (throw 'no-match nil)))                   
-                         (make-fake-pattern-tail (pattern)
-                           (let ((res (cdr pattern)))
-                             (while (dm::pat-elem-is-flexible? (car res))
-                               (dm::log-pop res))
-                             res))
-                         (warn-when-consecutive-flexible-elements-in-pattern ()
-                           ;; Due to `dm::match1's recursive calls to perform lookahead and match 
-                           ;; sub-patterns, a call to `dm:match' may trigger this warning more than 
-                           ;; once: preventing this wasn't worth the bother, just fix your crappy
-                           ;; PATTERN!
-                           (when (and *dm:warn-on-consecutive-flexible-elements*
-                                   last-pattern-elem-was-flexible)
-                             (let ((warn-msg (format
-                                               (concat
-                                                 "WARNING: Using consecutive flexible elements "
-                                                 "generally does not make sense, pattern was: %s")
-                                               initial-pattern)))
-                               (let ( (*dm:verbose* t)
-                                      (*wm:indent* 0))
-                                 (dm::prn warn-msg))
-                               (warn warn-msg)))))
+            (cl-flet ( (NO-MATCH! (fmt &rest args)
+                         (dm::prn "No match because %s!" (apply #'format fmt args))
+                         (throw 'no-match nil))
+                       (warn-when-consecutive-flexible-elements-in-pattern ()
+                         ;; Due to `dm::match1's recursive calls to perform lookahead and match 
+                         ;; sub-patterns, a call to `dm:match' may trigger this warning more than 
+                         ;; once: preventing this wasn't worth the bother, just fix your crappy
+                         ;; PATTERN!
+                         (when (and *dm:warn-on-consecutive-flexible-elements*
+                                 last-pattern-elem-was-flexible)
+                           (let ((warn-msg (format
+                                             (concat
+                                               "WARNING: Using consecutive flexible elements "
+                                               "generally does not make sense, pattern was: %s")
+                                             initial-pattern)))
+                             (let ( (*dm:verbose* t)
+                                    (*wm:indent* 0))
+                               (dm::prn warn-msg))
+                             (warn warn-msg)))))
               ;;-------------------------------------------------------------------------------------
               (while target
                 (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
@@ -332,8 +330,7 @@
                   ((dm::pat-elem-is-symbol? dont-care (car pattern))
                     (setf last-pattern-elem-was-flexible nil)
                     (dm::prn "DONT-CARE, discarding %s." (car target))
-                    (dm::log-pop pattern)
-                    (dm::log-pop target))
+                    (dm::log-pop* pattern target))
                   ;; --------------------------------------------------------------------------------
                   ;; Case 2: When PATTERN's head is flexible, collect items:
                   ;; --------------------------------------------------------------------------------
@@ -372,14 +369,14 @@
                                       (when (listp look-0) look-0)
                                       (when (dm::pat-elem-is-unsplice? (car pattern))
                                         (list
-                                          (cons (dm::pat-elem-var-name (car pattern))
+                                          (cons (dm::pat-elem-var-sym (car pattern))
                                             (nreverse collect))))
                                       alist))
                                   (dm::prn "CASE 1: Stopping with munged %s!" alist)                                    
                                   (throw 'match alist))
                                 (t
                                   (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
-                                  (push (dm::log-pop target) collect))))
+                                  (push (dm::log-pop* target) collect))))
                             (dm::prn-labeled collect "post")
                             (when *dm:debug* (debug 'unsplicing))
                             (dm::prndiv)
@@ -388,11 +385,11 @@
                           ) ;; END OF `catch' 'stop.
                         ;; We already know that (car pattern) is flexible, if it has a var name then
                         ;; it musst be an unsplice.
-                        (when-let ((var (dm::pat-elem-var-name (car pattern))))
+                        (when-let ((var (dm::pat-elem-var-sym (car pattern))))
                           (dm::log-setf-alist-putunique! var
                             (nreverse collect) alist alist))
                         ;; (dm::prn-labeled collect "unspliced")
-                        (dm::log-pop pattern)
+                        (dm::log-pop* pattern)
                         ;; (when *dm:debug* (debug 'after-set-unspliced))
                         ) ; end of `let' COLLECT.
                       ) ; end of `with-indentation'.
@@ -401,15 +398,14 @@
                   ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
                   ;; --------------------------------------------------------------------------------
                   ((dm::pat-elem-is-variable? (car pattern))
-                    (let* ( (dm::pat-elem-var-name (dm::pat-elem-var-name (car pattern)))
+                    (let* ( (var-sym (dm::pat-elem-var-sym (car pattern)))
                             (var-val  (car target))
                             ;; `let' ASSOC just to print it in the message:
-                            (assoc    (cons dm::pat-elem-var-name var-val))) 
+                            (assoc    (cons var-sym var-val))) 
                       (setf last-pattern-elem-was-flexible nil)
                       (dm::prn-labeled assoc "take var as")
-                      (dm::log-setf-alist-putunique! dm::pat-elem-var-name var-val alist alist)
-                      (dm::log-pop pattern)
-                      (dm::log-pop target)))
+                      (dm::log-setf-alist-putunique! var-sym var-val alist alist)
+                      (dm::log-pop* pattern target)))
                   ;; --------------------------------------------------------------------------------
                   ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
                   ;; ALIST, unless the result was just t because the sub-pattern being recursed over
@@ -417,19 +413,15 @@
                   ;; --------------------------------------------------------------------------------
                   ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
                     (setf last-pattern-elem-was-flexible nil)
-                    (let ( (sub-pattern (car pattern))
-                           (sub-target  (car target)))
-                      (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
-                        sub-pattern sub-target)
-                      ;; (dm::prndiv)
-                      (let ((res (recurse sub-pattern sub-target alist alist)))
-                        (cond
-                          ((eq res t)) ; do nothing.
-                          ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
-                          ;; `dm::match1' only returns t or lists, so we'll now assume it's a list.
-                          (t (setf alist res))))
-                      (dm::log-pop pattern)
-                      (dm::log-pop target)))
+                    (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
+                      (car pattern) (car target))
+                    (let ((res (recurse (car pattern) (car target) alist alist)))
+                      (cond
+                        ((eq res t)) ; do nothing.
+                        ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
+                        ;; `dm::match1' only returns t or lists, so we'll now assume it's a list.
+                        (t (setf alist res))))
+                    (dm::log-pop* pattern target))
                   ;; --------------------------------------------------------------------------------
                   ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
                   ;; heads off:
@@ -437,8 +429,7 @@
                   ((equal (car pattern) (car target))
                     (setf last-pattern-elem-was-flexible nil)
                     (dm::prn "Equal literals, discarding %s." (car target))
-                    (dm::log-pop pattern)
-                    (dm::log-pop target))
+                    (dm::log-pop* pattern target))
                   ;; --------------------------------------------------------------------------------
                   ;; Otherwise: When the heads aren't `equal' and we didn't have either a DONT-CARE, 
                   ;; an ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
@@ -459,8 +450,7 @@
               ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only
               ;; contain ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
               ;; ------------------------------------------------------------------------------------
-              (when pattern
-                (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern))
+              (when pattern (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern))
               (dolist (pat-elem pattern)
                 (dm::prn "Running out elem: %s" pat-elem)
                 (unless (dm::pat-elem-is-flexible? pat-elem)
@@ -469,7 +459,7 @@
                 (setf last-pattern-elem-was-flexible t)
                 (when (dm::pat-elem-is-unsplice? pat-elem)
                   (dm::log-setf-alist-putunique!
-                    (dm::pat-elem-var-name pat-elem) nil alist alist))))))
+                    (dm::pat-elem-var-sym pat-elem) nil alist alist))))))
         alist))
     ;; ----------------------------------------------------------------------------------------------
     ;; Return either the ALIST or just t:
@@ -610,7 +600,7 @@ This behaves very similarly to quasiquote."
   (dm::prn "FILL:")
   (let (res)
     (while pattern
-      (let ((thing (dm::log-pop pattern)))
+      (let ((thing (dm::log-pop* pattern)))
         (dm::prndiv)
         (dm::prn "thing:   %s" thing)
         (dm::prn "alist:   %s" alist)
@@ -624,11 +614,11 @@ This behaves very similarly to quasiquote."
               (dolist (elem random-var-values)
                 (push elem res))))
           ((dm::pat-elem-is-variable? thing)
-            (if-let ((assoc (assoc (dm::pat-elem-var-name thing) alist)))
+            (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
               (push (cdr assoc) res)
-              (error "var %s not found." (dm::pat-elem-var-name thing))))
+              (error "var %s not found." (dm::pat-elem-var-sym thing))))
           ((dm::pat-elem-is-unsplice? thing)
-            (let ((var (dm::pat-elem-var-name thing)))
+            (let ((var (dm::pat-elem-var-sym thing)))
               (dm::prn "VAR:     %s" var)
               (if-let ((assoc (assoc (cadr thing) alist)))
                 (let ((val (cdr assoc)))
@@ -703,12 +693,10 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; (dm:fill '(_ (_ (this ... that) (_ _ _)) _)
-;;   (dm:match '(,t (,u ,v) ,w ,x ... ,y bobo ,@zs)
-;;     '(foo (bar baz) quux sprungy poop bobo yoyo higgs)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
