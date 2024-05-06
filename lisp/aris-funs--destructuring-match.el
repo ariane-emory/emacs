@@ -283,10 +283,10 @@ in reverse order."
         (dm::prn-labeled pattern "initial")
         (dm::prn-labeled target  "initial")
         ;;-------------------------------------------------------------------------------------------
-        (cl-macrolet ((recurse (pattern target reference-alist)
+        (cl-macrolet ((recurse (pattern target alist reference-alist)
                         `(with-indentation
                            (dm::match1 initial-pattern ,pattern ,target
-                             dont-care ellipsis unsplice alist reference-alist))))
+                             dont-care ellipsis unsplice ,alist ,reference-alist))))
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
@@ -353,10 +353,10 @@ in reverse order."
                             (dm::prn-pp-labeled-list target)                      
                             (let* ( (look-0
                                       (let (*dm:verbose*)
-                                        (recurse (cdr pattern) target alist)))
+                                        (recurse (cdr pattern) target alist alist)))
                                     (look-1
                                       (let (*dm:verbose*)
-                                        (recurse (cdr pattern) (cdr target) alist))))
+                                        (recurse (cdr pattern) (cdr target) alist alist))))
                               (dm::prndiv ?\-)
                               (dm::prn-labeled look-0)
                               (dm::prn-labeled look-1)
@@ -415,7 +415,7 @@ in reverse order."
                       (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                         sub-pattern sub-target)
                       ;; (dm::prndiv)
-                      (let ((res (recurse sub-pattern sub-target alist)))
+                      (let ((res (recurse sub-pattern sub-target alist alist)))
                         (cond
                           ((eq res t)) ; do nothing.
                           ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
@@ -473,7 +473,7 @@ in reverse order."
       match1-result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
-  (let (*dm:verbose*)
+  (let ((*dm:verbose* t))
     (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3))              returns ((x . 1) (y . 2) (z . 3)))
     (confirm that (dm:match '(x ,y ,z) '(x 2 3))                   returns ((y . 2) (z . 3)))
     (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5)))             returns ((y . 2) (z 3 4 5)))
