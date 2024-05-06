@@ -601,9 +601,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns ((bar . 5)))
     (confirm that (dm:match '(... ,(bar integer? odd? (lambda (n) (> n 4))) ...) '(1 2 3 5 6 7))
       returns ((bar . 5)))
-    (confirm that (dm:match '(... ,(_ integer? odd? (lambda (n) (> n 4))) ...) '(5 6 7 8 9 10))
+    (confirm that (dm:match '(... ,(_ integer? odd? (lambda (n) (> n 4))) ...) '(1 2 3 4 5 6 7 8 9 10))
       returns t)
-    (confirm that (dm:match '(... ,(m integer? odd? (lambda (n) (> n 4))) ...) '(5 6 7 8 9 10))
+    (confirm that (dm:match '(... ,(m integer? odd? (lambda (n) (> n 4))) ...) '(1 2 3 4 5 6 7 8 9 10))
       returns ((m . 5)))
     ;;-----------------------------------------------------------------------------------------------
     ;; Greediness test cases:
