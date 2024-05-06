@@ -14,13 +14,6 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:enable-predicates* nil
-  ;; (setf *dm:enable-predicates* t)
-  ;; (setf *dm:enable-predicates* nil)
-  "Describe this."
-  :group 'destructuring-match
-  :type 'boolean)
-;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:verbose* t
   "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
@@ -435,17 +428,16 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (var-preds (dm::pat-elem-var-preds (car pattern)))
                           (var-val  (car target))
                           ;; `let' ASSOC just to print it in the message:
-                          (assoc    (cons var-sym var-val)))
-                    (when *dm:enable-predicates*
-                      (let ((preds-passed
-                              (or (not var-preds)
-                                (catch 'pred-failed
-                                  (dolist (pred var-preds)
-                                    (unless (funcall pred var-val)
-                                      (throw 'pred-failed nil)))
-                                  t))))
-                        (when var-preds
-                          (debug 'pred))))
+                          (assoc    (cons var-sym var-val))
+                          (preds-passed
+                            (or (not var-preds)
+                              (catch 'pred-failed
+                                (dolist (pred var-preds)
+                                  (unless (funcall pred var-val)
+                                    (throw 'pred-failed nil)))
+                                t))))
+                    (when var-preds
+                      (debug 'pred))
                     ;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
                     ;; (dm:match '(foo ,(bar integer?) quux) '(foo baz quux))
                     (dm::log-setf-alist-putunique! var-sym var-val alist alist)
