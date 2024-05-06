@@ -633,3 +633,12 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(dm:fill '(defmacro ,name (,args))
+  (dm:match '(,form ,name (,arg) ,@body)
+    '(defun foo (bar) (prn "foo") :FOO (car bar))))
+
+(dm:match '(,form ,name (,@args) ,@body)
+  '(defmacro foo () (prn "foo") :FOO (car bazes)))
+(dm:match '(,form ,name (,@args) ,@body)
+  '(defmacro foo nil (prn "foo") :FOO :BAR))
