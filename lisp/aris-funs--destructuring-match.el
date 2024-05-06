@@ -351,24 +351,21 @@ in reverse order."
                             (dm::prn-labeled         collect "pre")
                             (dm::prn-pp-labeled-list pattern)
                             (dm::prn-pp-labeled-list target)                      
-                            (let* ( (fake-pattern-tail (make-fake-pattern-tail pattern))
-                                    (fake-pattern-tail-matches-target
+                            (let* ( (look-0
                                       (let (*dm:verbose*)
                                         (recurse (cdr pattern) target)))
-                                    (fake-pattern-tail-matches-target-tail
+                                    (look-1
                                       (let (*dm:verbose*)
                                         (recurse (cdr pattern) (cdr target)))))
                               (dm::prndiv ?\-)
-                              (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
-                              (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
+                              (dm::prn-labeled look-0 "" 45)
+                              (dm::prn-labeled look-1 "" 45)
                               (dm::prndiv ?\-)
                               (cond
                                 ((null target)
                                   (dm::prn "Out of TARGET, stop.")
                                   (throw 'stop nil))
-                                ((and
-                                   fake-pattern-tail-matches-target
-                                   (not fake-pattern-tail-matches-target-tail))
+                                ((and look-0 (not look-1))
                                   (dm::prn "CASE 1: Stopping!")
                                   (throw 'stop nil))
                                 (t
