@@ -557,7 +557,7 @@ This behaves very similarly to quasiquote."
           ((dm::pat-elem-is-variable? thing)
             (if-let ((assoc (assoc (dm::pat-elem-var-name thing) alist)))
               (push (cdr assoc) res)
-              (error "var %s not found." var)))
+              (error "var %s not found." (dm::pat-elem-var-name thing))))
           ((dm::pat-elem-is-unsplice? thing)
             (let ((var (dm::pat-elem-var-name thing)))
               (dm::prn "VAR:     %s" var)
@@ -634,7 +634,7 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:fill '(defmacro ,name (,args))
+(dm:fill '(defmacro ,name (,arg))
   (dm:match '(,form ,name (,arg) ,@body)
     '(defun foo (bar) (prn "foo") :FOO (car bar))))
 
