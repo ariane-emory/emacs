@@ -243,33 +243,33 @@
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::require-duplicate-keys-equal! (key alist new-val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "No match if KEY is already in ALIST with a different value."
   (when-let ( (assoc (assoc key alist))
               (val   (cdr assoc))
               (neq   (not (equal val new-val))))
     (throw 'no-match nil)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::merge-2-alists (alist-1 alist-2)
   "Merge two alists into a single alist, maintaining their relative key order
 and signaling an eror upon encountering a duplicate key. Result is returned
 in reverse order."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (prn "Merge %s and %s" alist-1 alist-2)
   (let ((alist (nreverse alist-1)))
     (dolist (kvp alist-2)
       (dm::require-duplicate-keys-equal! (car kvp) alist-1 (cdr kvp))
       (push kvp alist))
     alist))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::merge-2-alists '((a . 1) (b. 2) (c . 3)) '((d . 4) (e . 5)))
   returns ((e . 5) (d . 4) (c . 3) (b. 2) (a . 1)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -301,12 +301,14 @@ in reverse order."
                              res))
                          (warn-when-consecutive-flexible-elements-in-pattern ()
                            ;; Due to `dm::match1's recursive calls to perform lookahead and match 
-                           ;; sub-patterns, a call to `dm:match' may trigger this warning more than once:
-                           ;; preventing this wasn't worth the bother, just fix your crappy PATTERN!
+                           ;; sub-patterns, a call to `dm:match' may trigger this warning more than 
+                           ;; once preventing this wasn't worth the bother, just fix your crappy
+                           ;; PATTERN!
                            (when (and *dm:warn-on-consecutive-flexible-elements*
                                    last-pattern-elem-was-flexible)
                              (let ((warn-msg (format
-                                               (concat "WARNING: Using consecutive flexible elements "
+                                               (concat
+                                                 "WARNING: Using consecutive flexible elements "
                                                  "generally does not make sense, pattern was: %s")
                                                initial-pattern)))
                                (let ( (*dm:verbose* t)
