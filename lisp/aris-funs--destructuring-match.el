@@ -318,16 +318,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                       (while (dm::pat-elem-is-flexible? (car remaining-non-flexible))
                         (dm::log-pop* remaining-non-flexible))
                       ;; if there are no more non-flexible elements in PATTERN we can return early:
-                      (unless remaining-non-flexible 
-                        ;; We already know that (car pattern) is flexible, if it has a var name then
-                        ;; it must be an UNSPLICE.
-                        (when-let ((var (dm::pat-elem-var-sym (dm::log-pop* pattern))))
-                          (dm::log-setf-alist-putunique! var target alist alist))
-                        (dm::prn-labeled alist "early return")
-                        (throw 'match alist)))
+                      ;; (unless remaining-non-flexible 
+                      ;;   ;; We already know that (car pattern) is flexible, if it has a var name then
+                      ;;   ;; it must be an UNSPLICE.
+                      ;;   (when-let ((var (dm::pat-elem-var-sym (dm::log-pop* pattern))))
+                      ;;     (dm::log-setf-alist-putunique! var target alist alist))
+                      ;;   (dm::prn-labeled alist "early return")
+                      ;;   (throw 'match alist))
+                      )
                     (dm::prn "Collecting flexible element...")
                     (with-indentation
-                      (let (collect)
+                      (let (collect) 
                         (catch 'stop-collecting
                           (while t
                             (dm::prndiv)
@@ -506,8 +507,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
     (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
     (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
+    ;; stupid-but-legal, consecutive flexible elements:
     (let (*dm:warn-on-consecutive-flexible-elements*)
-      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs))) 
+      (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
+      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs)))
       (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
       (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
       (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs))))
@@ -515,7 +518,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(... the ,x ...) '(this is your prize))  returns nil)
     (confirm that (dm:match '(... the ,x ...) '(this is the prize))   returns ((x . prize)))
     (confirm that (dm:match '(... the ,x ...) '(the prize is yours))  returns ((x . prize)))
-    (confirm that (dm:match '(... the ,x ...) '(here is the prize is you found it))
+    (confirm that (dm:match '(... the ,x ...) '(here is the prize you found it))
       returns ((x . prize)))
     (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
     (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
