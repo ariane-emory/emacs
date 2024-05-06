@@ -502,8 +502,8 @@ maintaining ordering). Sketchy?"
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun alist-putunique(key new-val alist &optional (throw-sym 'unequal-duplicate)
-                           reference)
+(cl-defun alist-putunique(key new-val alist &optional reference
+                           (throw-sym 'unequal-duplicate))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Put NEW-VAL into ALIST as the association of KEY, throwing
 THROW-SYM if an association for KEY is already present in ALIST with a
@@ -538,7 +538,7 @@ reference instead of ALIST."
 (confirm that
   (let ( (alist '((a . 1)))
          (ref '((b . 2))))
-    (alist-putunique 'b 2 alist 'unequal-duplicate ref))
+    (alist-putunique 'b 2 alist ref))
   returns ((a . 1)))
 ;; duplicate key, un-equal value. this one SHOULD throw, so we don't `confirm' it's return
 ;; value, we just `confirm' if it threw:
@@ -548,7 +548,8 @@ reference instead of ALIST."
   returns t)
 ;; since THROW-SYM is specified as nil, this one should not throw:
 (confirm that
-  (let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 3 alist nil))
+  (let ((alist '((a . 1) (b . 2))))
+    (alist-putunique 'b 3 alist alist nil))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
