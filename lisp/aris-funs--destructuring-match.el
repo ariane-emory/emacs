@@ -290,175 +290,172 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
-            (cl-flet ( 
-                       )
-              ;;-------------------------------------------------------------------------------------
-              (while target
-                (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
-                (dm::prndiv)
-                (dm::prn-pp-alist alist)
-                (dm::prn-pp-labeled-list pattern)
-                (dm::prn-pp-labeled-list target)
-                (let ((target (if (cdr target)
-                                (format "%-7s . %s" (car target) (cdr target))
-                                (format "%s" (car target))))))
-                (dm::prndiv ?\-)
-                ;; ----------------------------------------------------------------------------------
-                (cond ;; Enter the big `cond'!
-                  ;; --------------------------------------------------------------------------------
-                  ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
-                  ;; --------------------------------------------------------------------------------
-                  ((dm::pat-elem-is-symbol? dont-care (car pattern))
-                    (setf last-pattern-elem-was-flexible nil)
-                    (dm::prn "DONT-CARE, discarding %s." (car target))
-                    (dm::log-pop* pattern target))
-                  ;; --------------------------------------------------------------------------------
-                  ;; Case 2: When PATTERN's head is flexible, collect items:
-                  ;; --------------------------------------------------------------------------------
-                  ((dm::pat-elem-is-flexible? (car pattern))
-                    (warn-when-consecutive-flexible-elements-in-pattern)
-                    (setf last-pattern-elem-was-flexible t)
-                    (let ((remaining-non-flexible (cdr pattern)))
-                      (while (dm::pat-elem-is-flexible? (car remaining-non-flexible))
-                        (dm::log-pop* remaining-non-flexible))
-                      ;; If there are no more non-flexible elements in PATTERN we can return early:
-                      (unless remaining-non-flexible
-                        ;; We know that (car pattern) is flexible, so if it has a var-sym then it
-                        ;; must be an UNSPLICE.
-                        (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
-                          (dm::log-setf-alist-putunique! var-sym target alist alist))
-                        (when pattern
-                          (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
-                          (dolist (pat-elem pattern)
-                            (dm::prn "Running out elem: %s" pat-elem)
-                            (warn-when-consecutive-flexible-elements-in-pattern)
-                            ;; We know it's flexible, so if it has a var-sym it must be an UNSPLICE.
-                            (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                              (dm::log-setf-alist-putunique! var-sym nil alist alist))))
-                        (dm::prn-labeled alist "early return")
-                        (throw 'match alist))
-                      )
-                    (dm::prn "Collecting flexible element...")
-                    (with-indentation
-                      (let (collect) 
-                        (catch 'stop-collecting
-                          (while t
-                            (dm::prndiv)
-                            (dm::prn-labeled         collect "pre")
-                            (dm::prn-pp-labeled-list pattern)
-                            (dm::prn-pp-labeled-list target)                      
-                            (let ( (look-0
-                                     (let (*dm:verbose*)
-                                       (recurse (cdr pattern)      target  nil alist)))
-                                   (look-1
-                                     (let (*dm:verbose*)
-                                       (recurse (cdr pattern) (cdr target) nil alist))))
-                              (dm::prndiv ?\-)
-                              (dm::prn-labeled look-0)
-                              (dm::prn-labeled look-1)
-                              (dm::prndiv ?\-)
-                              (cond
-                                ((null target)
-                                  (dm::prn "Emptied TARGET, stop.")
-                                  (throw 'stop-collecting nil))
-                                ((and look-0 (not look-1))
-                                  ;; If LOOK-0 matched the whole TARGET then we can munge
-                                  ;; LOOK-0 and ALIST into the right shape and return successfully
-                                  ;; immediately:
-                                  (setf alist
-                                    (nconc
-                                      (when (listp look-0) look-0)
-                                      (when (dm::pat-elem-is-unsplice? (car pattern))
-                                        (list
-                                          (cons (dm::pat-elem-var-sym (car pattern))
-                                            (nreverse collect))))
-                                      alist))
-                                  (dm::prn "CASE 1: Stopping with munged %s!" alist)
-                                  (throw 'match alist))
-                                (t
-                                  (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
-                                  (push (dm::log-pop* target) collect))))
-                            (dm::prn-labeled collect "post")
-                            (when *dm:debug* (debug 'unsplicing))
-                            (dm::prndiv)
-                            (dm::prnl)
-		                        ) ;; END OF `while' t.
-                          ) ;; END OF `catch' STOP-COLLECTING.
-                        ;; We already know that (car pattern) is flexible, if it has a var name then
-                        ;; it must be an UNSPLICE.
-                        (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                          (dm::log-setf-alist-putunique! var (nreverse collect) alist alist))
-                        (dm::log-pop* pattern)
-                        ) ; end of `let' COLLECT.
-                      ) ; end of `with-indentation'.
-                    ) ; end of `dm::pat-elem-is-flexible?'s case.
-                  ;; --------------------------------------------------------------------------------
-                  ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
-                  ;; --------------------------------------------------------------------------------
-                  ((dm::pat-elem-is-variable? (car pattern))
-                    (let* ( (var-sym (dm::pat-elem-var-sym (car pattern)))
-                            (var-val  (car target))
-                            ;; `let' ASSOC just to print it in the message:
-                            (assoc    (cons var-sym var-val))) 
-                      (setf last-pattern-elem-was-flexible nil)
-                      (dm::log-setf-alist-putunique! var-sym var-val alist alist)
-                      (dm::prn-labeled assoc "take var as")
-                      (dm::log-pop* pattern target)))
-                  ;; --------------------------------------------------------------------------------
-                  ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
-                  ;; ALIST, unless the result was just t because the sub-pattern being recursed over
-                  ;; contained no variables:
-                  ;; --------------------------------------------------------------------------------
-                  ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
-                    (setf last-pattern-elem-was-flexible nil)
-                    (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
-                      (car pattern) (car target))
-                    (let ((res (recurse (car pattern) (car target) alist alist)))
-                      (cond
-                        ((eq res t)) ; do nothing.
-                        ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
-                        ;; `dm::match1' only returns t or lists, so by now it must a list.
-                        (t (setf alist res))))
-                    (dm::log-pop* pattern target))
-                  ;; --------------------------------------------------------------------------------
-                  ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
-                  ;; heads off:
-                  ;; --------------------------------------------------------------------------------
-                  ((equal (car pattern) (car target))
-                    (setf last-pattern-elem-was-flexible nil)
-                    (dm::prn "Equal literals, discarding %s." (car target))
-                    (dm::log-pop* pattern target))
-                  ;; --------------------------------------------------------------------------------
-                  ;; Otherwise: When the heads aren't `equal' and we didn't have either a DONT-CARE, 
-                  ;; an ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
-                  ;; --------------------------------------------------------------------------------
-                  (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))
-                  ;; --------------------------------------------------------------------------------
-                  ) ; End of the big `cond'.
-                ;; ----------------------------------------------------------------------------------
-                (dm::prndiv)
-                (dm::prnl)
-                ;; ----------------------------------------------------------------------------------
-                ) ;  end of (while target ...
-              ;; ------------------------------------------------------------------------------------
+            (while target
+              (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
               (dm::prndiv)
-              (dm::prn-labeled pattern "final")
-              (dm::prn-labeled target  "final")
+              (dm::prn-pp-alist alist)
+              (dm::prn-pp-labeled-list pattern)
+              (dm::prn-pp-labeled-list target)
+              (let ((target (if (cdr target)
+                              (format "%-7s . %s" (car target) (cdr target))
+                              (format "%s" (car target))))))
+              (dm::prndiv ?\-)
               ;; ------------------------------------------------------------------------------------
-              ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only
-              ;; contain ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
-              ;; ------------------------------------------------------------------------------------
-              (when pattern
-                (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
-                (dolist (pat-elem pattern)
-                  (dm::prn "Running out elem: %s" pat-elem)
-                  (unless (dm::pat-elem-is-flexible? pat-elem)
-                    (NO-MATCH! "expected %s but target is empty" pattern))
+              (cond ;; Enter the big `cond'!
+                ;; ----------------------------------------------------------------------------------
+                ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
+                ;; ----------------------------------------------------------------------------------
+                ((dm::pat-elem-is-symbol? dont-care (car pattern))
+                  (setf last-pattern-elem-was-flexible nil)
+                  (dm::prn "DONT-CARE, discarding %s." (car target))
+                  (dm::log-pop* pattern target))
+                ;; ----------------------------------------------------------------------------------
+                ;; Case 2: When PATTERN's head is flexible, collect items:
+                ;; ----------------------------------------------------------------------------------
+                ((dm::pat-elem-is-flexible? (car pattern))
                   (warn-when-consecutive-flexible-elements-in-pattern)
                   (setf last-pattern-elem-was-flexible t)
-                  ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
-                  (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                    (dm::log-setf-alist-putunique! var-sym nil alist alist)))))))
+                  (let ((remaining-non-flexible (cdr pattern)))
+                    (while (dm::pat-elem-is-flexible? (car remaining-non-flexible))
+                      (dm::log-pop* remaining-non-flexible))
+                    ;; If there are no more non-flexible elements in PATTERN we can return early:
+                    (unless remaining-non-flexible
+                      ;; We know that (car pattern) is flexible, so if it has a var-sym then it
+                      ;; must be an UNSPLICE.
+                      (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
+                        (dm::log-setf-alist-putunique! var-sym target alist alist))
+                      (when pattern
+                        (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
+                        (dolist (pat-elem pattern)
+                          (dm::prn "Running out elem: %s" pat-elem)
+                          (warn-when-consecutive-flexible-elements-in-pattern)
+                          ;; We know it's flexible, so if it has a var-sym it must be an UNSPLICE.
+                          (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                            (dm::log-setf-alist-putunique! var-sym nil alist alist))))
+                      (dm::prn-labeled alist "early return")
+                      (throw 'match alist))
+                    )
+                  (dm::prn "Collecting flexible element...")
+                  (with-indentation
+                    (let (collect) 
+                      (catch 'stop-collecting
+                        (while t
+                          (dm::prndiv)
+                          (dm::prn-labeled         collect "pre")
+                          (dm::prn-pp-labeled-list pattern)
+                          (dm::prn-pp-labeled-list target)                      
+                          (let ( (look-0
+                                   (let (*dm:verbose*)
+                                     (recurse (cdr pattern)      target  nil alist)))
+                                 (look-1
+                                   (let (*dm:verbose*)
+                                     (recurse (cdr pattern) (cdr target) nil alist))))
+                            (dm::prndiv ?\-)
+                            (dm::prn-labeled look-0)
+                            (dm::prn-labeled look-1)
+                            (dm::prndiv ?\-)
+                            (cond
+                              ((null target)
+                                (dm::prn "Emptied TARGET, stop.")
+                                (throw 'stop-collecting nil))
+                              ((and look-0 (not look-1))
+                                ;; If LOOK-0 matched the whole TARGET then we can munge
+                                ;; LOOK-0 and ALIST into the right shape and return successfully
+                                ;; immediately:
+                                (setf alist
+                                  (nconc
+                                    (when (listp look-0) look-0)
+                                    (when (dm::pat-elem-is-unsplice? (car pattern))
+                                      (list
+                                        (cons (dm::pat-elem-var-sym (car pattern))
+                                          (nreverse collect))))
+                                    alist))
+                                (dm::prn "CASE 1: Stopping with munged %s!" alist)
+                                (throw 'match alist))
+                              (t
+                                (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
+                                (push (dm::log-pop* target) collect))))
+                          (dm::prn-labeled collect "post")
+                          (when *dm:debug* (debug 'unsplicing))
+                          (dm::prndiv)
+                          (dm::prnl)
+		                      ) ;; END OF `while' t.
+                        ) ;; END OF `catch' STOP-COLLECTING.
+                      ;; We already know that (car pattern) is flexible, if it has a var name then
+                      ;; it must be an UNSPLICE.
+                      (when-let ((var (dm::pat-elem-var-sym (car pattern))))
+                        (dm::log-setf-alist-putunique! var (nreverse collect) alist alist))
+                      (dm::log-pop* pattern)
+                      ) ; end of `let' COLLECT.
+                    ) ; end of `with-indentation'.
+                  ) ; end of `dm::pat-elem-is-flexible?'s case.
+                ;; ----------------------------------------------------------------------------------
+                ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
+                ;; ----------------------------------------------------------------------------------
+                ((dm::pat-elem-is-variable? (car pattern))
+                  (let* ( (var-sym (dm::pat-elem-var-sym (car pattern)))
+                          (var-val  (car target))
+                          ;; `let' ASSOC just to print it in the message:
+                          (assoc    (cons var-sym var-val))) 
+                    (setf last-pattern-elem-was-flexible nil)
+                    (dm::log-setf-alist-putunique! var-sym var-val alist alist)
+                    (dm::prn-labeled assoc "take var as")
+                    (dm::log-pop* pattern target)))
+                ;; ----------------------------------------------------------------------------------
+                ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
+                ;; ALIST, unless the result was just t because the sub-pattern being recursed over
+                ;; contained no variables:
+                ;; ----------------------------------------------------------------------------------
+                ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
+                  (setf last-pattern-elem-was-flexible nil)
+                  (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
+                    (car pattern) (car target))
+                  (let ((res (recurse (car pattern) (car target) alist alist)))
+                    (cond
+                      ((eq res t)) ; do nothing.
+                      ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
+                      ;; `dm::match1' only returns t or lists, so by now it must a list.
+                      (t (setf alist res))))
+                  (dm::log-pop* pattern target))
+                ;; ----------------------------------------------------------------------------------
+                ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
+                ;; heads off:
+                ;; ----------------------------------------------------------------------------------
+                ((equal (car pattern) (car target))
+                  (setf last-pattern-elem-was-flexible nil)
+                  (dm::prn "Equal literals, discarding %s." (car target))
+                  (dm::log-pop* pattern target))
+                ;; ----------------------------------------------------------------------------------
+                ;; Otherwise: When the heads aren't `equal' and we didn't have either a DONT-CARE, 
+                ;; an ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
+                ;; ----------------------------------------------------------------------------------
+                (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))
+                ;; ----------------------------------------------------------------------------------
+                ) ; End of the big `cond'.
+              ;; ------------------------------------------------------------------------------------
+              (dm::prndiv)
+              (dm::prnl)
+              ;; ------------------------------------------------------------------------------------
+              ) ;  end of (while target ...
+            ;; --------------------------------------------------------------------------------------
+            (dm::prndiv)
+            (dm::prn-labeled pattern "final")
+            (dm::prn-labeled target  "final")
+            ;; --------------------------------------------------------------------------------------
+            ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only
+            ;; contain ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
+            ;; --------------------------------------------------------------------------------------
+            (when pattern
+              (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
+              (dolist (pat-elem pattern)
+                (dm::prn "Running out elem: %s" pat-elem)
+                (unless (dm::pat-elem-is-flexible? pat-elem)
+                  (NO-MATCH! "expected %s but target is empty" pattern))
+                (warn-when-consecutive-flexible-elements-in-pattern)
+                (setf last-pattern-elem-was-flexible t)
+                ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
+                (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                  (dm::log-setf-alist-putunique! var-sym nil alist alist))))))
         alist) ; end of `catch' MATCH.
       ) ; end of `setf' ALIST.
     ;; ----------------------------------------------------------------------------------------------
@@ -469,121 +466,121 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       match1-result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
-  (let ((*dm:verbose* t))
-    (confirm that (dm:match '(w ,x ,y ,z)      '(w 1 2 3))         returns ((x . 1) (y . 2) (z . 3)))
-    (confirm that (dm:match '(x ,y ,z)         '(x 2 3))           returns ((y . 2) (z . 3)))
-    (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
-    (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
-    (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
-    (confirm that (dm:match '(foo _ ,baz)      '(foo quux bar))    returns ((baz . bar)))
-    (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
-    (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
-    (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
-    (confirm that (dm:match '(,x ...)          '(1))               returns ((x . 1)))
-    (confirm that (dm:match '(,x ,y (,z 4) )   '(1 2 a (3 4) a))   returns nil)
-    (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4))      returns ((x . 1) (y . 4)))
-    (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
-    (confirm that (dm:match '(1 (,foo _) 2)    '(1 (,foo _) 2))    returns ((foo \, foo)))
-    (confirm that (dm:match '(,x (,p ...) ,y)  '(1 (q r) 2))       returns ((x . 1) (p . q) (y . 2)))
-    (confirm that (dm:match '(,x (,p) ,y)      '(1 (q r) 2))       returns nil)
-    (confirm that (dm:match '(,x (,p) ,y)      '(1 () 2))          returns nil)
-    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
-    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
-    (confirm that (dm:match '(1 2 3)           '(1 2 3))           returns t)
-    (confirm that (dm:match '(,1 2 3)          '(1 2 3))           returns ((1 . 1)))
-    (confirm that (dm:match '(_ ,x ...)        '(foo (2 . 3) 4))   returns ((x 2 . 3)))
-    (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
-      returns ((x . a) (y . 5)))
-    (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
-      returns ((x . a) (y . 5)))
-    (confirm that (dm:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
-      returns ((x . 1) (p . q) (y . 4)))
-    (confirm that
-      (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
-      returns ((v . foo) (w . 1) (x . 2) (ys 3 4) (z . 5)))
-    ;; duplicate var examples:
-    (confirm that (dm:match '(,x y ,x)   '(8 y 8))                 returns ((x . 8)))
-    (confirm that (dm:match '(,x ,@x)    '((1 2 3) 1 2 3))         returns ((x 1 2 3)))
-    (confirm that (dm:match '(,x y ,x)   '((8 9) y (8 9)))         returns ((x 8 9)))
-    (confirm that (dm:match '(,x ,y ,x)  '((7 8 . 9) 2 (7 8 . 9))) returns ((x 7 8 . 9) (y . 2)))
-    (confirm that (dm:match '(,x y ,x)   '(8 y 9))                 returns nil)
-    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil))           returns ((x)))
-    (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
-    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
-    (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
-    ;; Greediness test cases:
-    (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
-    (confirm that (dm:match '(,x ,@ys foo)     '(1 2 3 foo))       returns ((x . 1) (ys 2 3)))
-    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
-    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
-    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
-    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
-    (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
-    (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
-    ;; stupid-but-legal, consecutive flexible elements:
-    (let (*dm:warn-on-consecutive-flexible-elements*)
-      (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
-      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs)))
-      (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
-      (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
-      (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs))))
-    (confirm that (dm:match '(xx ,@xxs xx)    '(xx xx xx xx xx))   returns ((xxs xx xx xx)))
-    (confirm that (dm:match '(... the ,x ...) '(this is your prize))  returns nil)
-    (confirm that (dm:match '(... the ,x ...) '(this is the prize))   returns ((x . prize)))
-    (confirm that (dm:match '(... the ,x ...) '(the prize is yours))  returns ((x . prize)))
-    (confirm that (dm:match '(... the ,x ...) '(here is the prize you found it))
-      returns ((x . prize)))
-    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
-    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
-      returns ((foo . FOO) (baz . 111)))
-    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
-      returns ((foo . FOO) (baz . 111)))
-    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
-      returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
-    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
-      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
-    
-    (confirm that
+(let ((*dm:verbose* t))
+  (confirm that (dm:match '(w ,x ,y ,z)      '(w 1 2 3))         returns ((x . 1) (y . 2) (z . 3)))
+  (confirm that (dm:match '(x ,y ,z)         '(x 2 3))           returns ((y . 2) (z . 3)))
+  (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
+  (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
+  (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
+  (confirm that (dm:match '(foo _ ,baz)      '(foo quux bar))    returns ((baz . bar)))
+  (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
+  (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
+  (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
+  (confirm that (dm:match '(,x ...)          '(1))               returns ((x . 1)))
+  (confirm that (dm:match '(,x ,y (,z 4) )   '(1 2 a (3 4) a))   returns nil)
+  (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4))      returns ((x . 1) (y . 4)))
+  (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
+  (confirm that (dm:match '(1 (,foo _) 2)    '(1 (,foo _) 2))    returns ((foo \, foo)))
+  (confirm that (dm:match '(,x (,p ...) ,y)  '(1 (q r) 2))       returns ((x . 1) (p . q) (y . 2)))
+  (confirm that (dm:match '(,x (,p) ,y)      '(1 (q r) 2))       returns nil)
+  (confirm that (dm:match '(,x (,p) ,y)      '(1 () 2))          returns nil)
+  (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+  (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+  (confirm that (dm:match '(1 2 3)           '(1 2 3))           returns t)
+  (confirm that (dm:match '(,1 2 3)          '(1 2 3))           returns ((1 . 1)))
+  (confirm that (dm:match '(_ ,x ...)        '(foo (2 . 3) 4))   returns ((x 2 . 3)))
+  (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
+    returns ((x . a) (y . 5)))
+  (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
+    returns ((x . a) (y . 5)))
+  (confirm that (dm:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
+    returns ((x . 1) (p . q) (y . 4)))
+  (confirm that
+    (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
+    returns ((v . foo) (w . 1) (x . 2) (ys 3 4) (z . 5)))
+  ;; duplicate var examples:
+  (confirm that (dm:match '(,x y ,x)   '(8 y 8))                 returns ((x . 8)))
+  (confirm that (dm:match '(,x ,@x)    '((1 2 3) 1 2 3))         returns ((x 1 2 3)))
+  (confirm that (dm:match '(,x y ,x)   '((8 9) y (8 9)))         returns ((x 8 9)))
+  (confirm that (dm:match '(,x ,y ,x)  '((7 8 . 9) 2 (7 8 . 9))) returns ((x 7 8 . 9) (y . 2)))
+  (confirm that (dm:match '(,x y ,x)   '(8 y 9))                 returns nil)
+  (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil))           returns ((x)))
+  (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
+  (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
+  (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
+  ;; Greediness test cases:
+  (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
+  (confirm that (dm:match '(,x ,@ys foo)     '(1 2 3 foo))       returns ((x . 1) (ys 2 3)))
+  (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+  (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+  (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+  (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+  (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
+  (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
+  ;; stupid-but-legal, consecutive flexible elements:
+  (let (*dm:warn-on-consecutive-flexible-elements*)
+    (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
+    (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs)))
+    (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+    (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+    (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs))))
+  (confirm that (dm:match '(xx ,@xxs xx)    '(xx xx xx xx xx))   returns ((xxs xx xx xx)))
+  (confirm that (dm:match '(... the ,x ...) '(this is your prize))  returns nil)
+  (confirm that (dm:match '(... the ,x ...) '(this is the prize))   returns ((x . prize)))
+  (confirm that (dm:match '(... the ,x ...) '(the prize is yours))  returns ((x . prize)))
+  (confirm that (dm:match '(... the ,x ...) '(here is the prize you found it))
+    returns ((x . prize)))
+  (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
+  (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
+    returns ((foo . FOO) (baz . 111)))
+  (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
+    returns ((foo . FOO) (baz . 111)))
+  (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
+    returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
+  (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
+    returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
+  
+  (confirm that
+    (dm:match
+      '(one (this that) (,two three (,four ,five) ,six))
+      '(one (this that) (2 three (4 5) 6)))  
+    returns ((two . 2) (four . 4) (five . 5) (six . 6)))
+  (confirm that
+    (when-let-alist
       (dm:match
-        '(one (this that) (,two three (,four ,five) ,six))
-        '(one (this that) (2 three (4 5) 6)))  
-      returns ((two . 2) (four . 4) (five . 5) (six . 6)))
-    (confirm that
-      (when-let-alist
-        (dm:match
-          '(i ,modal-verb ,verb a ,thing)
-          '(i have (never seen) a (red car)))
-        (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
-      returns (Do you really believe that you have never seen a red car \?))
-    (confirm that
-      (when-let-alist
-        (dm:match
-          '(i ,verb that ,noun ,con ,thing)
-          '(i think that dogs are dumb))
-        (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
-      returns (Why do you think that dogs are dumb \?))
-    (confirm that
-      (when-let-alist
-        (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
-        (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
-      returns (why do you think that you have never seen a red car \?))
-    (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
-      returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
-    ;; parse fun bodies:
-    (confirm that
-      (dm:match '(,form ,name (,@args) ,@body)
-        '(defmacro foo () (prn "foo") :FOO (car bazes)))
-      returns ( (form . defmacro) (name . foo) (args)
-                (body
-                  (prn "foo")
-                  :FOO
-                  (car bazes))))
-    (confirm that
-      (dm:match '(,form ,name (,@args) ,@body) '(defmacro foo nil (prn "foo") :FOO :BAR))
-      returns ( (form . defmacro) (name . foo) (args)
-                (body
-                  (prn "foo")
-                  :FOO :BAR)))))
+        '(i ,modal-verb ,verb a ,thing)
+        '(i have (never seen) a (red car)))
+      (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
+    returns (Do you really believe that you have never seen a red car \?))
+  (confirm that
+    (when-let-alist
+      (dm:match
+        '(i ,verb that ,noun ,con ,thing)
+        '(i think that dogs are dumb))
+      (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
+    returns (Why do you think that dogs are dumb \?))
+  (confirm that
+    (when-let-alist
+      (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
+      (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
+    returns (why do you think that you have never seen a red car \?))
+  (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
+    returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
+  ;; parse fun bodies:
+  (confirm that
+    (dm:match '(,form ,name (,@args) ,@body)
+      '(defmacro foo () (prn "foo") :FOO (car bazes)))
+    returns ( (form . defmacro) (name . foo) (args)
+              (body
+                (prn "foo")
+                :FOO
+                (car bazes))))
+  (confirm that
+    (dm:match '(,form ,name (,@args) ,@body) '(defmacro foo nil (prn "foo") :FOO :BAR))
+    returns ( (form . defmacro) (name . foo) (args)
+              (body
+                (prn "foo")
+                :FOO :BAR)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
