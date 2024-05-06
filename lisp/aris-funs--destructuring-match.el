@@ -88,7 +88,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defmacro dm::prn-labeled (var &optional extra (width *dm:label-width*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Print VAR with a label at a given WIDTH, optionally prefixed by LABEL."
+  "Print VAR with a label at a given WIDTH, optionally prefixed by EXTRA."
   (let* ( (label  (concat (upcase (symbol-name var)) ":"))
           (extra  (if (null extra) "" (capitalize1 (concat extra " "))))
           (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
