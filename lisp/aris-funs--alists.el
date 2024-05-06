@@ -534,6 +534,12 @@ reference instead of ALIST."
   (expr-throws-sym-p 'unequal-duplicate
     '(let ((alist '((a . 1) (b . 2)))) (alist-putunique 'b 2 alist)))
   returns nil)
+;; existing key in REF, equal value:
+(confirm that
+  (let ( (alist '((a . 1)))
+         (ref '((b . 2))))
+    (alist-putunique 'b 2 alist 'unequal-duplicate ref))
+  returns ((a . 1)))
 ;; duplicate key, un-equal value. this one SHOULD throw, so we don't `confirm' it's return
 ;; value, we just `confirm' if it threw:
 (confirm that
