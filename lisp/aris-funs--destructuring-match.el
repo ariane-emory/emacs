@@ -537,6 +537,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that
       (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
       returns ((v . foo) (w . 1) (x . 2) (ys 3 4) (z . 5)))
+    ;;-----------------------------------------------------------------------------------------------
     ;; duplicate var examples:
     (confirm that (dm:match '(,x y ,x)   '(8 y 8))                 returns ((x . 8)))
     (confirm that (dm:match '(,x ,@x)    '((1 2 3) 1 2 3))         returns ((x 1 2 3)))
@@ -547,6 +548,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
     (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
     (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
+    ;;-----------------------------------------------------------------------------------------------
     ;; predicate test cases:
     (confirm that (dm:match '(foo ,(bar)                               quux) '(foo 3   quux))
       returns ((bar . 3))) ; 0 predicate case.
@@ -562,18 +564,37 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns nil)
     (confirm that (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo bar quux))
       returns nil)    
+    ;;-----------------------------------------------------------------------------------------------
     (confirm that (dm:match '(foo ,(bar integer? odd?) ,bar            quux) '(foo 3 3 quux))
       returns ((bar . 3)))
     (confirm that (dm:match '(foo ,(bar integer? odd?) ,bar            quux) '(foo 3 4 quux))
       returns nil)
+    (confirm that (dm:match '(foo ,(bar integer? odd?) ,bar            quux) '(foo 3 5 quux))
+      returns nil)
     (confirm that (dm:match '(foo ,(bar integer? odd?) ,bar            quux) '(foo 4 4 quux))
       returns nil)
+    ;;-----------------------------------------------------------------------------------------------
     (confirm that (dm:match '(foo ,bar ,(bar integer? odd?)            quux) '(foo 3 3 quux))
       returns ((bar . 3)))
     (confirm that (dm:match '(foo ,bar ,(bar integer? odd?)            quux) '(foo 3 4 quux))
       returns nil)
+    (confirm that (dm:match '(foo ,bar ,(bar integer? odd?)            quux) '(foo 3 5 quux))
+      returns nil)
     (confirm that (dm:match '(foo ,bar ,(bar integer? odd?)            quux) '(foo 4 4 quux))
       returns nil)
+    ;;-----------------------------------------------------------------------------------------------
+    (confirm that (dm:match '(foo ,(bar integer?) ,(bar odd?)          quux) '(foo 3 3 quux))
+      returns ((bar . 3)))
+    (confirm that (dm:match '(foo ,(bar integer?) ,(bar odd?)          quux) '(foo 3 4 quux))
+      returns nil)
+    (confirm that (dm:match '(foo ,(bar integer?) ,(bar odd?)          quux) '(foo 3 5 quux))
+      returns nil)
+    (confirm that (dm:match '(foo ,(bar integer?) ,(bar odd?)          quux) '(foo 4 4 quux))
+      returns nil)
+    ;;-----------------------------------------------------------------------------------------------
+    (confirm that (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 3   quux))
+      returns nil)
+    ;;-----------------------------------------------------------------------------------------------
     ;; Greediness test cases:
     (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
     (confirm that (dm:match '(,x ,@ys foo)     '(1 2 3 foo))       returns ((x . 1) (ys 2 3)))
@@ -583,6 +604,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
     (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
     (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
+    ;;-----------------------------------------------------------------------------------------------
     ;; stupid-but-legal, consecutive flexible elements:
     (let (*dm:warn-on-consecutive-flexible-elements*)
       (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
