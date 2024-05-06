@@ -369,6 +369,16 @@ in reverse order."
                                 ((and look-0 (not look-1))
                                   ;; If LOOK-0 matched the whole TARGET then we can munge
                                   ;; LOOK-0 + ALIST  into the right shape and bail early:
+                                  (when (dm::pat-elem-is-unsplice? (car pattern))
+                                    (setf alist (cons
+                                                  (cons (dm::pat-elem-var-name (car pattern))
+                                                    (reverse collect))
+                                                  alist)))
+                                  (when (listp look-0)
+                                    (setf alist (append look-0 alist)))
+                                  (dm::prn "CASE 1: Stopping with munged %s!" alist)                                    
+                                  (throw 'match alist)
+                                  
                                   (let* ( (alist (if (dm::pat-elem-is-unsplice? (car pattern))
                                                    (cons
                                                      (cons (dm::pat-elem-var-name (car pattern))
