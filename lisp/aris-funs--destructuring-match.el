@@ -366,7 +366,8 @@ in reverse order."
                                   (dm::prn "Out of TARGET, stop.")
                                   (throw 'stop nil))
                                 ((and look-0 (not look-1))
-                                  (dm::prn "CASE 1: Stopping!")
+                                  (dm::prn "CASE 1: Stopping with %s!" look-0)
+                                  ;; (throw 'match look-0)
                                   (throw 'stop nil))
                                 (t
                                   (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
