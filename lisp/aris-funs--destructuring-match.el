@@ -14,6 +14,11 @@
 (defgroup destructuring-match nil
   "Ari's destructuring pattern matcher.")
 ;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:enable-list-vars* t
+  "Describe this."
+  :group 'destructuring-match
+  :type 'boolean)
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:verbose* t
   "Whether or not functions in the 'destructuring-match' group should print verbose messages."
   :group 'destructuring-match
@@ -693,3 +698,4 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(dm:match '(foo ,(bar baz) quux) '(foo qqq quux))
