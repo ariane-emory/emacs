@@ -378,8 +378,7 @@ in reverse order."
                                                     (append look-0 munged)
                                                     munged)))
                                     (dm::prn "CASE 1: Stopping with munged %s!" munged)
-                                    (throw 'match munged))
-                                  (throw 'stop nil))
+                                    (throw 'match munged)))
                                 (t
                                   (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
                                   (push (dm::log-pop target) collect))))
@@ -388,7 +387,7 @@ in reverse order."
                             (dm::prndiv)
                             (dm::prnl)
 		                        ) ;; END OF `while'.
-                          ) ;; END OF `catch'.                  
+                          ) ;; END OF `catch' 'stop.
                         (when *dm:debug* (debug 'before-set-unspliced))
                         (when (dm::pat-elem-is-unsplice? (car pattern))
                           (dm::log-setf-alist-putunique! (dm::pat-elem-var-name (car pattern))
