@@ -437,9 +437,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                     (throw 'pred-failed nil)))
                                 t))))
                     (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
-                    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) n)) quux) '(foo 9   quux))
-                    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) n)) quux) '(foo 8   quux))
-                    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) n)) quux) '(foo baz quux))
                     (dm::log-setf-alist-putunique! var-sym var-val alist alist)
                     (dm::prn-labeled assoc "take var as")
                     (dm::log-pop* pattern target)))
@@ -507,241 +504,247 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (dm::prn-labeled match1-result)
       match1-result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (when *dm:test-match*
-    (let ((*dm:verbose* nil))
-      (confirm that (dm:match '(w ,x ,y ,z)      '(w 1 2 3))         returns ((x . 1) (y . 2) (z . 3)))
-      (confirm that (dm:match '(x ,y ,z)         '(x 2 3))           returns ((y . 2) (z . 3)))
-      (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
-      (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
-      (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
-      (confirm that (dm:match '(foo _ ,baz)      '(foo quux bar))    returns ((baz . bar)))
-      (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
-      (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
-      (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
-      (confirm that (dm:match '(,x ...)          '(1))               returns ((x . 1)))
-      (confirm that (dm:match '(,x ,y (,z 4) )   '(1 2 a (3 4) a))   returns nil)
-      (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4))      returns ((x . 1) (y . 4)))
-      (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
-      (confirm that (dm:match '(1 (,foo _) 2)    '(1 (,foo _) 2))    returns ((foo \, foo)))
-      (confirm that (dm:match '(,x (,p ...) ,y)  '(1 (q r) 2))       returns ((x . 1) (p . q) (y . 2)))
-      (confirm that (dm:match '(,x (,p) ,y)      '(1 (q r) 2))       returns nil)
-      (confirm that (dm:match '(,x (,p) ,y)      '(1 () 2))          returns nil)
-      (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
-      (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
-      (confirm that (dm:match '(1 2 3)           '(1 2 3))           returns t)
-      (confirm that (dm:match '(,1 2 3)          '(1 2 3))           returns ((1 . 1)))
-      (confirm that (dm:match '(_ ,x ...)        '(foo (2 . 3) 4))   returns ((x 2 . 3)))
-      (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
-        returns ((x . a) (y . 5)))
-      (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
-        returns ((x . a) (y . 5)))
-      (confirm that (dm:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
-        returns ((x . 1) (p . q) (y . 4)))
-      (confirm that
-        (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
-        returns ((v . foo) (w . 1) (x . 2) (ys 3 4) (z . 5)))
-      ;; duplicate var examples:
-      (confirm that (dm:match '(,x y ,x)   '(8 y 8))                 returns ((x . 8)))
-      (confirm that (dm:match '(,x ,@x)    '((1 2 3) 1 2 3))         returns ((x 1 2 3)))
-      (confirm that (dm:match '(,x y ,x)   '((8 9) y (8 9)))         returns ((x 8 9)))
-      (confirm that (dm:match '(,x ,y ,x)  '((7 8 . 9) 2 (7 8 . 9))) returns ((x 7 8 . 9) (y . 2)))
-      (confirm that (dm:match '(,x y ,x)   '(8 y 9))                 returns nil)
-      (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil))           returns ((x)))
-      (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
-      (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
-      (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
-      ;; Greediness test cases:
-      (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
-      (confirm that (dm:match '(,x ,@ys foo)     '(1 2 3 foo))       returns ((x . 1) (ys 2 3)))
-      (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
-      (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
-      (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
-      (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
-      (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
-      (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
-      ;; stupid-but-legal, consecutive flexible elements:
-      (let (*dm:warn-on-consecutive-flexible-elements*)
-        (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
-        (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs)))
-        (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
-        (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
-        (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs))))
-      (confirm that (dm:match '(xx ,@xxs xx)    '(xx xx xx xx xx))   returns ((xxs xx xx xx)))
-      (confirm that (dm:match '(... the ,x ...) '(this is your prize))  returns nil)
-      (confirm that (dm:match '(... the ,x ...) '(this is the prize))   returns ((x . prize)))
-      (confirm that (dm:match '(... the ,x ...) '(the prize is yours))  returns ((x . prize)))
-      (confirm that (dm:match '(... the ,x ...) '(here is the prize you found it))
-        returns ((x . prize)))
-      (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
-      (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
-        returns ((foo . FOO) (baz . 111)))
-      (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
-        returns ((foo . FOO) (baz . 111)))
-      (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
-        returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
-      (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
-        returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
-      
-      (confirm that
+(when *dm:test-match*
+  (let ((*dm:verbose* nil))
+    (confirm that (dm:match '(w ,x ,y ,z)      '(w 1 2 3))         returns ((x . 1) (y . 2) (z . 3)))
+    (confirm that (dm:match '(x ,y ,z)         '(x 2 3))           returns ((y . 2) (z . 3)))
+    (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
+    (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
+    (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
+    (confirm that (dm:match '(foo _ ,baz)      '(foo quux bar))    returns ((baz . bar)))
+    (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
+    (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
+    (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
+    (confirm that (dm:match '(,x ...)          '(1))               returns ((x . 1)))
+    (confirm that (dm:match '(,x ,y (,z 4) )   '(1 2 a (3 4) a))   returns nil)
+    (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 () 3 4))      returns ((x . 1) (y . 4)))
+    (confirm that (dm:match '(,x 2 (...) 3 ,y) '(1 2 (a b c) 3 4)) returns ((x . 1) (y . 4)))
+    (confirm that (dm:match '(1 (,foo _) 2)    '(1 (,foo _) 2))    returns ((foo \, foo)))
+    (confirm that (dm:match '(,x (,p ...) ,y)  '(1 (q r) 2))       returns ((x . 1) (p . q) (y . 2)))
+    (confirm that (dm:match '(,x (,p) ,y)      '(1 (q r) 2))       returns nil)
+    (confirm that (dm:match '(,x (,p) ,y)      '(1 () 2))          returns nil)
+    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+    (confirm that (dm:match '(1 2 3)           '(1 2 3))           returns t)
+    (confirm that (dm:match '(,1 2 3)          '(1 2 3))           returns ((1 . 1)))
+    (confirm that (dm:match '(_ ,x ...)        '(foo (2 . 3) 4))   returns ((x 2 . 3)))
+    (confirm that (dm:match '(1 2 (,x b ...) 4 ,y) '(1 2 (a b c) 4 5))
+      returns ((x . a) (y . 5)))
+    (confirm that (dm:match '(1 2 (,x b ...) 4 ,y ...) '(1 2 (a b c) 4 5 6 7 8 9))
+      returns ((x . a) (y . 5)))
+    (confirm that (dm:match '(,x 2 (,p ...) 3 ,y) '(1 2 (q r) 3 4))
+      returns ((x . 1) (p . q) (y . 4)))
+    (confirm that
+      (dm:match '(,v _ ,w (,x (p q) ,@ys) ,z ...) '(foo bar 1 (2 (p q) 3 4) 5 6 7 8))
+      returns ((v . foo) (w . 1) (x . 2) (ys 3 4) (z . 5)))
+    ;; duplicate var examples:
+    (confirm that (dm:match '(,x y ,x)   '(8 y 8))                 returns ((x . 8)))
+    (confirm that (dm:match '(,x ,@x)    '((1 2 3) 1 2 3))         returns ((x 1 2 3)))
+    (confirm that (dm:match '(,x y ,x)   '((8 9) y (8 9)))         returns ((x 8 9)))
+    (confirm that (dm:match '(,x ,y ,x)  '((7 8 . 9) 2 (7 8 . 9))) returns ((x 7 8 . 9) (y . 2)))
+    (confirm that (dm:match '(,x y ,x)   '(8 y 9))                 returns nil)
+    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 nil))           returns ((x)))
+    (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
+    (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
+    (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
+    ;; predicate test cases:
+    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 3   quux))
+    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 4   quux))
+    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 5   quux))
+    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 6   quux))
+    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo bar quux))
+    
+    ;; Greediness test cases:
+    (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
+    (confirm that (dm:match '(,x ,@ys foo)     '(1 2 3 foo))       returns ((x . 1) (ys 2 3)))
+    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+    (confirm that (dm:match '(,x ,@ys)         '(1))               returns ((x . 1) (ys)))
+    (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
+    (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
+    (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
+    ;; stupid-but-legal, consecutive flexible elements:
+    (let (*dm:warn-on-consecutive-flexible-elements*)
+      (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
+      (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys 2 3) (zs)))
+      (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+      (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
+      (confirm that (dm:match '(,x ,@ys ,@zs) '(1))                returns ((x . 1) (ys) (zs))))
+    (confirm that (dm:match '(xx ,@xxs xx)    '(xx xx xx xx xx))   returns ((xxs xx xx xx)))
+    (confirm that (dm:match '(... the ,x ...) '(this is your prize))  returns nil)
+    (confirm that (dm:match '(... the ,x ...) '(this is the prize))   returns ((x . prize)))
+    (confirm that (dm:match '(... the ,x ...) '(the prize is yours))  returns ((x . prize)))
+    (confirm that (dm:match '(... the ,x ...) '(here is the prize you found it))
+      returns ((x . prize)))
+    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
+    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
+      returns ((foo . FOO) (baz . 111)))
+    (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
+      returns ((foo . FOO) (baz . 111)))
+    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
+      returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
+    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
+      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
+    (confirm that
+      (dm:match
+        '(one (this that) (,two three (,four ,five) ,six))
+        '(one (this that) (2 three (4 5) 6)))  
+      returns ((two . 2) (four . 4) (five . 5) (six . 6)))
+    (confirm that
+      (when-let-alist
         (dm:match
-          '(one (this that) (,two three (,four ,five) ,six))
-          '(one (this that) (2 three (4 5) 6)))  
-        returns ((two . 2) (four . 4) (five . 5) (six . 6)))
-      (confirm that
-        (when-let-alist
-          (dm:match
-            '(i ,modal-verb ,verb a ,thing)
-            '(i have (never seen) a (red car)))
-          (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
-        returns (Do you really believe that you have never seen a red car \?))
-      (confirm that
-        (when-let-alist
-          (dm:match
-            '(i ,verb that ,noun ,con ,thing)
-            '(i think that dogs are dumb))
-          (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
-        returns (Why do you think that dogs are dumb \?))
-      (confirm that
-        (when-let-alist
-          (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
-          (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
-        returns (why do you think that you have never seen a red car \?))
-      (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
-        returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
-      ;; parse fun bodies:
-      (confirm that
-        (dm:match '(,form ,name (,@args) ,@body)
-          '(defmacro foo () (prn "foo") :FOO (car bazes)))
-        returns ( (form . defmacro) (name . foo) (args)
-                  (body
-                    (prn "foo")
-                    :FOO
-                    (car bazes))))
-      (confirm that
-        (dm:match '(,form ,name (,@args) ,@body) '(defmacro foo nil (prn "foo") :FOO :BAR))
-        returns ( (form . defmacro) (name . foo) (args)
-                  (body
-                    (prn "foo")
-                    :FOO :BAR)))))
+          '(i ,modal-verb ,verb a ,thing)
+          '(i have (never seen) a (red car)))
+        (flatten `(Do you really believe that you ,.modal-verb ,.verb a ,.thing \?)))
+      returns (Do you really believe that you have never seen a red car \?))
+    (confirm that
+      (when-let-alist
+        (dm:match
+          '(i ,verb that ,noun ,con ,thing)
+          '(i think that dogs are dumb))
+        (flatten `(Why do you ,.verb that ,.noun ,.con ,.thing \?)))
+      returns (Why do you think that dogs are dumb \?))
+    (confirm that
+      (when-let-alist
+        (dm:match '(i ,modal-verb ,verb a ,thing) '(i have (never seen) a (red car)))
+        (flatten `(why do you think that you ,.modal-verb ,.verb a ,.thing \?)))
+      returns (why do you think that you have never seen a red car \?))
+    (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
+      returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
+    ;; parse fun bodies:
+    (confirm that
+      (dm:match '(,form ,name (,@args) ,@body)
+        '(defmacro foo () (prn "foo") :FOO (car bazes)))
+      returns ( (form . defmacro) (name . foo) (args)
+                (body
+                  (prn "foo")
+                  :FOO
+                  (car bazes))))
+    (confirm that
+      (dm:match '(,form ,name (,@args) ,@body) '(defmacro foo nil (prn "foo") :FOO :BAR))
+      returns ( (form . defmacro) (name . foo) (args)
+                (body
+                  (prn "foo")
+                  :FOO :BAR)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-defun dm:fill (pattern alist
-                      &optional
-                      (unsplice *dm:default-unsplice*)
-                      (ellipsis  *dm:default-ellipsis*)
-                      (dont-care *dm:default-dont-care*))
+(cl-defun dm:fill (pattern alist
+                    &optional
+                    (unsplice *dm:default-unsplice*)
+                    (ellipsis  *dm:default-ellipsis*)
+                    (dont-care *dm:default-dont-care*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Fill in the variables in PATTERN with the values from ALIST.
+  "Fill in the variables in PATTERN with the values from ALIST.
 
 This behaves very similarly to quasiquote."  
-    (dm::prndiv)
-    (dm::prn "FILL:")
-    (let (res)
-      (while pattern
-        (let ((thing (dm::log-pop* pattern)))
-          (dm::prndiv)
-          (dm::prn "thing:   %s" thing)
-          (dm::prn "alist:   %s" alist)
-          (cond
-            ((dm::pat-elem-is-the-symbol? dont-care thing)
-              (push (when alist (cdr-safe (pick alist))) res))
-            ((dm::pat-elem-is-the-symbol? ellipsis thing)
-              (let (random-var-values)
-                (while (= 0 (% (random) 2))
-                  (push (when alist (cdr-safe (pick alist))) random-var-values))
-                (dolist (elem random-var-values)
-                  (push elem res))))
-            ((dm::pat-elem-is-a-variable? thing)
-              (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
-                (push (cdr assoc) res)
-                (error "var %s not found." (dm::pat-elem-var-sym thing))))
-            ((dm::pat-elem-is-an-unsplice? thing)
-              (let ((var (dm::pat-elem-var-sym thing)))
-                (dm::prn "VAR:     %s" var)
-                (if-let ((assoc (assoc (cadr thing) alist)))
-                  (let ((val (cdr assoc)))
-                    (dm::prn "VAL:     %s" val)
-                    (unless (proper-list-p val)
-                      (error "var %s's value %s cannot be spliced, not a list."))
-                    (dolist (elem val)
-                      (push elem res)))
-                  (error "var %s not found." (cadr thing)))))
-            ((proper-list-p thing)
-              (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
-            (t (push thing res)))))
-      (nreverse res)))
+  (dm::prndiv)
+  (dm::prn "FILL:")
+  (let (res)
+    (while pattern
+      (let ((thing (dm::log-pop* pattern)))
+        (dm::prndiv)
+        (dm::prn "thing:   %s" thing)
+        (dm::prn "alist:   %s" alist)
+        (cond
+          ((dm::pat-elem-is-the-symbol? dont-care thing)
+            (push (when alist (cdr-safe (pick alist))) res))
+          ((dm::pat-elem-is-the-symbol? ellipsis thing)
+            (let (random-var-values)
+              (while (= 0 (% (random) 2))
+                (push (when alist (cdr-safe (pick alist))) random-var-values))
+              (dolist (elem random-var-values)
+                (push elem res))))
+          ((dm::pat-elem-is-a-variable? thing)
+            (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
+              (push (cdr assoc) res)
+              (error "var %s not found." (dm::pat-elem-var-sym thing))))
+          ((dm::pat-elem-is-an-unsplice? thing)
+            (let ((var (dm::pat-elem-var-sym thing)))
+              (dm::prn "VAR:     %s" var)
+              (if-let ((assoc (assoc (cadr thing) alist)))
+                (let ((val (cdr assoc)))
+                  (dm::prn "VAL:     %s" val)
+                  (unless (proper-list-p val)
+                    (error "var %s's value %s cannot be spliced, not a list."))
+                  (dolist (elem val)
+                    (push elem res)))
+                (error "var %s not found." (cadr thing)))))
+          ((proper-list-p thing)
+            (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
+          (t (push thing res)))))
+    (nreverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (when *dm:test-fill*
-    (let (*dm:verbose*)
-      (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 888 777)))
-        returns (666 x 999 888 777 z))
-      (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
-        returns (666 x 999 z))
-      (confirm that (dm:fill
-                      '(,w x ,y (,y , y) z ,w)
-                      '((y . 999) (w . (333 666))))
-        returns ((333 666) x 999 (999 999) z (333 666)))
-      (confirm that (dm:fill '(a ,b (,c ,d))
-                      (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
-        returns (a 2 (3 4)))
-      (confirm that
+(when *dm:test-fill*
+  (let (*dm:verbose*)
+    (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 888 777)))
+      returns (666 x 999 888 777 z))
+    (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
+      returns (666 x 999 z))
+    (confirm that (dm:fill
+                    '(,w x ,y (,y , y) z ,w)
+                    '((y . 999) (w . (333 666))))
+      returns ((333 666) x 999 (999 999) z (333 666)))
+    (confirm that (dm:fill '(a ,b (,c ,d))
+                    (dm:match '(a ,b (,c ,d)) '(a 2 (3 4))))
+      returns (a 2 (3 4)))
+    (confirm that
+      (dm:fill '(a ,b (,c ,d))
+        (dm:match '(a ,b (,c ,d))
+          (dm:fill '(a ,b (,c ,d))
+            (dm:match '(a ,b (,c ,d))
+              '(a 2 (3 4))))))
+      returns (a 2 (3 4)))
+    (confirm that
+      (dm:match '(a ,b (,c ,d))
         (dm:fill '(a ,b (,c ,d))
           (dm:match '(a ,b (,c ,d))
             (dm:fill '(a ,b (,c ,d))
               (dm:match '(a ,b (,c ,d))
-                '(a 2 (3 4))))))
-        returns (a 2 (3 4)))
-      (confirm that
-        (dm:match '(a ,b (,c ,d))
-          (dm:fill '(a ,b (,c ,d))
-            (dm:match '(a ,b (,c ,d))
-              (dm:fill '(a ,b (,c ,d))
-                (dm:match '(a ,b (,c ,d))
-                  '(a 2 (3 4)))))))
-        returns ((b . 2) (c . 3) (d . 4)))
-      (confirm that
-        (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
-               (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+                '(a 2 (3 4)))))))
+      returns ((b . 2) (c . 3) (d . 4)))
+    (confirm that
+      (let ( (pattern '(a ,b (,c ,d (,e ,@fs   ))))
+             (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+        (dm:fill pattern
+          (dm:match pattern
+            (dm:fill pattern
+              (dm:match pattern
+                target)))))
+      returns (a 2 (3 4 (5 6 7 8))))
+    (confirm that
+      (let ( (pattern '(a ,b (,c ,d (,e ,@fs    ))))
+             (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
+        (dm:match pattern
           (dm:fill pattern
             (dm:match pattern
               (dm:fill pattern
                 (dm:match pattern
-                  target)))))
-        returns (a 2 (3 4 (5 6 7 8))))
-      (confirm that
-        (let ( (pattern '(a ,b (,c ,d (,e ,@fs    ))))
-               (target  '(a  2 ( 3  4 ( 5   6 7 8)))))
-          (dm:match pattern
-            (dm:fill pattern
-              (dm:match pattern
-                (dm:fill pattern
-                  (dm:match pattern
-                    target))))))
-        returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))
-      (confirm that
-        (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
-          (dm:match '(,form ,name (,arg) ,@body)
-            '(defun foo (bar) (prn "foo") :FOO (car bar))))
-        returns (defmacro foo (bar)
-                  `(progn
-                     (prn "foo")
-                     :FOO
-                     (car bar))))))
+                  target))))))
+      returns ((b . 2) (c . 3) (d . 4) (e . 5) (fs 6 7 8)))
+    (confirm that
+      (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
+        (dm:match '(,form ,name (,arg) ,@body)
+          '(defun foo (bar) (prn "foo") :FOO (car bar))))
+      returns (defmacro foo (bar)
+                `(progn
+                   (prn "foo")
+                   :FOO
+                   (car bar))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (provide 'aris-funs--destructuring-match)
+(provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
+;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
 
-  ;; (defun dm::pat-elem-var-sym2 (pat-elem)
-  ;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
-  ;;     (if (atom 2nd)
-  ;;       2nd
-  ;;       (car 2nd))))
+;; (defun dm::pat-elem-var-sym2 (pat-elem)
+;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
+;;     (if (atom 2nd)
+;;       2nd
+;;       (car 2nd))))
 
 
