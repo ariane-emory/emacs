@@ -548,6 +548,10 @@ This behaves very similarly to quasiquote."
         (cond
           ((dm::pat-elem-is-dont-care? thing)
             (push (when alist (cdr-safe (pick alist))) res))
+          ((dm::pat-elem-is-ellipsis? thing)
+            (let (res)
+              (while (= 0 (random 2))
+                (push (when alist (cdr-safe (pick alist))) res))))
           ((dm::pat-elem-is-variable? thing)
             (if-let ((assoc (assoc (dm::pat-elem-var-name thing) alist)))
               (push (cdr assoc) res)
@@ -560,8 +564,10 @@ This behaves very similarly to quasiquote."
                   (dm::prn "VAL:     %s" val)
                   (unless (proper-list-p val)
                     (error "var %s's value %s cannot be spliced, not a list."))
+                  ;; (append res val)
                   (dolist (elem val)
-                    (push elem res)))
+                    (push elem res))
+                  )
                 (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing)
             (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
@@ -570,6 +576,8 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-fill*
   (let (*dm:verbose*)
+    (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 888 777)))
+      returns (666 x 999 888 777 z))
     (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
       returns (666 x 999 z))
     (confirm that (dm:fill
@@ -619,5 +627,6 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
