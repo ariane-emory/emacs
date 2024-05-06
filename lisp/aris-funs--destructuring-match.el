@@ -1,6 +1,6 @@
-;;k -*- fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
+;; -*- fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; `dm:match', a very basic pattern matching function:
+;; `dm:match', my destructuring pattern matching function:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--lists)
@@ -317,14 +317,22 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                     (let ((remaining-non-flexible (cdr pattern)))
                       (while (dm::pat-elem-is-flexible? (car remaining-non-flexible))
                         (dm::log-pop* remaining-non-flexible))
-                      ;; if there are no more non-flexible elements in PATTERN we can return early:
-                      ;; (unless remaining-non-flexible 
-                      ;;   ;; We already know that (car pattern) is flexible, if it has a var name then
-                      ;;   ;; it must be an UNSPLICE.
-                      ;;   (when-let ((var (dm::pat-elem-var-sym (dm::log-pop* pattern))))
-                      ;;     (dm::log-setf-alist-putunique! var target alist alist))
-                      ;;   (dm::prn-labeled alist "early return")
-                      ;;   (throw 'match alist))
+                      ;; If there are no more non-flexible elements in PATTERN we can return early:
+                      (unless remaining-non-flexible
+                        ;; We already know that (car pattern) is flexible, so, it has a var-sym then
+                        ;; it must be an UNSPLICE.
+                        (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
+                          (dm::log-setf-alist-putunique! var-sym target alist alist))
+                        (when pattern
+                          (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
+                          (dolist (pat-elem pattern)
+                            (dm::prn "Running out elem: %s" pat-elem)
+                            (warn-when-consecutive-flexible-elements-in-pattern)
+                            ;; We know it's flexible, so, if it has a var-sym it must be an UNSPLICE.
+                            (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                              (dm::log-setf-alist-putunique! var-sym nil alist alist))))
+                        (dm::prn-labeled alist "early return")
+                        (throw 'match alist))
                       )
                     (dm::prn "Collecting flexible element...")
                     (with-indentation
@@ -351,7 +359,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                   (throw 'stop-collecting nil))
                                 ((and look-0 (not look-1))
                                   ;; If LOOK-0 matched the whole TARGET then we can munge
-                                  ;; LOOK-0 + ALIST into the right shape and return successfully
+                                  ;; LOOK-0 and ALIST into the right shape and return successfully
                                   ;; immediately:
                                   (setf alist
                                     (nconc
@@ -389,8 +397,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             ;; `let' ASSOC just to print it in the message:
                             (assoc    (cons var-sym var-val))) 
                       (setf last-pattern-elem-was-flexible nil)
-                      (dm::prn-labeled assoc "take var as")
                       (dm::log-setf-alist-putunique! var-sym var-val alist alist)
+                      (dm::prn-labeled assoc "take var as")
                       (dm::log-pop* pattern target)))
                   ;; --------------------------------------------------------------------------------
                   ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
@@ -422,12 +430,12 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   ;; --------------------------------------------------------------------------------
                   (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))
                   ;; --------------------------------------------------------------------------------
-                  ) ; End of `cond'.
+                  ) ; End of the big `cond'.
                 ;; ----------------------------------------------------------------------------------
                 (dm::prndiv)
                 (dm::prnl)
                 ;; ----------------------------------------------------------------------------------
-                ) ;  end of (while target ....
+                ) ;  end of (while target ...
               ;; ------------------------------------------------------------------------------------
               (dm::prndiv)
               (dm::prn-labeled pattern "final")
@@ -436,16 +444,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
               ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only
               ;; contain ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
               ;; ------------------------------------------------------------------------------------
-              (when pattern (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern))
-              (dolist (pat-elem pattern)
-                (dm::prn "Running out elem: %s" pat-elem)
-                (unless (dm::pat-elem-is-flexible? pat-elem)
-                  (NO-MATCH! "expected %s but target is empty" pattern))
-                (warn-when-consecutive-flexible-elements-in-pattern)
-                (setf last-pattern-elem-was-flexible t)
-                ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE:
-                (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                  (dm::log-setf-alist-putunique! var-sym nil alist alist))))))
+              (when pattern
+                (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
+                (dolist (pat-elem pattern)
+                  (dm::prn "Running out elem: %s" pat-elem)
+                  (unless (dm::pat-elem-is-flexible? pat-elem)
+                    (NO-MATCH! "expected %s but target is empty" pattern))
+                  (warn-when-consecutive-flexible-elements-in-pattern)
+                  (setf last-pattern-elem-was-flexible t)
+                  ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
+                  (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                    (dm::log-setf-alist-putunique! var-sym nil alist alist)))))))
         alist) ; end of `catch' MATCH.
       ) ; end of `setf' ALIST.
     ;; ----------------------------------------------------------------------------------------------
