@@ -205,9 +205,10 @@ last expression in `body'."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "`prn' value VAL with format string FMT and optional additional format
 arguments ARGS, returning VAL."
-  `(let ((v1 ,val))
-     (prn ,fmt v1 ,@args)
-     v1))
+  (let ((v1 (gensym)))
+    `(let ((,v1 ,val))
+       (prn ,fmt ,v1 ,@args)
+       ,v1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

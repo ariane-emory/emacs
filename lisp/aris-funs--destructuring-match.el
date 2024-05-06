@@ -563,8 +563,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
       returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
     (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
-      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
-    ))
+      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -678,3 +677,4 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
