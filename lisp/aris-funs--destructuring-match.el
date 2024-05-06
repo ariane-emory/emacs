@@ -606,7 +606,6 @@ This behaves very similarly to quasiquote."
                   (dm::prn "VAL:     %s" val)
                   (unless (proper-list-p val)
                     (error "var %s's value %s cannot be spliced, not a list."))
-                  ;; (append res val)
                   (dolist (elem val)
                     (push elem res)))
                 (error "var %s not found." (cadr thing)))))
