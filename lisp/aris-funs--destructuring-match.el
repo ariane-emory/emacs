@@ -304,10 +304,10 @@
                         (let* ( (fake-pattern-tail (make-fake-pattern-tail pattern))
                                 (fake-pattern-tail-matches-target
                                   (let (*dm:verbose*)
-                                    (recurse fake-pattern-tail target)))
+                                    (recurse (cdr pattern) target)))
                                 (fake-pattern-tail-matches-target-tail
                                   (let (*dm:verbose*)
-                                    (recurse fake-pattern-tail (cdr target)))))
+                                    (recurse (cdr pattern) (cdr target)))))
                           (dm::prndiv ?\-)
                           (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
                           (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
