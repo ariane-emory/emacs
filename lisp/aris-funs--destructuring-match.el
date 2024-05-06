@@ -486,6 +486,29 @@
       returns (why do you think that you have never seen a red car \?))
     (confirm that (dm:match '(,a ,b (,c ,d (,f ,g))) '(A B (C D (F G))))
       returns ((a . A) (b . B) (c . C) (d . D) (f . F) (g . G)))
+    ;; parse fun bodies:
+    (confirm that
+      (dm:fill '(defmacro ,name (,arg) `(progn ,@body))
+        (dm:match '(,form ,name (,arg) ,@body)
+          '(defun foo (bar) (prn "foo") :FOO (car bar))))
+      returns (defmacro foo (bar)
+                `(progn
+                   (prn "foo")
+                   :FOO
+                   (car bar))))
+    (confirm that (dm:match '(,form ,name (,@args) ,@body)
+                    '(defmacro foo () (prn "foo") :FOO (car bazes)))
+      returns ( (form . defmacro) (name . foo) (args)
+                (body
+                  (prn "foo")
+                  :FOO
+                  (car bazes))))
+    (confirm that
+      (dm:match '(,form ,name (,@args) ,@body) '(defmacro foo nil (prn "foo") :FOO :BAR))
+      returns ( (form . defmacro) (name . foo) (args)
+                (body
+                  (prn "foo")
+                  :FOO :BAR)))
     ;; duplicate var examples:
     (confirm that (dm:match '(,x y ,x) '(8 y 8))                   returns ((x . 8)))
     (confirm that (dm:match '(,x ,@x) '((1 2 3) 1 2 3))            returns ((x 1 2 3)))
@@ -634,11 +657,3 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:fill '(defmacro ,name (,arg))
-  (dm:match '(,form ,name (,arg) ,@body)
-    '(defun foo (bar) (prn "foo") :FOO (car bar))))
-
-(dm:match '(,form ,name (,@args) ,@body)
-  '(defmacro foo () (prn "foo") :FOO (car bazes)))
-(dm:match '(,form ,name (,@args) ,@body)
-  '(defmacro foo nil (prn "foo") :FOO :BAR))
