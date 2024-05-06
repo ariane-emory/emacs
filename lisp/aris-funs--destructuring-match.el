@@ -429,17 +429,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (var-val  (car target))
                           ;; `let' ASSOC just to print it in the message:
                           (assoc    (cons var-sym var-val))
-                          (preds-passed
+                          (all-var-preds-passed
                             (or (not var-preds)
                               (catch 'pred-failed
                                 (dolist (pred var-preds)
                                   (unless (funcall pred var-val)
                                     (throw 'pred-failed nil)))
                                 t))))
-                    (when var-preds
-                      (debug 'pred))
-                    ;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
-                    ;; (dm:match '(foo ,(bar integer?) quux) '(foo baz quux))
+                    (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
+                    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) n)) quux) '(foo 9   quux))
+                    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) n)) quux) '(foo 8   quux))
+                    ;; (dm:match '(foo ,(bar integer? odd? (lambda (n) n)) quux) '(foo baz quux))
                     (dm::log-setf-alist-putunique! var-sym var-val alist alist)
                     (dm::prn-labeled assoc "take var as")
                     (dm::log-pop* pattern target)))
