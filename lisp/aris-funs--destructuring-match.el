@@ -153,7 +153,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-setf-alist-putunique! (key val alist-name &optional reference-alist-name)
+(defmacro dm::log-setf-alist-putunique! (key val alist-name reference-alist-name)
   `(prog1
      (setf ,alist-name (alist-putunique ,key ,val ,alist-name ,reference-alist-name 'no-match))
      (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist-name ,alist-name)))
@@ -161,12 +161,12 @@
 (confirm that
   (let ( (al '((b . 2) (c . 3)))
          (*dm:verbose* nil))
-    (dm::log-setf-alist-putunique! 'a 123 al))
+    (dm::log-setf-alist-putunique! 'a 123 al al))
   returns ((a . 123) (b . 2) (c . 3)))
 (confirm that
   (let ( (al '((a . 123) (b . 2) (c . 3)))
          (*dm:verbose* nil))
-    (dm::log-setf-alist-putunique! 'a 123 al))
+    (dm::log-setf-alist-putunique! 'a 123 al al))
   returns ((a . 123) (b . 2) (c . 3)))
 (confirm that
   (let ( (al '((b . 2) (c . 3)))
@@ -283,7 +283,7 @@ in reverse order."
         (dm::prn-labeled pattern "initial")
         (dm::prn-labeled target  "initial")
         ;;-------------------------------------------------------------------------------------------
-        (cl-macrolet ((recurse (pattern target &optional reference-alist)
+        (cl-macrolet ((recurse (pattern target reference-alist)
                         `(with-indentation
                            (dm::match1 initial-pattern ,pattern ,target
                              dont-care ellipsis unsplice alist reference-alist))))
@@ -353,10 +353,10 @@ in reverse order."
                             (dm::prn-pp-labeled-list target)                      
                             (let* ( (look-0
                                       (let (*dm:verbose*)
-                                        (recurse (cdr pattern) target)))
+                                        (recurse (cdr pattern) target alist)))
                                     (look-1
                                       (let (*dm:verbose*)
-                                        (recurse (cdr pattern) (cdr target)))))
+                                        (recurse (cdr pattern) (cdr target) alist))))
                               (dm::prndiv ?\-)
                               (dm::prn-labeled look-0 "" 45)
                               (dm::prn-labeled look-1 "" 45)
@@ -380,7 +380,7 @@ in reverse order."
                         (when *dm:debug* (debug 'before-set-unspliced))
                         (when (dm::pat-elem-is-unsplice? (car pattern))
                           (dm::log-setf-alist-putunique! (dm::pat-elem-var-name (car pattern))
-                            (nreverse collect) alist))
+                            (nreverse collect) alist alist))
                         (dm::prn-labeled collect "unspliced")
                         (dm::prn-labeled pattern "unspliced")
                         (dm::prn-labeled target  "unspliced")
@@ -400,7 +400,7 @@ in reverse order."
                             (assoc    (cons dm::pat-elem-var-name var-val))) 
                       (setf last-pattern-elem-was-flexible nil)
                       (dm::prn-labeled assoc "take var as")
-                      (dm::log-setf-alist-putunique! dm::pat-elem-var-name var-val alist)
+                      (dm::log-setf-alist-putunique! dm::pat-elem-var-name var-val alist alist)
                       (dm::log-pop pattern)
                       (dm::log-pop target)))
                   ;; --------------------------------------------------------------------------------
@@ -415,7 +415,7 @@ in reverse order."
                       (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                         sub-pattern sub-target)
                       ;; (dm::prndiv)
-                      (let ((res (recurse sub-pattern sub-target)))
+                      (let ((res (recurse sub-pattern sub-target alist)))
                         (cond
                           ((eq res t)) ; do nothing.
                           ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
@@ -461,7 +461,8 @@ in reverse order."
                 (warn-when-consecutive-flexible-elements-in-pattern)
                 (setf last-pattern-elem-was-flexible t)
                 (when (dm::pat-elem-is-unsplice? pat-elem)
-                  (dm::log-setf-alist-putunique! (dm::pat-elem-var-name pat-elem) nil alist))))))
+                  (dm::log-setf-alist-putunique!
+                    (dm::pat-elem-var-name pat-elem) nil alist alist))))))
         alist))
     ;; ----------------------------------------------------------------------------------------------
     ;; Return either the ALIST or just t:
