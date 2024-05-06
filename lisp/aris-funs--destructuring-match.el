@@ -114,19 +114,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::prn-pp-alist (alist)
+(defmacro dm::prn-pp-alist (alist)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print ALIST."
-  (when *dm:verbose*
-    (if (null alist)
-      (dm::prn-labeled alist)
-      (let ((pp-str (indent-string-lines
-                      (trim-trailing-whitespace
-                        (pp-to-string-without-offset alist)))))
-        (if (<= (count-string-lines pp-str) 1)
-          (dm::prn-labeled alist)
-          (dm::prn "ALIST:")
-          (mapc #'prn (string-lines pp-str)))))))
+  `(when *dm:verbose*
+     (let ((alist ,alist))
+       (if (null alist)
+         (dm::prn-labeled alist)
+         (let ((pp-str (indent-string-lines
+                         (trim-trailing-whitespace
+                           (pp-to-string-without-offset alist)))))
+           (if (<= (count-string-lines pp-str) 1)
+             (dm::prn-labeled alist)
+             (dm::prn "%s:" (upcase (symbol-name ',alist)))
+             (mapc #'prn (string-lines pp-str))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
