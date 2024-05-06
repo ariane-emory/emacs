@@ -266,29 +266,32 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
         (cl-macrolet ((recurse (pattern target alist reference-alist)
                         `(with-indentation
                            (dm::match1 initial-pattern ,pattern ,target
-                             dont-care ellipsis unsplice ,alist ,reference-alist))))
-          ;;-----------------------------------------------------------------------------------------
-          (let (last-pattern-elem-was-flexible)
-            ;;---------------------------------------------------------------------------------------
-            (cl-flet ( (NO-MATCH! (fmt &rest args)
-                         (dm::prn "No match because %s!" (apply #'format fmt args))
-                         (throw 'no-match nil))
+                             dont-care ellipsis unsplice ,alist ,reference-alist)))
+                       (NO-MATCH! (fmt &rest args)
+                         `(progn
+                            (dm::prn "No match because %s!" (format ,fmt ,@args))
+                            (throw 'no-match nil)))
                        (warn-when-consecutive-flexible-elements-in-pattern ()
                          ;; Due to `dm::match1's recursive calls to perform lookahead and match 
                          ;; sub-patterns, a call to `dm:match' may trigger this warning more than 
                          ;; once: preventing this wasn't worth the bother, just fix your crappy
                          ;; PATTERN!
-                         (when (and *dm:warn-on-consecutive-flexible-elements*
-                                 last-pattern-elem-was-flexible)
-                           (let ((warn-msg (format
-                                             (concat
-                                               "WARNING: Using consecutive flexible elements "
-                                               "generally does not make sense, pattern was: %s")
-                                             initial-pattern)))
-                             (let ( (*dm:verbose* t)
-                                    (*wm:indent* 0))
-                               (dm::prn warn-msg))
-                             (warn warn-msg)))))
+                         `(when (and *dm:warn-on-consecutive-flexible-elements*
+                                  last-pattern-elem-was-flexible)
+                            (let ((warn-msg (format
+                                              (concat
+                                                "WARNING: Using consecutive flexible elements "
+                                                "generally does not make sense, pattern was: %s")
+                                              initial-pattern)))
+                              (let ( (*dm:verbose* t)
+                                     (*wm:indent* 0))
+                                (dm::prn warn-msg))
+                              (warn warn-msg)))))
+          ;;-----------------------------------------------------------------------------------------
+          (let (last-pattern-elem-was-flexible)
+            ;;---------------------------------------------------------------------------------------
+            (cl-flet ( 
+                       )
               ;;-------------------------------------------------------------------------------------
               (while target
                 (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
