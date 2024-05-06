@@ -368,15 +368,16 @@ in reverse order."
                                 ((and look-0 (not look-1))
                                   (dm::prn "CASE 1: alist %s!" alist)
                                   (dm::prn "CASE 1: look-0 %s!" look-0)
-
-                                  (let* ( (munged (cons
-                                                    (cons (dm::pat-elem-var-name (car pattern)) (reverse collect))
+                                  (let* ( (munged (if (dm::pat-elem-is-unsplice? (car pattern))
+                                                    (cons
+                                                      (cons (dm::pat-elem-var-name (car pattern))
+                                                        (reverse collect))
+                                                      alist)
                                                     alist))
                                           (munged (if (listp look-0)
                                                     (append look-0 munged)
                                                     munged)))
                                     (dm::prn "CASE 1: Stopping with munged %s!" munged)
-
                                     (throw 'match munged))
                                   (throw 'stop nil))
                                 (t
@@ -594,8 +595,8 @@ in reverse order."
       returns ((foo . FOO) (baz . 111)))
     (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo bar 8 9))
       returns ((w . 1) (xs 2 3) (ys) (zs 8 9)))
-    ;; (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
-    ;;   returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
+    (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
+      returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))
     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
