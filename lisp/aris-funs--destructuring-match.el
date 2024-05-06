@@ -184,7 +184,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-symbol? (symbol pat-elem)
+(defmacro dm::pat-elem-is-the-symbol? (symbol pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when SYMBOL is non-nil and `eq' to PAT-ELEM."
   `(and ,symbol (eq ,symbol ,pat-elem)))
@@ -192,7 +192,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-variable? (pat-elem)
+(defmacro dm::pat-elem-is-a-variable? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when PAT-ELEM describes a variable."
   (let ((comma '\,))
@@ -201,7 +201,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-unsplice? (pat-elem)
+(defmacro dm::pat-elem-is-an-unsplice? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Expects to be expanded in an environment where UNSPLICE is bound."
   `(and unsplice (eq unsplice (car-safe ,pat-elem))))
@@ -212,7 +212,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 (defmacro dm::pat-elem-is-flexible? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Expects to be expanded in an environment where ELLIPSIS is bound."
-  `(or (dm::pat-elem-is-unsplice? ,pat-elem) (dm::pat-elem-is-symbol? ellipsis ,pat-elem)))
+  `(or (dm::pat-elem-is-an-unsplice? ,pat-elem) (dm::pat-elem-is-the-symbol? ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -305,7 +305,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
                 ;; ----------------------------------------------------------------------------------
-                ((dm::pat-elem-is-symbol? dont-care (car pattern))
+                ((dm::pat-elem-is-the-symbol? dont-care (car pattern))
                   (setf last-pattern-elem-was-flexible nil)
                   (dm::prn "DONT-CARE, discarding %s." (car target))
                   (dm::log-pop* pattern target))
@@ -365,7 +365,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                 (setf alist
                                   (nconc
                                     (when (listp look-0) look-0)
-                                    (when (dm::pat-elem-is-unsplice? (car pattern))
+                                    (when (dm::pat-elem-is-an-unsplice? (car pattern))
                                       (list
                                         (cons (dm::pat-elem-var-sym (car pattern))
                                           (nreverse collect))))
@@ -392,7 +392,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
                 ;; ----------------------------------------------------------------------------------
-                ((dm::pat-elem-is-variable? (car pattern))
+                ((dm::pat-elem-is-a-variable? (car pattern))
                   (let* ( (var-sym (dm::pat-elem-var-sym (car pattern)))
                           (var-val  (car target))
                           ;; `let' ASSOC just to print it in the message:
@@ -603,19 +603,19 @@ This behaves very similarly to quasiquote."
         (dm::prn "thing:   %s" thing)
         (dm::prn "alist:   %s" alist)
         (cond
-          ((dm::pat-elem-is-symbol? dont-care thing)
+          ((dm::pat-elem-is-the-symbol? dont-care thing)
             (push (when alist (cdr-safe (pick alist))) res))
-          ((dm::pat-elem-is-symbol? ellipsis thing)
+          ((dm::pat-elem-is-the-symbol? ellipsis thing)
             (let (random-var-values)
               (while (= 0 (% (random) 2))
                 (push (when alist (cdr-safe (pick alist))) random-var-values))
               (dolist (elem random-var-values)
                 (push elem res))))
-          ((dm::pat-elem-is-variable? thing)
+          ((dm::pat-elem-is-a-variable? thing)
             (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
               (push (cdr assoc) res)
               (error "var %s not found." (dm::pat-elem-var-sym thing))))
-          ((dm::pat-elem-is-unsplice? thing)
+          ((dm::pat-elem-is-an-unsplice? thing)
             (let ((var (dm::pat-elem-var-sym thing)))
               (dm::prn "VAR:     %s" var)
               (if-let ((assoc (assoc (cadr thing) alist)))
