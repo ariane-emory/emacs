@@ -366,7 +366,15 @@ in reverse order."
                                   (dm::prn "Out of TARGET, stop.")
                                   (throw 'stop nil))
                                 ((and look-0 (not look-1))
-                                  (dm::prn "CASE 1: Stopping with %s!" look-0)
+                                  (dm::prn "CASE 1: alist %s!" alist)
+                                  (dm::prn "CASE 1: look-0 %s!" look-0)
+                                  (dm::prn "CASE 1: Stopping with %s!"
+                                    (let ((munged (append
+                                                    (list (cons (dm::pat-elem-var-name (car pattern)) (reverse (cons (car target) collect))))
+                                                    alist)))
+                                      (if (listp look-0)
+                                        (cons look-0 munged)
+                                        munged)))
                                   ;; (throw 'match look-0)
                                   (throw 'stop nil))
                                 (t
@@ -475,6 +483,8 @@ in reverse order."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
   (let ((*dm:verbose* t))
+    (confirm that (dm:match '(,x ,y ,@zs foo) '(1 2 foo))           returns ((x . 1) (y . 2) (zs)))
+    
     ;; (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3))              returns ((x . 1) (y . 2) (z . 3)))
     ;; (confirm that (dm:match '(x ,y ,z) '(x 2 3))                   returns ((y . 2) (z . 3)))
     ;; (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5)))             returns ((y . 2) (z 3 4 5)))
