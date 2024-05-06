@@ -191,28 +191,28 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro is-unsplice? (pat-elem)
+(defmacro dm::pat-elem-is-unsplice? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(and unsplice (eq unsplice (car-safe ,pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro is-dont-care? (pat-elem)
+(defmacro dm::pat-elem-is-dont-care? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(and dont-care (eq dont-care ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro is-ellipsis? (pat-elem)
+(defmacro dm::pat-elem-is-ellipsis? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(and ellipsis (eq ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro is-variable? (pat-elem)
+(defmacro dm::pat-elem-is-variable? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let ((comma '\,))
     `(eq ',comma (car-safe ,pat-elem))))
@@ -220,17 +220,24 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro is-flexible? (pat-elem)
+(defmacro dm::pat-elem-is-flexible? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(or (is-unsplice? ,pat-elem) (is-ellipsis? ,pat-elem)))
+  `(or (dm::pat-elem-is-unsplice? ,pat-elem) (dm::pat-elem-is-ellipsis? ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro var-name (pat-elem)
+(defmacro dm::pat-elem-var-name (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(cadr ,pat-elem))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmacro dm::match-fake-pattern-tail (fake-pattern-tail target)
+  `(let ((*dm:verbose* nil))
+     (with-indentation
+       (dm::match1 initial-pattern ,fake-pattern-tail ,target
+         dont-care ellipsis unsplice nil))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -250,7 +257,7 @@
                        (throw 'no-match nil)))                   
                    (make-fake-pattern-tail (pattern)
                      (let ((res (cdr pattern)))
-                       (while (is-flexible? (car res))
+                       (while (dm::pat-elem-is-flexible? (car res))
                          (dm::log-pop res))
                        res))
                    (warn-when-consecutive-flexible-elements-in-pattern ()
@@ -283,7 +290,7 @@
             ;; --------------------------------------------------------------------------------------
             ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
             ;; --------------------------------------------------------------------------------------
-            ((is-dont-care? (car pattern))
+            ((dm::pat-elem-is-dont-care? (car pattern))
               (setf last-pattern-elem-was-flexible nil)
               (dm::prn "DONT-CARE, discarding %s." (car target))
               (dm::log-pop pattern)
@@ -291,7 +298,7 @@
             ;; --------------------------------------------------------------------------------------
             ;; Case 2: When PATTERN's head is flexible, collect items:
             ;; --------------------------------------------------------------------------------------
-            ((is-flexible? (car pattern))
+            ((dm::pat-elem-is-flexible? (car pattern))
               (warn-when-consecutive-flexible-elements-in-pattern)
               (setf last-pattern-elem-was-flexible t)
               (dm::prn "Collecting flexible element...")
@@ -305,15 +312,9 @@
                       (dm::prn-pp-labeled-list target)                      
                       (let* ( (fake-pattern-tail (make-fake-pattern-tail pattern))
                               (fake-pattern-tail-matches-target
-                                (let ((*dm:verbose* nil))
-                                  (with-indentation
-                                    (dm::match1 initial-pattern fake-pattern-tail target
-                                      dont-care ellipsis unsplice nil))))
+                                (dm::match-fake-pattern-tail fake-pattern-tail target))
                               (fake-pattern-tail-matches-target-tail
-                                (let ((*dm:verbose* nil))
-                                  (with-indentation
-                                    (dm::match1 initial-pattern fake-pattern-tail (cdr target)
-                                      dont-care ellipsis unsplice nil)))))
+                                (dm::match-fake-pattern-tail fake-pattern-tail (cdr target))))
                         (dm::prndiv ?\-)
                         (dm::prn-labeled fake-pattern-tail-matches-target "" 45)
                         (dm::prn-labeled fake-pattern-tail-matches-target-tail "" 45)
@@ -337,8 +338,8 @@
 		                  ) ;; END OF `while'.
                     ) ;; END OF `catch'.                  
                   (when *dm:debug* (debug 'before-set-unspliced))
-                  (when (is-unsplice? (car pattern))
-                    (dm::log-setf-alist-putunique! (var-name (car pattern))
+                  (when (dm::pat-elem-is-unsplice? (car pattern))
+                    (dm::log-setf-alist-putunique! (dm::pat-elem-var-name (car pattern))
                       (nreverse collect) alist))
                   (dm::prn-labeled collect "unspliced")
                   (dm::prn-labeled pattern "unspliced")
@@ -348,18 +349,18 @@
                   (when *dm:debug* (debug 'after-set-unspliced))
                   ) ; end of `let' COLLECT.
                 ) ; end of `with-indentation'.
-              ) ; end of `is-flexible?'s case.
+              ) ; end of `dm::pat-elem-is-flexible?'s case.
             ;; --------------------------------------------------------------------------------------
             ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
             ;; --------------------------------------------------------------------------------------
-            ((is-variable? (car pattern))
-              (let* ( (var-name (var-name (car pattern)))
+            ((dm::pat-elem-is-variable? (car pattern))
+              (let* ( (dm::pat-elem-var-name (dm::pat-elem-var-name (car pattern)))
                       (var-val  (car target))
                       ;; `let' ASSOC just to print it in the message:
-                      (assoc    (cons var-name var-val))) 
+                      (assoc    (cons dm::pat-elem-var-name var-val))) 
                 (setf last-pattern-elem-was-flexible nil)
                 (dm::prn-labeled assoc "take var as")
-                (dm::log-setf-alist-putunique! var-name var-val alist)
+                (dm::log-setf-alist-putunique! dm::pat-elem-var-name var-val alist)
                 (dm::log-pop pattern)
                 (dm::log-pop target)))
             ;; --------------------------------------------------------------------------------------
@@ -416,12 +417,12 @@
           (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern))
         (dolist (pat-elem pattern)
           (dm::prn "Running out elem: %s" pat-elem)
-          (unless (is-flexible? pat-elem)
+          (unless (dm::pat-elem-is-flexible? pat-elem)
             (NO-MATCH! "expected %s but target is empty" pattern))
           (warn-when-consecutive-flexible-elements-in-pattern)
           (setf last-pattern-elem-was-flexible t)
-          (when (is-unsplice? pat-elem)
-            (dm::log-setf-alist-putunique! (var-name pat-elem) nil alist)))
+          (when (dm::pat-elem-is-unsplice? pat-elem)
+            (dm::log-setf-alist-putunique! (dm::pat-elem-var-name pat-elem) nil alist)))
         ;; ------------------------------------------------------------------------------------------
         ;; Return either the ALIST or just t:
         ;; ------------------------------------------------------------------------------------------
