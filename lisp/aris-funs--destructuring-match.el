@@ -1,4 +1,4 @@
-;; -*- fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
+;;k -*- fill-column: 100; eval: (display-fill-column-indicator-mode 1); -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; `dm:match', a very basic pattern matching function:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -401,7 +401,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                       (cond
                         ((eq res t)) ; do nothing.
                         ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
-                        ;; `dm::match1' only returns t or lists, so we'll now assume it's a list.
+                        ;; `dm::match1' only returns t or lists, so by now it must a list.
                         (t (setf alist res))))
                     (dm::log-pop* pattern target))
                   ;; --------------------------------------------------------------------------------
@@ -423,7 +423,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 (dm::prndiv)
                 (dm::prnl)
                 ;; ----------------------------------------------------------------------------------
-                ) ;  end of (while target ...).
+                ) ;  end of (while target ....
               ;; ------------------------------------------------------------------------------------
               (dm::prndiv)
               (dm::prn-labeled pattern "final")
@@ -679,8 +679,3 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
