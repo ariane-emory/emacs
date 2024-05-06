@@ -703,5 +703,15 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:match '(foo ,(bar integer?) quux) '(foo qqq quux))
+;; (dm:match '(foo ,(bar integer?) quux) '(foo qqq quux))
 
+(defun dm::pat-elem-var-sym2 (pat-elem)
+  (let ((2nd (car-safe (cdr-safe pat-elem))))
+    (if (atom 2nd)
+      2nd
+      (car 2nd))))
+
+
+(dm::pat-elem-var-sym2 ',x)
+
+(dm::pat-elem-var-sym2 ',(x y z))
