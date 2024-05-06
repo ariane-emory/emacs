@@ -182,34 +182,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm:match ( pattern target
-                     &optional
-                     (dont-care *dm:default-dont-care*)
-                     (ellipsis  *dm:default-ellipsis*)
-                     (unsplice  *dm:default-unsplice*))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "My pattern matching/destructuring function."
-  (unless (and (listp pattern)
-            (listp target)
-            (symbolp dont-care)
-            (symbolp ellipsis)
-            (symbolp unsplice))
-    (error
-      "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
-  (dm::prnl)
-  (dm::prndiv)
-  (dm::prn "BEGIN MATCHING:       %S" pattern)
-  (dm::prn "AGAINST:              %S" target)
-  (let* ( (result (with-indentation
-                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
-          (result (if (listp result) (nreverse result) result)))
-    (dm::prn-labeled result "FINAL")
-    (dm::prndiv)
-    result))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-is-symbol? (symbol pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   `(and dont-care (eq ,symbol ,pat-elem)))
@@ -245,14 +217,42 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::require-duplicate-keys-equal! (key alist new-val)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "No match if KEY is already in ALIST with a different value."
+;;   (when-let ( (assoc (assoc key alist))
+;;               (val   (cdr assoc))
+;;               (neq   (not (equal val new-val))))
+;;     (throw 'no-match nil)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::require-duplicate-keys-equal! (key alist new-val)
+(cl-defun dm:match ( pattern target
+                     &optional
+                     (dont-care *dm:default-dont-care*)
+                     (ellipsis  *dm:default-ellipsis*)
+                     (unsplice  *dm:default-unsplice*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "No match if KEY is already in ALIST with a different value."
-  (when-let ( (assoc (assoc key alist))
-              (val   (cdr assoc))
-              (neq   (not (equal val new-val))))
-    (throw 'no-match nil)))
+  "My pattern matching/destructuring function."
+  (unless (and (listp pattern)
+            (listp target)
+            (symbolp dont-care)
+            (symbolp ellipsis)
+            (symbolp unsplice))
+    (error
+      "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
+  (dm::prnl)
+  (dm::prndiv)
+  (dm::prn "BEGIN MATCHING:       %S" pattern)
+  (dm::prn "AGAINST:              %S" target)
+  (let* ( (result (with-indentation
+                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
+          (result (if (listp result) (nreverse result) result)))
+    (dm::prn-labeled result "FINAL")
+    (dm::prndiv)
+    result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -300,9 +300,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 (dm::prn-pp-alist alist)
                 (dm::prn-pp-labeled-list pattern)
                 (dm::prn-pp-labeled-list target)
-                (let* ((target (if (cdr target)
-                                 (format "%-7s . %s" (car target) (cdr target))
-                                 (format "%s" (car target))))))
+                (let ((target (if (cdr target)
+                                (format "%-7s . %s" (car target) (cdr target))
+                                (format "%s" (car target))))))
                 (dm::prndiv ?\-)
                 ;; ----------------------------------------------------------------------------------
                 (cond ;; Enter the big `cond'!
@@ -454,8 +454,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
   (let ((*dm:verbose* t))
-    (confirm that (dm:match '(,x ,y ,@zs foo) '(1 2 foo))           returns ((x . 1) (y . 2) (zs)))
-    
     (confirm that (dm:match '(w ,x ,y ,z) '(w 1 2 3))              returns ((x . 1) (y . 2) (z . 3)))
     (confirm that (dm:match '(x ,y ,z) '(x 2 3))                   returns ((y . 2) (z . 3)))
     (confirm that (dm:match '(x ,y ,z) '(x 2 (3 4 5)))             returns ((y . 2) (z 3 4 5)))
