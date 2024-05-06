@@ -233,9 +233,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -514,6 +511,11 @@
     (confirm that (dm:match '(,x ...) '(1 2 3 4))                  returns ((x . 1)))
     (confirm that (dm:match '(,x ... ,z) '(X 2 3))                 returns ((x . X) (z . 3)))
     (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar 111)) returns nil)
+    (confirm that (dm:match '(... the ,x ...) '(this is your prize)) returns nil)
+    (confirm that (dm:match '(... the ,x ...) '(this is the prize)) returns ((x . prize)))
+    (confirm that (dm:match '(... the ,x ...) '(the prize is yours)) returns ((x . prize)))
+    (confirm that (dm:match '(... the ,x ...) '(here is the prize is you found it))
+      returns ((x . prize)))
     (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux sprungy 111))
       returns ((foo . FOO) (baz . 111)))
     (confirm that (dm:match '(,foo ... bar _ ... ,baz) '(FOO 1 2 3 4 bar quux 111))
@@ -523,8 +525,6 @@
     (confirm that (dm:match '(,w ,@xs foo ,@ys bar ,@zs) '(1 2 3 foo 4 5 6 7 bar 8 9))
       returns ((w . 1) (xs 2 3) (ys 4 5 6 7) (zs 8 9)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -549,9 +549,11 @@ This behaves very similarly to quasiquote."
           ((dm::pat-elem-is-dont-care? thing)
             (push (when alist (cdr-safe (pick alist))) res))
           ((dm::pat-elem-is-ellipsis? thing)
-            (let (res)
-              (while (= 0 (random 2))
-                (push (when alist (cdr-safe (pick alist))) res))))
+            (let (random-var-values)
+              (while (= 0 (% (random) 2))
+                (push (when alist (cdr-safe (pick alist))) random-var-values))
+              (dolist (elem random-var-values)
+                (push elem res))))
           ((dm::pat-elem-is-variable? thing)
             (if-let ((assoc (assoc (dm::pat-elem-var-name thing) alist)))
               (push (cdr assoc) res)
@@ -566,8 +568,7 @@ This behaves very similarly to quasiquote."
                     (error "var %s's value %s cannot be spliced, not a list."))
                   ;; (append res val)
                   (dolist (elem val)
-                    (push elem res))
-                  )
+                    (push elem res)))
                 (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing)
             (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
@@ -624,9 +625,11 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(dm:fill '(_ (_ (this ... that) (_ _ _)) _)
+  (dm:match '(,t (,u ,v) ,w ,x ... ,y bobo ,@zs)
+    '(foo (bar baz) quux sprungy poop bobo yoyo higgs)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
