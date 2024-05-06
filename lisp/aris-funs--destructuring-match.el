@@ -369,12 +369,12 @@ in reverse order."
                                   (dm::prn "CASE 1: alist %s!" alist)
                                   (dm::prn "CASE 1: look-0 %s!" look-0)
                                   (dm::prn "CASE 1: Stopping with %s!"
-                                    (let ((munged (append
-                                                    (list (cons (dm::pat-elem-var-name (car pattern)) (reverse (cons (car target) collect))))
-                                                    alist)))
-                                      (if (listp look-0)
-                                        (cons look-0 munged)
-                                        munged)))
+                                    (let* ( (munged (append
+                                                      (list (cons (dm::pat-elem-var-name (car pattern)) (reverse (cons (car target) collect))))
+                                                      alist))
+                                            (munged (if (listp look-0)
+                                                      (cons look-0 munged)
+                                                      munged)))))
                                   ;; (throw 'match look-0)
                                   (throw 'stop nil))
                                 (t
