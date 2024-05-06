@@ -403,6 +403,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           ;; `let' ASSOC just to print it in the message:
                           (assoc    (cons var-sym var-val))) 
                     (setf last-pattern-elem-was-flexible nil)
+                    (when (and *dm:enable-list-vars* (listp (cadar pattern)))
+                      (debug))
                     (dm::log-setf-alist-putunique! var-sym var-val alist alist)
                     (dm::prn-labeled assoc "take var as")
                     (dm::log-pop* pattern target)))
