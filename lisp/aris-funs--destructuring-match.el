@@ -237,10 +237,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::pat-elem-var-name (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(cadr ,pat-elem))
+  `(car-safe (cdr-safe ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -363,33 +361,22 @@ in reverse order."
                               (dm::prndiv ?\-)
                               (cond
                                 ((null target)
-                                  (dm::prn "Out of TARGET, stop.")
-                                  ;; (debug)
+                                  (dm::prn "Emptied TARGET, stop.")
                                   (throw 'stop nil))
                                 ((and look-0 (not look-1))
                                   ;; If LOOK-0 matched the whole TARGET then we can munge
-                                  ;; LOOK-0 + ALIST  into the right shape and bail early:
-                                  (when (dm::pat-elem-is-unsplice? (car pattern))
-                                    (setf alist (cons
-                                                  (cons (dm::pat-elem-var-name (car pattern))
-                                                    (reverse collect))
-                                                  alist)))
-                                  (when (listp look-0)
-                                    (setf alist (append look-0 alist)))
+                                  ;; LOOK-0 + ALIST into the right shape and return successfully
+                                  ;; immediately:
+                                  (setf alist
+                                    (nconc
+                                      (when (listp look-0) look-0)
+                                      (when (dm::pat-elem-is-unsplice? (car pattern))
+                                        (list
+                                          (cons (dm::pat-elem-var-name (car pattern))
+                                            (nreverse collect))))
+                                      alist))
                                   (dm::prn "CASE 1: Stopping with munged %s!" alist)                                    
-                                  (throw 'match alist)
-                                  
-                                  (let* ( (alist (if (dm::pat-elem-is-unsplice? (car pattern))
-                                                   (cons
-                                                     (cons (dm::pat-elem-var-name (car pattern))
-                                                       (reverse collect))
-                                                     alist)
-                                                   alist))
-                                          (alist (if (listp look-0)
-                                                   (append look-0 alist)
-                                                   alist)))
-                                    (dm::prn "CASE 1: Stopping with munged %s!" alist)
-                                    (throw 'match alist)))
+                                  (throw 'match alist))
                                 (t
                                   (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
                                   (push (dm::log-pop target) collect))))
