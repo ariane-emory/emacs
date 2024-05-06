@@ -512,7 +512,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
     (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
     (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
-    (confirm that (dm:match '(foo _ ,baz)      '(foo quux bar))    returns ((baz . bar)))
+    ;; These next two mean the same thing:
+    (confirm that (dm:match '(foo _  ,baz)     '(foo quux bar))    returns ((baz . bar)))
+    (confirm that (dm:match '(foo ,_ ,baz)     '(foo quux bar))    returns ((baz . bar)))
     (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
     (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
     (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
