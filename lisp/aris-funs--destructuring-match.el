@@ -386,14 +386,12 @@ in reverse order."
                             (dm::prnl)
 		                        ) ;; END OF `while'.
                           ) ;; END OF `catch' 'stop.
-                        ;; (when *dm:debug* (debug 'before-set-unspliced))
-                        (when (dm::pat-elem-is-unsplice? (car pattern))
-                          (dm::log-setf-alist-putunique! (dm::pat-elem-var-name (car pattern))
+                        ;; We already know that (car pattern) is flexible, if it has a var name then
+                        ;; it musst be an unsplice.
+                        (when-let ((var (dm::pat-elem-var-name (car pattern))))
+                          (dm::log-setf-alist-putunique! var
                             (nreverse collect) alist alist))
                         ;; (dm::prn-labeled collect "unspliced")
-                        ;; (dm::prn-labeled pattern "unspliced")
-                        ;; (dm::prn-labeled target  "unspliced")
-                        ;; (dm::prn-labeled alist   "unspliced")
                         (dm::log-pop pattern)
                         ;; (when *dm:debug* (debug 'after-set-unspliced))
                         ) ; end of `let' COLLECT.
