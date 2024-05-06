@@ -358,8 +358,8 @@ in reverse order."
                                       (let (*dm:verbose*)
                                         (recurse (cdr pattern) (cdr target) alist))))
                               (dm::prndiv ?\-)
-                              (dm::prn-labeled look-0 "" 45)
-                              (dm::prn-labeled look-1 "" 45)
+                              (dm::prn-labeled look-0)
+                              (dm::prn-labeled look-1)
                               (dm::prndiv ?\-)
                               (cond
                                 ((null target)
