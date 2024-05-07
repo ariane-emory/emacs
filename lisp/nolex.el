@@ -200,7 +200,7 @@
        ((assq  val ,alist) (cdr (assq  val ,alist)))
        ((rassq val ,alist) (car (rassq val ,alist)))
        (t val))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+k;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun swap-word (var val var-alist)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   "Return the swapped word for VAL found in *SWAP-WORDS*, or VAL if none."
@@ -762,7 +762,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
-                          ,(at/about       (make-member-sym-p '(at about for with)))
+                          ,(at/about       (memq (at about for with)))
                           ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -805,31 +805,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (verb            (lambda (v _ _) (add-ing (car (last v))))))
            :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,am/are
                           ,verb ,at/about ,a/the ,@things right now \!))))
-     ;; ;;==============================================================================================
-     ;; ( :input:          ( ,(subject subject?) ,(modal modal?) never
-     ;;                      ,@verb ,(a/the a/the?) ,@things)
-     ;;   :responses:
-     ;;   ( ;;------------------------------------------------------------------------------------------
-     ;;     ( :var-funs:   ( (subject         swap-word)
-     ;;                      (maybe-really!   pick-maybe-really)
-     ;;                      (maybe-actually! pick-maybe-actually)
-     ;;                      (modal           pick-modal)
-     ;;                      (verb            lastcar))
-     ;;       :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,modal
-     ;;                      ,verb ,a/the ,@things \!))
-     ;;     ;;------------------------------------------------------------------------------------------
-     ;;     ( :var-funs:   ( (subject         swap-word)
-     ;;                      (am/are!         (lambda (_ _ vars)
-     ;;                                         (let-alist vars (if (eq 'i .subject) 'am 'are))))
-     ;;                      (maybe-really!   pick-maybe-really)
-     ;;                      (maybe-actually! pick-maybe-actually)
-     ;;                      (verb            lastcar (lambda (v _ _) (add-ing v))))
-     ;;       :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,am/are
-     ;;                      ,verb ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
-                                        ;:var-tests:      ( (verb (lambda (v _ _) (length< v 4))))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -1134,7 +1112,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (sum! (lambda (_ _ vars) (let-alist vars (setf last-result (/ last-result .left))))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
-     ( :input:          ( tell me the ,(result/total result/total?) again)
+     ( :input:          ( tell me the ,(result/total (memq (result total))) again)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
@@ -1164,7 +1142,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
            :response:   ( 23 it ,was/is ,last-result))))
      ;;==============================================================================================
-     ( :input:          ( ... i ... ,(feel feel/feeling?) ,@things )
+     ( :input:          ( ... i ... ,(feel (memq (feel feeling))) ,@things )
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (things (lambda (v _ _) (mapcar #'swap-word v)))
@@ -1488,3 +1466,4 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;              ,(a/the a/the?) ,@things)
 ;;   '(you would never dance with the stars))
 ;; (dm:match '( ... i ... have been ... feeling ,@things ) '(lately i have been feeling angry at the world))
+

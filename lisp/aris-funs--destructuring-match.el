@@ -454,14 +454,16 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                              (dolist (pred var-preds)
                                ;; this seems kind of hacky:
                                (unless
-                                 (cond 
-                                   ((eq 'member (car-safe pred)) (debug) t)
-                                   ((let ((indicator (car-safe pred)))
-                                      (and indicator (not (eq 'lambda indicator))))
-                                     (let ((*dm:verbose* t))
-                                       (dm::prn-labeled pred "eval"))
-                                     (funcall (eval pred) var-val))
-                                   (t (funcall pred var-val)))
+                                 (let ((indicator (car-safe pred)))
+                                   (cond 
+                                     ((null indicator) (funcall pred var-val))
+                                     ;; treat as threading expr:
+                                     ((not (eq 'lambda indicator))
+                                       (apply indicator var-val (cdr pred)))
+                                     ( t 
+                                       (let ((*dm:verbose* t))
+                                         (dm::prn-labeled pred "eval"))
+                                       (funcall (eval pred) var-val))))
                                  (throw 'pred-failed nil)))
                              t))))
                       (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
@@ -635,6 +637,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns t)
     (confirm that (dm:match '(... ,(a   integer? (lambda (n) (> n 4))) ...) '(1 2 3 4 5 1 6 7 8 9 10))
       returns ((a . 5)))
+    (confirm that (dm:match '(... ,(_ (= 8)) ... ,(x integerp cl-oddp) ...)
+                    '(1 2 3 4 5 6 7 8 a 9 10 11 12))
+      returns ((x . 9)))
     (confirm that (dm:match '( ...
                                ,(_ integer? (lambda (n) (> n 4)))
                                ,(_ integer? (lambda (n) (> n 4)))
