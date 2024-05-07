@@ -346,9 +346,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (warn-when-consecutive-flexible-elements-in-pattern)
                   (setf last-pattern-elem-was-flexible t)
                   
-                  
                   (ignore! (dm:match '(,@as ,@bs ,@cs) '(1 2)))
-                  
+                  (ignore! (dm:match '(,@as ,@bs) '(1 2)))
+
                   ;; (let ((remaining (cdr pattern)))
                   ;;   (while (dm::pat-elem-is-flexible? (cadr remaining))
                   ;;     (dm::log-pop* remaining))
@@ -395,7 +395,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                 (dm::prn "Emptied TARGET, stop.")
                                 (throw 'stop-collecting nil))
                               ((and look-0 ;; (not look-1)
-                                 ) ; (dm:match '(,@xs ,y) '(1 2 3 4 5))
+                                 ) 
                                 ;; If LOOK-0 matched the whole TARGET then we can munge
                                 ;; LOOK-0 and ALIST into the right shape and return successfully
                                 ;; immediately:
