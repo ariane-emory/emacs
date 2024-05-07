@@ -193,7 +193,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-swapper (alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(lambda (val var var-alist)
+  `(lambda (val &rest var var-alist)
      "Return the swapped word for VAL found in ALIST, or VAL if none."
      (cond
        ((assq  val ,alist) (cdr (assq  val ,alist)))
@@ -1037,13 +1037,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (noun!           pick-insult-noun))
            :response:   ( 98 yes \, here we are you ,adj ,noun))))
      ;;==============================================================================================
-     ( :input:          ( trigger )
-       :responses:
-       ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (adj!            pick-insult-adj)
-                          (noun!           pick-insult-noun))
-           :response:   ( 97 you are are a ,adj ,noun))))
-     ;;==============================================================================================
      ( :input:          ( ,@foo is the same as ,@foo )
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -1170,6 +1163,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
            :response:   ( 23 it ,was/is ,last-result))))
      ;;==============================================================================================
+     ( :input:          ( ... i ... have been ... ,(_ (make-member-sym-p '(feel feeling))) ,@things )
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (things (lambda (v _ _) (mapcar #'swap-word v)))
+                          (adj!            pick-insult-adj)
+                          (noun!           pick-insult-noun))
+           :response:   ( 96 of course you feel ,@things \, you ,adj ,noun ))))
+     ;;==============================================================================================
      ( :input: t
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -1228,6 +1229,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              ;; 3
              (you are an asshole)
              (you are a particularly stupid asshole)
+             (i am the dumb bitch)
+             (i am the dumb bitch)
+             (i am the dumb bitch)
+             (i am the dumb bitch)
+             (i am the dumb bitch)
+             (i am the King of France)
+             (i am the King of France)
              (i am the King of France)
              (i am the King of France)
              (i am the King of France)
@@ -1448,6 +1456,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              ;; (trigger)
              ;; (trigger)
              ;; (trigger)
+             (lately i have been feeling angry at the world)
+             (lately i have been feeling angry at the world)
+             (lately i have been feeling angry at the world)
+             (recently i have been starting to feel angry at the world)
+             (i have been feeling like you might be a robot)
              ))
   
   (prndiv)
@@ -1472,3 +1485,4 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;              ,(at/about (make-member-sym-p '(at about for with)))
 ;;              ,(a/the a/the?) ,@things)
 ;;   '(you would never dance with the stars))
+;; (dm:match '( ... i ... have been ... feeling ,@things ) '(lately i have been feeling angry at the world))
