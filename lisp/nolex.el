@@ -141,10 +141,14 @@
 (defalias 'pick-really       (make-pick '(really actually)))
 (defalias 'pick-maybe-not    (make-pick '(never not not nil nil nil)))
 (defalias 'pick-probably-not (make-pick '(never not not nil nil nil)))
+(defalias 'pick-maybe-actually (make-pick '(actually\, nil nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
 (confirm that (not (null (subject? 'you))) returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+(defun add-ing (sym)
+  (symbolicate sym 'ing))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -707,32 +711,61 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,@verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never
-                          ,@verb about a ,@things)
+                          ,@verb about ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
                           (modal           pick-modal)
                           (verb            (lambda (v _ _) (car (last v)))))
-           :response:   ( 10A ,subject ,maybe-really ,modal ,verb about a ,@things \!))))
+           :response:   ( 10A ,maybe-actually ,subject ,maybe-really ,modal
+                          ,verb about ,a/the ,@things \!))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (verb            (lambda (v _ _) (add-ing (car (last v))))))
+           :response:   ( 10A ,maybe-actually ,subject am ,maybe-really
+                          ,verb about ,a/the ,@things right now \!))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb at a ,@things)
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb at
+                          ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
                           (modal           pick-modal)
                           (verb            (lambda (v _ _) (car (last v)))))
-           :response:   ( 10B ,subject ,maybe-really ,modal ,verb at a ,@things \!))))
+           :response:   ( 10B ,maybe-actually ,subject ,maybe-really ,modal
+                          ,verb at ,a/the ,@things \!))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (verb            (lambda (v _ _) (add-ing (car (last v))))))
+           :response:   ( 10B ,maybe-actually ,subject ,maybe-really am
+                          ,verb at ,a/the ,@things right now\!))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb a ,@things)
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never
+                          ,@verb ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
                           (modal           pick-modal)
                           (verb            (lambda (v _ _) (car (last v)))))
-           :response:   ( 10C ,subject ,maybe-really ,modal ,verb a ,@things \!))))
+           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,modal
+                          ,verb ,a/the ,@things \!))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (verb            (lambda (v _ _) (add-ing (car (last v))))))
+           :response:   ( 10C ,maybe-actually ,subject ,maybe-really 
+                          ,verb ,a/the ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( you ,foo ,baz \!)
        :responses:
@@ -1220,8 +1253,21 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (square it)
              (increment it)
              (you could never even eat a carrot)
+             (you could never even eat a carrot)
+             (you would never even look at a carrot)
              (you would never even look at a carrot)
              (you would never even think about a carrot)
+             (you would never even think about a carrot)
+             (you could never really look at the sun)
+             (you could never really look at the sun)
+             (i could never even eat a carrot)
+             (i could never even eat a carrot)
+             (i would never even look at a carrot)
+             (i would never even look at a carrot)
+             (i would never even think about a carrot)
+             (i would never even think about a carrot)
+             (i could never really look at the sun)
+             (i could never really look at the sun)
              ))
   
   (prndiv)
@@ -1232,3 +1278,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;(dm:match '(,(subject subject?) ,(modal modal?) never ,@verb about ,(a/the a/the?) ,@things)
+;;'(you would never think about a dog))
+(add-ing 'look)
