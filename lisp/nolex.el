@@ -150,7 +150,7 @@
 (defalias 'pick-maybe-really (make-pick '(really actually nil nil)))
 (defalias 'pick-really       (make-pick '(really actually)))
 (defalias 'pick-maybe-not    (make-pick '(never not not nil nil nil)))
-(defalias 'pick-probably-not (make-pick '(never not not nil nil nil)))
+(defalias 'pick-probably-not (make-pick '(never not not not nil nil)))
 (defalias 'pick-maybe-actually (make-pick '(actually\, nil nil nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
@@ -712,7 +712,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
-                          ,(at/about (make-member-sym-p '(at about for with)))
+                          ,(at/about       (make-member-sym-p '(at about for with)))
                           ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -769,6 +769,16 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (modal-2!        pick-modal))
            :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
                           ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (subject-2!      pick-subject)
+                          (epistemic!      pick-epistemic)
+                          (maybe-that!     pick-maybe-that)
+                          (maybe-really!   pick-maybe-really)
+                          ;; (modal-2!        pick-modal)
+                          )
+           :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+                          ,maybe-really  ,@verb ,a/an/the ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (modal-2!        pick-modal)
@@ -955,8 +965,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (persp!          pick-i-am/you-are)
                           (maybe-really!   pick-maybe-really)
+                          (not!            pick-probably-not)
                           (certainty!      pick-certainty))
-           :response: ( 18 ,persp not ,maybe-really ,certainty that this is the ,@things ))))
+           :response: ( 18 ,persp ,not ,maybe-really ,certainty that this is the ,@things ))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(epistemic epistemic?)
                           ,(plural-subject plural-subject?) ,(modal modal?) ,verb
@@ -1034,50 +1045,43 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input:          ( increment it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ _)
-                                  (cl-incf last-result))))
+         ( :var-funs:   ( (sum! (lambda (_ _ _) (cl-incf last-result))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( decrement it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ _)
-                                  (cl-decf last-result))))
+         ( :var-funs:   ( (sum! (lambda (_ _ _) (cl-decf last-result))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( double it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ _)
-                                  (setf last-result (* last-result 2)))))
+         ( :var-funs:   ( (sum! (lambda (_ _ _) (setf last-result (* last-result 2)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( triple it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ _)
-                                  (setf last-result (* last-result 3)))))
+         ( :var-funs:   ( (sum! (lambda (_ _ _) (setf last-result (* last-result 3)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( square it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
-                                  (setf last-result (* last-result last-result)))))
+         ( :var-funs:   ( (sum! (lambda (_ _ vars) (setf last-result (* last-result last-result)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( halve it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ _)
-                                  (setf last-result (/ last-result 2)))))
+         ( :var-funs:   ( (sum! (lambda (_ _ _) (setf last-result (/ last-result 2)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( divide it by ,(left integer?))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
-                                  (let-alist vars (setf last-result (/ last-result .left))))))
+         ( :var-funs:   ( (sum! (lambda (_ _ vars) (let-alist vars (setf last-result (/ last-result .left))))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( tell me the ,(result/total result/total?) again)
