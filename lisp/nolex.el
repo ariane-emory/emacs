@@ -664,7 +664,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (subject         swap-word))
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) ,verb ,(a/an/the a/an/the?) ,@things)
+     ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb ,(a/an/the a/an/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -674,14 +674,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-really!   pick-maybe-really)
                           (modal-2!        pick-modal))
            :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
-                          ,maybe-really ,modal-2 ,verb ,a/an/the ,@things))
+                          ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (modal-2!        pick-modal)
                           (maybe-really!   pick-maybe-really))
-           :response:   ( 9 ,subject ,maybe-really ,modal-2 ,verb ,a/an/the ,@things))))
+           :response:   ( 9 ,subject ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(neg-modal neg-modal?) ,verb
+     ( :input:          ( ,(subject subject?) ,(neg-modal neg-modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -692,7 +692,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-really!   pick-maybe-really)
                           (neg-modal-2!    pick-neg-modal))
            :response:   ( 9B ,subject-2 ,maybe-really ,epistemic ,maybe-that ,subject
-                          ,neg-modal-2 ,verb ,a/an/the ,@things))
+                          ,neg-modal-2 ,@verb ,a/an/the ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (subject-2!      pick-subject)
@@ -700,7 +700,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-that!     pick-maybe-that)
                           (maybe-really!   pick-maybe-really)
                           (neg-modal-2!    pick-neg-modal))
-           :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,verb ,a/an/the ,@things))))
+           :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,@verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never ,verb a ,@things)
        :responses:
@@ -1017,6 +1017,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)
              (i must devour the souls of the innocent)             
+             (i must hungrily devour the souls of the innocent)
+             (i must hungrily devour the souls of the innocent)
+             (i must hungrily devour the souls of the innocent)             
              (this is the worst thing ever)
              (this is the worst thing ever)
              (this is the worst thing ever)
