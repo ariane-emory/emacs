@@ -319,6 +319,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun singularize (symbol)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
+  (if (string-suffix-p "s" (symbol-name symbol))
+    (intern (substring (symbol-name symbol) 0 -1))
+    symbol))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun new-var-name? (symbol)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
@@ -370,6 +380,12 @@
               (prn2 "val:       %s" val)
               (prn2 "fun:       %s" fun)
               (prn-var-alist)
+              
+              ;; this seems kind of hacky:
+              (when (and (listp fun) (not (eq 'lambda (car fun))))
+                ;; (prn "eval %s" fun)
+                (setf fun (eval fun)))
+              
               (let ((res
                       ;; auto-map is probably a bad idea:
                       ;; (if (consp val) ;; don't use listp here!
@@ -578,6 +594,17 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro cointoss (expr expr2)
+  `(lambda (v &rest _) (let ((it v)) (if (= 0 (% (random) 2)) ,expr ,expr2))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cointoss (last it) it)
+(cointoss (last it) (cdr it))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(had/have had/have?) ,(a/an a/an?) ,@things)
@@ -597,22 +624,25 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (epistemic       pick-epistemic)
                           (maybe-really!   pick-maybe-really)
                           (subject         swap-word)
-                          (subject-2       swap-word))
-           :response:   ( 2 do ,subject ,maybe-really ,epistemic that ,subject-2 ,modal
+                          (subject-2       swap-word)
+                          (do!             (cointoss 'do nil)))
+           :response:   ( 2 ,do ,subject ,maybe-really ,epistemic that ,subject-2 ,modal
                           ,verb-2 ,a/an ,@things \?))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (epistemic       pick-epistemic)
                           (maybe-really!   pick-maybe-really)
                           (subject         swap-word)
-                          (subject-2       swap-word))
-           :response:   ( 2 do ,subject ,epistemic that ,subject-2 ,maybe-really ,modal
+                          (subject-2       swap-word)
+                          (do!             (cointoss 'do nil)))
+           :response:   ( 2 ,do ,subject ,epistemic that ,subject-2 ,maybe-really ,modal
                           ,verb-2 ,a/an ,@things \?))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (epistemic       pick-epistemic)
                           (maybe-really!   pick-maybe-really)
                           (subject         swap-word)
-                          (subject-2       swap-word))
-           :response:   ( 2 do ,subject ,epistemic that ,subject-2 ,modal ,maybe-really
+                          (subject-2       swap-word)
+                          (do!             (cointoss 'do nil)))
+           :response:   ( 2 ,do ,subject ,epistemic that ,subject-2 ,modal ,maybe-really
                           ,verb-2 ,a/an ,@things \?))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?)  ,(am/are am/are?) ,(a/an/the a/an/the?) ,@things)
@@ -664,14 +694,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (desire          pick-desire)
                           (maybe-really!   pick-maybe-really)
                           (poss!           pick-possibility)
-                          (things         (lambda (v _ _) (if (= 0 (% (random) 2)) v (last v)))))
+                          (things          (cointoss it (list 'a (singularize (car (last it)))))))
            :response:   ( 7 ,subject ,poss ,maybe-really ,desire ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (desire          pick-desire)
                           (maybe-really!   pick-maybe-really)
                           (poss!           pick-possibility)
-                          (things         (lambda (v _ _) (if (= 0 (% (random) 2)) v (last v)))))
+                          (things          (cointoss it (list 'a (singularize (car (last it)))))))
            :response:   ( 7 ,subject ,maybe-really ,poss ,desire ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,bar ,baz)
@@ -679,6 +709,51 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word))
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
+     ;;==============================================================================================
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
+                          ,(at/about (make-member-sym-p '(at about for with)))
+                          ,(a/the a/the?) ,@things)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject
+                            swap-word
+                            (lambda (val _ _) (if (eq 'i val) 'me val)))
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (verb            (lambda (v _ _) (car (last v)))))
+           :response:   ( 10X ,maybe-actually ,a/the ,@things ,modal never
+                          ,maybe-really ,verb ,at/about ,subject either \!))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (modal           pick-modal)
+                          (verb            (lambda (v _ _) (car (last v)))))
+           :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,modal
+                          ,verb ,at/about ,a/the ,@things \!))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (subject-2!      pick-subject)
+                          (epistemic!      pick-epistemic)
+                          (maybe-that!     pick-maybe-that)
+                          (maybe-really!   pick-maybe-really)
+                          (modal-2!        pick-modal))
+           :response:   ( 10Y ,subject-2 ,epistemic ,maybe-that ,subject
+                          ,maybe-really ,modal-2 ,@verb ,at/about ,a/the ,@things))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (modal-2!        pick-modal)
+                          (maybe-really!   pick-maybe-really))
+           :response:   ( 10Y ,subject ,maybe-really ,modal-2 ,@verb ,at/about ,a/the ,@things))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (am/are!         (lambda (_ _ vars)
+                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (verb            (lambda (v _ _) (add-ing (car (last v))))))
+           :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,am/are
+                          ,verb ,at/about ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
@@ -720,37 +795,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-really!   pick-maybe-really)
                           (neg-modal-2!    pick-neg-modal))
            :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,@verb ,a/an/the ,@things))))
-     ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
-                          ,(at/about (make-member-sym-p '(at about for)))
-                          ,(a/the a/the?) ,@things)
-       :responses:
-       ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject
-                            swap-word
-                            (lambda (val _ _) (if (eq 'i val) 'me val)))
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (verb            (lambda (v _ _) (car (last v)))))
-           :response:   ( 10X ,maybe-actually ,a/the ,@things ,modal never
-                          ,maybe-really ,verb ,at/about ,subject either \!))
-         ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word)
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (modal           pick-modal)
-                          (verb            (lambda (v _ _) (car (last v)))))
-           :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,modal
-                          ,verb ,at/about ,a/the ,@things \!))
-         ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word)
-                          (am/are!         (lambda (_ _ vars)
-                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (verb            (lambda (v _ _) (add-ing (car (last v))))))
-           :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,am/are
-                          ,verb ,at/about ,a/the ,@things right now \!))))
      ;; ;;==============================================================================================
      ;; ( :input:          ( ,(subject subject?) ,(modal modal?) never
      ;;                      ,@verb about ,(a/the a/the?) ,@things)
@@ -839,7 +883,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           that ,subject-2 ,modal-plus never ,verb a ,noun \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(epistemic epistemic?) that ,(subject-2 subject?)
-                          ,(desire desire?) ,(a/an a/an?) ,noun)
+                          ,(desire desire?) ,(a/an a/an?) ,@noun)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -848,7 +892,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (desire          swap-word))
            :response:   ( 13 after this conversation \, ,subject
                           ,epistemic that ,subject-2
-                          ,desire ,a/an ,noun \!))))
+                          ,desire ,a/an ,@noun \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(desire desire?) to ,verb ,@things)
        :responses:
@@ -1191,11 +1235,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i know that you have never eaten a hamburger)
              (i suspect that you have never seen a zebra)
 
-             ;; 14
+             ;; 13
              (i think that you need a drink)
              (you think that i need a drink)
              (i think that i need a drink)
              (you think that you need a drink)
+             (i think that you need a long vacation)
+             (you think that i need a long vacation)
+             (i think that i need a long vacation)
+             (you think that you need a long vacation)
 
              ;; 14
              (you want to smoke a fat joint)
@@ -1318,8 +1366,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i could never really look at the sun)
              (i could never really look at the sun)
              (you could never sing for the crowds)
+             (you could never sing for the crowds)
+             (you would sing for the money)
              (you would sing for the money)
              (you would only sing for the money)
+             (you would only sing for the money)
+             (you would never dance with the stars)
+             (you would never dance with the stars)
              ))
   
   (prndiv)
@@ -1334,3 +1387,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;(dm:match '(,(subject subject?) ,(modal modal?) never ,@verb about ,(a/the a/the?) ,@things)
 ;;'(you would never think about a dog))
 (add-ing 'look)
+
+
+;; (cointoss 3 4)
+
+;; (cointoss 'do nil)
+;; ((lambda (v _ _) (let ((it v)) (if (= 0 (% (random) 2)) v 'do))) 888 7 7)
+;; (dm:match '( ,(subject subject?) ,(modal modal?) never ,@verb
+;;              ,(at/about (make-member-sym-p '(at about for with)))
+;;              ,(a/the a/the?) ,@things)
+;;   '(you would never dance with the stars))

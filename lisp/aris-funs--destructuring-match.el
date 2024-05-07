@@ -447,11 +447,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                          (or (not var-preds)
                            (catch 'pred-failed
                              (dolist (pred var-preds)
-                               (when (listp pred)
-                                 ;; this seems kind of hacky:
-                                 (when (and *dm:eval-preds* (listp pred))
-                                   (dm::prn-labeled pred "eval")
-                                   (setf pred (eval pred))))
+                               ;; this seems kind of hacky:
+                               (when (and *dm:eval-preds* (listp pred))
+                                 (let ((*dm:verbose* t))
+                                   (dm::prn-labeled pred "eval"))
+                                 (setf pred (eval pred)))
                                (unless (funcall pred var-val)
                                  (throw 'pred-failed nil)))
                              t))))
