@@ -67,7 +67,7 @@
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
 (defalias 'a/an/another?      (make-member-sym-p '(a an another this the)))
-(defalias 'a/the?             (make-member-sym-p '(a the)))
+(defalias 'a/the?             (make-member-sym-p '(a the with)))
 (defalias 'many/more?         (make-member-sym-p '(many more some)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
@@ -550,22 +550,34 @@
   (cl-flet ( (prn2    (&rest args) (when *get-response-verbose* (apply #'prn    args)))
              (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
     (catch 'result
-      (dolist (rule *rules*)
-        (let-rule rule
-          (catch 'continue
-            (prn2 "try:       %s" .:input:)
-            (if (eq t .:input:)
-              (progn
-                (prn2 "MATCHED T:   %s" .:input:)
-                ;; t matches any input and fills using an empty list:
-                (throw 'result (select-response nil .:responses:)))
-              (when-let ((var-alist
-                           (let ((*dm:verbose* nil)) ; shadow!
-                             (dm:match .:input: input))))
-                (let ((var-alist (if (eq t var-alist) nil var-alist)))
-                  (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
-                  (prn2 "MATCHED:   %s" .:input:)
-                  (throw 'result (select-response var-alist .:responses:)))))))))))
+      (let (matching-rules t-rules)
+        (dolist (rule *rules*)
+          (let-rule rule
+            (catch 'continue
+              (prn2 "try:       %s" .:input:)
+              (if (eq t .:input:)
+                (progn
+                  (prn2 "MATCHED T:   %s" .:input:)
+                  ;; t matches any input and fills using an empty list:
+                  (push (cons rule nil) t-rules)
+                  ;; (throw 'result (select-response nil .:responses:))
+                  )
+                (when-let ((var-alist
+                             (let ((*dm:verbose* nil)) ; shadow!
+                               (dm:match .:input: input))))
+                  (let ((var-alist (if (eq t var-alist) nil var-alist)))
+                    (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
+                    (prn2 "MATCHED:   %s" .:input:)
+                    (push (cons rule var-alist) matching-rules)
+                    ;; (throw 'result (select-response var-alist .:responses:))
+                    ))))))
+        (unless matching-rules
+          (setf matching-rules t-rules))
+        (let ((picked (pick matching-rules)))
+          (let-rule (car picked)
+            ;;(debug)
+            (prn2 "picked:    %s" .:input:)
+            (select-response (cdr picked) .:responses:)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *get-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -792,31 +804,31 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (verb            (lambda (v _ _) (add-ing (car (last v))))))
            :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,am/are
                           ,verb ,at/about ,a/the ,@things right now \!))))
-     ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never
-                          ,@verb ,(a/the a/the?) ,@things)
-       :responses:
-       ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word)
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (modal           pick-modal)
-                          (verb            lastcar))
-           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,modal
-                          ,verb ,a/the ,@things \!))
-         ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word)
-                          (am/are!         (lambda (_ _ vars)
-                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (verb            lastcar (lambda (v _ _) (add-ing v))))
-           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,am/are
-                          ,verb ,a/the ,@things right now \!))))
+     ;; ;;==============================================================================================
+     ;; ( :input:          ( ,(subject subject?) ,(modal modal?) never
+     ;;                      ,@verb ,(a/the a/the?) ,@things)
+     ;;   :responses:
+     ;;   ( ;;------------------------------------------------------------------------------------------
+     ;;     ( :var-funs:   ( (subject         swap-word)
+     ;;                      (maybe-really!   pick-maybe-really)
+     ;;                      (maybe-actually! pick-maybe-actually)
+     ;;                      (modal           pick-modal)
+     ;;                      (verb            lastcar))
+     ;;       :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,modal
+     ;;                      ,verb ,a/the ,@things \!))
+     ;;     ;;------------------------------------------------------------------------------------------
+     ;;     ( :var-funs:   ( (subject         swap-word)
+     ;;                      (am/are!         (lambda (_ _ vars)
+     ;;                                         (let-alist vars (if (eq 'i .subject) 'am 'are))))
+     ;;                      (maybe-really!   pick-maybe-really)
+     ;;                      (maybe-actually! pick-maybe-actually)
+     ;;                      (verb            lastcar (lambda (v _ _) (add-ing v))))
+     ;;       :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,am/are
+     ;;                      ,verb ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
-       :var-tests:      ( (verb (lambda (v _ _) (length< v 4))))
+                                        ;:var-tests:      ( (verb (lambda (v _ _) (length< v 4))))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -825,7 +837,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-that!     pick-maybe-that)
                           (maybe-really!   pick-maybe-really)
                           (modal-2!        pick-modal))
-           :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
+           :response:   ( 9E ,subject-2 ,epistemic ,maybe-that ,subject
                           ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -833,15 +845,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (epistemic!      pick-epistemic)
                           (maybe-that!     pick-maybe-that)
                           (maybe-really!   pick-maybe-really)
-                          ;; (modal-2!        pick-modal)
+                          (modal-2!        pick-modal (cointoss it nil))                          
                           )
-           :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
-                          ,maybe-really  ,@verb ,a/an/the ,@things))
+           :response:   ( 9W ,subject-2 ,epistemic ,maybe-that ,subject
+                          ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (modal-2!        pick-modal)
                           (maybe-really!   pick-maybe-really))
-           :response:   ( 9 ,subject ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))))
+           :response:   ( 9Q ,subject ,maybe-really ,modal-2 ,@verb ,a/an/the ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(neg-modal neg-modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
@@ -1024,6 +1036,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (adj!            pick-insult-adj)
                           (noun!           pick-insult-noun))
            :response:   ( 98 yes \, here we are you ,adj ,noun))))
+     ;;==============================================================================================
+     ( :input:          ( trigger )
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (adj!            pick-insult-adj)
+                          (noun!           pick-insult-noun))
+           :response:   ( 97 you are are a ,adj ,noun))))
      ;;==============================================================================================
      ( :input:          ( ,@foo is the same as ,@foo )
        :responses:
@@ -1342,7 +1361,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i know we can find them)
              (i know we can find them)
              (i know we can find them)
-
              
              ;; 9
              (i could eat a hamburger and some fries)
@@ -1425,6 +1443,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you would only sing for the money)
              (you would never dance with the stars)
              (you would never dance with the stars)
+             ;; (trigger)
+             ;; (trigger)
+             ;; (trigger)
+             ;; (trigger)
+             ;; (trigger)
              ))
   
   (prndiv)
