@@ -461,7 +461,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                        ;; treat as threading expr:
                                        ;; (let ((expr `(,indicator ,var-val ,@(cdr pred))))
                                        ;;   (eval expr))
-                                       (apply indicator var-val (cdr pred))
+                                       (eval `(apply indicator var-val ,(cons 'list (cdr pred))))
                                        )
                                      ( t 
                                        (let ((*dm:verbose* t))
