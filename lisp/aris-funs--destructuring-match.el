@@ -453,11 +453,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                            (catch 'pred-failed
                              (dolist (pred var-preds)
                                ;; this seems kind of hacky:
-                               (when (and *dm:eval-preds* (listp pred) (not (eq 'lambda (car pred))))
-                                 (dm::prn-labeled pred "eval")
-                                 (setf pred (eval pred)))
-                               (unless (funcall pred var-val)
-                                 (throw 'pred-failed nil)))
+                               (unless
+                                 (cond 
+                                   ((eq 'member (car-safe pred)) (debug) t)
+                                   ((let ((indicator (car-safe pred)))
+                                      (and indicator (not (eq 'lambda indicator))))
+                                     (let ((*dm:verbose* t))
+                                       (dm::prn-labeled pred "eval"))
+                                     (funcall (eval pred) var-val))
+                                   (t (funcall pred var-val)))
+                                 (throw 'pred-failed nil))
+                               )
                              t))))
                       (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
                       (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)

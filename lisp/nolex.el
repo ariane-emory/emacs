@@ -73,6 +73,7 @@
 (defalias 'had/have?          (make-member-sym-p '(had have)))
 (defalias 'do/does?           (make-member-sym-p '(do does)))
 (defalias 'a/another/to?      (make-member-sym-p '(a another to)))
+(defalias 'feel/feeling?      (make-member-sym-p '(feel feeling)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'do/would?          (make-member-sym-p '(do would)))
 (defalias 'pick-do/would?     (make-pick '(do would)))
@@ -1163,13 +1164,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
            :response:   ( 23 it ,was/is ,last-result))))
      ;;==============================================================================================
-     ( :input:          ( ... i ... have been ... ,(_ (make-member-sym-p '(feel feeling))) ,@things )
+     ( :input:          ( ... i ... ,(feel feel/feeling?) ,@things )
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (things (lambda (v _ _) (mapcar #'swap-word v)))
                           (adj!            pick-insult-adj)
-                          (noun!           pick-insult-noun))
-           :response:   ( 96 of course you feel ,@things \, you ,adj ,noun ))))
+                          (noun!           pick-insult-noun)
+                          (feel            (lambda (v _ _) (if (eq v 'feeling) 'are\ feeling v))))
+           :response:   ( 96 of course you ,feel ,@things \, you ,adj ,noun ))))
      ;;==============================================================================================
      ( :input: t
        :responses:
