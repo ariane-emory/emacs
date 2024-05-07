@@ -429,6 +429,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; (prn "s-a-f-r's var-alist: %s" var-alist)
   ;; (prn "s-a-f-r's responses: %s" responses)
+  (unless responses
+    (error "can't select from empty RESPONSES"))
   (cl-flet ( (prn2    (&rest args) (when *select-response-verbose* (apply #'prn    args)))
              (prndiv2 (&rest args) (when *select-response-verbose* (apply #'prndiv nil))))
     (let ((response (pick responses)))
@@ -564,10 +566,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *rules*
   '( ;;==============================================================================================
-     ( :input:          ( ,subject ,had/have ,a/an ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (had/have        had/have?)
-                          (a/an            a/an?))
+     ( :input:          ( ,(subject subject?) ,(had/have had/have?) ,(a/an a/an?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         dup-var dup-var)
@@ -577,12 +576,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (things          swap-word))
            :response:   ( 1 ,subject ,subject*  ,subject** ,had/have ,a/an ,@things \!))))
      ;;==============================================================================================
-     ( :input:          ( ,subject  ,epistemic that ,subject-2 ,modal ,verb-2 ,a/an ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (epistemic       epistemic?)
-                          (subject-2       subject?)
-                          (modal           modal-plus?)
-                          (a/an            a/an?))
+     ( :input:          ( ,(subject subject?) ,(epistemic epistemic?) that ,(subject-2 subject?)
+                          ,(modal modal?) ,verb-2 ,(a/an a/an?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (epistemic       pick-epistemic)
@@ -606,10 +601,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 2 do ,subject ,epistemic that ,subject-2 ,modal ,maybe-really
                           ,verb-2 ,a/an ,@things \?))))
      ;;==============================================================================================
-     ( :input:          ( ,subject  ,am/are ,a/an/the ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (am/are          am/are?)
-                          (a/an/the        a/an/the?))
+     ( :input:          ( ,(subject subject?)  ,(am/are am/are?) ,(a/an/the a/an/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         dup-var)
@@ -622,17 +614,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,maybe-really ,a/an/the
                           ,@things \, ,subject ,am/are ,obv the ,@things \!))))
      ;;==============================================================================================
-     ( :input:          ( ,subject would ,desire many ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (desire          desire?))
+     ( :input:          ( ,(subject subject?) would ,(desire desire?) many ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (qty!            pick-qty))
            :response:   ( 4 don\'t ,subject have ,qty ,@things already \?))))
      ;;==============================================================================================
-     ( :input:          ( ,subject would like ,@things)
-       :var-tests:      ( (subject         subject?))
+     ( :input:          ( ,(subject subject?) would like ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word))
@@ -646,10 +635,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-really!   pick-maybe-really))
            :response:   ( 5 ,subject would ,maybe-really like ,@things ))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,desire ,a/an ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (desire          desire?)
-                          (a/an            a/an?))
+     ( :input:          ( ,(subject subject?) ,(desire desire?) ,(a/an a/an?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -657,10 +643,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (really!         pick-really))
            :response:   ( 6 do ,subject ,really ,desire ,a/an ,@things \?))))
      ;;==============================================================================================
-     ( :input:          ( ,do/would ,subject ,desire ,@things)
-       :var-tests:      ( (do/would        do/would?)
-                          (subject         subject?)
-                          (desire          desire?))
+     ( :input:          ( ,(do/would do/would?) ,(subject subject?) ,(desire desire?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -675,20 +658,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (poss!           pick-possibility))
            :response:   ( 7 ,subject ,maybe-really ,poss ,desire ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,bar ,baz)
-       :var-tests:      ( (subject         subject?))
+     ( :input:          ( ,(subject subject?) ,bar ,baz)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word))
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,modal ,verb ,a/an/the ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (modal           modal?)
-                          ;; (_ (lambda (val var var-alist)
-                          ;;      (prn "THIS HAPPENED! %s" var-alist)
-                          ;;      t))
-                          (a/an/the        a/an/the?))
+     ( :input:          ( ,(subject subject?) ,(modal modal?) ,verb ,(a/an/the a/an/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -696,9 +672,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (epistemic!      pick-epistemic)
                           (maybe-that!     pick-maybe-that)
                           (maybe-really!   pick-maybe-really)
-                          ;; (_ (lambda (val var var-alist)
-                          ;;      (prn "THIS ALSO HAPPENED! %s" var-alist)
-                          ;;      t))
                           (modal-2!        pick-modal))
            :response:   ( 9 ,subject-2 ,epistemic ,maybe-that ,subject
                           ,maybe-really ,modal-2 ,verb ,a/an/the ,@things))
@@ -708,10 +681,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-really!   pick-maybe-really))
            :response:   ( 9 ,subject ,maybe-really ,modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,neg-modal ,verb ,a/an/the ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (neg-modal       neg-modal?)
-                          (a/an/the        a/an/the?))
+     ( :input:          ( ,(subject subject?) ,(neg-modal neg-modal?) ,verb
+                          ,(a/an/the a/an/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -731,9 +702,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (neg-modal-2!    pick-neg-modal))
            :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,verb ,a/an/the ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,modal never ,verb a ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (modal           modal?))
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,verb a ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word))
@@ -744,11 +713,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ( ;;------------------------------------------------------------------------------------------
          ( :response:   ( 11 no \, it is you who ,foo ,baz \!))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,epistemic that ,subject-2 ,modal-plus never ,verb a ,noun)
-       :var-tests:      ( (subject         subject?)
-                          (epistemic       epistemic?)
-                          (subject-2       subject?)
-                          (modal-plus      modal-plus?))
+     ( :input:          ( ,(subject subject?) ,(epistemic epistemic?) that ,(subject-2 subject?)
+                          ,(modal-plus modal-plus?) never ,verb a ,noun)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -756,12 +722,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 12 come on \, ,subject can\'t really ,epistemic
                           that ,subject-2 ,modal-plus never ,verb a ,noun \!))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,epistemic that ,subject-2 ,desire ,a/n ,noun)
-       :var-tests:      ( (subject         subject?)
-                          (epistemic       epistemic?)
-                          (subject-2       subject?)
-                          (desire          desire?)
-                          (a/n             a/an?))
+     ( :input:          ( ,(subject subject?) ,(epistemic epistemic?) that ,(subject-2 subject?)
+                          ,(desire desire?) ,(a/n a/n?) ,noun)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -772,9 +734,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           ,epistemic that ,subject-2
                           ,desire ,a/n ,noun \!))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,desire to ,verb ,@things)
-       :var-tests:      ( (subject          subject?)
-                          (desire           desire?))
+     ( :input:          ( ,(subject subject?) ,(desire desire?) to ,verb ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject          swap-word)
@@ -788,8 +748,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (desire           pick-desire))
            :response:   ( 14B ,subject don\'t ,desire to ,verb ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,plural-subject are ,@things)
-       :var-tests:      ( (plural-subject  plural-subject?))
+     ( :input:          ( ,(plural-subject plural-subject?) are ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (plural-subject  dup-var)
@@ -835,12 +794,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (certainty!      pick-certainty))
            :response: ( 18 ,persp not ,maybe-really ,certainty that this is the ,@things ))))
      ;;==============================================================================================
-     ( :input:          ( ,subject ,epistemic ,plural-subject ,modal ,verb ,us-them ,@things)
-       :var-tests:      ( (subject         subject?)
-                          (epistemic       epistemic?)
-                          (plural-subject  plural-subject?)
-                          (modal           modal?)
-                          (us-them         us-them?))
+     ( :input:          ( ,(subject subject?) ,(epistemic epistemic?)
+                          ,(plural-subject plural-subject?) ,(modal modal?) ,verb
+                          ,(us-them us-them?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
