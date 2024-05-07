@@ -63,6 +63,11 @@
   "dm:match's default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'symbol)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:fill-unsplice-atoms* t
+  "Whether or not fill should allow 'unsplicing' an atom (or improper list) as if it were a list of 1 item"
+  :group 'destructuring-match
+  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -790,10 +795,12 @@ This behaves very similarly to quasiquote."
               (if-let ((assoc (assoc (cadr thing) alist)))
                 (let ((val (cdr assoc)))
                   (dm::prn "VAL:     %s" val)
-                  (unless (proper-list-p val)
-                    (error "var %s's value %s cannot be spliced, not a list."))
-                  (dolist (elem val)
-                    (push elem res)))
+                  (if (proper-list-p val)
+                    (dolist (elem val)
+                      (push elem res))
+                    (if *dm:fill-unsplice-atoms*
+                      (push val res)
+                      (error "var %s's value %s cannot be spliced, not a list."))))
                 (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing)
             (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
@@ -804,6 +811,12 @@ This behaves very similarly to quasiquote."
   (let (*dm:verbose*)
     (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 888 777)))
       returns (666 x 999 888 777 z))
+
+    (let ((*dm:fill-unsplice-atoms* t))
+      (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys . 999))) returns (666 x 999 z))
+      (confirm that (dm:fill '(,w x ,@ys z) '((w . 666) (ys 999 . 888)))
+        returns (666 x (999 . 888) z)))
+    
     (confirm that (dm:fill '(,w x ,y z) '((w . 666) (y . 999)))
       returns (666 x 999 z))
     (confirm that (dm:fill
