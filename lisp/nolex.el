@@ -64,6 +64,7 @@
 (defalias 'a/an?              (make-member-sym-p '(a an)))
 (defalias 'a/an/another?      (make-member-sym-p '(a an another this the)))
 (defalias 'a/the?             (make-member-sym-p '(a the)))
+(defalias 'many/more?         (make-member-sym-p '(many more some)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
 (defalias 'do/does?           (make-member-sym-p '(do does)))
@@ -156,9 +157,6 @@
 (confirm that (not (null (subject? 'i))) returns t)
 (confirm that (not (null (subject? 'you))) returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
-(defun add-ing (sym)
-  (symbolicate sym 'ing))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -326,6 +324,35 @@
   (if (string-suffix-p "s" (symbol-name symbol))
     (intern (substring (symbol-name symbol) 0 -1))
     symbol))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (singularize 'foo) returns foo)
+(confirm that (singularize 'bars) returns bar)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun string-ends-with-vowel-p (str)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Check if the given string STR ends with a vowel."
+  (let ((last-char (substring str (- (length str) 1))))
+    (not (null (string-match-p "[aeiouAEIOU]" last-char)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (string-ends-with-vowel-p "foo") returns t)
+(confirm that (string-ends-with-vowel-p "bar") returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun add-ing (sym)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let ((sym (symbol-name sym)))
+    (symbolicate (if (equal (substring sym -1) "e")
+                   (substring  sym 0 -1)
+                   sym)
+      'ing)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (add-ing 'dance) returns dancing)
+(confirm that (add-ing 'go) returns going)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -659,7 +686,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,maybe-really ,a/an/the
                           ,@things \, ,subject ,am/are ,obv the ,@things \!))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) would ,(desire desire?) many ,@things)
+     ( :input:          ( ,(subject subject?) would ,(desire desire?) ,(_ many/more?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -1183,6 +1210,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i would like many hamburgers with cheese and bacon)
              (i would like many hamburgers with cheese and bacon)
              (i would like many hamburgers with cheese and bacon)
+             (i would like more hamburgers with cheese and bacon)
+             (i would like more hamburgers with cheese and bacon)
+             (i would like more hamburgers with cheese and bacon)
              (i would need many orange cats)
              (i would need many orange cats)
              (i would need many orange cats)
