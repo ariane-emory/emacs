@@ -37,9 +37,11 @@
                              (let ((first-pick (pick ,lst)))
                                (if (and vars first-pick (rassoc first-pick vars))
                                  (progn
-                                   (prn "RETRYING PICK: %s" (rassoc first-pick vars))
-                                   (prn "Retrying pick: %s in %s" first-pick vars)
-                                   (prn1 "2nd choice: %s" (pick ,lst)))
+                                   ;; (prn "RETRYING PICK: %s" (rassoc first-pick vars))
+                                   ;;(prn "Retrying pick: %s in %s" first-pick vars)
+                                   ;;(prn1 "2nd choice: %s"
+                                   (pick ,lst))
+                                 ;; )
                                  first-pick))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-weighted-pick (lst) `(lambda (&rest _) (weighted-pick ,lst)))
@@ -138,7 +140,7 @@
 (defalias 'pick-obviousness
   (make-pick '(nil nil nil clearly plainly actually secretly obviously evidently)))
 (defalias 'pick-insult-adj
-  (make-pick '(brainded stupid silly dumb ridiculous demented deranged assinine idiotic)))
+  (make-pick '(braindead stupid silly dumb ridiculous demented deranged assinine idiotic)))
 (defalias 'pick-insult-noun
   (make-pick '(idiot moron nincompoop fool imbecile jackass knucklehead nitwit dumbass)))
 (defalias 'pick-i-am/you-are (make-pick '(i\ am you\ are)))
@@ -148,7 +150,7 @@
 (defalias 'pick-really       (make-pick '(really actually)))
 (defalias 'pick-maybe-not    (make-pick '(never not not nil nil nil)))
 (defalias 'pick-probably-not (make-pick '(never not not nil nil nil)))
-(defalias 'pick-maybe-actually (make-pick '(actually\, nil nil)))
+(defalias 'pick-maybe-actually (make-pick '(actually\, nil nil nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (not (null (subject? 'i))) returns t)
 (confirm that (not (null (subject? 'you))) returns t)
@@ -589,7 +591,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 1 ,subject ,subject*  ,subject** ,had/have ,a/an ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(epistemic epistemic?) that ,(subject-2 subject?)
-                          ,(modal modal?) ,verb-2 ,(a/an a/an?) ,@things)
+                          ,(modal modal-plus?) ,verb-2 ,(a/an a/an?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (epistemic       pick-epistemic)
@@ -678,7 +680,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
-       :var-tests:      ( (verb (lambda (v _ _) (length< v 3))))
+       :var-tests:      ( (verb (lambda (v _ _) (length< v 4))))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -717,7 +719,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (neg-modal-2!    pick-neg-modal))
            :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,@verb ,a/an/the ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb ,(at/about (make-member-sym-p '(at about)))
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
+                          ,(at/about (make-member-sym-p '(at about for)))
                           ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -1312,6 +1315,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i would never even think about a carrot)
              (i could never really look at the sun)
              (i could never really look at the sun)
+             (you could never sing for the crowds)
+             (you would sing for the money)
+             (you would only sing for the money)
              ))
   
   (prndiv)
