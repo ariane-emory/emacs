@@ -56,9 +56,13 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun lastcons (v &rest _) (last v))
+(defun lastcar  (v &rest _) (car (last v)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-qty           (make-pick '(some many enough)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'was/is?            (make-member-sym-p '(was is)))
+(defalias 'nil/t?             (make-member-sym-p '(nil t)))
 (defalias 'result/total?      (make-member-sym-p '(result total)))
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
@@ -318,9 +322,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun singularize (symbol)
+(defun singularize (symbol &rest _kkk)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Remove the exclamation mark from SYMBOL if it ends with one, otherwise return nil."
   (if (string-suffix-p "s" (symbol-name symbol))
     (intern (substring (symbol-name symbol) 0 -1))
     symbol))
@@ -686,6 +689,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 3 don\'t be ,iadj \, ,subject* ,am/are* not ,maybe-really ,a/an/the
                           ,@things \, ,subject ,am/are ,obv the ,@things \!))))
      ;;==============================================================================================
+     ( :input:          ( ,(subject subject?) would ,(desire desire?) ,(_ many/more?)
+                          ,@things with ,@things2)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (things lastcar singularize))
+           :response:   ( 4B why not just have a ,things without the ,@things2  \?))))
+     ;;==============================================================================================
      ( :input:          ( ,(subject subject?) would ,(desire desire?) ,(_ many/more?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -722,14 +732,14 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (desire          pick-desire)
                           (maybe-really!   pick-maybe-really)
                           (poss!           pick-possibility)
-                          (things          (cointoss it (list 'a (singularize (car (last it)))))))
+                          (things          (cointoss it (list 'a (singularize (lastcar it))))))
            :response:   ( 7 ,subject ,poss ,maybe-really ,desire ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (desire          pick-desire)
                           (maybe-really!   pick-maybe-really)
                           (poss!           pick-possibility)
-                          (things          (cointoss it (list 'a (singularize (car (last it)))))))
+                          (things          (cointoss it (list 'a (singularize (lastcar it))))))
            :response:   ( 7 ,subject ,maybe-really ,poss ,desire ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,bar ,baz)
@@ -748,7 +758,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                             (lambda (val _ _) (if (eq 'i val) 'me val)))
                           (maybe-really!   pick-maybe-really)
                           (maybe-actually! pick-maybe-actually)
-                          (verb            (lambda (v _ _) (car (last v)))))
+                          (verb            lastcar))
            :response:   ( 10X ,maybe-actually ,a/the ,@things ,modal never
                           ,maybe-really ,verb ,at/about ,subject either \!))
          ;;------------------------------------------------------------------------------------------
@@ -756,7 +766,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (maybe-really!   pick-maybe-really)
                           (maybe-actually! pick-maybe-actually)
                           (modal           pick-modal)
-                          (verb            (lambda (v _ _) (car (last v)))))
+                          (verb            lastcar))
            :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,modal
                           ,verb ,at/about ,a/the ,@things \!))
          ;;------------------------------------------------------------------------------------------
@@ -782,6 +792,27 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (verb            (lambda (v _ _) (add-ing (car (last v))))))
            :response:   ( 10X ,maybe-actually ,subject ,maybe-really ,am/are
                           ,verb ,at/about ,a/the ,@things right now \!))))
+     ;;==============================================================================================
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never
+                          ,@verb ,(a/the a/the?) ,@things)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (modal           pick-modal)
+                          (verb            lastcar))
+           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,modal
+                          ,verb ,a/the ,@things \!))
+         ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (am/are!         (lambda (_ _ vars)
+                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
+                          (maybe-really!   pick-maybe-really)
+                          (maybe-actually! pick-maybe-actually)
+                          (verb            lastcar (lambda (v _ _) (add-ing v))))
+           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,am/are
+                          ,verb ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
@@ -884,27 +915,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;                      (verb            (lambda (v _ _) (add-ing (car (last v))))))
      ;;       :response:   ( 10B ,maybe-actually ,subject ,maybe-really ,am/are
      ;;                      ,verb at ,a/the ,@things right now\!))))
-     ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never
-                          ,@verb ,(a/the a/the?) ,@things)
-       :responses:
-       ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word)
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (modal           pick-modal)
-                          (verb            (lambda (v _ _) (car (last v)))))
-           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,modal
-                          ,verb ,a/the ,@things \!))
-         ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word)
-                          (am/are!         (lambda (_ _ vars)
-                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
-                          (maybe-really!   pick-maybe-really)
-                          (maybe-actually! pick-maybe-actually)
-                          (verb            (lambda (v _ _) (add-ing (car (last v))))))
-           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,am/are
-                          ,verb ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( you ,foo ,baz \!)
        :responses:
