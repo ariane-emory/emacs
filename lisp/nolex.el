@@ -62,7 +62,7 @@
 (defalias 'result/total?      (make-member-sym-p '(result total)))
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
-(defalias 'a/an/another?      (make-member-sym-p '(a an another this)))
+(defalias 'a/an/another?      (make-member-sym-p '(a an another this the)))
 (defalias 'a/the?             (make-member-sym-p '(a the)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
@@ -896,7 +896,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           ,epistemic that ,subject-2
                           ,desire ,a/an ,@noun \!))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(desire desire?) to ,verb ,(a a/an/another?) ,@things)
+     ( :input:          ( ,(subject subject?) ,(desire desire?) to ,@verb ,(a a/an/another?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject          swap-word)
@@ -905,12 +905,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (epistemic!       pick-epistemic)
                           (things           (cointoss it (last it))))
            :response:   ( 14 ,subject-2 don\'t ,epistemic that ,subject
-                          really ,desire to ,verb ,a ,@things))
+                          really ,desire to ,@verb ,a ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject          swap-word)
                           (desire           pick-desire)
                           (things           (cointoss it (last it))))
-           :response:   ( 14B ,subject don\'t ,desire to ,verb ,a ,@things))))
+           :response:   ( 14B ,subject don\'t ,desire to ,@verb ,a ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(plural-subject plural-subject?) are ,@things)
        :responses:
