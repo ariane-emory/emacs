@@ -671,7 +671,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     ;;-----------------------------------------------------------------------------------------------
     ;; stupid-but-legal, consecutive flexible elements:
     (let (*dm:warn-on-consecutive-flexible-elements*)
-      (confirm that (dm:match '(,@as ,@bs ,@cs)   '(1 2))          returns ((as 1 2) (bs) (cs)))
+      (confirm that (dm:match '(,@as ,@bs ,@cs)     '(1 2))        returns ((as 1 2) (bs) (cs)))
+      (confirm that (dm:match '(,@as ,@bs ,@cs foo) '(1 2 foo))    returns ((as) (bs) (cs 1 2)))
       (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys) (zs 2 3)))
       (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
       (confirm that (dm:match '(,w ,@xs foo ,@ys ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
