@@ -461,13 +461,13 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                        ;; treat as threading expr:
                                        ;; (let ((expr `(,indicator ,var-val ,@(cdr pred))))
                                        ;;   (eval expr))
-                                       (let* ( (tail `(list ,@(cdr pred)))
-                                               (expr `(apply indicator var-val ,tail))
-                                               (expr2 `(funcall indicator var-val ,@(cdr pred))))
+                                       (let* ( ;; (tail `(list ,@(cdr pred)))
+                                               ;; (expr `(apply indicator var-val ,tail))
+                                               (expr `(funcall #',indicator ',var-val ,@(cdr pred))))
                                          ;; (prn "tail %s" tail)
-                                         (prn "EVALUATE %s" expr)
-                                         (prn "EVALUATE %s" expr2)
-                                         (eval expr2))
+                                         (prn "THREAD %s in %s" var-val expr)
+                                         ;; (prn "EVALUATE %s" expr2)
+                                         (eval expr))
                                        )
                                      ( t 
                                        (let ((*dm:verbose* t))
@@ -920,7 +920,7 @@ This behaves very similarly to quasiquote."
 
 
 (dm:match '( ...
-             ,(x (integer?) (> 9 (* 2 3)))
+             ,(x (integer?) (> 4))
              ,(y (integer?) (> 4))
              ,(z integer?   (> 4))
              ...)

@@ -773,7 +773,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
-                          ,(at/about       (memq '(at about for with)))
+                          ,(at/about       (memq (at about for with)))
                           ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -1071,7 +1071,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                                   (let-alist vars (setf last-result (/ last-result .left))))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
-     ( :input:          ( tell me the ,(result/total (memq '(result total))) again)
+     ( :input:          ( tell me the ,(result/total (memq (result total))) again)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
@@ -1101,7 +1101,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
            :response:   ( 23 it ,was/is ,last-result))))
      ;;==============================================================================================
-     ( :input:          ( ... i ... ,(feel (memq '(feel feeling))) ,@things )
+     ( :input:          ( ... i ... ,(feel (memq (feel feeling))) ,@things )
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (things (lambda (v _ _) (mapcar #'swap-word v)))
