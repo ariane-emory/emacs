@@ -457,9 +457,12 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                  (let ((indicator (car-safe pred)))
                                    (cond 
                                      ((null indicator) (funcall pred var-val))
-                                     ;; treat as threading expr:
                                      ((not (eq 'lambda indicator))
-                                       (apply indicator var-val (cdr pred)))
+                                       ;; treat as threading expr:
+                                       ;; (let ((expr `(,indicator ,var-val ,@(cdr pred))))
+                                       ;;   (eval expr))
+                                       (apply indicator var-val (cdr pred))
+                                       )
                                      ( t 
                                        (let ((*dm:verbose* t))
                                          (dm::prn-labeled pred "eval"))
@@ -641,12 +644,22 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                     '(1 2 3 4 5 6 7 8 a 9 10 11 12))
       returns ((x . 9)))
     (confirm that (dm:match '( ...
-                               ,(_ integer? (lambda (n) (> n 4)))
-                               ,(_ integer? (lambda (n) (> n 4)))
-                               ,(x integer? (lambda (n) (> n 4)))
+                               ,(_ integer? (> 4))
+                               ,(_ integer? (> 4))
+                               ,(x integer? (> 4))
                                ...)
                     '(1 2 3 4 5 6 7 8 1 9 10 11 12))
       returns ((x . 7)))
+    (confirm that
+      (dm:match '( ...
+                   ,(_ integer? odd? (> 4))
+                   ...
+                   ,(_ integer? odd? (> 4))
+                   ...
+                   ,(x integer? odd? (> 4))
+                   ...)
+        '(1 2 3 4 foo 5 6 bar 7 (8 baz) 9 quux 10 11 12))
+      returns ((x . 9)))
     (confirm that (dm:match '( ...
                                ,(_ integer? (lambda (n) (> n 4)))
                                ,(x integer? (lambda (n) (> n 4)))
@@ -894,3 +907,15 @@ This behaves very similarly to quasiquote."
 ;;       (car 2nd))))
 
 
+
+
+
+
+
+
+;; (dm:match '( ...
+;;              ,(x integer? (> 9 (* 2 3)))
+;;              ,(y integer? (> 4))
+;;              ,(z integer? (> 4))
+;;              ...)
+;;   '(1 2 3 4 5 6 7 8 9 10 11 12))
