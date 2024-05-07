@@ -723,7 +723,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           that ,subject-2 ,modal-plus never ,verb a ,noun \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(epistemic epistemic?) that ,(subject-2 subject?)
-                          ,(desire desire?) ,(a/n a/n?) ,noun)
+                          ,(desire desire?) ,(a/an a/an?) ,noun)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -732,7 +732,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (desire          swap-word))
            :response:   ( 13 after this conversation \, ,subject
                           ,epistemic that ,subject-2
-                          ,desire ,a/n ,noun \!))))
+                          ,desire ,a/an ,noun \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(desire desire?) to ,verb ,@things)
        :responses:
@@ -812,6 +812,11 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (adj!            pick-insult-adj)
                           (noun!           pick-insult-noun))
            :response:   ( 98 yes \, here we are you ,adj ,noun))))
+     ;;==============================================================================================
+     ( :input:          ( ,@foo is the same as ,@foo )
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :response:   ( 20 that\'s ,@foo for you))))
      ;;==============================================================================================
      ( :input: t
        :responses:
@@ -1027,6 +1032,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (would you want lots of food)
              (would you want lots of food)
              (would you want lots of food)
+             (quux is the same as quux)
+             (sprungy quux is the same as sprungy quux)
              ))
   
   (prndiv)
