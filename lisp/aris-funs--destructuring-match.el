@@ -374,27 +374,29 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dm::prn-labeled         collect "pre")
                           (dm::prn-pp-labeled-list pattern)
                           (dm::prn-pp-labeled-list target)                      
-                          (let ( (look-1
+                          (let ( (look-0
                                    (let (*dm:verbose*)
                                      (recurse (cdr pattern)      target  nil alist)))
-                                 (look-2
-                                   (let (*dm:verbose*)
-                                     (recurse (cdr pattern) (cdr target) nil alist))))
+                                 ;; (look-1
+                                 ;;   (let (*dm:verbose*)
+                                 ;;     (recurse (cdr pattern) (cdr target) nil alist)))
+                                 )
                             (dm::prndiv ?\-)
-                            (dm::prn-labeled look-1)
-                            (dm::prn-labeled look-2)
+                            (dm::prn-labeled look-0)
+                            ;; (dm::prn-labeled look-1)
                             (dm::prndiv ?\-)
                             (cond
                               ((null target)
                                 (dm::prn "Emptied TARGET, stop.")
                                 (throw 'stop-collecting nil))
-                              ((and look-1 (not look-2)) ; (dm:match '(,@xs ,y) '(1 2 3 4 5))
-                                ;; If LOOK-1 matched the whole TARGET then we can munge
-                                ;; LOOK-1 and ALIST into the right shape and return successfully
+                              ((and look-0 ;; (not look-1)
+                                 ) ; (dm:match '(,@xs ,y) '(1 2 3 4 5))
+                                ;; If LOOK-0 matched the whole TARGET then we can munge
+                                ;; LOOK-0 and ALIST into the right shape and return successfully
                                 ;; immediately:
                                 (setf alist
                                   (nconc
-                                    (when (listp look-1) look-1)
+                                    (when (listp look-0) look-0)
                                     (when (dm::pat-elem-is-an-unsplice? (car pattern))
                                       (list
                                         (cons (dm::pat-elem-var-sym (car pattern))
@@ -648,7 +650,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                ,(x integer? (lambda (n) (> n 4)))
                                ,(y integer? (lambda (n) (> n 4)))
                                ...)
-                    '(1 2 3 4 1 5 6 7 8 1 9 10 11 12))
+                    '(1 2 3 4 5 6 7 8 1 9 10 11 12))
       returns ((x . 7) (y . 8)))
     (confirm that (dm:match '( ...
                                ,(x integer? (lambda (n) (> n 4)))
