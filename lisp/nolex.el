@@ -723,10 +723,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           ,verb about ,a/the ,@things \!))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
+                          (am/are!         (lambda (_ _ vars)
+                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
                           (maybe-really!   pick-maybe-really)
                           (maybe-actually! pick-maybe-actually)
                           (verb            (lambda (v _ _) (add-ing (car (last v))))))
-           :response:   ( 10A ,maybe-actually ,subject am ,maybe-really
+           :response:   ( 10A ,maybe-actually ,subject ,am/are ,maybe-really
                           ,verb about ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb at
@@ -742,10 +744,12 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           ,verb at ,a/the ,@things \!))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
+                          (am/are!         (lambda (_ _ vars)
+                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
                           (maybe-really!   pick-maybe-really)
                           (maybe-actually! pick-maybe-actually)
                           (verb            (lambda (v _ _) (add-ing (car (last v))))))
-           :response:   ( 10B ,maybe-actually ,subject ,maybe-really am
+           :response:   ( 10B ,maybe-actually ,subject ,maybe-really ,am/are
                           ,verb at ,a/the ,@things right now\!))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never
@@ -761,11 +765,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           ,verb ,a/the ,@things \!))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
+                          (am/are!         (lambda (_ _ vars)
+                                             (let-alist vars (if (eq 'i .subject) 'am 'are))))
                           (maybe-really!   pick-maybe-really)
                           (maybe-actually! pick-maybe-actually)
                           (verb            (lambda (v _ _) (add-ing (car (last v))))))
-           :response:   ( 10C ,maybe-actually ,subject ,maybe-really 
-                          ,verb ,a/the ,@things \!))))
+           :response:   ( 10C ,maybe-actually ,subject ,maybe-really ,am/are
+                          ,verb ,a/the ,@things right now \!))))
      ;;==============================================================================================
      ( :input:          ( you ,foo ,baz \!)
        :responses:
@@ -936,28 +942,28 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input:          ( increment it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+         ( :var-funs:   ( (sum! (lambda (_ _ _)
                                   (cl-incf last-result))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( decrement it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+         ( :var-funs:   ( (sum! (lambda (_ _ _)
                                   (cl-decf last-result))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( double it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+         ( :var-funs:   ( (sum! (lambda (_ _ _)
                                   (setf last-result (* last-result 2)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
      ( :input:          ( triple it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+         ( :var-funs:   ( (sum! (lambda (_ _ _)
                                   (setf last-result (* last-result 3)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
@@ -971,7 +977,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ( :input:          ( halve it)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+         ( :var-funs:   ( (sum! (lambda (_ _ _)
                                   (setf last-result (/ last-result 2)))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
