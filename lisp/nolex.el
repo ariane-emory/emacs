@@ -9,11 +9,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun make-member-sym-p (lst)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Generate a membership predicate fun for LST."
-;;   (lambda (thing &rest _) (and (symbolp thing) (member thing lst))))
+(defvar last-result 0)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun make-member-sym-p2 (lst)
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Generate a membership predicate fun for LST."
+  (lambda (thing &rest _) (and (symbolp thing) (member thing lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro make-member-sym-p (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,7 +49,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defalias 'pick-qty           (make-pick '(some many enough)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defalias 'nil/t?             (make-member-sym-p '(nil t)))
+(defalias 'was/is?            (make-member-sym-p '(was is)))
+(defalias 'result/total?      (make-member-sym-p '(result total)))
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
@@ -458,83 +461,83 @@
   (fill-in-missing-alist-keys *fillable-response-keys* (plist-to-alist response)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *fillable-response-keys* '(:var-funs:)) ; :response: is not fillable!
-  (defvar *response-keys*          '(:var-funs: :response:)) ; :response: is not fillable!
+(defvar *response-keys*          '(:var-funs: :response:)) ; :response: is not fillable!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (confirm that
-    (fill-in-missing-response-keys
-      '(:response: ( 18 ,persp not really ,certainty if this is ,@things )))
-    returns ( (:var-funs:)
-              (:response: 18 (\, persp) not really (\, certainty) if this is (\,@ things))))
+(confirm that
+  (fill-in-missing-response-keys
+    '(:response: ( 18 ,persp not really ,certainty if this is ,@things )))
+  returns ( (:var-funs:)
+            (:response: 18 (\, persp) not really (\, certainty) if this is (\,@ things))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defmacro let-response (response &rest body)
+(defmacro let-response (response &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    `(let-alist (fill-in-missing-response-keys ,response) ,@body))
+  `(let-alist (fill-in-missing-response-keys ,response) ,@body))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (confirm that
-    (let-response '(:response: ( 18 ,persp not really ,certainty if this is ,@things ))
-      (list .:var-funs: .:response:))
-    returns ( nil
-              (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
+(confirm that
+  (let-response '(:response: ( 18 ,persp not really ,certainty if this is ,@things ))
+    (list .:var-funs: .:response:))
+  returns ( nil
+            (18 (\, persp) not really (\, certainty) if this is (\,@ things))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun get-response (input)
+(defun get-response (input)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Transform INPUT according to *RULES*, returning nil if none match."
-    ;; (prn "get-response INPUT: %s" input)
-    (cl-flet ( (prn2    (&rest args) (when *get-response-verbose* (apply #'prn    args)))
-               (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
-      (catch 'result
-        (dolist (rule *rules*)
-          (let-rule rule
-            (catch 'continue
-              (prn2 "try:       %s" .:input:)
-              (if (eq t .:input:)
-                (progn
-                  (prn2 "MATCHED T:   %s" .:input:)
-                  ;; t matches any input and fills using an empty list:
-                  (throw 'result (select-response nil .:responses:)))
-                (when-let ((var-alist
-                             (let (*dm:verbose*) ; shadow!
-                               (dm:match .:input: input))))
-                  (let ((var-alist (if (eq t var-alist) nil var-alist)))
-                    (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
-                    (prn2 "MATCHED:   %s" .:input:)
-                    (throw 'result (select-response var-alist .:responses:)))))))))))
+  "Transform INPUT according to *RULES*, returning nil if none match."
+  ;; (prn "get-response INPUT: %s" input)
+  (cl-flet ( (prn2    (&rest args) (when *get-response-verbose* (apply #'prn    args)))
+             (prndiv2 (&rest args) (when *get-response-verbose* (apply #'prndiv nil))))
+    (catch 'result
+      (dolist (rule *rules*)
+        (let-rule rule
+          (catch 'continue
+            (prn2 "try:       %s" .:input:)
+            (if (eq t .:input:)
+              (progn
+                (prn2 "MATCHED T:   %s" .:input:)
+                ;; t matches any input and fills using an empty list:
+                (throw 'result (select-response nil .:responses:)))
+              (when-let ((var-alist
+                           (let ((*dm:verbose* nil)) ; shadow!
+                             (dm:match .:input: input))))
+                (let ((var-alist (if (eq t var-alist) nil var-alist)))
+                  (unless (proc-tests .:var-tests: var-alist) (throw 'continue nil))
+                  (prn2 "MATCHED:   %s" .:input:)
+                  (throw 'result (select-response var-alist .:responses:)))))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defvar *get-response-verbose* nil)
+(defvar *get-response-verbose* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun converse ()
+(defun converse ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Have a conversation with the bot. Enter 'bye' to exit."
-    (interactive)
-    (catch 'exit
-      (while t
-        (let ((input (read)))
-          (when (member input '(bye (bye)))
-            (throw 'exit nil))
-          (prn "INPUT:    %s" input)        
-          (let ((response
-                  (if (proper-list-p input)
-                    (get-response input)
-                    '(sorry \, I didn\'t hear you \!))))
-            (prn "RESPONSE: %s" (prettify-sentence response t)))))))
+  "Have a conversation with the bot. Enter 'bye' to exit."
+  (interactive)
+  (catch 'exit
+    (while t
+      (let ((input (read)))
+        (when (member input '(bye (bye)))
+          (throw 'exit nil))
+        (prn "INPUT:    %s" input)        
+        (let ((response
+                (if (proper-list-p input)
+                  (get-response input)
+                  '(sorry \, I didn\'t hear you \!))))
+          (prn "RESPONSE: %s" (prettify-sentence response t)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun punctuation? (sym)
+(defun punctuation? (sym)
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (not (null (member sym '(! \? \, "!" "?" "," ".")))))
+  (not (null (member sym '(! \? \, "!" "?" "," ".")))))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (confirm that (punctuation? '!)   returns t)
+(confirm that (punctuation? '!)   returns t)
 (confirm that (punctuation? '\?)  returns t)
 (confirm that (punctuation? 'foo) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -664,7 +667,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (subject         swap-word))
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb ,(a/an/the a/an/the?) ,@things)
+     ( :input:          ( ,(subject subject?) ,(modal modal?) ,@verb
+                          ,(a/an/the a/an/the?) ,@things)
+       :var-tests:      ( (verb (lambda (v _ _) (length< v 3))))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -683,6 +688,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(neg-modal neg-modal?) ,@verb
                           ,(a/an/the a/an/the?) ,@things)
+       :var-tests:      ( (verb (lambda (v _ _) (length< v 3))))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
@@ -817,6 +823,142 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :response:   ( 20 that\'s ,@foo for you))))
+     ;;==============================================================================================
+     ( :input:          ( add ,(addend integer?) to ,(addend-2 integer?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (+ .addend .addend-2))))))
+           :response:   ( 21 the result is ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( subtract ,(subtrahend integer?) from ,(subtrahend-2 integer?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (- .subtrahend-2 .subtrahend))))))
+           :response:   ( 21 the result is ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( multiply ,(left integer?) by ,(right integer?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (* .left .right))))))
+           :response:   ( 21 the result is ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( divide ,(left integer?) by ,(right integer?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (/ .right .left))))))
+           :response:   ( 21 the result is ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( add ,(left integer?) to it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (+ .left last-result))))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( subtract ,(left integer?) from it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (- last-result .left))))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( multiply it by ,(left integer?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (* last-result .left))))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( increment it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (cl-incf last-result))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( decrement it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (cl-decf last-result))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( double it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (setf last-result (* last-result 2)))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( triple it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (setf last-result (* last-result 3)))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( square it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (setf last-result (* last-result last-result)))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( halve it)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (setf last-result (/ last-result 2)))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( divide it by ,(left integer?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (sum! (lambda (_ _ vars)
+                                  (let-alist vars 
+                                    (setf last-result (/ last-result .left))))))
+           :response:   ( 22 okay \, now we\'ve got ,sum))))
+     ;;==============================================================================================
+     ( :input:          ( tell me the ,(result/total result/total?) again)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
+           :response:   ( 22 the ,result/total was ,last-result))))
+     ;;==============================================================================================
+     ( :input:          ( tell me the ,(result/total result/total?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
+           :response:   ( 22 the ,result/total is ,last-result))))
+     ;;==============================================================================================
+     ( :input:          ( what ,(was/is was/is?) the ,(result/total result/total?) again)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
+           :response:   ( 22 the ,result/total ,was/is ,last-result))))
+     ;;==============================================================================================
+     ( :input:          ( what ,(was/is was/is?) the ,(result/total result/total?))
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
+           :response:   ( 22 the ,result/total ,was/is ,last-result))))
+     ;;==============================================================================================
+     ( :input:          ( what ,(was/is was/is?) it again )
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
+           :response:   ( 23 it ,was/is ,last-result))))
      ;;==============================================================================================
      ( :input: t
        :responses:
@@ -1019,7 +1161,8 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i must devour the souls of the innocent)             
              (i must hungrily devour the souls of the innocent)
              (i must hungrily devour the souls of the innocent)
-             (i must hungrily devour the souls of the innocent)             
+             (i must hungrily devour the souls of the innocent)
+             (i must hungrily and angrily devour the souls of the innocent) ;; shouldn't match.
              (this is the worst thing ever)
              (this is the worst thing ever)
              (this is the worst thing ever)
@@ -1037,6 +1180,25 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (would you want lots of food)
              (quux is the same as quux)
              (sprungy quux is the same as sprungy quux)
+             (add 32 to 87)
+             (tell me the result again)
+             (add 45 to it)
+             (tell me the total)
+             (subtract 15 from it)
+             (subtract 15 from 100)
+             (what was it again)
+             (multiply 7 by 6)
+             (multiply it by 2)
+             (divide it by 3)
+             (what was the result again)
+             (multiply it by 10)
+             (what is the total)
+             (what was the result)
+             (double it)
+             (triple it)
+             (halve it)
+             (square it)
+             (increment it)
              ))
   
   (prndiv)
@@ -1047,6 +1209,3 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
 (prndiv)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(get-response '(hello))
