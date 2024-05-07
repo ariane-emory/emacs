@@ -612,13 +612,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                ,(_ integer? (lambda (n) (> n 4)))
                                ,(x integer? (lambda (n) (> n 4)))
                                ...)
-                    '(1 2 3 4 5 6 7 8 9 10 11 12))
-      returns ((x . 12)))
-    (confirm that (dm:match '( ...
-                               ,(_ integer? (lambda (n) (> n 4)))
-                               ,(_ integer? (lambda (n) (> n 4)))
-                               ,(x integer? (lambda (n) (> n 4)))
-                               ...)
                     '(1 2 3 4 5 6 7 8 1 9 10 11 12))
       returns ((x . 8)))
     (confirm that (dm:match '( ...
@@ -644,6 +637,25 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                     '(1 2 3 4 5 6 7 8 9 10 11 12))
       returns ( (a . 11)
                 (b . 12)))
+    (confirm that (dm:match '( ...
+                               ,(x integer? (lambda (n) (> n 4)))
+                               ...
+                               ,(y integer? (lambda (n) (> n 4)))
+                               ...)
+                    '(1 2 3 4 1 5 6 7 8 1 9 10 11 12))
+      returns ((x . 8) (y . 12)))
+    (confirm that (dm:match '( ...
+                               ,(x integer? (lambda (n) (> n 4)))
+                               ,(y integer? (lambda (n) (> n 4)))
+                               ...)
+                    '(1 2 3 4 1 5 6 7 8 1 9 10 11 12))
+      returns ((x . 7) (y . 8)))
+    (confirm that (dm:match '( ...
+                               ,(x integer? (lambda (n) (> n 4)))
+                               ,(y integer? (lambda (n) (> n 4)))
+                               ...)
+                    '(1 2 3 4 5 6 7 8 9 10 11 12))
+      returns ((x . 11) (y . 12)))
     ;;-----------------------------------------------------------------------------------------------
     ;; Greediness test cases:
     (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
