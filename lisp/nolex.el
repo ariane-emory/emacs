@@ -62,6 +62,7 @@
 (defalias 'result/total?      (make-member-sym-p '(result total)))
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
+(defalias 'a/an/another?      (make-member-sym-p '(a an another this)))
 (defalias 'a/the?             (make-member-sym-p '(a the)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
@@ -889,24 +890,27 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (subject         swap-word)
                           (subject-2       swap-word)
                           (epistemic       swap-word)
-                          (desire          swap-word))
+                          (desire          swap-word)
+                          (noun            (cointoss it (last it))))
            :response:   ( 13 after this conversation \, ,subject
                           ,epistemic that ,subject-2
                           ,desire ,a/an ,@noun \!))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(desire desire?) to ,verb ,@things)
+     ( :input:          ( ,(subject subject?) ,(desire desire?) to ,verb ,(a a/an/another?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject          swap-word)
                           (subject-2!       pick-subject)
                           (desire           pick-desire)
-                          (epistemic!       pick-epistemic))
+                          (epistemic!       pick-epistemic)
+                          (things           (cointoss it (last it))))
            :response:   ( 14 ,subject-2 don\'t ,epistemic that ,subject
-                          really ,desire to ,verb ,@things))
+                          really ,desire to ,verb ,a ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject          swap-word)
-                          (desire           pick-desire))
-           :response:   ( 14B ,subject don\'t ,desire to ,verb ,@things))))
+                          (desire           pick-desire)
+                          (things           (cointoss it (last it))))
+           :response:   ( 14B ,subject don\'t ,desire to ,verb ,a ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(plural-subject plural-subject?) are ,@things)
        :responses:
@@ -1250,6 +1254,10 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (you need to smoke a fat joint)
              (i want to smoke a fat joint)
              (i need to smoke a fat joint)
+             (i want to smoke another fat joint)
+             (i need to smoke another fat joint)
+             (i want to smoke this fat joint)
+             (i need to smoke this fat joint)
              (i want to dance in the moonlight)
              (i want to dance in the moonlight)
              (i want to dance in the moonlight)
