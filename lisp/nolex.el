@@ -53,6 +53,7 @@
 (defalias 'result/total?      (make-member-sym-p '(result total)))
 (defalias 'am/are?            (make-member-sym-p '(am are)))
 (defalias 'a/an?              (make-member-sym-p '(a an)))
+(defalias 'a/the?             (make-member-sym-p '(a the)))
 (defalias 'a/an/the?          (make-member-sym-p '(a an the)))
 (defalias 'had/have?          (make-member-sym-p '(had have)))
 (defalias 'do/does?           (make-member-sym-p '(do does)))
@@ -356,14 +357,11 @@
               (prn2 "val:       %s" val)
               (prn2 "fun:       %s" fun)
               (prn-var-alist)
-              ;; This doesn't seem necessary (with lexical-binding off:
-              ;; (when (consp fun)
-              ;;   (setf fun (eval fun)))
-              ;; (prn2 "fun2:      %s" fun)
               (let ((res
-                      (if (consp val) ;; don't use listp here!
-                        (rmapcar val (lambda (x) (funcall fun x var var-alist)))
-                        (funcall fun val var var-alist))))
+                      ;; auto-map is probably a bad idea:
+                      ;; (if (consp val) ;; don't use listp here!
+                      ;; (rmapcar val (lambda (x) (funcall fun x var var-alist)))
+                      (funcall fun val var var-alist))) ; )
                 (prn2 "funres:    %s" res)
                 (setf (cdr kvp) res)))
             (prn-var-alist 2)))))
@@ -708,11 +706,33 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                           (neg-modal-2!    pick-neg-modal))
            :response:   ( 9B ,subject ,maybe-really ,neg-modal-2 ,@verb ,a/an/the ,@things))))
      ;;==============================================================================================
-     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,verb a ,@things)
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never
+                          ,@verb about a ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
-         ( :var-funs:   ( (subject         swap-word))
-           :response:   ( 10 ,subject ,modal ,verb a ,@things \!))))
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (modal           pick-modal)
+                          (verb            (lambda (v _ _) (car (last v)))))
+           :response:   ( 10A ,subject ,maybe-really ,modal ,verb about a ,@things \!))))
+     ;;==============================================================================================
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb at a ,@things)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (modal           pick-modal)
+                          (verb            (lambda (v _ _) (car (last v)))))
+           :response:   ( 10B ,subject ,maybe-really ,modal ,verb at a ,@things \!))))
+     ;;==============================================================================================
+     ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb a ,@things)
+       :responses:
+       ( ;;------------------------------------------------------------------------------------------
+         ( :var-funs:   ( (subject         swap-word)
+                          (maybe-really!   pick-maybe-really)
+                          (modal           pick-modal)
+                          (verb            (lambda (v _ _) (car (last v)))))
+           :response:   ( 10C ,subject ,maybe-really ,modal ,verb a ,@things \!))))
      ;;==============================================================================================
      ( :input:          ( you ,foo ,baz \!)
        :responses:
@@ -1199,6 +1219,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (halve it)
              (square it)
              (increment it)
+             (you could never even eat a carrot)
+             (you would never even look at a carrot)
+             (you would never even think about a carrot)
              ))
   
   (prndiv)
