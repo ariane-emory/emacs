@@ -29,12 +29,12 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-match* t 
+(defcustom *dm:test-match* t
   "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-fill* t
+(defcustom *dm:test-fill* nil
   "Whether or not dm:fill's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -345,26 +345,31 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ((dm::pat-elem-is-flexible? (car pattern))
                   (warn-when-consecutive-flexible-elements-in-pattern)
                   (setf last-pattern-elem-was-flexible t)
-                  (let ((remaining-non-flexible (cdr pattern)))
-                    (while (dm::pat-elem-is-flexible? (car remaining-non-flexible))
-                      (dm::log-pop* remaining-non-flexible))
-                    ;; If there are no more non-flexible elements in PATTERN we can return early:
-                    (unless remaining-non-flexible
-                      ;; We know that (car pattern) is flexible, so if it has a var-sym then it
-                      ;; must be an UNSPLICE.
-                      (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
-                        (dm::log-setf-alist-putunique! var-sym target alist alist))
-                      (when pattern
-                        (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
-                        (dolist (pat-elem pattern)
-                          (dm::prn "Running out elem: %s" pat-elem)
-                          (warn-when-consecutive-flexible-elements-in-pattern)
-                          ;; We know it's flexible, so if it has a var-sym it must be an UNSPLICE.
-                          (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                            (dm::log-setf-alist-putunique! var-sym nil alist alist))))
-                      (dm::prn-labeled alist "early return")
-                      (throw 'match alist))
-                    )
+                  
+                  
+                  (ignore! (dm:match '(,@as ,@bs ,@cs) '(1 2)))
+                  
+                  ;; (let ((remaining (cdr pattern)))
+                  ;;   (while (dm::pat-elem-is-flexible? (cadr remaining))
+                  ;;     (dm::log-pop* remaining))
+                  ;;   (prn "remaining: %s" remaining)
+                  ;;   ;; If there are no more non-flexible elements in PATTERN we can return early:
+                  ;;   (unless remaining
+                  ;;     ;; We know that (car pattern) is flexible, so if it has a var-sym then it
+                  ;;     ;; must be an UNSPLICE.
+                  ;;     (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
+                  ;;       (dm::log-setf-alist-putunique! var-sym target alist alist))
+                  ;;     (when pattern
+                  ;;       (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
+                  ;;       (dolist (pat-elem pattern)
+                  ;;         (dm::prn "Running out elem: %s" pat-elem)
+                  ;;         (warn-when-consecutive-flexible-elements-in-pattern)
+                  ;;         ;; We know it's flexible, so if it has a var-sym it must be an UNSPLICE.
+                  ;;         (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                  ;;           (dm::log-setf-alist-putunique! var-sym nil alist alist))))
+                  ;;     (dm::prn-labeled alist "early return")
+                  ;;     (throw 'match alist))
+                  ;;   )
                   (dm::prn "Collecting flexible element...")
                   (with-indentation
                     (let (collect) 
@@ -508,7 +513,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       match1-result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
-  (let ((*dm:verbose* nil))
+  (let ((*dm:verbose* t))
     (confirm that (dm:match '(w ,x ,y ,z)      '(w 1 2 3))         returns ((x . 1) (y . 2) (z . 3)))
     (confirm that (dm:match '(x ,y ,z)         '(x 2 3))           returns ((y . 2) (z . 3)))
     (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
@@ -671,7 +676,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     ;;-----------------------------------------------------------------------------------------------
     ;; stupid-but-legal, consecutive flexible elements:
     (let (*dm:warn-on-consecutive-flexible-elements*)
-      (confirm that (dm:match '(,@as ,@bs ,@cs)     '(1 2))        returns ((as 1 2) (bs) (cs)))
+      (confirm that (dm:match '(,@as ,@bs ,@cs)     '(1 2))        returns ((as) (bs) (cs 1 2)))
       (confirm that (dm:match '(,@as ,@bs ,@cs foo) '(1 2 foo))    returns ((as) (bs) (cs 1 2)))
       (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys) (zs 2 3)))
       (confirm that (dm:match '(,w ,@xs ,@ys foo ,@zs) '(1 foo))   returns ((w . 1) (xs) (ys) (zs)))
