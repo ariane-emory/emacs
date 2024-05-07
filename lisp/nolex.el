@@ -663,13 +663,15 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (subject         swap-word)
                           (desire          pick-desire)
                           (maybe-really!   pick-maybe-really)
-                          (poss!           pick-possibility))
+                          (poss!           pick-possibility)
+                          (things         (lambda (v _ _) (if (= 0 (% (random) 2)) v (last v)))))
            :response:   ( 7 ,subject ,poss ,maybe-really ,desire ,@things))
          ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (subject         swap-word)
                           (desire          pick-desire)
                           (maybe-really!   pick-maybe-really)
-                          (poss!           pick-possibility))
+                          (poss!           pick-possibility)
+                          (things         (lambda (v _ _) (if (= 0 (% (random) 2)) v (last v)))))
            :response:   ( 7 ,subject ,maybe-really ,poss ,desire ,@things))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,bar ,baz)
