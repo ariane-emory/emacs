@@ -14,10 +14,11 @@
   "Internal print helper function."
   (when *ml:verbose* (apply #'prn args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ml::prn1 (fmt val &rest args) 
+(defmacro ml::prn1 (fmt val &rest args) 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *ml:verbose* (apply #'prn1 fmt val args)))
+  `(let ((val ,val))
+     (if *ml:verbose* (prn1 ,fmt val ,@args) val)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml::prnl ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,15 +41,6 @@
   :group 'microlog
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defvar *ml:facts* nil
-;;   "The database of facts.")
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defvar *ml:rules* nil
-;;   "The database of rules.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *ml:db* nil
   "The database of rules and facts.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,20 +51,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (ml::prndiv)
   (dm::prn "DB:")
-  (ml::prndiv)
   (with-indentation
     (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:db*))))
   (ml::prndiv)
-  ;; (dm::prn "Facts:")
-  ;; (ml::prndiv)
-  ;; (with-indentation
-  ;;   (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:facts*))))
-  ;; (ml::prndiv)
-  ;; (dm::prn "Rules:")
-  ;; (ml::prndiv)
-  ;; (with-indentation
-  ;;   (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:rules*))))
-  ;; (ml::prndiv)
   (ml::prnl))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -80,8 +61,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml:init ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; (setf *ml:facts* nil)
-  ;; (setf *ml:rules* nil)
   (setf *ml:db* nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -100,43 +79,49 @@
     (error "Null consequent"e))
   (let* ( (found (cl-find consequent *ml:db* :test #'equal :key #'car))
           (found-equal (and found (equal antecedents (cdr found)))))
-    (ml::prndiv)
-    (ml::prn "Found       %S." found)
     (cond
-      ((not found)     (push (cons consequent antecedents) *ml:db*)) ; new rule, add it.
-      (found-equal   *ml:db*) ; repeated (but `equal' rule, do nothing.
+      ((not found) ; new rule, add it.
+        (ml::prndiv)
+        (push (ml::prn1 "Adding rule %S." (cons consequent antecedents)) *ml:db*)) 
+      (found-equal *ml:db*) ; repeated (but `equal' rule, do nothing.
       (t (error "Already have a rule for %S: %S" consequent found)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (confirm that (ml:init) returns nil)
-  (confirm that (<- '(kiki likes eating hamburgers))
-    returns (((kiki likes eating hamburgers))))
-  (confirm that (<- '(kiki likes eating hamburgers))
-    returns (((kiki likes eating hamburgers))))
-  (confirm that (<- '(kiki likes eating hamburgers))
-    returns (((kiki likes eating hamburgers))))
-  (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-    returns ( ( ((\, person) would eat a (\, food))
-                ((\, person) likes eating (\, food)))
-              ( (kiki likes eating hamburgers))))
-  (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-    returns ( ( ((\, person) would eat a (\, food))
-                ((\, person) likes eating (\, food)))
-              ( (kiki likes eating hamburgers))))
-  ;; This should (and does) signal an error:
-  ;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
-  ;;   returns ( ( ((\, person) would eat a (\, food))
-  ;;               ((\, person) likes eating (\, food)))
-  ;;             ( (kiki likes eating hamburgers))))
-  (ml:prn-world)
+(confirm that (ml:init) returns nil)
+(confirm that (<- '(kiki likes eating hamburgers))
+  returns (((kiki likes eating hamburgers))))
+;; repeated rule does nothing:
+(confirm that (<- '(kiki likes eating hamburgers))
+  returns (((kiki likes eating hamburgers))))
+(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+  returns ( ( ((\, person) would eat a (\, food))
+              ((\, person) likes eating (\, food)))
+            ( (kiki likes eating hamburgers))))
+;; repeated rule does nothing:
+(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+  returns ( ( ((\, person) would eat a (\, food))
+              ((\, person) likes eating (\, food)))
+            ( (kiki likes eating hamburgers))))
+;; This should (and does) signal an error:
+;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
+;;   returns ( ( ((\, person) would eat a (\, food))
+;;               ((\, person) likes eating (\, food)))
+;;             ( (kiki likes eating hamburgers))))
+(ml:prn-world)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (provide 'aris-funs--microlog)
+(provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; (ml:init)
-  ;; (:- '(foo) '(bar baz quux) '(shprungy))
+;; (ml:init)
+;; (:- '(foo) '(bar baz quux) '(shprungy))
+
+;; (pat-match '(?x + ?y) '(2 + 1)) ;; => ((?X . 2) (?Y . 1))
+(dm:match     '(,x + ,y) '(2 + 1)) ;; => (( x . 2) ( y . 1))
+
+;; (unify    '(?x + 1) '(2 + ?y))  ;; => ((?Y . 1) (?X . 2))
+;; (dm:unify '(,x + 1) '(2 + ,y))  ;; => (( y . 1) ( x . 2))
 
