@@ -44,7 +44,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:label-width* 23
+(defcustom *dm:label-width* 32
   "Label width used by functions in the 'destructuring-match' group."
   :group 'destructuring-match
   :type 'integer)
@@ -302,11 +302,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (catch 'match
         (dm::prn-labeled pattern "initial")
         (dm::prn-labeled target  "initial")
+        ;; (dm::prn-labeled alist  "initial")
+        ;; (dm::prn-labeled reference-alist "initial")
+        (dm::prnl)
         ;;-------------------------------------------------------------------------------------------
         (cl-macrolet ((recurse (pattern target alist reference-alist)
                         `(with-indentation
                            (dm::match1 initial-pattern ,pattern ,target
-                             dont-care ellipsis unsplice ,alist ,reference-alist)))
+                             dont-care ellipsis unsplice ,alist (append ,reference-alist ,alist))))
                        (NO-MATCH! (fmt &rest args)
                          `(progn
                             (dm::prn "No match because %s!" (format ,fmt ,@args))
@@ -334,6 +337,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
               (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
               (dm::prndiv)
               (dm::prn-pp-alist alist)
+              (dm::prn-labeled reference-alist)
               (dm::prn-pp-labeled-list pattern)
               (dm::prn-pp-labeled-list target)
               (let ((target (if (cdr target)
@@ -390,7 +394,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dm::prn-pp-labeled-list pattern)
                           (dm::prn-pp-labeled-list target)                      
                           (let ( (look-0
-                                   (let (*dm:verbose*)
+                                   (let ((*dm:verbose* t))
                                      (recurse (cdr pattern)      target  nil alist)))
                                  ;; (look-1
                                  ;;   (let (*dm:verbose*)
@@ -470,7 +474,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                              t))))
                       (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
                       (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)
-                        (dm::log-setf-alist-putunique! var-sym var-val alist alist))
+                        (dm::log-setf-alist-putunique! var-sym var-val alist reference-alist))
                       (dm::prn-labeled assoc "take var as")
                       (dm::log-pop* pattern target))))
                 ;; ----------------------------------------------------------------------------------
@@ -482,7 +486,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (setf last-pattern-elem-was-flexible nil)
                   (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                     (car pattern) (car target))
-                  (let ((res (recurse (car pattern) (car target) alist alist)))
+                  (let ((res (recurse (car pattern) (car target) alist reference-alist)))
                     (cond
                       ((eq res t)) ; do nothing.
                       ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
@@ -947,16 +951,7 @@ This behaves very similarly to quasiquote."
              _)
   '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (quux 12 13) 14)) ; ((needle-1 . quux) (needle-2 12 13))
 
-;; Find me the first symbol after the third odd integer greater than 4 and the cdr of the 2nd last thing:
-(dm:match '( ...
-             ,(_ integer? odd? (> 4))
-             ...
-             ,(_ integer? odd?)
-             ...
-             ,(_ integer? odd?)
-             ...
-             ,(needle-1 symbol?)
-             ...
-             (,needle-1 ,@needle-2)
-             _)
-  '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (quux 12 13) 14)) ; ((needle-1 . quux) (needle-2 12 13))
+;; bad case:
+(dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
+
+(dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
