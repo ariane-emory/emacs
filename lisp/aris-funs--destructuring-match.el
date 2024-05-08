@@ -3,8 +3,9 @@
 ;; `dm:match', my destructuring pattern matching function:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
-(require 'aris-funs--lists)
 (require 'aris-funs--arglists)
+(require 'aris-funs--lists)
+(require 'aris-funs--macroexp-x)
 (require 'aris-funs--strings)
 (require 'aris-funs--trees)
 (require 'aris-funs--unsorted)
@@ -335,16 +336,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                      (*wm:indent* 0))
                                 (dm::prn warn-msg))
                               (warn warn-msg))))
-                       (augment-the-alist ()
+                       (augmented-alist ()
                          `(append
                             (when dont-care (list (cons dont-care var-val)))
                             (list (cons var-sym var-val))
                             alist
                             reference-alist))
-                       (subst-alist-in-expr (expr)
-                         `(rsubst-alist
-                            ,expr
-                            (augment-the-alist))))
+                       ;; (subst-alist-in-expr (expr)
+                       ;;   `(rsubst-alist
+                       ;;      ,expr
+                       ;;      (augmented-alist)))
+                       )
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
@@ -461,14 +463,19 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                    "Ambiguous lambda expression: "
                                                    (format "arg %s overlaps with " arg-name)
                                                    "name of a captured variable")))))
-                                    (let ((pred (subst-alist-in-expr pred)))
-                                      (funcall pred var-val)))
+                                    (let ( ;; (fexpr   `(funcall ,(subst-alist-in-expr pred) ,var-val))
+                                           (fexpr2  (macroexp-let-alist (augmented-alist) '(funcall pred var-val))))
+                                      ;; (dm::prn-labeled fexpr)
+                                      (dm::prn-labeled fexpr2)
+
+                                      ;; (eval fexpr)
+                                      (eval fexpr2)))
                                   (t
                                     ;; PRED is some other expr, `rsubst-alist' ALIST's values into
                                     ;; it and `eval':
-                                    (let ( (expr  (subst-alist-in-expr pred))
-                                           (expr2 (macroexp-let-alist (augment-the-alist) pred)))
-                                      (dm::prn-labeled expr)
+                                    (let ( ;; (expr  (subst-alist-in-expr pred))
+                                           (expr2 (macroexp-let-alist (augmented-alist) pred)))
+                                      ;; (dm::prn-labeled expr)
                                       (dm::prn-labeled expr2)
                                       
                                       ;; (eval expr)
