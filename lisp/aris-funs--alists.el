@@ -580,17 +580,21 @@ reference instead of ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defmacro let-alist2 (alist &rest body)
-  (let ((clauses (rmapcar alist (lambda (kvp) (list (car kvp) (cdr kvp))))))
-    `(let (,@clauses)
-       ,@body)))
+(defmacro let-alist* (alist &rest body)
+  (let ((clauses (rmapcar alist
+                   (lambda (kvp)
+                     (let-kvp kvp
+                       (list .key
+                         (if (consp .val) (cons 'list .val) .val)
+                         ))))))
+    `(let (,@clauses) ,@body)))
 
 (ignore!
 
-  (let-alist2 ((x . 1) (y . 2) (z 3 4))
-    (prn "a: %s" a)
-    (prn "b: %s" b)
-    (prn "c: %s" c))
+  (let-alist* ((x . 1) (y . 2) (z 3 4))
+    (prn "x: %s" x)
+    (prn "y: %s" y)
+    (prn "z: %s" z))
 
   )
 
