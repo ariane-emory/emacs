@@ -823,6 +823,7 @@
            aris-funs--symbolicate
            aris-funs--with-gensyms
            aris-funs--sym-db
+           aris-funs--macroexp-x
            aris-funs--defunstar
            aris-funs--maybe
            aris-funs--error-when-and-error-unless
