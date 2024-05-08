@@ -25,8 +25,12 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:eval-preds* t
-  "Whether or not lists found in a pred list should be evaluated."
+(defcustom *dm:forbid-ambiguous-lambda-pred-arg-names* t
+  "Whether or not `lambda' forms used as pattern element predicates are allowed to 
+use argument names in their ARGS whose names overlap (and would, if this option
+is disabled/nil, shadow) bound variables in `dm:match1's ALIST / REFERENCE-ALIST.
+
+Turn this off at your own risk."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
@@ -455,31 +459,33 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                   ((eq 'lambda indicator)
                                     ;; PRED is a `lambda' expression, `rsubst-alist' ALIST's values
                                     ;; into it andjust call it on VAR-VAL:
-                                    (let ((arg-names (arg-names (cadr pred))))
-                                      (dolist (arg-name arg-names)
-                                        (when (or (assoc arg-name alist)
-                                                (assoc arg-name reference-alist))
-                                          (error (concat
-                                                   "Ambiguous lambda expression: "
-                                                   (format "arg %s overlaps with " arg-name)
-                                                   "name of a captured variable")))))
-                                    (let ( ;; (fexpr   `(funcall ,(subst-alist-in-expr pred) ,var-val))
-                                           (fexpr2  (macroexp-let-alist (augmented-alist) '(funcall pred var-val))))
-                                      ;; (dm::prn-labeled fexpr)
-                                      (dm::prn-labeled fexpr2)
+                                    (when *dm:forbid-ambiguous-lambda-pred-arg-names*
+                                      (let ((arg-names (arg-names (cadr pred))))
+                                        (dolist (arg-name arg-names)
+                                          (when (or (assoc arg-name alist)
+                                                  (assoc arg-name reference-alist))
+                                            (error (concat
+                                                     "Ambiguous lambda expression: "
+                                                     (format "arg %s overlaps with " arg-name)
+                                                     "name of a captured variable"))))))
+                                    (let ( ;; (funcall-expr   `(funcall ,(subst-alist-in-expr pred) ,var-val))
+                                           (funcall-expr2  (macroexp-let-alist (augmented-alist)
+                                                             '(funcall pred var-val))))
+                                      ;; (dm::prn-labeled funcall-expr)
+                                      (dm::prn-labeled funcall-expr2)
 
-                                      ;; (eval fexpr)
-                                      (eval fexpr2)))
+                                      ;; (eval funcall-expr)
+                                      (eval funcall-expr2)))
                                   (t
-                                    ;; PRED is some other expr, `rsubst-alist' ALIST's values into
+                                    ;; PRED is some other eval-expr, `rsubst-alist' ALIST's values into
                                     ;; it and `eval':
-                                    (let ( ;; (expr  (subst-alist-in-expr pred))
-                                           (expr2 (macroexp-let-alist (augmented-alist) pred)))
-                                      ;; (dm::prn-labeled expr)
-                                      (dm::prn-labeled expr2)
+                                    (let ( ;; (eval-expr  (subst-alist-in-eval-expr pred))
+                                           (eval-expr2 (macroexp-let-alist (augmented-alist) pred)))
+                                      ;; (dm::prn-labeled eval-expr)
+                                      (dm::prn-labeled eval-expr2)
                                       
-                                      ;; (eval expr)
-                                      (eval expr2)
+                                      ;; (eval eval-expr)
+                                      (eval eval-expr2)
                                       ))))
                               (throw 'pred-failed nil)))
                           t))
