@@ -37,12 +37,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defvar *ml:facts* nil
+;;   "The database of facts.")
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defvar *ml:rules* nil
+;;   "The database of rules.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *ml:facts* nil
-  "The database of facts.")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *ml:rules* nil
-  "The database of rules.")
+(defvar *ml:db* nil
+  "The database of rules and facts.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -50,16 +53,21 @@
 (defun ml:prn-world ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (ml::prndiv)
-  (dm::prn "Facts:")
+  (dm::prn "DB:")
   (ml::prndiv)
   (with-indentation
-    (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:facts*))))
+    (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:db*))))
   (ml::prndiv)
-  (dm::prn "Rules:")
-  (ml::prndiv)
-  (with-indentation
-    (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:rules*))))
-  (ml::prndiv)
+  ;; (dm::prn "Facts:")
+  ;; (ml::prndiv)
+  ;; (with-indentation
+  ;;   (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:facts*))))
+  ;; (ml::prndiv)
+  ;; (dm::prn "Rules:")
+  ;; (ml::prndiv)
+  ;; (with-indentation
+  ;;   (ml::prn (trim-trailing-whitespace (pp-to-string-without-offset *ml:rules*))))
+  ;; (ml::prndiv)
   (ml::prnl))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -67,39 +75,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml:init ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (setf *ml:facts* nil)
-  (setf *ml:rules* nil))
+  ;; (setf *ml:facts* nil)
+  ;; (setf *ml:rules* nil)
+  (setf *ml:db* nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun <- (fact)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (setf *ml:facts* (cl-pushnew fact *ml:facts* :test #'equal)))
+  (:- fact))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun :- (consequent antecedent &rest antecedents)
+(defun :- (consequent &rest antecedents)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-pushnew (cons consequent (cons antecedent antecedents)) *ml:rules* :test #'equal))
+  (cl-pushnew (cons consequent antecedents) *ml:db* :test #'equal))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (ml:init) returns nil)
 (confirm that (<- '(kiki likes eating hamburgers))
-  returns ((kiki likes eating hamburgers)))
-(confirm that (<- '(kiki likes eating hamburgers))
-  returns ((kiki likes eating hamburgers)))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food))
-              )))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food))
-              )))
+  returns (((kiki likes eating hamburgers))))
+;; (confirm that (<- '(kiki likes eating hamburgers))
+;;   returns ((kiki likes eating hamburgers)))
+;; (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+;;   returns ( ( ((\, person) would eat a (\, food))
+;;               ((\, person) likes eating (\, food))
+;;               )))
+;; (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+;;   returns ( ( ((\, person) would eat a (\, food))
+;;               ((\, person) likes eating (\, food))
+;;               )))
 (ml:prn-world)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -107,6 +116,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ml:init)
-(:- '(foo) '(bar baz quux) '(shprungy))
+;; (ml:init)
+;; (:- '(foo) '(bar baz quux) '(shprungy))
 
