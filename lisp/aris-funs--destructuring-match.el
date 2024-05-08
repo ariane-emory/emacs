@@ -433,24 +433,18 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                              (dolist (pred var-preds)
                                (unless
                                  (let ((indicator (car-safe pred)))
-                                   (cond 
-                                     ((null indicator) (funcall pred var-val))
-                                     ((not (eq 'lambda indicator))
-                                       (let ((expr pred))
-                                         ;; (dm:match '(,(x integer?) ,(y integer? (> x it))) '(7 5))
-                                         ;; (dm:match '(,(x integer?) ,(y integer? (> x y))) '(7 9))
-                                         (dolist (kvp (append
-                                                        (when dont-care
-                                                          (list (cons dont-care var-val)))
-                                                        (list (cons var-sym var-val))
-                                                        alist))
-                                           (prn "subst %s %s" `',(cdr kvp) (car kvp))
-                                           (setf expr (cl-subst `',(cdr kvp) (car kvp) expr)))
-                                         ;;(debug)
-                                         (dm::prn "Thread %s into %s => %s" var-val pred expr)
-                                         (eval expr)))
-                                     (t ; pred is a `lambda'.
-                                       (funcall pred var-val))))
+                                   (cond
+                                     ;; PRED is either just a symbol, which should name a unary
+                                     ;; function, or it is a `lambda` expression:
+                                     ((or (null indicator) (eq 'lambda indicator)) (funcall pred var-val))
+                                     ;; PRED is some expr, thread in ALIST's values:
+                                     (t 
+                                       (eval (subst-alist
+                                               (append
+                                                 (when dont-care (list (cons dont-care var-val)))
+                                                 (list (cons var-sym var-val))
+                                                 alist)
+                                               pred)))))
                                  (throw 'pred-failed nil)))
                              t))))
                       (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
