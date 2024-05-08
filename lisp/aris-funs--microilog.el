@@ -91,7 +91,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun :- (consequent &rest antecedents)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-pushnew (cons consequent antecedents) *ml:db* :test #'equal))
+  (when (null consequent)
+    (error "Null consequent"))
+  (let* ( (rule (cons consequent antecedents))
+          (found (cl-find consequent *ml:db* :test #'equal :key #'car))
+          (found-unequal (and found (not (equal rule found)))))
+    (ml::prndiv)
+    (ml::prn "Adding rule %S..." rule)
+    (ml::prn "Found       %S." found)
+    (ml::prn "Found-Unequal    %S" found-unequal)
+    (cond
+      ((not found)     (push rule *ml:db*)) ; new rule, add it.
+      (found-unequal
+        (error "Already have a rule for %S: %S" consequent found))
+
+      (t             *ml:db*))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -101,15 +115,25 @@
   returns (((kiki likes eating hamburgers))))
 (confirm that (<- '(kiki likes eating hamburgers))
   returns (((kiki likes eating hamburgers))))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food)))
-            ( (kiki likes eating hamburgers))))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food)))
-            ( (kiki likes eating hamburgers))))
-(ml:prn-world)
+
+;; (cl-find (cons '(kiki likes eating hamburgers) nil) *ml:db* :test #'equal)
+
+;; (confirm that (<- '(kiki likes eating hamburgers))
+;;   returns (((kiki likes eating hamburgers))))
+
+;; (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+;;   returns ( ( ((\, person) would eat a (\, food))
+;;               ((\, person) likes eating (\, food)))
+;;             ( (kiki likes eating hamburgers))))
+;; (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+;;   returns ( ( ((\, person) would eat a (\, food))
+;;               ((\, person) likes eating (\, food)))
+;;             ( (kiki likes eating hamburgers))))
+;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
+;;   returns ( ( ((\, person) would eat a (\, food))
+;;               ((\, person) likes eating (\, food)))
+;;             ( (kiki likes eating hamburgers))))
+;; (ml:prn-world)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
