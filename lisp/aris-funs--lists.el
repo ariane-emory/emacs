@@ -690,5 +690,32 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro doconses (spec &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Loop over a list's heads
+Evaluate BODY with VAR bound to each cons from LIST and
+CAR bound to each cons' `car', in turn.
+Then evaluate RESULT to get return value, default nil.
+
+This is a tiny, two-line modification of `dolist'.
+
+ (VAR LIST [RESULT]) BODY...)"
+  (declare (indent 1) (debug ((symbolp form &optional form) body)))
+  (unless (consp spec)
+    (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (<= 2 (length spec) 3)
+    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
+  (let ((tail (make-symbol "tail")))
+    `(let ((,tail ,(nth 1 spec)))
+       (while ,tail
+         (let ( (car (car ,tail))
+                (,(car spec) ,tail))
+           ,@body
+           (setq ,tail (cdr ,tail))))
+       ,@(cdr (cdr spec)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--lists)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
