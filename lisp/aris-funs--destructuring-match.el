@@ -372,6 +372,13 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 2: When PATTERN's head is flexible, collect items:
                 ;; ----------------------------------------------------------------------------------
+                ((and (dm::pat-elem-is-flexible? (car pattern)) (not (cdr pattern)))
+                  (when-let ((var (dm::pat-elem-var-sym (car pattern))))
+                    (dm::log-setf-alist-putunique! var target
+                      alist reference-alist))
+                  (setf target nil)
+                  (dm::log-pop* pattern)
+                  )
                 ((dm::pat-elem-is-flexible? (car pattern))
                   (warn-when-consecutive-flexible-elements-in-pattern)
                   (setf last-pattern-elem-was-flexible t)                  
