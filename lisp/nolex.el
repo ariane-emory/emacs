@@ -379,12 +379,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun proc-funs (var-funses var-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cl-labels ( (prn2    (&rest args) (when *proc-funs-verbose* (apply #'prn    args)))
-               (prndiv2 (&rest args) (when *proc-funs-verbose* (apply #'prndiv nil)))
-               (prn-var-alist (&optional (ix ""))
-                 (prn2 "VAR-ALIST%s:" ix)
-                 (let (lisp-indent-offset)
-                   (prn2 "%s" (trim-trailing-whitespace (pp-to-string var-alist))))))
+  (cl-macrolet ( (prn2    (&rest args) `(when *proc-funs-verbose* (funcall #'prn    ,@args)))
+                 (prndiv2 (&rest args) `(when *proc-funs-verbose* (funcall #'prndiv ,@args)))
+                 (prn-var-alist (&optional (suffix ""))
+                   `(when *proc-funs-verbose*
+                      (prn "VAR-ALIST%s:" ,suffix)
+                      (prn "%s" (trim-trailing-whitespace
+                                  (let (lisp-indent-offset) (pp-to-string var-alist)))))))
     (dolist (var-funs var-funses)
       (let ( (var     (car var-funs))
              (funs    (cdr var-funs)))
@@ -415,7 +416,7 @@
               
               ;; this seems kind of hacky:
               (when (and (listp fun) (not (eq 'lambda (car fun))))
-                (prn "EVAL %s" fun)
+                (prn2 "EVAL VAR-FUN %s" fun)
                 (setf fun (eval fun)))
               
               (let ((res
@@ -773,7 +774,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
            :response:   ( 8 fine \, ,subject ,bar ,baz \, so what \?))))
      ;;==============================================================================================
      ( :input:          ( ,(subject subject?) ,(modal modal?) never ,@verb
-                          ,(at/about       (memq (at about for with)))
+                          ,(at/about       (memq '(at about for with)))
                           ,(a/the a/the?) ,@things)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
@@ -979,18 +980,18 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
        ( ;;------------------------------------------------------------------------------------------
          ( :response:   ( 20 that\'s ,@foo for you))))
      ;;==============================================================================================
-     ( :input:          ( add ,(addend integer?) to ,(addend-2 integer?))
+     ( :input:          ( add ,(left integer?) to ,(right integer?))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (sum! (lambda (_ _ vars)
-                                  (let-alist vars (setf last-result (+ .addend .addend-2))))))
+                                  (let-alist vars (setf last-result (+ .left .right))))))
            :response:   ( 21 the result is ,sum))))
      ;;==============================================================================================
-     ( :input:          ( subtract ,(subtrahend integer?) from ,(subtrahend-2 integer?))
+     ( :input:          ( subtract ,(left integer?) from ,(right integer?))
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (sum! (lambda (_ _ vars)
-                                  (let-alist vars (setf last-result (- .subtrahend-2 .subtrahend))))))
+                                  (let-alist vars (setf last-result (- .left .right))))))
            :response:   ( 21 the result is ,sum))))
      ;;==============================================================================================
      ( :input:          ( multiply ,(left integer?) by ,(right integer?))
@@ -1071,7 +1072,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
                                   (let-alist vars (setf last-result (/ last-result .left))))))
            :response:   ( 22 okay \, now we\'ve got ,sum))))
      ;;==============================================================================================
-     ( :input:          ( tell me the ,(result/total (memq (result total))) again)
+     ( :input:          ( tell me the ,(result/total (memq '(result total))) again)
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
@@ -1101,13 +1102,13 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
          ( :var-funs:   ( (last-result! (lambda (_ _ _) last-result)))
            :response:   ( 23 it ,was/is ,last-result))))
      ;;==============================================================================================
-     ( :input:          ( ... i ... ,(feel (memq (feel feeling))) ,@things )
+     ( :input:          ( ... i ... ,(feel (memq '(feel feeling))) ,@things )
        :responses:
        ( ;;------------------------------------------------------------------------------------------
          ( :var-funs:   ( (things (lambda (v _ _) (mapcar #'swap-word v)))
-                          (adj!            pick-insult-adj)
-                          (noun!           pick-insult-noun)
-                          (feel            (lambda (v _ _) (if (eq v 'feeling) 'are\ feeling v))))
+                          (adj!              pick-insult-adj)
+                          (noun!             pick-insult-noun)
+                          (feel              (swap2 feeling are\ feeling)))
            :response:   ( 96 of course you ,feel ,@things \, you ,adj ,noun ))))
      ;;==============================================================================================
      ( :input: t

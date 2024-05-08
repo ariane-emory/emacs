@@ -30,6 +30,7 @@
   '(geiser-default-implementation 'chez)
   '(global-eldoc-mode nil)
   '(global-prettify-symbols-mode nil)
+  '(idle-highlight-idle-time 0.5)
   '(indent-tabs-mode nil)
   '(lisp-indent-offset 2)
   '(lsp-enable-indentation nil)

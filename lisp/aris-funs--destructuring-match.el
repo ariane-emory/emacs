@@ -459,20 +459,13 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                      ((null indicator) (funcall pred var-val))
                                      ((not (eq 'lambda indicator))
                                        ;; treat as threading expr:
-                                       ;; (let ((expr `(,indicator ,var-val ,@(cdr pred))))
-                                       ;;   (eval expr))
-                                       (let* ( ;; (tail `(list ,@(cdr pred)))
-                                               ;; (expr `(apply indicator var-val ,tail))
-                                               (expr `(funcall #',indicator ',var-val ,@(cdr pred))))
-                                         ;; (prn "tail %s" tail)
-                                         (prn "THREAD %s in %s" var-val expr)
-                                         ;; (prn "EVALUATE %s" expr2)
-                                         (eval expr))
-                                       )
-                                     ( t 
-                                       (let ((*dm:verbose* t))
-                                         (dm::prn-labeled pred "eval"))
-                                       (funcall (eval pred) var-val))))
+                                       (let* ( ; (expr  `(funcall #',indicator ',var-val ,@(cdr pred)))
+                                               (qval  (if (symbolp var-val) `',var-val var-val))
+                                               (expr `(funcall ',indicator ,qval  ,@(cdr pred))))
+                                         ;; (prn "THREAD %s into %s => %s" var-val pred expr)
+                                         (dm::prn "Thread %s into %s => %s" var-val pred expr)
+                                         (eval expr)))
+                                     (t (funcall pred var-val))))
                                  (throw 'pred-failed nil)))
                              t))))
                       (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
@@ -650,21 +643,33 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                     '(1 2 3 4 5 6 7 8 a 9 10 11 12))
       returns ((x . 9)))
     (confirm that (dm:match '( ...
-                               ,(_ integer? (> 4))
-                               ,(_ integer? (> 4))
-                               ,(x integer? (> 4))
+                               ,(_ integer? (> (* 2 2)))
+                               ,(_ integer? (> (+ 4 2)))
+                               ,(x integer?)
                                ...)
                     '(1 2 3 4 5 6 7 8 1 9 10 11 12))
-      returns ((x . 7)))
+      returns ((x . 8)))
+    (confirm that
+      (dm:match '( ...
+                   ,(sym symbolp)
+                   ...
+                   ,(_ integer? odd? (> 4))
+                   ...
+                   ,(_ integer? odd?)
+                   ...
+                   ,(x integer? odd?)
+                   ...)
+        '(1 2 3 4 foo 5 6 bar 7 (8 baz) 9 quux 10 11 12)) 
+      returns ((sym . foo) (x . 9)))
     (confirm that
       (dm:match '( ...
                    ,(_ integer? odd? (> 4))
                    ...
-                   ,(_ integer? odd? (> 4))
+                   ,(_ integer? odd?)
                    ...
-                   ,(x integer? odd? (> 4))
+                   ,(x integer? odd?)
                    ...)
-        '(1 2 3 4 foo 5 6 bar 7 (8 baz) 9 quux 10 11 12))
+        '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 11 12))
       returns ((x . 9)))
     (confirm that (dm:match '( ...
                                ,(_ integer? (lambda (n) (> n 4)))
@@ -708,6 +713,21 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                ...)
                     '(1 2 3 4 5 6 7 8 9 10 11 12))
       returns ((x . 5) (y . 6)))
+    ;; Find me the first symbol after the third odd integer greater than 4 and also the cdr of
+    ;; the 2nd last thing:
+    (confirm that (dm:match '( ...
+                               ,(_ integer? odd? (> 4))
+                               ...
+                               ,(_ integer? odd?)
+                               ...
+                               ,(_ integer? odd?)
+                               ...
+                               ,(needle-1 symbol?)
+                               ...
+                               (_ ,@needle-2)
+                               _)
+                    '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (11 12 13) 14))
+      returns ((needle-1 . quux) (needle-2 12 13)))
     ;;-----------------------------------------------------------------------------------------------
     ;; Greediness test cases:
     (confirm that (dm:match '(,x ,@ys foo)     '(1 foo))           returns ((x . 1) (ys)))
@@ -913,15 +933,16 @@ This behaves very similarly to quasiquote."
 ;;       (car 2nd))))
 
 
-
-
-
-
-
-
+;; Find me the first symbol after the third odd integer greater than 4 and the cdr of the 2nd last thing:
 (dm:match '( ...
-             ,(x (integer?) (> 4))
-             ,(y (integer?) (> 4))
-             ,(z integer?   (> 4))
-             ...)
-  '(1 2 3 4 5 6 7 8 9 10 11 12))
+             ,(_ integer? odd? (> 4))
+             ...
+             ,(_ integer? odd?)
+             ...
+             ,(_ integer? odd?)
+             ...
+             ,(needle-1 symbol?)
+             ...
+             (,needle-1 ,@needle-2)
+             _)
+  '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (quux 12 13) 14)) ; ((needle-1 . quux) (needle-2 12 13))
