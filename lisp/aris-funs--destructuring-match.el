@@ -358,32 +358,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-flexible? (car pattern))
                   (warn-when-consecutive-flexible-elements-in-pattern)
-                  (setf last-pattern-elem-was-flexible t)
-                  
+                  (setf last-pattern-elem-was-flexible t)                  
                   (ignore! (dm:match '(,@as ,@bs ,@cs) '(1 2)))
                   (ignore! (dm:match '(,@as ,@bs) '(1 2)))
-
-                  ;; (let ((remaining (cdr pattern)))
-                  ;;   (while (dm::pat-elem-is-flexible? (cadr remaining))
-                  ;;     (dm::log-pop* remaining))
-                  ;;   (prn "remaining: %s" remaining)
-                  ;;   ;; If there are no more non-flexible elements in PATTERN we can return early:
-                  ;;   (unless remaining
-                  ;;     ;; We know that (car pattern) is flexible, so if it has a var-sym then it
-                  ;;     ;; must be an UNSPLICE.
-                  ;;     (when-let ((var-sym (dm::pat-elem-var-sym (dm::log-pop* pattern))))
-                  ;;       (dm::log-setf-alist-putunique! var-sym target alist alist))
-                  ;;     (when pattern
-                  ;;       (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
-                  ;;       (dolist (pat-elem pattern)
-                  ;;         (dm::prn "Running out elem: %s" pat-elem)
-                  ;;         (warn-when-consecutive-flexible-elements-in-pattern)
-                  ;;         ;; We know it's flexible, so if it has a var-sym it must be an UNSPLICE.
-                  ;;         (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                  ;;           (dm::log-setf-alist-putunique! var-sym nil alist alist))))
-                  ;;     (dm::prn-labeled alist "early return")
-                  ;;     (throw 'match alist))
-                  ;;   )
                   (dm::prn "Collecting flexible element...")
                   (with-indentation
                     (let (collect) 
