@@ -14,6 +14,11 @@
   "Internal print helper function."
   (when *ml:verbose* (apply #'prn args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::prn1 (fmt val &rest args) 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Internal print helper function."
+  (when *ml:verbose* (apply #'prn1 fmt val args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml::prnl ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
@@ -92,49 +97,46 @@
 (defun :- (consequent &rest antecedents)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (when (null consequent)
-    (error "Null consequent"))
-  (let* ( (rule (cons consequent antecedents))
-          (found (cl-find consequent *ml:db* :test #'equal :key #'car))
+    (error "Null consequent"e))
+  (let* ( (found (cl-find consequent *ml:db* :test #'equal :key #'car))
           (found-equal (and found (equal antecedents (cdr found)))))
     (ml::prndiv)
-    (ml::prn "Adding rule %S..." rule)
     (ml::prn "Found       %S." found)
-    (ml::prn "Found-equal    %S" found-equal)
     (cond
-      ((not found)     (push rule *ml:db*)) ; new rule, add it.
+      ((not found)     (push (cons consequent antecedents) *ml:db*)) ; new rule, add it.
       (found-equal   *ml:db*) ; repeated (but `equal' rule, do nothing.
       (t (error "Already have a rule for %S: %S" consequent found)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ml:init) returns nil)
-(confirm that (<- '(kiki likes eating hamburgers))
-  returns (((kiki likes eating hamburgers))))
-(confirm that (<- '(kiki likes eating hamburgers))
-  returns (((kiki likes eating hamburgers))))
-(confirm that (<- '(kiki likes eating hamburgers))
-  returns (((kiki likes eating hamburgers))))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food)))
-            ( (kiki likes eating hamburgers))))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food)))
-            ( (kiki likes eating hamburgers))))
-;; This should (and does) signal an error:
-;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
-;;   returns ( ( ((\, person) would eat a (\, food))
-;;               ((\, person) likes eating (\, food)))
-;;             ( (kiki likes eating hamburgers))))
-(ml:prn-world)
+  (confirm that (ml:init) returns nil)
+  (confirm that (<- '(kiki likes eating hamburgers))
+    returns (((kiki likes eating hamburgers))))
+  (confirm that (<- '(kiki likes eating hamburgers))
+    returns (((kiki likes eating hamburgers))))
+  (confirm that (<- '(kiki likes eating hamburgers))
+    returns (((kiki likes eating hamburgers))))
+  (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+    returns ( ( ((\, person) would eat a (\, food))
+                ((\, person) likes eating (\, food)))
+              ( (kiki likes eating hamburgers))))
+  (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
+    returns ( ( ((\, person) would eat a (\, food))
+                ((\, person) likes eating (\, food)))
+              ( (kiki likes eating hamburgers))))
+  ;; This should (and does) signal an error:
+  ;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
+  ;;   returns ( ( ((\, person) would eat a (\, food))
+  ;;               ((\, person) likes eating (\, food)))
+  ;;             ( (kiki likes eating hamburgers))))
+  (ml:prn-world)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--microlog)
+  (provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (ml:init)
-;; (:- '(foo) '(bar baz quux) '(shprungy))
+  ;; (ml:init)
+  ;; (:- '(foo) '(bar baz quux) '(shprungy))
 
