@@ -441,14 +441,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dolist (pred var-preds)
                             (unless
                               (let ((indicator (car-safe pred)))
-                                (if (or (null indicator) (eq 'lambda indicator))
-                                  ;; PRED is either just a symbol, which should name a unary
-                                  ;; function, or it is a `lambda' expression, just call it on
-                                  ;; VAR-VAL:
-                                  (funcall pred var-val)
-                                  ;; PRED is some expr, `rsubst-alist' ALIST's values into is and
-                                  ;; `eval':
-                                  (eval (subst-alist-in-expr pred))))
+
+                                (cond
+                                  ((or (null indicator) (eq 'lambda indicator))
+                                    ;; PRED is either just a symbol, which should name a unary
+                                    ;; function, or it is a `lambda' expression, just call it on
+                                    ;; VAR-VAL:
+                                    (funcall pred var-val))
+                                  (t
+                                    ;; PRED is some expr, `rsubst-alist' ALIST's values into is and
+                                    ;;  `eval':
+                                    (eval (subst-alist-in-expr pred)))))
                               (throw 'pred-failed nil)))
                           t))
                       (NO-MATCH! "a predicate failed"))
