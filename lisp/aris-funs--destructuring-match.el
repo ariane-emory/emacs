@@ -6,6 +6,7 @@
 (require 'aris-funs--lists)
 (require 'aris-funs--parse-arglist)
 (require 'aris-funs--strings)
+(require 'aris-funs--trees)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--when-let-alist) ; Only used by some tests.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -443,11 +444,22 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                               (let ((indicator (car-safe pred)))
 
                                 (cond
-                                  ((or (null indicator) (eq 'lambda indicator))
-                                    ;; PRED is either just a symbol, which should name a unary
-                                    ;; function, or it is a `lambda' expression, just call it on
-                                    ;; VAR-VAL:
+                                  ((null indicator)
+                                    ;; PRED is just a symbol, which should name a unary function,
+                                    ;; just call it on VAR-VAL:
                                     (funcall pred var-val))
+                                  ((eq 'lambda indicator)
+                                    ;; PRED is a `lambda' expression, just call it on VAR-VAL:
+                                    (let ((arg-names (arg-names (cadr pred))))
+                                      (dolist (arg-name arg-names)
+                                        (when (or (assoc arg-name alist)
+                                                (assoc arg-name reference-alist))
+                                          (error (concat
+                                                   "Ambiguous lambda expression: "
+                                                   (format "arg %s overlaps with " arg-name)
+                                                   "name of a captured variable")))))
+                                    ;;(debug )
+                                    (eval (subst-alist-in-expr pred)))
                                   (t
                                     ;; PRED is some expr, `rsubst-alist' ALIST's values into is and
                                     ;;  `eval':

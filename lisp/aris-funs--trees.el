@@ -86,5 +86,22 @@ This version is slower than `transform-tree'."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun occurs (val expr)
+  "Does VAL occur anywhere inside EXPR?"
+  (cond
+    ((equal val expr) t)
+    ((consp expr) (or (occurs val (car expr)) (occurs val (cdr expr))))
+    (t nil)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (occurs 'a '(a b c d e f g h i j)) returns t)
+(confirm that (occurs 'a '(b c d e f g h i j)) returns nil)
+(confirm that (occurs 'a '(b c d e (f g a) h i j )) returns t)
+(confirm that (occurs 'a '(b c d e f (g h (i j a)) k)) returns t)
+(confirm that (occurs 'a '(b c d e f g h i j k a)) returns t)
+(confirm that (occurs 'a '(b c d e f g h i j k)) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--trees)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
