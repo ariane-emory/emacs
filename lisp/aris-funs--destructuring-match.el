@@ -8,6 +8,9 @@
 (require 'aris-funs--unsorted)
 (require 'aris-funs--when-let-alist) ; Only used by some tests.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO:
+;;  - preds for flexible-length pattern elements.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -370,16 +373,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dm::prn-labeled         collect "pre")
                           (dm::prn-pp-labeled-list pattern)
                           (dm::prn-pp-labeled-list target)                      
-                          (let ( (look-0
-                                   (let ((*dm:verbose* t))
-                                     (recurse (cdr pattern)      target  nil alist)))
-                                 ;; (look-1
-                                 ;;   (let (*dm:verbose*)
-                                 ;;     (recurse (cdr pattern) (cdr target) nil alist)))
-                                 )
+                          (let ((look-0
+                                  (let ((*dm:verbose* nil))
+                                    (recurse (cdr pattern) target  nil alist))))
                             (dm::prndiv ?\-)
                             (dm::prn-labeled look-0)
-                            ;; (dm::prn-labeled look-1)
                             (dm::prndiv ?\-)
                             (cond
                               ((null target)
