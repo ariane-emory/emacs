@@ -345,12 +345,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (when dont-care (list (cons dont-care var-val)))
                             (list (cons var-sym var-val))
                             alist
-                            reference-alist))
-                       ;; (subst-alist-in-expr (expr)
-                       ;;   `(rsubst-alist
-                       ;;      ,expr
-                       ;;      (augmented-alist)))
-                       )
+                            reference-alist)))
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
@@ -386,7 +381,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (with-indentation
                     (let (collect) 
                       (catch 'stop-collecting
-                        (while t
+                        (while target
                           (dm::prndiv)
                           (dm::prn-labeled         collect "pre")
                           (dm::prn-pp-labeled-list pattern)
@@ -398,11 +393,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (dm::prn-labeled look-0)
                             (dm::prndiv ?\-)
                             (cond
-                              ((null target)
-                                (dm::prn "Emptied TARGET, stop.")
-                                (throw 'stop-collecting nil))
-                              ((and look-0 ;; (not look-1)
-                                 ) 
+                              ;; ((null target)
+                              ;;   (dm::prn "Emptied TARGET, stop.")
+                              ;;   (throw 'stop-collecting nil))
+                              (look-0 
                                 ;; If LOOK-0 matched the whole TARGET then we can munge
                                 ;; LOOK-0 and ALIST into the right shape and return successfully
                                 ;; immediately:
@@ -475,7 +469,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                       ;; (eval funcall-expr)
                                       (eval funcall-expr2)))
                                   (t
-                                    ;; PRED is some other eval-expr, `rsubst-alist' ALIST's values into
+                                    ;; PRED is some other expr, `rsubst-alist' ALIST's values into
                                     ;; it and `eval':
                                     (let ( ;; (eval-expr  (subst-alist-in-eval-expr pred))
                                            (eval-expr2 (macroexp-let-alist (augmented-alist) pred)))
@@ -973,3 +967,26 @@ This behaves very similarly to quasiquote."
 
 ;; (dm:match '(,(x integer?) ,(y integer? (> x))) '(7 9))
 ;; (confirm that (dm:match '(,(x integer?) (foo ,(y integer? (> x _)))) '(7 9)) returns nil)
+
+(ignore!
+  (let (*dm:verbose*)
+    (list
+      (benchmark-run 10000 (dm:match '(... ,(x integer? odd?) ...) '(a b c 5 d e f)))
+      (benchmark-run 10000 (dm:match '(... ,(x (lambda (n) (and (integer? n) (odd? n)))) ...) '(a b c 5 d e f)))
+      (benchmark-run 10000 (dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)))))
+
+  ((4.40592 14 0.7038970000000013)
+    (4.7350710000000005 17 0.877867000000002)
+    (4.619365999999999 16 0.8358629999999998))
+
+  ((4.307336 14 0.673171)
+    (4.665961 18 0.8793189999999989)
+    (4.55026 17 0.8443470000000008))
+  )
+
+
+
+(dm:match '(... ,(x integer? odd?) ... ,(y integer? odd?) ...) '(a b 3 c 5 d 7 e f)) ; ((x . 5) (y . 7))
+(dm:match '(... ,(x (lambda (n) (and (integer? n) (odd? n)))) ...) '(a b c 5 d e f)) ; ((x . 5))
+(dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)) ; ((x . 5))
+
