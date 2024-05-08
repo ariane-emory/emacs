@@ -99,6 +99,9 @@ This version is slower than `transform-tree'."
 (confirm that (occurs 'a '(b c d e f (g h (i j a)) k)) returns t)
 (confirm that (occurs 'a '(b c d e f g h i j k a)) returns t)
 (confirm that (occurs 'a '(b c d e f g h i j k)) returns nil)
+(confirm that (occurs 'a 'a) returns t)
+(confirm that (occurs 'a nil) returns nil)
+(confirm that (occurs nil nil) returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
