@@ -309,7 +309,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
         (cl-macrolet ((recurse (pattern target alist reference-alist)
                         `(with-indentation
                            (dm::match1 initial-pattern ,pattern ,target
-                             dont-care ellipsis unsplice ,alist (append ,reference-alist ,alist))))
+                             dont-care ellipsis unsplice ,alist ,reference-alist)))
                        (NO-MATCH! (fmt &rest args)
                          `(progn
                             (dm::prn "No match because %s!" (format ,fmt ,@args))
