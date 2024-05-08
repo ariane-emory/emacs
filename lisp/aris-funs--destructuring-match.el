@@ -4,6 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--lists)
+(require 'aris-funs--parse-arglist)
 (require 'aris-funs--strings)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--when-let-alist) ; Only used by some tests.
@@ -309,10 +310,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
         ;; (dm::prn-labeled reference-alist "initial")
         (dm::prnl)
         ;;-------------------------------------------------------------------------------------------
-        (cl-macrolet ((recurse (pattern target alist reference-alist)
-                        `(with-indentation
-                           (dm::match1 initial-pattern ,pattern ,target
-                             dont-care ellipsis unsplice ,alist ,reference-alist)))
+        (cl-macrolet ( (recurse (pattern target alist reference-alist)
+                         `(with-indentation
+                            (dm::match1 initial-pattern ,pattern ,target
+                              dont-care ellipsis unsplice ,alist ,reference-alist)))
                        (NO-MATCH! (fmt &rest args)
                          `(progn
                             (dm::prn "No match because %s!" (format ,fmt ,@args))
@@ -332,7 +333,15 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                               (let ( (*dm:verbose* t)
                                      (*wm:indent* 0))
                                 (dm::prn warn-msg))
-                              (warn warn-msg)))))
+                              (warn warn-msg))))
+                       (subst-alist-in-expr (expr)
+                         `(rsubst-alist
+                            ,expr
+                            (append
+                              (when dont-care (list (cons dont-care var-val)))
+                              (list (cons var-sym var-val))
+                              alist
+                              reference-alist))))
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
@@ -375,7 +384,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dm::prn-pp-labeled-list target)                      
                           (let ((look-0
                                   (let ((*dm:verbose* nil))
-                                    (recurse (cdr pattern) target  nil alist))))
+                                    (recurse (cdr pattern) target nil alist))))
                             (dm::prndiv ?\-)
                             (dm::prn-labeled look-0)
                             (dm::prndiv ?\-)
@@ -426,32 +435,27 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           ;; `let' ASSOC just to print it in the message:
                           (assoc    (cons var-sym var-val)))
                     (dm::prn-labeled var-preds)
-                    (let 
-                      ((all-var-preds-passed
-                         (or (not var-preds)
-                           (catch 'pred-failed
-                             (dolist (pred var-preds)
-                               (unless
-                                 (let ((indicator (car-safe pred)))
-                                   (if (or (null indicator) (eq 'lambda indicator))
-                                     ;; PRED is either just a symbol, which should name a unary
-                                     ;; function, or it is a `lambda` expression:
-                                     (funcall pred var-val)
-                                     ;; PRED is some expr, `subst-alist' ALIST's values in and
-                                     ;; `eval':
-                                     (eval (subst-alist
-                                             (append
-                                               (when dont-care (list (cons dont-care var-val)))
-                                               (list (cons var-sym var-val))
-                                               alist)
-                                             pred))))
-                                 (throw 'pred-failed nil)))
-                             t))))
-                      (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
-                      (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)
-                        (dm::log-setf-alist-putunique! var-sym var-val alist reference-alist))
-                      (dm::prn-labeled assoc "take var as")
-                      (dm::log-pop* pattern target))))
+                    (unless
+                      (or (not var-preds)
+                        (catch 'pred-failed
+                          (dolist (pred var-preds)
+                            (unless
+                              (let ((indicator (car-safe pred)))
+                                (if (or (null indicator) (eq 'lambda indicator))
+                                  ;; PRED is either just a symbol, which should name a unary
+                                  ;; function, or it is a `lambda' expression, just call it on
+                                  ;; VAR-VAL:
+                                  (funcall pred var-val)
+                                  ;; PRED is some expr, `rsubst-alist' ALIST's values into is and
+                                  ;; `eval':
+                                  (eval (subst-alist-in-expr pred))))
+                              (throw 'pred-failed nil)))
+                          t))
+                      (NO-MATCH! "a predicate failed"))
+                    (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)
+                      (dm::log-setf-alist-putunique! var-sym var-val alist reference-alist))
+                    (dm::prn-labeled assoc "take var as")
+                    (dm::log-pop* pattern target)))
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
                 ;; ALIST, unless the result was just t because the sub-pattern being recursed over
@@ -583,7 +587,19 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo 6   quux))
       returns nil)
     (confirm that (dm:match '(foo ,(bar integer? odd? (lambda (n) (> n 4))) quux) '(foo bar quux))
-      returns nil)    
+      returns nil)
+    ;;-----------------------------------------------------------------------------------------------
+    ;; back references;
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(7 9)) returns nil)
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (> _ x))) '(7 9)) returns ((x . 7) (y . 9)))
+    (confirm that (dm:match
+                    '(,(x integer?) (foo ,(y integer? (> _ x))))
+                    '(7 (foo 9)))
+      returns ((x . 7) (y . 9)))
+    (confirm that (dm:match
+                    '(,(x integer?) (foo ,(y integer? (> _ x))))
+                    '(17 (foo 9)))
+      returns nil)
     ;;-----------------------------------------------------------------------------------------------
     (confirm that (dm:match '(foo ,(bar integer? odd?) ,bar            quux) '(foo 3 3 quux))
       returns ((bar . 3)))
@@ -918,3 +934,4 @@ This behaves very similarly to quasiquote."
 ;;   returns ((needle-1 . quux) (needle-2 12 13)))
 
 ;; (dm:match '(,(x integer?) ,(y integer? (> x))) '(7 9))
+;; (confirm that (dm:match '(,(x integer?) (foo ,(y integer? (> x _)))) '(7 9)) returns nil)
