@@ -4,7 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--alists)
 (require 'aris-funs--lists)
-(require 'aris-funs--parse-arglist)
+(require 'aris-funs--arglists)
 (require 'aris-funs--strings)
 (require 'aris-funs--trees)
 (require 'aris-funs--unsorted)
