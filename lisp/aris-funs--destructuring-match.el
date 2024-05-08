@@ -335,14 +335,16 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                      (*wm:indent* 0))
                                 (dm::prn warn-msg))
                               (warn warn-msg))))
+                       (augment-the-alist ()
+                         `(append
+                            (when dont-care (list (cons dont-care var-val)))
+                            (list (cons var-sym var-val))
+                            alist
+                            reference-alist))
                        (subst-alist-in-expr (expr)
                          `(rsubst-alist
                             ,expr
-                            (append
-                              (when dont-care (list (cons dont-care var-val)))
-                              (list (cons var-sym var-val))
-                              alist
-                              reference-alist))))
+                            (augment-the-alist))))
           ;;-----------------------------------------------------------------------------------------
           (let (last-pattern-elem-was-flexible)
             ;;---------------------------------------------------------------------------------------
@@ -459,11 +461,19 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                    "Ambiguous lambda expression: "
                                                    (format "arg %s overlaps with " arg-name)
                                                    "name of a captured variable")))))
-                                    (funcall (subst-alist-in-expr pred) var-val))
+                                    (let ((pred (subst-alist-in-expr pred)))
+                                      (funcall pred var-val)))
                                   (t
                                     ;; PRED is some other expr, `rsubst-alist' ALIST's values into
                                     ;; it and `eval':
-                                    (eval (subst-alist-in-expr pred)))))
+                                    (let ( (expr  (subst-alist-in-expr pred))
+                                           (expr2 (macroexp-let-alist (augment-the-alist) pred)))
+                                      (dm::prn-labeled expr)
+                                      (dm::prn-labeled expr2)
+                                      
+                                      ;; (eval expr)
+                                      (eval expr2)
+                                      ))))
                               (throw 'pred-failed nil)))
                           t))
                       (NO-MATCH! "a predicate failed"))
