@@ -606,7 +606,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     ;; back references;
     (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(7 9)) returns nil)
     (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(9 7)) returns ((x . 9) (y . 7)))
-    (confirm that (dm:match '(,(x integer?) ,(y integer? (> _ x))) '(7 9)) returns ((x . 7) (y . 9)))
+
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(7 9)) returns nil)
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(9 7)) returns ((x . 9) (y . 7)))
+
     (confirm that (dm:match
                     '(,(x integer?) (foo ,(y integer? (> _ x))))
                     '(7 (foo 9)))
