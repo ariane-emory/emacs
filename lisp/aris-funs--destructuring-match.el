@@ -946,3 +946,17 @@ This behaves very similarly to quasiquote."
              (,needle-1 ,@needle-2)
              _)
   '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (quux 12 13) 14)) ; ((needle-1 . quux) (needle-2 12 13))
+
+;; Find me the first symbol after the third odd integer greater than 4 and the cdr of the 2nd last thing:
+(dm:match '( ...
+             ,(_ integer? odd? (> 4))
+             ...
+             ,(_ integer? odd?)
+             ...
+             ,(_ integer? odd?)
+             ...
+             ,(needle-1 symbol?)
+             ...
+             (,needle-1 ,@needle-2)
+             _)
+  '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (quux 12 13) 14)) ; ((needle-1 . quux) (needle-2 12 13))
