@@ -422,7 +422,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                       ;; We already know that (car pattern) is flexible, if it has a var name then
                       ;; it must be an UNSPLICE.
                       (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                        (dm::log-setf-alist-putunique! var (nreverse collect) alist nil))
+                        (dm::log-setf-alist-putunique! var (nreverse collect)
+                          alist reference-alist))
                       (dm::log-pop* pattern)
                       ) ; end of `let' COLLECT.
                     ) ; end of `with-indentation'.
