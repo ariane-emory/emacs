@@ -472,7 +472,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                              '(funcall pred var-val))))
                                       ;; (dm::prn-labeled funcall-expr)
                                       (dm::prn-labeled funcall-expr2)
-
                                       ;; (eval funcall-expr)
                                       (eval funcall-expr2)))
                                   (t
@@ -482,7 +481,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                            (eval-expr2 (macroexp-let-alist (augmented-alist) pred)))
                                       ;; (dm::prn-labeled eval-expr)
                                       (dm::prn-labeled eval-expr2)
-                                      
                                       ;; (eval eval-expr)
                                       (eval eval-expr2)
                                       ))))
