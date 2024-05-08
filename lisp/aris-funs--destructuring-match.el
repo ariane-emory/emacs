@@ -435,7 +435,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                       ;; We already know that (car pattern) is flexible, if it has a var name then
                       ;; it must be an UNSPLICE.
                       (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                        (dm::log-setf-alist-putunique! var (nreverse collect) alist alist))
+                        (dm::log-setf-alist-putunique! var (nreverse collect) alist nil))
                       (dm::log-pop* pattern)
                       ) ; end of `let' COLLECT.
                     ) ; end of `with-indentation'.
@@ -531,7 +531,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 (setf last-pattern-elem-was-flexible t)
                 ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
                 (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                  (dm::log-setf-alist-putunique! var-sym nil alist alist))))))
+                  (dm::log-setf-alist-putunique! var-sym nil alist nil))))))
         alist) ; end of `catch' MATCH.
       ) ; end of `setf' ALIST.
     ;; ----------------------------------------------------------------------------------------------
@@ -587,6 +587,12 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(,x 2 3 ,x) '(1 2 3 nil))             returns nil)
     (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
     (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
+    (confirm that
+      (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
+      returns nil)
+    (confirm that
+      (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
+      returns ((needle-1 . quux) (needle-2 12 13)))
     ;;-----------------------------------------------------------------------------------------------
     ;; predicate test cases:
     (confirm that (dm:match '(foo ,(bar)                               quux) '(foo 3   quux))
@@ -928,30 +934,10 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (dm:match '(foo ,(bar integer?) quux) '(foo 123 quux))
+(confirm that
+  (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
+  returns nil)
 
-;; (defun dm::pat-elem-var-sym2 (pat-elem)
-;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
-;;     (if (atom 2nd)
-;;       2nd
-;;       (car 2nd))))
-
-
-;; Find me the first symbol after the third odd integer greater than 4 and the cdr of the 2nd last thing:
-(dm:match '( ...
-             ,(_ integer? odd? (> 4))
-             ...
-             ,(_ integer? odd?)
-             ...
-             ,(_ integer? odd?)
-             ...
-             ,(needle-1 symbol?)
-             ...
-             (,needle-1 ,@needle-2)
-             _)
-  '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (quux 12 13) 14)) ; ((needle-1 . quux) (needle-2 12 13))
-
-;; bad case:
-(dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
-
-(dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
+(confirm that
+  (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
+  returns ((needle-1 . quux) (needle-2 12 13)))
