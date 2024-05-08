@@ -1192,9 +1192,9 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (i would like more hamburgers with cheese and bacon)
              (i would like more hamburgers with cheese and bacon)
              (i would like more hamburgers with cheese and bacon)
-             (i would need many orange cats)
-             (i would need many orange cats)
-             (i would need many orange cats)
+             (i would need many orange cats with cheese and bacon)
+             (i would need many orange cats with cheese and bacon)
+             (i would need many orange cats with cheese and bacon)
              
              ;; 5
              (i would like a hamburger with cheese and bacon)

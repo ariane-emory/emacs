@@ -703,15 +703,15 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '( ...
                                ,(_ integer? odd? (> 4))
                                ...
-                               ,(_ integer? odd?)
+                               ,(_ integer? odd? (> 4))
                                ...
-                               ,(_ integer? odd?)
+                               ,(_ integer? odd? (> 4))
                                ...
                                ,(needle-1 symbol?)
                                ...
                                (_ ,@needle-2)
                                _)
-                    '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux 10 (11 12 13) 14))
+                    '(1 2 3 4 5 foo 6 7 bar (8 baz) 9 quux sprungy 10 (11 12 13) 14))
       returns ((needle-1 . quux) (needle-2 12 13)))
     ;;-----------------------------------------------------------------------------------------------
     ;; Greediness test cases:
