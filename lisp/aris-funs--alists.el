@@ -583,21 +583,20 @@ reference instead of ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro let-alist* (alist &rest body)
+(defun macroexp-let-alist (alist &rest body-exprs)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "My own version of  `let-alist', without the '.' prefixes on the names of the bound symbols."
-  (let ((clauses (rmapcar alist
-                   (lambda (kvp)
-                     (let-kvp kvp
-                       (list .key
-                         (if (or (consp .val) (symbolp .val))
-                           `',.val
-                           .val)                         
-                         ))))))
-    `(let (,@clauses) ,@body)))
+  (let ((clauses
+          (rmapcar alist
+            (lambda (kvp)
+              (let-kvp kvp
+                (list .key (if (or (consp .val) (symbolp .val)) `',.val .val)))))))
+    `(let (,@clauses) ,@body-exprs)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (let-alist* ((x . 1) (y . 2) (z 3 4 foo)) (list x y z))
-  returns (1 2 (3 4 foo)))
+(confirm that (macroexp-let-alist '((x . 1) (y . 2) (z 3 4 foo))
+                '(list x y z)
+                '(list x y z))
+  returns (let ((x 1) (y 2) (z '(3 4 foo))) (list x y z) (list x y z)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
