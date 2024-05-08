@@ -347,18 +347,19 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             alist
                             reference-alist)))
           ;;-----------------------------------------------------------------------------------------
-          (let (last-pattern-elem-was-flexible)
-            ;;---------------------------------------------------------------------------------------
+          ;; Early abort case: PATTERN contains more inflexible elements than remain in TARGET:
+          (when (length> (cl-remove-if (lambda (pe) (dm::pat-elem-is-flexible? pe)) pattern)
+                  (length target))
+            (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
+              pattern target))
+          ;; It's possible that it could match, continue.
+          (let ((last-pattern-elem-was-flexible nil))
             (while target
-              (unless pattern (NO-MATCH! "pattern ran out before TARGET: %s" target))
               (dm::prndiv)
               (dm::prn-pp-alist alist)
               (dm::prn-labeled reference-alist)
               (dm::prn-pp-labeled-list pattern)
               (dm::prn-pp-labeled-list target)
-              (let ((target (if (cdr target)
-                              (format "%-7s . %s" (car target) (cdr target))
-                              (format "%s" (car target))))))
               (dm::prndiv ?\-)
               ;; ------------------------------------------------------------------------------------
               (cond ;; Enter the big `cond'!
@@ -374,17 +375,15 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-flexible? (car pattern))
                   (if-not (cdr pattern)
-                    ;; If this is the last PATTERN element, just take everything left in target:
+                    ;; If this is the last PATTERN element, just take everything left in TARGET:
                     (progn
                       (when-let ((var (dm::pat-elem-var-sym (car pattern))))
                         (dm::log-setf-alist-putunique! var target alist reference-alist))
                       (setf target nil))
                     ;; Otherwise, collect:
-                    (warn-when-consecutive-flexible-elements-in-pattern)
-                    (setf last-pattern-elem-was-flexible t)                  
-                    (ignore! (dm:match '(,@as ,@bs ,@cs) '(1 2)))
-                    (ignore! (dm:match '(,@as ,@bs) '(1 2)))
                     (dm::prn "Collecting flexible element...")
+                    (warn-when-consecutive-flexible-elements-in-pattern)
+                    (setf last-pattern-elem-was-flexible t)
                     (with-indentation
                       (let (collect) 
                         (catch 'stop-collecting
@@ -438,7 +437,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (dm::log-pop* pattern)
                   ) ; end of `dm::pat-elem-is-flexible?'s case.
                 ;; ----------------------------------------------------------------------------------
-                ;; Case 4: When PATTERN's head is a variable, put TARGET's head in ALIST:
+                ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-a-variable? (car pattern))
                   (setf last-pattern-elem-was-flexible nil)
@@ -496,7 +495,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                     (dm::prn-labeled assoc "take var as")
                     (dm::log-pop* pattern target)))
                 ;; ----------------------------------------------------------------------------------
-                ;; Case 5: When PATTERN's head is a list, recurse and accumulate the result into 
+                ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
                 ;; ALIST, unless the result was just t because the sub-pattern being recursed over
                 ;; contained no variables:
                 ;; ----------------------------------------------------------------------------------
@@ -512,7 +511,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                       (t (setf alist res))))
                   (dm::log-pop* pattern target))
                 ;; ----------------------------------------------------------------------------------
-                ;; Case 6: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
+                ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
                 ;; heads off:
                 ;; ----------------------------------------------------------------------------------
                 ((equal (car pattern) (car target))
@@ -549,7 +548,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 (setf last-pattern-elem-was-flexible t)
                 ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
                 (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                  (dm::log-setf-alist-putunique! var-sym nil alist nil))))))
+                  (dm::log-setf-alist-putunique! var-sym nil alist reference-alist))))))
         alist) ; end of `catch' MATCH.
       ) ; end of `setf' ALIST.
     ;; ----------------------------------------------------------------------------------------------
@@ -566,9 +565,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(x ,y ,z)         '(x 2 (3 4 5)))     returns ((y . 2) (z 3 4 5)))
     (confirm that (dm:match '(,a ,b ,c \!)     '(1 2 3))           returns nil)
     (confirm that (dm:match '(,a ,b ,c)        '(1 2 3))           returns ((a . 1) (b . 2) (c . 3)))
-    ;; These next two mean the same thing:
+    ;; These next three mean the same thing:
     (confirm that (dm:match '(foo _  ,baz)     '(foo quux bar))    returns ((baz . bar)))
     (confirm that (dm:match '(foo ,_ ,baz)     '(foo quux bar))    returns ((baz . bar)))
+    (confirm that (dm:match '(foo ,(_) ,baz)   '(foo quux bar))    returns ((baz . bar)))
     (confirm that (dm:match '(foo _ ,baz)      '(foo (2 . 3) bar)) returns ((baz . bar)))
     (confirm that (dm:match '(,x (...))        '(1 nil))           returns ((x . 1)))
     (confirm that (dm:match '(,x ...)          '(1 2 3))           returns ((x . 1)))
