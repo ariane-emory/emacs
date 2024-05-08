@@ -449,7 +449,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                     ;; just call it on VAR-VAL:
                                     (funcall pred var-val))
                                   ((eq 'lambda indicator)
-                                    ;; PRED is a `lambda' expression, just call it on VAR-VAL:
+                                    ;; PRED is a `lambda' expression, `rsubst-alist' ALIST's values
+                                    ;; into it andjust call it on VAR-VAL:
                                     (let ((arg-names (arg-names (cadr pred))))
                                       (dolist (arg-name arg-names)
                                         (when (or (assoc arg-name alist)
@@ -460,8 +461,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                    "name of a captured variable")))))
                                     (funcall (subst-alist-in-expr pred) var-val))
                                   (t
-                                    ;; PRED is some expr, `rsubst-alist' ALIST's values into is and
-                                    ;;  `eval':
+                                    ;; PRED is some other expr, `rsubst-alist' ALIST's values into
+                                    ;; it and `eval':
                                     (eval (subst-alist-in-expr pred)))))
                               (throw 'pred-failed nil)))
                           t))

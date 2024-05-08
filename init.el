@@ -799,11 +799,11 @@
         (lambda (pkg) (eval `(use-package-with-messages ,pkg :demand t)))
         '( aris-funs--confirm
            aris-funs--expr-throws-sym-p
+           aris-funs--ignorebang
 	         aris-funs--aliases
            aris-funs--arglists
            aris-funs--basic-preds
            aris-funs--unsorted
-           aris-funs--ignorebang
            aris-funs--interactive
            aris-funs--let-kvp
            aris-funs--lists
