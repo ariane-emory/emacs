@@ -604,12 +604,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns nil)
     ;;-----------------------------------------------------------------------------------------------
     ;; back references;
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (lambda (n) (> x n)))) '(7 9)) returns nil)
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (lambda (n) (> x n)))) '(9 7))
+      returns ((x . 9) (y . 7)))
     (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(7 9)) returns nil)
     (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(9 7)) returns ((x . 9) (y . 7)))
-
-    (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(7 9)) returns nil)
-    (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(9 7)) returns ((x . 9) (y . 7)))
-
     (confirm that (dm:match
                     '(,(x integer?) (foo ,(y integer? (> _ x))))
                     '(7 (foo 9)))
