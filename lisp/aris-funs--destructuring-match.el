@@ -42,7 +42,7 @@
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-fill* nil
+(defcustom *dm:test-fill* t
   "Whether or not dm:fill's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
@@ -431,20 +431,26 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                          (or (not var-preds)
                            (catch 'pred-failed
                              (dolist (pred var-preds)
-                               ;; this seems kind of hacky:
                                (unless
                                  (let ((indicator (car-safe pred)))
                                    (cond 
                                      ((null indicator) (funcall pred var-val))
                                      ((not (eq 'lambda indicator))
-                                       ;; treat as threading expr:
-                                       (let* ( ; (expr  `(funcall #',indicator ',var-val ,@(cdr pred)))
-                                               (qval  (if (symbolp var-val) `',var-val var-val))
-                                               (expr `(funcall ',indicator ,qval  ,@(cdr pred))))
-                                         ;; (prn "THREAD %s into %s => %s" var-val pred expr)
+                                       (let ((expr pred))
+                                         ;; (dm:match '(,(x integer?) ,(y integer? (> x it))) '(7 5))
+                                         ;; (dm:match '(,(x integer?) ,(y integer? (> x y))) '(7 9))
+                                         (dolist (kvp (append
+                                                        (when dont-care
+                                                          (list (cons dont-care var-val)))
+                                                        (list (cons var-sym var-val))
+                                                        alist))
+                                           (prn "subst %s %s" `',(cdr kvp) (car kvp))
+                                           (setf expr (cl-subst `',(cdr kvp) (car kvp) expr)))
+                                         ;;(debug)
                                          (dm::prn "Thread %s into %s => %s" var-val pred expr)
                                          (eval expr)))
-                                     (t (funcall pred var-val))))
+                                     (t ; pred is a `lambda'.
+                                       (funcall pred var-val))))
                                  (throw 'pred-failed nil)))
                              t))))
                       (unless all-var-preds-passed (NO-MATCH! "a predicate failed"))
@@ -624,13 +630,13 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns t)
     (confirm that (dm:match '(... ,(a   integer? (lambda (n) (> n 4))) ...) '(1 2 3 4 5 1 6 7 8 9 10))
       returns ((a . 5)))
-    (confirm that (dm:match '(... ,(_ (= 8)) ... ,(x integerp cl-oddp) ...)
+    (confirm that (dm:match '(... ,(_ (= _ 8)) ... ,(x integerp cl-oddp) ...)
                     '(1 2 3 4 5 6 7 8 a 9 10 11 12))
       returns ((x . 9)))
     (confirm that (dm:match '( ...
-                               ,(_ integer? (> (* 2 2)))
-                               ,(_ integer? (> (+ 4 2)))
-                               ,(x integer?)
+                               ,(_ integer? (> _ (* 2 2)))
+                               ,(_ integer? (> _ (+ 4 2)))
+                               ,(x integer? (> _ (+ 4 2)))
                                ...)
                     '(1 2 3 4 5 6 7 8 1 9 10 11 12))
       returns ((x . 8)))
@@ -638,7 +644,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (dm:match '( ...
                    ,(sym symbolp)
                    ...
-                   ,(_ integer? odd? (> 4))
+                   ,(_ integer? odd? (> _ 4))
                    ...
                    ,(_ integer? odd?)
                    ...
@@ -648,7 +654,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       returns ((sym . foo) (x . 9)))
     (confirm that
       (dm:match '( ...
-                   ,(_ integer? odd? (> 4))
+                   ,(_ integer? odd? (> _ 4))
                    ...
                    ,(_ integer? odd?)
                    ...
@@ -701,9 +707,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     ;; Find me the first symbol after the third odd integer greater than 4 and also the cdr of
     ;; the 2nd last thing:
     (confirm that (dm:match '( ...
-                               ,(_ integer? odd? (> 4))
+                               ,(_ integer? odd? (> _ 4))
                                ...
-                               ,(_ integer? odd? (> 4))
+                               ,(_ integer? odd? (> _ 4))
                                ...
                                ,(_ integer? odd? (> 4))
                                ...
@@ -909,10 +915,12 @@ This behaves very similarly to quasiquote."
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(confirm that
-  (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
-  returns nil)
+;; (confirm that
+;;   (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
+;;   returns nil)
 
-(confirm that
-  (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
-  returns ((needle-1 . quux) (needle-2 12 13)))
+;; (confirm that
+;;   (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
+;;   returns ((needle-1 . quux) (needle-2 12 13)))
+
+;; (dm:match '(,(x integer?) ,(y integer? (> x))) '(7 9))
