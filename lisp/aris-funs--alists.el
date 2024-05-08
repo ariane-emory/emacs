@@ -5,6 +5,8 @@
 (require 'dash)
 (require 'aris-funs--aliases)
 (require 'aris-funs--confirm)
+(require 'aris-funs--let-kvp)
+(require 'aris-funs--lists)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--expr-throws-sym-p)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -580,23 +582,24 @@ reference instead of ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro let-alist* (alist &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "My own version of  `let-alist', without the '.' prefixes on the names of the bound symbols."
   (let ((clauses (rmapcar alist
                    (lambda (kvp)
                      (let-kvp kvp
                        (list .key
-                         (if (consp .val) (cons 'list .val) .val)
+                         (if (or (consp .val) (symbolp .val))
+                           `',.val
+                           .val)                         
                          ))))))
     `(let (,@clauses) ,@body)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (let-alist* ((x . 1) (y . 2) (z 3 4 foo)) (list x y z))
+  returns (1 2 (3 4 foo)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(ignore!
-
-  (let-alist* ((x . 1) (y . 2) (z 3 4))
-    (prn "x: %s" x)
-    (prn "y: %s" y)
-    (prn "z: %s" z))
-
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (makunbound 'alist)
