@@ -27,12 +27,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defgroup minilog nil
+(defgroup microlog nil
   "Ari's miniature Prolog.")
 ;;-----------------------------------------------------------------------------------------
 (defcustom *ml:verbose* t
-  "Whether or not Minilog should print verbose messages."
-  :group 'minilog
+  "Whether or not Microlog should print verbose messages."
+  :group 'microlog
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -105,5 +105,5 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--minilog)
+(provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

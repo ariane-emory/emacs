@@ -834,7 +834,7 @@
            aris-funs--objects
            aris-funs--when-let-alist
            aris-funs--destructuring-match
-           aris-funs--minilog
+           aris-funs--microlog
            aris-types
            steve-loshs-funs--if-let
            guy-steeles-funs--switch
