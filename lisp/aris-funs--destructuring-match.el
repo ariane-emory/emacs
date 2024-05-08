@@ -450,7 +450,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dolist (pred var-preds)
                             (unless
                               (let ((indicator (car-safe pred)))
-
                                 (cond
                                   ((null indicator)
                                     ;; PRED is just a symbol, which should name a unary function,
