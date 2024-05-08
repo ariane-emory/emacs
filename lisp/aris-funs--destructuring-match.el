@@ -458,8 +458,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                    "Ambiguous lambda expression: "
                                                    (format "arg %s overlaps with " arg-name)
                                                    "name of a captured variable")))))
-                                    ;;(debug )
-                                    (eval (subst-alist-in-expr pred)))
+                                    (funcall (subst-alist-in-expr pred) var-val))
                                   (t
                                     ;; PRED is some expr, `rsubst-alist' ALIST's values into is and
                                     ;;  `eval':
@@ -606,6 +605,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     ;;-----------------------------------------------------------------------------------------------
     ;; back references;
     (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(7 9)) returns nil)
+    (confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(9 7)) returns ((x . 9) (y . 7)))
     (confirm that (dm:match '(,(x integer?) ,(y integer? (> _ x))) '(7 9)) returns ((x . 7) (y . 9)))
     (confirm that (dm:match
                     '(,(x integer?) (foo ,(y integer? (> _ x))))
