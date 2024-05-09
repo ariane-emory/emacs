@@ -142,20 +142,25 @@ This is a tiny, two-line modification of `dolist'.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-(let* ( (lst '(,x ,y . ,z))
-        (tail (last lst 2)))
-  (when (eq (car tail)  '\,)
-    (setcar tail '\.)
-    (setcdr tail (list (list (car tail) (cadr tail)))))
-  lst)
-
 (let* ( (lst '(,x . ,y))
         (tail (last lst 2)))
   (setcar tail (list (car tail) (cadr tail)))
   (setcdr tail nil)
   lst) ; ((\, x) (\, y))
 
+;; properize a pattern
+(let* ( (lst '(,x ,y . ,z))
+        (tail (last lst 2)))
+  (when (eq (car tail)  '\,)
+    (setcar tail '\.)
+    (setcdr tail (list (list (car tail) (cadr tail)))))
+  lst) ; ((\, x) (\, y) \. (\. z))
 
+;; properize a target 
+(let ((lst '(2 4 . 6)))
+  (when (and (listp lst) (not (proper-list-p lst)))
+    (let ((last (last lst)))
+      (prn "last %s" last)
+      (setcdr last (list '\. (cdr last)))))
+  lst) ; (2 4 \. 6)
 
-((\, x) \, y)
