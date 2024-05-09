@@ -130,12 +130,24 @@ This is a tiny, two-line modification of `dolist'.
         (setcar pos (list head (cadr pos)))
         (setcdr pos (cddr pos)))))
   returns ((\, x) (\, y)))
+(confirm that
+  (let ((lst '(,x . ,y)))
+    (doconses (head pos lst lst)
+      (when (eq '\, head)
+        (let ((new (list (list head (cadr pos)))))
+          (setcar pos '\.)
+          (setcdr pos new)
+          (setf pos (cdr pos))))))
+  returns ((\, x) \. (\, y)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
-
-
+(let* ( (lst '(,x . ,y))
+        (tail (last lst 2)))
+  (setcar tail (list (car tail) (cadr tail)))
+  (setcdr tail nil)
+  lst)
 
 
 ((\, x) \, y)
