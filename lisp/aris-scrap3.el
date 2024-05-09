@@ -34,3 +34,35 @@
 
 (length '(foo bar))
 (quote (foo bar))
+
+(dm:match '(,x (,y . ,z)) '(1 (2 . 3)))
+
+(listp '(2 . 3))
+
+
+(progn
+  (setq il '(1 2 3 4 . 5))
+  (prndiv)
+  (while il
+    (let ((head (if (listp (cdr il)) (car il) (car il))))
+      (prn "il:   %s" il)
+      (prn "head: %s" head)
+      (if (listp (cdr il))
+        (setf il (cdr il))
+        (setf il nil))
+      (debug))))
+
+
+(let ((lst '(1 2 3 4 . 5))
+       (result '()))
+  (while (consp lst)
+    (setq result (cons (car lst) result))
+    (setq lst (cdr lst)))
+  (message "Result: %s" (nreverse result)))
+
+(let ((lst '(1 2 3 4 . 5))
+       (result '()))
+  (while lst
+    (push (if (consp lst) (car lst) lst) result)
+    (setf lst (when (consp lst) (cdr lst))))
+  (message "Result: %s" (nreverse result)))
