@@ -367,7 +367,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   pattern pattern-min-length target target-length))
               ((> pattern-min-length target-length)
                 (NO-MATCH!
-                  "PATTERN %S needs %d at least elements but TARGET %S contains only %d elements."
+                  "PATTERN %S needs at least %d elements but TARGET %S contains only %d elements."
                   pattern pattern-min-length target target-length))))
           ;; It's possible that it could match, continue.
           (let ((last-pattern-elem-was-flexible nil))
