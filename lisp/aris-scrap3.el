@@ -82,12 +82,13 @@ This is a tiny, two-line modification of `dolist'.
          (head     (car spec))
          (position (cadr spec))
          (lst      (caddr spec)))
-    `(let ((,tail ,lst))
-       (while ,tail
-         (let ( (,head     (car ,tail))
-                (,position ,tail))
+    `(let ((,position ,lst))
+       (while ,position
+         (let ( (,head     (car ,position))
+                ;; (,position ,tail)
+                )
            ,@body
-           (setq ,tail (cdr ,tail))))
+           (setq ,position (cdr ,position))))
        ,@(cdr (cdr (cdr spec))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
@@ -103,15 +104,22 @@ This is a tiny, two-line modification of `dolist'.
       (setcar pos (cons head (cadr pos)))
       (setcdr pos (cddr pos))))
   returns ((a . 2) (b . 4) (c . 6) (d . 8)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(let (toggle (lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-  (doconses (head pos lst lst)
-    (when (not toggle)
+(confirm that
+  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+    (doconses (head pos lst lst)
       (let ((new (cons (cdr head) (cdr pos))))
         (setcar pos (car head))
         (setcdr pos new)
-        (prn "%s" lst)
-        (prn "new %s" new)
-        (debug)))
-    (setf toggle (not toggle))))
+        (setf pos (cdr pos)))))
+  returns (a 2 b 4 c 6 d 8))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+(let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+  (doconses (head pos lst lst)
+    (let ((new (cons (cdr head) (cdr pos))))
+      (setcar pos (car head))
+      (setcdr pos new)
+      (setf pos (cdr pos)))))
