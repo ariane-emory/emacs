@@ -23,7 +23,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-target! (lst &optional no-test)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a target."
+  "Destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
   (when   (or no-test (not (proper-list-p lst)))
@@ -43,7 +43,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-pattern! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a pattern."
+  "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (unless (listp lst) (error "LST is not a list: %s" lst))
@@ -65,6 +65,27 @@
 (confirm that (properize-pattern! '(,x ,y . ,(z  integer?)))
   returns ((\, x) (\, y) \. (\, (z integer?)))) 
 ;; (dont confirm that (properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize-target (lst &optional no-test)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively properize a target by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
+  (when   (or no-test (not (proper-list-p lst)))
+    (let ((last (last lst)))
+      (setcdr last (list '\. (cdr last)))))
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize-target  nil)       returns nil)
+(confirm that (properize-target '(2))       returns (2))
+(confirm that (properize-target '(2 . 4))   returns (2 \. 4))
+(confirm that (properize-target '(2 4   6)) returns (2 4 6))
+(confirm that (properize-target '(2 4 . 6)) returns (2 4 \. 6))
+;; (dont confirm that (properize-target '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
