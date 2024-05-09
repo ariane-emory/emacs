@@ -26,43 +26,21 @@
 
 
 
-(defmacro dolist2 (spec &rest body)
-  "Loop over a list.
-Evaluate BODY with VAR bound to each car from LIST, in turn.
-Then evaluate RESULT to get return value, default nil.
 
-\(fn (VAR LIST [RESULT]) BODY...)"
-  (unless (consp spec)     (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (length= spec 2) (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
-  (let ( (tail (gensym "tail-"))
-         (var  (car (cdr spec)))
-         (lst  (car spec)))
-    `(let ((,tail ,var))
-       (while ,tail
-         (let ((,lst (car ,tail)))
-           ,@body
-           (setq ,tail (cdr ,tail)))))))
 
-(defmacro dolist* (spec &rest body)
-  (unless (consp spec)     (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (length= spec 2) (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
-  (let ( (tail (gensym "tail-"))
-         (var  (car (cdr spec)))
-         (lst  (car spec)))
-    `(let ((,tail ,var))
-       (while ,tail
-         (let ((,lst (car ,tail)))
-           ,@body
-           (setq ,tail (cdr ,tail)))))))
+(dolist* (n '(1 2 3 4 . 5)) (prn "%s" n))
 
-(dolist2 (n '(1 2 3 4 5)) (prn "%s" n))
-(let ((tail-1655 '(1 2 3 4 5)))
-  (while tail-1655
-    (let ((n (car tail-1655)))
+
+(let ((tail-1666 '(1 2 3 4 . 5)))
+  (while tail-1666
+    (let* ( (consp (consp tail-1666))
+            (n (if consp (car tail-1666) tail-1666)))
       (prn "%s" n)
-      (setq tail-1655 (cdr tail-1655)))))
+      (setq tail-1666 (if consp (cdr tail-1666) nil)))))
 
 
+
+(dolist* (n '(1 2 3 4 5)) (prn "%s" n))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((tail '(1 2 3 4 . 5)))
   (while tail
