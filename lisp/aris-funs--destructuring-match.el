@@ -377,10 +377,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; Case 2: When PATTERN's head is flexible, collect items:
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-flexible? (car pattern))
-                  ;; Optimization idea: if the TAIL of pattern contains only inflexible elements and
-                  ;; is of greater length than target, we could probably just yank off everything we
-                  ;; need with `cl-sublis'? We would have to run out any other remaining flexible
-                  ;; elements...
+                  ;; Optimization idea: if the TAIL of pattern contains only inflexible elements,
+                  ;; we could probably just yank off everything we with need `cl-sublis'? We would
+                  ;; have to run out any other remaining flexible elements...
+
+                  (let ((remaining-inflexibles-count
+                          (count-inflexibles-length (cdr pattern))))
+                    (when (= (length (cdr pattern)) remaining-inflexibles-count)
+                      (debug nil
+                        (cl-subseq target 0 (* -1 remaining-inflexibles-count))
+                        (cl-subseq target (* -1 remaining-inflexibles-count))
+                        )))
                   
                   (if-not (cdr pattern)
                     ;; If this is the last PATTERN element, just take everything left in TARGET:
