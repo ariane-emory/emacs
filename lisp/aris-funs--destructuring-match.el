@@ -381,13 +381,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   ;; we could probably just yank off everything we with need `cl-sublis'? We would
                   ;; have to run out any other remaining flexible elements...
 
-                  (let ((remaining-inflexibles-count
-                          (count-inflexibles-length (cdr pattern))))
-                    (when (= (length (cdr pattern)) remaining-inflexibles-count)
-                      (debug nil
-                        (cl-subseq target 0 (* -1 remaining-inflexibles-count))
-                        (cl-subseq target (* -1 remaining-inflexibles-count))
-                        )))
+                  (ignore!
+                    (let ((remaining-inflexibles-count
+                            (count-inflexibles-length (cdr pattern))))
+                      (when (= (length (cdr pattern)) remaining-inflexibles-count)
+                        (debug nil
+                          (cl-subseq target 0 (* -1 remaining-inflexibles-count))
+                          (cl-subseq target (* -1 remaining-inflexibles-count))
+                          ))))
                   
                   (if-not (cdr pattern)
                     ;; If this is the last PATTERN element, just take everything left in TARGET:
