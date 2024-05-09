@@ -427,7 +427,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (catch 'stop-collecting
                               (while target
                                 ;; (dm::prndiv)
-                                ;; (dm::prn-labeled         collect "pre")
+                                (dm::prn-labeled         collect "pre")
                                 ;; (dm::prn-pp-labeled-list pattern)
                                 ;; (dm::prn-pp-labeled-list target)                      
                                 (let ((look-0
@@ -476,8 +476,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             ;; (dm::log-pop* pattern)
                             ) ; end of `let' COLLECT.
                           ) ; end of `with-indentation'.
+                        (dm::log-pop* pattern)
                         ))) ; end of `let'.
-                  (dm::log-pop* pattern)
                   ) ; end of `dm::pat-elem-is-flexible?'s case.
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
