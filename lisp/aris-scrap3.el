@@ -90,20 +90,20 @@ This is a tiny, two-line modification of `dolist'.
            (setq ,position (cdr ,position))))
        ,@(cdr (cdr (cdr spec))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
+(confirm that 
   (let ((lst '(a 2 b 4 c 6 d 8)))
     (doconses (head pos lst lst)
       (when (eq 'c head)
         (setcar pos (cons head (cadr pos)))
         (setcdr pos (cddr pos)))))
   returns (a 2 b 4 (c . 6) d 8))
-(confirm that 
+(confirm that ; plist to alist
   (let ((lst '(a 2 b 4 c 6 d 8)))
     (doconses (head pos lst lst)
       (setcar pos (cons head (cadr pos)))
       (setcdr pos (cddr pos))))
   returns ((a . 2) (b . 4) (c . 6) (d . 8)))
-(confirm that
+(confirm that ; alist to plist 
   (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
     (doconses (head pos lst lst)
       (let ((new (cons (cdr head) (cdr pos))))
@@ -111,7 +111,7 @@ This is a tiny, two-line modification of `dolist'.
         (setcdr pos new)
         (setf pos (cdr pos)))))
   returns (a 2 b 4 c 6 d 8))
-(confirm that
+(confirm that ; plist to let varlist
   (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
     (doconses (head pos lst lst)
       (let ((new (cons (cdr head) (cdr pos))))
