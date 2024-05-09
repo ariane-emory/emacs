@@ -167,11 +167,16 @@ This is a tiny, two-line modification of `dolist'.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a target."
   (unless (listp lst) (error "LST is not a list: %s" lst))
-  (let* ((tail (last lst 2)))
-    (when (eq (car tail)  '\,)
-      (setcar tail '\.)
-      (setcdr tail (list (list '\, (cadr tail)))))
-    lst)) ; ((\, x) (\, y) \. (\. z))
+  (when (and (listp lst) (not (proper-list-p lst)))
+    (let ((last (last lst)))
+      (prn "last %s" last)
+      (setcdr last (list '\. (cdr last)))))
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize-target nil) returns nil)
+(confirm that (properize-target '(2 4 . 6)) returns (2 4 \. 6))
+(confirm that (properize-target '(2 4 6)) returns (2 4 6))
+;; (dont confirm that (properize-target '(2 . 4 6)) returns) ;; bullshit input, invalid read syntak
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -184,9 +189,11 @@ This is a tiny, two-line modification of `dolist'.
     (when (eq (car tail)  '\,)
       (setcar tail '\.)
       (setcdr tail (list (list '\, (cadr tail)))))
-    lst)) ; ((\, x) (\, y) \. (\. z))
+    lst))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize-pattern nil) returns nil)
 (confirm that (properize-pattern '(,x . ,y)) returns ((\, x) \. (\, y)))
+(confirm that (properize-pattern '(,x . y)) returns ((\, x) . y)) ;; bad!
 (confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
 (confirm that (properize-pattern '(,x ,y ,z)) returns ((\, x) (\, y) (\, z)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
