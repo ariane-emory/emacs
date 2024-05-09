@@ -401,72 +401,75 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           )))
                     )
                   
-                  (cond
-                    ((not (cdr pattern))
-                      ;; If this is the last PATTERN element, just take everything left in TARGET:
-                      (progn
-                        (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                          (dm::log-setf-alist-putunique! var target alist reference-alist))
-                        (setf target nil)))
-                    (t ;; Otherwise, collect:
-                      (dm::prn "Collecting flexible element...")
-                      (warn-when-consecutive-flexible-elements-in-pattern)
-                      (setf last-pattern-elem-was-flexible t)
-                      (with-indentation
-                        (let (collect) 
-                          (catch 'stop-collecting
-                            (while target
-                              ;; (dm::prndiv)
-                              ;; (dm::prn-labeled         collect "pre")
-                              ;; (dm::prn-pp-labeled-list pattern)
-                              ;; (dm::prn-pp-labeled-list target)                      
-                              (let ((look-0
-                                      (let ((*dm:verbose* t))
-                                        (if-not (cdr pattern)
-                                          (progn
-                                            (dm::prn "NOTHING AHEAD TO LOOK AT!")
-                                            nil)
-                                          (dm::prn "LOOKING AHEAD...")
-                                          (recurse (cdr pattern) target nil alist)))))
-                                (dm::prndiv ?\-)
-                                (dm::prn-labeled look-0)
-                                (dm::prndiv ?\-)
-                                (cond
-                                  ;; ((null target)
-                                  ;;   (dm::prn "Emptied TARGET, stop.")
-                                  ;;   (throw 'stop-collecting nil))
-                                  (look-0 
-                                    ;; If LOOK-0 matched the whole TARGET then we can munge
-                                    ;; LOOK-0 and ALIST into the right shape and return successfully
-                                    ;; immediately:
-                                    (setf alist
-                                      (nconc
-                                        (when (listp look-0)                look-0)
-                                        (when (dm::pat-elem-is-an-unsplice? (car pattern))
-                                          (list
-                                            (cons (dm::pat-elem-var-sym (car pattern))
-                                              (nreverse collect))))
-                                        alist))
-                                    (dm::prn "CASE 1: Stopping with munged %s." alist)
-                                    (throw 'match alist))
-                                  (t
-                                    (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
-                                    (push (dm::log-pop* target) collect))))
-                              (dm::prn-labeled collect "post")
-                              (when *dm:debug* (debug 'unsplicing))
-                              (dm::prndiv)
-                              (dm::prnl)
-		                          ) ;; END OF `while' t.
-                            ) ;; END OF `catch' STOP-COLLECTING.
-                          ;; We already know that (car pattern) is flexible, if it has a var name then
-                          ;; it must be an UNSPLICE.
+
+                  (let ((remaining-inflexibles-count
+                          (count-inflexibles-length (cdr pattern))))
+                    (cond
+                      ((not (cdr pattern))
+                        ;; If this is the last PATTERN element, just take everything left in TARGET:
+                        (progn
                           (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                            (dm::log-setf-alist-putunique! var (nreverse collect)
-                              alist reference-alist))
-                          ;; (dm::log-pop* pattern)
-                          ) ; end of `let' COLLECT.
-                        ) ; end of `with-indentation'.
-                      )) ; end of `cond' (cdr pattern).
+                            (dm::log-setf-alist-putunique! var target alist reference-alist))
+                          (setf target nil)))
+                      (t ;; Otherwise, collect:
+                        (dm::prn "Collecting flexible element...")
+                        (warn-when-consecutive-flexible-elements-in-pattern)
+                        (setf last-pattern-elem-was-flexible t)
+                        (with-indentation
+                          (let (collect) 
+                            (catch 'stop-collecting
+                              (while target
+                                ;; (dm::prndiv)
+                                ;; (dm::prn-labeled         collect "pre")
+                                ;; (dm::prn-pp-labeled-list pattern)
+                                ;; (dm::prn-pp-labeled-list target)                      
+                                (let ((look-0
+                                        (let ((*dm:verbose* t))
+                                          (if-not (cdr pattern)
+                                            (progn
+                                              (dm::prn "NOTHING AHEAD TO LOOK AT!")
+                                              nil)
+                                            (dm::prn "LOOKING AHEAD...")
+                                            (recurse (cdr pattern) target nil alist)))))
+                                  (dm::prndiv ?\-)
+                                  (dm::prn-labeled look-0)
+                                  (dm::prndiv ?\-)
+                                  (cond
+                                    ;; ((null target)
+                                    ;;   (dm::prn "Emptied TARGET, stop.")
+                                    ;;   (throw 'stop-collecting nil))
+                                    (look-0 
+                                      ;; If LOOK-0 matched the whole TARGET then we can munge
+                                      ;; LOOK-0 and ALIST into the right shape and return successfully
+                                      ;; immediately:
+                                      (setf alist
+                                        (nconc
+                                          (when (listp look-0)                look-0)
+                                          (when (dm::pat-elem-is-an-unsplice? (car pattern))
+                                            (list
+                                              (cons (dm::pat-elem-var-sym (car pattern))
+                                                (nreverse collect))))
+                                          alist))
+                                      (dm::prn "CASE 1: Stopping with munged %s." alist)
+                                      (throw 'match alist))
+                                    (t
+                                      (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
+                                      (push (dm::log-pop* target) collect))))
+                                (dm::prn-labeled collect "post")
+                                (when *dm:debug* (debug 'unsplicing))
+                                (dm::prndiv)
+                                (dm::prnl)
+		                            ) ;; END OF `while' t.
+                              ) ;; END OF `catch' STOP-COLLECTING.
+                            ;; We already know that (car pattern) is flexible, if it has a var name then
+                            ;; it must be an UNSPLICE.
+                            (when-let ((var (dm::pat-elem-var-sym (car pattern))))
+                              (dm::log-setf-alist-putunique! var (nreverse collect)
+                                alist reference-alist))
+                            ;; (dm::log-pop* pattern)
+                            ) ; end of `let' COLLECT.
+                          ) ; end of `with-indentation'.
+                        ))) ; end of `let'.
                   (dm::log-pop* pattern)
                   ) ; end of `dm::pat-elem-is-flexible?'s case.
                 ;; ----------------------------------------------------------------------------------
