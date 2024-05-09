@@ -771,8 +771,8 @@ This is a tiny, two-line modification of `dolist'.
   "A version of `dolist` that also handles improper lists."
   (unless (consp spec)
     (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (length= spec 2)
-    (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
+  (unless (<= 2 (length spec) 3)
+    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
   (let ( (tail (gensym "tail-"))
          (lst  (car (cdr spec)))
          (elem (car spec)))
@@ -781,7 +781,22 @@ This is a tiny, two-line modification of `dolist'.
          (let* ( (consp (consp ,tail))
                  (,elem (if consp (car ,tail) ,tail)))
            ,@body
-           (setq ,tail (if consp (cdr ,tail) nil)))))))
+           (setq ,tail (if consp (cdr ,tail) nil))))
+       ,@(cdr (cdr spec)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Make a proper list from an improper list."
+  (if (proper-list-p lst)
+    lst
+    (let (res) 
+      (dolist* (n lst (nreverse res)) (push n res)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize '(1 2 3)) returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
