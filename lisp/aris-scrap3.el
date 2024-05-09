@@ -24,7 +24,7 @@
 (defun properize-target (lst &optional no-test)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a target."
-  ;; flexible pattern elements will need to dodge th properize symbol \.
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
   (when   (or no-test (not (proper-list-p lst)))
     (let ((last (last lst)))
@@ -44,7 +44,8 @@
 (defun properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a pattern."
-  ;; flexible pattern elements will need to dodge th properize symbol \.
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements preceding the properize symbol should be illegal.
   (unless (listp lst) (error "LST is not a list: %s" lst))
   (if (not (proper-list-p lst))
     (properize-target lst t) ; target fun works in this case.
