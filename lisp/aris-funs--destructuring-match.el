@@ -156,7 +156,7 @@ Turn this off at your own risk."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pretty print LST-SYM with a label."
   `(let* ((,lst-sym (if (cdr ,lst-sym) 
-                      (format "%-7s . %s" (car ,lst-sym) (cdr ,lst-sym))
+                      (format "%-12s . %s" (car ,lst-sym) (cdr ,lst-sym))
                       (format "%s"        (car ,lst-sym)))))
      (dm::prn-labeled ,lst-sym ,extra)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -367,6 +367,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
               ;; ------------------------------------------------------------------------------------
               (cond ;; Enter the big `cond'!
                 ;; ----------------------------------------------------------------------------------
+                ;; Case 0: When PATTERN is empty and TARGET isn't, no match:
+                ;; ----------------------------------------------------------------------------------
+                ((not pattern)
+                  (NO-MATCH! "EMPTY PATTERN BUT TARGET HAS %S, NO MATCH!" target))
+                ;; ----------------------------------------------------------------------------------
                 ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-the-symbol? dont-care (car pattern))
@@ -410,8 +415,12 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (dm::prn-pp-labeled-list target)                      
                             (let ((look-0
                                     (let ((*dm:verbose* t))
-                                      (dm::prn "LOOKING AHEAD...")
-                                      (recurse (cdr pattern) target nil alist))))
+                                      (if-not (cdr pattern)
+                                        (progn
+                                          (dm::prn "NOTHING AHEAD TO LOOK AT!")
+                                          nil)
+                                        (dm::prn "LOOKING AHEAD...")
+                                        (recurse (cdr pattern) target nil alist)))))
                               (dm::prndiv ?\-)
                               (dm::prn-labeled look-0)
                               (dm::prndiv ?\-)
