@@ -740,14 +740,14 @@ This is adapted from the version in Peter Norvig's book."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro doconses (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Loop over a list's heads
+  "Loop over a list's heads and conses.
 Evaluate BODY with VAR bound to each cons from LIST and
-CAR bound to each cons' `car', in turn.
+POSITION bound to each cons cell, in turn.
 Then evaluate RESULT to get return value, default nil.
 
-This is a tiny, two-line modification of `dolist'.
+This is a a simple modification of `dolist'.
 
- (VAR LIST [RESULT]) BODY...)"
+ (VAR POS LIST [RESULT]) BODY...)"
   (declare (indent 1) (debug ((symbolp form &optional form) body)))
   (unless (consp spec)
     (signal 'wrong-type-argument (list 'consp spec)))
@@ -840,21 +840,6 @@ This is a tiny, two-line modification of `dolist'.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Make a proper list from an improper list."
-  (if (proper-list-p lst)
-    lst
-    (let (res) 
-      (dolist* (n lst (nreverse res)) (push n res)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize '(1 2 . 3)) returns (1 2 3))
-(confirm that (properize '(1 2 3)) returns (1 2 3))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun length* (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the length of a (possibly improper) list."
@@ -866,6 +851,22 @@ This is a tiny, two-line modification of `dolist'.
 (confirm that (length* '(1 2 . 3)) returns 3)
 (confirm that (length* '(1 2 3)) returns 3)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun  properize! (lst)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Destructivelly make a proper list from an improper list."
+;;   (let ((last (last lst)))
+;;     (when (not (null (cdr last)))
+;;       (setcdr last (cons (cdr last) nil)))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (properize! nil) returns nil)
+;; (confirm that (properize! '(1)) returns (1))
+;; (confirm that (properize! '(1 . 2)) returns (1 2))
+;; (confirm that (properize! '(1 2 . 3)) returns (1 2 3))
+;; (confirm that (properize! '(1 2 3)) returns (1 2 3))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

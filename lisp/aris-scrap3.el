@@ -21,7 +21,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize-target (lst &optional no-test)
+(defun properize-target! (lst &optional no-test)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -31,38 +31,38 @@
       (setcdr last (list '\. (cdr last)))))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-target  nil)       returns nil)
-(confirm that (properize-target '(2))       returns (2))
-(confirm that (properize-target '(2 . 4))   returns (2 \. 4))
-(confirm that (properize-target '(2 4   6)) returns (2 4 6))
-(confirm that (properize-target '(2 4 . 6)) returns (2 4 \. 6))
-;; (dont confirm that (properize-target '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
+(confirm that (properize-target!  nil)       returns nil)
+(confirm that (properize-target! '(2))       returns (2))
+(confirm that (properize-target! '(2 . 4))   returns (2 \. 4))
+(confirm that (properize-target! '(2 4   6)) returns (2 4 6))
+(confirm that (properize-target! '(2 4 . 6)) returns (2 4 \. 6))
+;; (dont confirm that (properize-target! '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize-pattern (lst)
+(defun properize-pattern! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (unless (listp lst) (error "LST is not a list: %s" lst))
   (if (not (proper-list-p lst))
-    (properize-target lst t) ; target fun works in this case.
+    (properize-target! lst t) ; target fun works in this case.
     (let ((tail (last lst 2)))
       (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
         (setcar tail '\.)
         (setcdr tail (list (list '\, (cadr tail))))))
     lst))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-pattern  nil)          returns nil)
-(confirm that (properize-pattern '(,x))         returns ((\, x)))
-(confirm that (properize-pattern '(,x .  y))    returns ((\, x) \. y))
-(confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
-(confirm that (properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-(confirm that (properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-(confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-(confirm that (properize-pattern '(,x ,y . ,(z  integer?)))
+(confirm that (properize-pattern!  nil)          returns nil)
+(confirm that (properize-pattern! '(,x))         returns ((\, x)))
+(confirm that (properize-pattern! '(,x .  y))    returns ((\, x) \. y))
+(confirm that (properize-pattern! '(,x . ,y))    returns ((\, x) \. (\, y)))
+(confirm that (properize-pattern! '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+(confirm that (properize-pattern! '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
+(confirm that (properize-pattern! '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+(confirm that (properize-pattern! '(,x ,y . ,(z  integer?)))
   returns ((\, x) (\, y) \. (\, (z integer?)))) 
 ;; (dont confirm that (properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
