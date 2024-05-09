@@ -32,35 +32,34 @@ Evaluate BODY with VAR bound to each car from LIST, in turn.
 Then evaluate RESULT to get return value, default nil.
 
 \(fn (VAR LIST [RESULT]) BODY...)"
-  (declare (indent 1) (debug ((symbolp form &optional form) body)))
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 2 (length spec) 3)
-    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
-  (let ((tail (make-symbol "tail")))
-    `(let ((,tail ,(nth 1 spec)))
+  (unless (consp spec)     (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (length= spec 2) (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
+  (let ( (tail (gensym "tail-"))
+         (var  (car (cdr spec)))
+         (lst  (car spec)))
+    `(let ((,tail ,var))
        (while ,tail
-         (let ((,(car spec) (car ,tail)))
+         (let ((,lst (car ,tail)))
            ,@body
            (setq ,tail (cdr ,tail)))))))
 
 
-(dolist2 (n '(1 2 3 4 5))
-  (prn "%s" n))
+(dolist2 (n '(1 2 3 4 5)) (prn "%s" n))
 
 
-(let ((tail '(1 2 3 4 5)))
-  (while tail
-    (let ((n (car tail)))
+(let ((tail-1655 '(1 2 3 4 5)))
+  (while tail-1655
+    (let ((n (car tail-1655)))
       (prn "%s" n)
-      (setq tail (cdr tail)))))
+      (setq tail-1655 (cdr tail-1655)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((lst '(1 2 3 4 . 5)))
-  (while lst
-    (let ((n (if (consp lst) (car lst) lst)))
+(let ((tail '(1 2 3 4 . 5)))
+  (while tail
+    (let ((n (if (consp tail) (car tail) tail)))
       (prn "%s" n)
-      (setq lst (if (consp lst) (cdr lst) nil)))))
+      (setq tail (if (consp tail) (cdr tail) nil)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((lst '(1 2 3 4 . 5))
