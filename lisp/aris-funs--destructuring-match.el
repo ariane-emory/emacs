@@ -374,6 +374,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; Case 2: When PATTERN's head is flexible, collect items:
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-flexible? (car pattern))
+                  ;; Optimization idea: if the TAIL of pattern contains only inflexible elements and
+                  ;; is the same length as target, we could probably just yank off everything we
+                  ;; need with `cl-sublis'?
+                  
                   (if-not (cdr pattern)
                     ;; If this is the last PATTERN element, just take everything left in TARGET:
                     (progn
@@ -409,7 +413,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                   ;; immediately:
                                   (setf alist
                                     (nconc
-                                      (when (listp look-0) look-0)
+                                      (when (listp look-0)                look-0)
                                       (when (dm::pat-elem-is-an-unsplice? (car pattern))
                                         (list
                                           (cons (dm::pat-elem-var-sym (car pattern))
