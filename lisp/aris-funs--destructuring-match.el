@@ -59,6 +59,11 @@ Turn this off at your own risk."
   :group 'destructuring-match
   :type 'integer)
 ;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:div-width* 90
+  "Div width used by functions in the 'destructuring-match' group."
+  :group 'destructuring-match
+  :type 'integer)
+;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:default-dont-care* '_
   "dm:match's default DONT-CARE indicator."
   :group 'destructuring-match
@@ -98,10 +103,10 @@ Turn this off at your own risk."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::prndiv (&rest args)
+(defun dm::prndiv (&optional char)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *dm:verbose* (apply #'prndiv args)))
+  (when *dm:verbose* (funcall #'prndiv (or char ?\=) *dm:div-width*)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -409,10 +414,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                       (let (collect) 
                         (catch 'stop-collecting
                           (while target
-                            (dm::prndiv)
-                            (dm::prn-labeled         collect "pre")
-                            (dm::prn-pp-labeled-list pattern)
-                            (dm::prn-pp-labeled-list target)                      
+                            ;; (dm::prndiv)
+                            ;; (dm::prn-labeled         collect "pre")
+                            ;; (dm::prn-pp-labeled-list pattern)
+                            ;; (dm::prn-pp-labeled-list target)                      
                             (let ((look-0
                                     (let ((*dm:verbose* t))
                                       (if-not (cdr pattern)
