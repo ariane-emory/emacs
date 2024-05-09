@@ -390,30 +390,22 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   ;; Optimization idea: if the TAIL of pattern contains only inflexible elements,
                   ;; we could probably just yank off everything we with need `cl-sublis'? We would
                   ;; have to run out any other remaining flexible elements...
-
-                  (ignore!
-                    (let ((remaining-inflexibles-count
-                            (count-inflexibles-length (cdr pattern))))
-                      (when (= (length (cdr pattern)) remaining-inflexibles-count)
-                        (debug nil
-                          (cl-subseq target 0 (* -1 remaining-inflexibles-count))
-                          (cl-subseq target (* -1 remaining-inflexibles-count))
-                          )))
-                    )
-                  
-
-                  (let ((remaining-inflexibles-count
-                          (count-inflexibles-length (cdr pattern))))
+                  (let ((remaining-inflexibles-count (count-inflexibles-length (cdr pattern))))
                     (cond
                       ;; ((= (length (cdr pattern)) remaining-inflexibles-count)
                       ;;   (debug nil
                       ;;     (cl-subseq target 0 (* -1 remaining-inflexibles-count))
-                      ;;     (cl-subseq target (* -1 remaining-inflexibles-count))))
+                      ;;     (cl-subseq target (* -1 remaining-inflexibles-count)))
+                      ;;   (when-let ((var (dm::pat-elem-var-sym (car pattern))))
+                      ;;     (dm::log-setf-alist-putunique! var target alist reference-alist))
+                      ;;   (setf target nil)
+                      ;;   )
                       ((not (cdr pattern))
                         ;; If this is the last PATTERN element, just take everything left in TARGET:
                         (when-let ((var (dm::pat-elem-var-sym (car pattern))))
                           (dm::log-setf-alist-putunique! var target alist reference-alist))
-                        (setf target nil))
+                        (setf target nil)
+                        (dm::log-pop* pattern))
                       (t ;; Otherwise, collect:
                         (dm::prn "Collecting flexible element...")
                         (warn-when-consecutive-flexible-elements-in-pattern)
