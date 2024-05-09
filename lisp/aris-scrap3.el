@@ -2,18 +2,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dolist (thing  '( aa
-                   ,bb
-                   ,(bb t)
-                   ,@cc
-                   ,@(cc t)
-                   #'dd
-                   #'(dd t)
-                   'ee
-                   '(ee t)
-                   `ff
-                   `(ff t)
-                   )) ; '(1 2 ,3 4 ,@5 #'6 '7 `8))
+(dolist (thing  '(  aa
+                   ,bb    ,(bb t)
+                   ,@cc  ,@(cc t)
+                   #'dd  #'(dd t)
+                   'ee    '(ee t)
+                   `ff    `(ff t)
+                   ))
   (cond
     ((eq '\, (car-safe thing)) (prn "This one is special: %s" thing))
     ((eq '\,@ (car-safe thing)) (prn "This one is very special: %s" thing))
@@ -25,159 +20,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
-
-(dolist* (n '(1 2 3 4 . 5)) (prn "%s" n))
-
-
-(let ((tail-1666 '(1 2 3 4 . 5)))
-  (while tail-1666
-    (let* ( (consp (consp tail-1666))
-            (n (if consp (car tail-1666) tail-1666)))
-      (prn "%s" n)
-      (setq tail-1666 (if consp (cdr tail-1666) nil)))))
-
-
-
-(dolist* (n '(1 2 3 4 5)) (prn "%s" n))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((tail '(1 2 3 4 . 5)))
-  (while tail
-    (let ((n (if (consp tail) (car tail) tail)))
-      (prn "%s" n)
-      (setq tail (if (consp tail) (cdr tail) nil)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ((lst '(1 2 3 4 . 5))
-       (result '()))
-  (while lst
-    (setq result (cons (if (consp lst) (car lst) lst) result))
-    (setq lst (if (consp lst) (cdr lst) nil)))
-  (message "Result: %s" (nreverse result)))
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro doconses (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Loop over a list's heads
-Evaluate BODY with VAR bound to each cons from LIST and
-CAR bound to each cons' `car', in turn.
-Then evaluate RESULT to get return value, default nil.
-
-This is a tiny, two-line modification of `dolist'.
-
- (VAR LIST [RESULT]) BODY...)"
-  (declare (indent 1) (debug ((symbolp form &optional form) body)))
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 3 (length spec) 4)
-    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
-  (let ( (tail     (gensym "tail-"))
-         (head     (car spec))
-         (position (cadr spec))
-         (lst      (caddr spec)))
-    `(let ((,position ,lst))
-       (while ,position
-         (let ( (,head     (car ,position))
-                ;; (,position ,tail)
-                )
-           ,@body
-           (setq ,position (cdr ,position))))
-       ,@(cdr (cdr (cdr spec))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that 
-  (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
-      (when (eq 'c head)
-        (setcar pos (cons head (cadr pos)))
-        (setcdr pos (cddr pos)))))
-  returns (a 2 b 4 (c . 6) d 8))
-(confirm that ; plist to alist
-  (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
-      (setcar pos (cons head (cadr pos)))
-      (setcdr pos (cddr pos))))
-  returns ((a . 2) (b . 4) (c . 6) (d . 8)))
-(confirm that ; plist to let varlist
-  (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
-      (setcar pos (list head (cadr pos)))
-      (setcdr pos (cddr pos))))
-  returns ((a 2) (b 4) (c 6) (d 8)))
-(confirm that ; alist to plist 
-  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-    (doconses (head pos lst lst)
-      (let ((new (cons (cdr head) (cdr pos))))
-        (setcar pos (car head))
-        (setcdr pos new)
-        (setf pos (cdr pos)))))
-  returns (a 2 b 4 c 6 d 8))
-(confirm that ; plist to let varlist
-  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-    (doconses (head pos lst lst)
-      (let ((new (cons (cdr head) (cdr pos))))
-        (setcar pos (list (car head) (cdr head))))))
-  returns ((a 2) (b 4) (c 6) (d 8)))
-(confirm that
-  (let ((lst '(,x . ,y)))
-    (doconses (head pos lst lst)
-      (when (eq '\, head)
-        (setcar pos (list head (cadr pos)))
-        (setcdr pos (cddr pos)))))
-  returns ((\, x) (\, y)))
-(confirm that
-  (let ((lst '(,x . ,y)))
-    (doconses (head pos lst lst)
-      (when (eq '\, head)
-        (let ((new (list (list head (cadr pos)))))
-          (setcar pos '\.)
-          (setcdr pos new)
-          (setf pos (cdr pos))))))
-  returns ((\, x) \. (\, y)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-;; properize a pattern
-(let* ( (lst '(,x ,y . ,z))
-        (tail (last lst 2)))
-  (when (eq (car tail)  '\,)
-    (setcar tail '\.)
-    (setcdr tail (list (list '\, (cadr tail)))))
-  lst) ; ((\, x) (\, y) \. (\, z))
-
-;; properize a target 
-(let ((lst '(2 4 . 6)))
-  (when (and (listp lst) (not (proper-list-p lst)))
-    (let ((last (last lst)))
-      (prn "last %s" last)
-      (setcdr last (list '\. (cdr last)))))
-  lst) ; (2 4 \. 6)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize-target (lst)
+(defun properize-target (lst &optional no-test)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a target."
-  (unless (listp lst) (error "LST is not a list: %s" lst))
-  (when (not (proper-list-p lst))
+  (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
+  (when   (or no-test (not (proper-list-p lst)))
     (let ((last (last lst)))
-      (prn "last %s" last)
       (setcdr last (list '\. (cdr last)))))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize-target  nil)       returns nil)
 (confirm that (properize-target '(2))       returns (2))
 (confirm that (properize-target '(2 . 4))   returns (2 \. 4))
+(confirm that (properize-target '(2 4   6)) returns (2 4 6))
 (confirm that (properize-target '(2 4 . 6)) returns (2 4 \. 6))
-(confirm that (properize-target '(2 4 6))   returns (2 4 6))
 ;; (dont confirm that (properize-target '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -188,20 +45,20 @@ This is a tiny, two-line modification of `dolist'.
   "Properize a pattern."
   (unless (listp lst) (error "LST is not a list: %s" lst))
   (if (not (proper-list-p lst))
-    (properize-target lst) ; target fun works in this case.
-    (let* ((tail (last lst 2)))
-      (when (eq (car tail)  '\,) ; will also need to detect unsplice!
+    (properize-target lst t) ; target fun works in this case.
+    (let ((tail (last lst 2)))
+      (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
         (setcar tail '\.)
-        (setcdr tail (list (list '\, (cadr tail)))))
-      lst)))
+        (setcdr tail (list (list '\, (cadr tail))))))
+    lst))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize-pattern  nil)          returns nil)
 (confirm that (properize-pattern '(,x))         returns ((\, x)))
-(confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (properize-pattern '(,x . y))     returns ((\, x) \. y))
+(confirm that (properize-pattern '(,x .,y))     returns ((\, x) \. (\, y)))
+(confirm that (properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+(confirm that (properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-(confirm that (properize-pattern '(,x ,y . z))  returns ((\, x) (\, y) \. z))
-(confirm that (properize-pattern '(,x ,y ,z))   returns ((\, x) (\, y) (\, z)))
 ;; (dont confirm that (properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
