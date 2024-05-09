@@ -1054,4 +1054,5 @@ This behaves very similarly to quasiquote."
 (dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)) ; ((x . 5))
 
 (dm:match '(,foo ,@bars ,shprungy ',fotz) '(FOO BAR BAZ QUUX CLAITHE SHPRUNGY))
-(dm:match '(,x ,y . ,z) '(2 4 . 6)) 
+;; (dm:match (,x ,y . ,z) '(2 4 . 6)) 
+'(,x ,y . (,z)) 
