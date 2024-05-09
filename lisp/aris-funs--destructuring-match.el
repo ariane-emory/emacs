@@ -405,12 +405,15 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (let ((remaining-inflexibles-count
                           (count-inflexibles-length (cdr pattern))))
                     (cond
+                      ;; ((= (length (cdr pattern)) remaining-inflexibles-count)
+                      ;;   (debug nil
+                      ;;     (cl-subseq target 0 (* -1 remaining-inflexibles-count))
+                      ;;     (cl-subseq target (* -1 remaining-inflexibles-count))))
                       ((not (cdr pattern))
                         ;; If this is the last PATTERN element, just take everything left in TARGET:
-                        (progn
-                          (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                            (dm::log-setf-alist-putunique! var target alist reference-alist))
-                          (setf target nil)))
+                        (when-let ((var (dm::pat-elem-var-sym (car pattern))))
+                          (dm::log-setf-alist-putunique! var target alist reference-alist))
+                        (setf target nil))
                       (t ;; Otherwise, collect:
                         (dm::prn "Collecting flexible element...")
                         (warn-when-consecutive-flexible-elements-in-pattern)
