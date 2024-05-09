@@ -829,6 +829,7 @@
            aris-funs--error-when-and-error-unless
            aris-funs--pcase-x
            aris-funs--div-mod
+           aris-funs--symbols
            aris-funs--trees
            aris-funs--objects
            aris-funs--when-let-alist
