@@ -345,7 +345,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                      (*wm:indent* 0))
                                 (dm::prn warn-msg))
                               (warn warn-msg))))
-                       (count-inflexibles-length (pattern)
+                       (count-min-pattern-length (pattern)
                          `(length (cl-remove-if (lambda (pe) (dm::pat-elem-is-flexible? pe)) ,pattern)))
                        (augmented-alist ()
                          `(append
@@ -354,19 +354,21 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             alist
                             reference-alist)))
           ;;-----------------------------------------------------------------------------------------
-          ;; Early abort case: PATTERN contains more inflexible elements than remain in TARGET:
-          (let ((inflexibles-length (count-inflexibles-length pattern)))
-            (when (>
-                    inflexibles-length
-                    (length target))
-              (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
-                pattern target))
-            ;; (when (=
-            ;;         inflexibles-length
-            ;;         (length pattern))
-            ;;   (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
-            ;;     pattern target))
-            )
+          ;; Early abort case: When PATTERN contains more inflexible elements than are in TARGET
+          ;; or PATTERN requires an exact length different than TARGET's length, it couldn't possibly
+          ;; match.
+          (let* ( (pattern-min-length      (count-min-pattern-length pattern))
+                  (pattern-is-exact-length (= pattern-min-length (length pattern)))
+                  (target-length           (length target)))
+            (cond
+              ((and pattern-is-exact-length (not (= pattern-min-length target-length)))
+                (NO-MATCH!
+                  "PATTERN %S requires exactly %d elements but TARGET %S contains %d elements."
+                  pattern pattern-min-length target target-length))
+              ((> pattern-min-length target-length)
+                (NO-MATCH!
+                  "PATTERN %S needs %d at least elements but TARGET %S contains only %d elements."
+                  pattern pattern-min-length target target-length))))
           ;; It's possible that it could match, continue.
           (let ((last-pattern-elem-was-flexible nil))
             (while target
@@ -397,7 +399,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   ;; Optimization idea: if the TAIL of pattern contains only inflexible elements,
                   ;; we could probably just yank off everything we with need `cl-sublis'? We would
                   ;; have to run out any other remaining flexible elements...
-                  (let ((remaining-inflexibles-count (count-inflexibles-length (cdr pattern))))
+                  (let ((remaining-pattern-min-length (count-min-pattern-length (cdr pattern))))
                     (cond
                       ((not (cdr pattern))
                         ;; If this is the last PATTERN element, just take everything left in TARGET:
@@ -406,10 +408,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (dm::log-setf-alist-putunique! var target alist reference-alist))
                         (setf target nil)
                         (dm::log-pop* pattern))
-                      ((= (length (cdr pattern)) remaining-inflexibles-count)
+                      ((= (length (cdr pattern)) remaining-pattern-min-length)
                         (dm::prn "Last flexible PATTERN element, slurp some remaining elements...")
-                        (let ( (take (cl-subseq target 0 (* -1 remaining-inflexibles-count)))
-                               (leave (cl-subseq target   (* -1 remaining-inflexibles-count))))
+                        (let ( (take (cl-subseq target 0 (* -1 remaining-pattern-min-length)))
+                               (leave (cl-subseq target   (* -1 remaining-pattern-min-length))))
                           (dm::prn-labeled take)
                           (dm::prn-labeled leave)
                           (when-let ((var (dm::pat-elem-var-sym (car pattern))))
