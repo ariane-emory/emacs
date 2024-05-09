@@ -1,1 +1,5 @@
-(dm:match '(,foo ,@bars BAZ ,@shprungies ,fotz) '(FOO BAR BAZ QUUX SHPRUNGY FOTZ)) 
+(dm:match '(,foo ,@bars ,@fubars BAZ ,@shprungies ,@zots ,fotz) '(FOO BAR BAZ QUUX SHPRUNGY FOTZ))
+(dm:match '(,foo ,@bars ,@fubars BAZ ,@shprungies ,@zots ,fotz) '(FOO BAR BAZ FOTZ))
+(dm:match '(,foo ,@bars ,@fubars BAZ ,@shprungies ,@zots ,fotz) '(FOO BAZ FOTZ))
+(dm:match '(,foo ,@bars BAZ ,@shprungies ,fotz) '(FOO BAZ FOTZ))
+(dm:match '(,foo BAZ ,fotz) '(FOO BAZ FOTZ))
