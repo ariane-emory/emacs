@@ -90,10 +90,28 @@ This is a tiny, two-line modification of `dolist'.
            (setq ,tail (cdr ,tail))))
        ,@(cdr (cdr (cdr spec))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (when (eq 'c head)
+        (setcar pos (cons head (cadr pos)))
+        (setcdr pos (cddr pos)))))
+  returns (a 2 b 4 (c . 6) d 8))
+(confirm that 
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (setcar pos (cons head (cadr pos)))
+      (setcdr pos (cddr pos))))
+  returns ((a . 2) (b . 4) (c . 6) (d . 8)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(catch 'done
-  (doconses (head position '(a 2 b 4 c 6 d 8))
-    (prn "%s" head)
-    (if (eq 'c head)
-      (throw 'done nil))))
-
+(let (toggle (lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+  (doconses (head pos lst lst)
+    (when (not toggle)
+      (let ((new (cons (cdr head) (cdr pos))))
+        (setcar pos (car head))
+        (setcdr pos new)
+        (prn "%s" lst)
+        (prn "new %s" new)
+        (debug)))
+    (setf toggle (not toggle))))
