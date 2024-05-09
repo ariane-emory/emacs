@@ -143,12 +143,12 @@ This is a tiny, two-line modification of `dolist'.
 
 
 
-(let* ( (lst '(,x . ,y))
+(let* ( (lst '(,x ,y . ,z))
         (tail (last lst 2)))
-  (setcar tail '\.)
-  (setcdr tail (list (list (car tail) (cadr tail))))
-  lst) ; ((\, x) \. (\. y))
-
+  (when (eq (car tail)  '\,)
+    (setcar tail '\.)
+    (setcdr tail (list (list (car tail) (cadr tail)))))
+  lst)
 
 (let* ( (lst '(,x . ,y))
         (tail (last lst 2)))
