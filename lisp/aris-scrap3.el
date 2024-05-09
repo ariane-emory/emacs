@@ -23,7 +23,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-target (lst &optional no-test)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Properize a target."
+  "Destructively properize a target."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
   (when   (or no-test (not (proper-list-p lst)))
@@ -43,7 +43,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Properize a pattern."
+  "Destructively properize a pattern."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (unless (listp lst) (error "LST is not a list: %s" lst))
@@ -57,8 +57,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize-pattern  nil)          returns nil)
 (confirm that (properize-pattern '(,x))         returns ((\, x)))
-(confirm that (properize-pattern '(,x . y))     returns ((\, x) \. y))
-(confirm that (properize-pattern '(,x .,y))     returns ((\, x) \. (\, y)))
+(confirm that (properize-pattern '(,x .  y))    returns ((\, x) \. y))
+(confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
