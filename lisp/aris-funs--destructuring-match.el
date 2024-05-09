@@ -935,7 +935,7 @@ This behaves very similarly to quasiquote."
                       (push elem res))
                     (if *dm:fill-unsplice-atoms*
                       (push val res)
-                      (error "var %s's value %s cannot be spliced, not a list."))))
+                      (error "var %s's value %s cannot be spliced, not a list." var val))))
                 (error "var %s not found." (cadr thing)))))
           ((proper-list-p thing)
             (push (with-indentation (dm:fill thing alist unsplice ellipsis dont-care)) res))
