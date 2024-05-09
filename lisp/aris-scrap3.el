@@ -25,7 +25,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
+  (assert-list! lst)
   (when   (or no-test (not (proper-list-p lst)))
     (let ((last (last lst)))
       (setcdr last (list '\. (cdr last)))))
@@ -46,7 +46,7 @@
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
-  (unless (listp lst) (error "LST is not a list: %s" lst))
+  (assert-list! lst)
   (if (not (proper-list-p lst))
     (properize-target! lst t) ; target fun works in this case.
     (let ((tail (last lst 2)))
@@ -74,7 +74,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (unless (or no-test (listp lst)) (error "LST is not a list: %s" lst))
+  (assert-list! lst)
   (when   (or no-test (not (proper-list-p lst)))
     (let ((last (last lst)))
       (setcdr last (list '\. (cdr last)))))
@@ -87,5 +87,3 @@
 (confirm that (properize-target '(2 4 . 6)) returns (2 4 \. 6))
 ;; (dont confirm that (properize-target '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-

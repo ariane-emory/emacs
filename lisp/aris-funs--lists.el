@@ -488,6 +488,7 @@ This is adapted from the version in Peter Norvig's book."
     (cddddr-safe Cdr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list funs (retrieving by position):
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -517,18 +518,18 @@ This is adapted from the version in Peter Norvig's book."
 (confirm that (eleventh '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 11)
 (confirm that (twelfth  '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 12)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun first-safe    (lst)                    (car-safe lst))
-(defun second-safe   (lst)                   (cadr-safe lst))
-(defun third-safe    (lst)                  (caddr-safe lst))
-(defun fourth-safe   (lst)                 (cadddr-safe lst))
-(defun fifth-safe    (lst)                (caddddr-safe lst))
-(defun sixth-safe    (lst)           (car (cdddddr-safe lst)))
-(defun seventh-safe  (lst)          (cadr (cdddddr-safe lst)))
-(defun eighth-safe   (lst)         (caddr (cdddddr-safe lst)))
-(defun ninth-safe    (lst)        (cadddr (cdddddr-safe lst)))
-(defun tenth-safe    (lst)       (caddddr (cdddddr-safe lst)))
-(defun eleventh-safe (lst)  (car (cdddddr (cdddddr-safe lst))))
-(defun twelfth-safe  (lst) (cadr (cdddddr (cdddddr-safe lst))))
+(defun first-safe    (lst)                               (car-safe lst))
+(defun second-safe   (lst)                              (cadr-safe lst))
+(defun third-safe    (lst)                             (caddr-safe lst))
+(defun fourth-safe   (lst)                            (cadddr-safe lst))
+(defun fifth-safe    (lst)                           (caddddr-safe lst))
+(defun sixth-safe    (lst)                 (car-safe (cdddddr-safe lst)))
+(defun seventh-safe  (lst)                (cadr-safe (cdddddr-safe lst)))
+(defun eighth-safe   (lst)               (caddr-safe (cdddddr-safe lst)))
+(defun ninth-safe    (lst)              (cadddr-safe (cdddddr-safe lst)))
+(defun tenth-safe    (lst)             (caddddr-safe (cdddddr-safe lst)))
+(defun eleventh-safe (lst)   (car-safe (cdddddr-safe (cdddddr-safe lst))))
+(defun twelfth-safe  (lst)  (cadr-safe (cdddddr-safe (cdddddr-safe lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (first-safe    '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 1)
 (confirm that (second-safe   '(1 2 3 4 5 6 7 8 9 10 11 12)) returns 2)
@@ -713,28 +714,33 @@ This is adapted from the version in Peter Norvig's book."
 ;; Old functions using dash. These are a bit stale, some of them should probably be
 ;; renamed, updated or discarded:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun -rmapcar (l fun)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (-map fun l))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun -rmapc (l &rest funs)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (-map (eval (cons #'-compose funs)) l))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun -rmapcr (l &rest funs)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Reverse the order of funs, compose them and then map them over 𝒍."
   ((eval (cons #'-compose (nreverse funs))) l))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro assert-list! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Signal an error unless LST is a list."  
+  (if (symbolp lst)
+    (let ((name (upcase (symbol-name lst))))
+      `(unless (listp ,lst) (error "%s is not a list: %s" ,name ,lst)))
+    `(unless (listp ,lst)   (error "Not a list: %s" ,lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(font-lock-add-keywords 'emacs-lisp-mode
+  '(("(\\(assert-list\\!\\_>\\)" . font-lock-warning-face)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -757,6 +763,7 @@ This is a a simple modification of `dolist'.
          (position (cadr spec))
          (lst      (caddr spec)))
     `(let ((,position ,lst))
+       (assert-list! ,position)
        (while ,position
          (let ((,var (car ,position)))
            ,@body
@@ -827,6 +834,7 @@ This is a a simple modification of `dolist'.
          (lst  (car (cdr spec)))
          (elem (car spec)))
     `(let* ((,tail ,lst))
+       (assert-list! ,tail)
        (while ,tail
          (let* ( (consp (consp ,tail))
                  (,elem (if consp (car ,tail) ,tail)))
@@ -856,6 +864,7 @@ This is a a simple modification of `dolist'.
 (defun length* (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the length of a (possibly improper) list."
+  (assert-list! lst)
   (if (proper-list-p lst)
     (length lst)
     (let ((count 0)) 
@@ -870,7 +879,7 @@ This is a a simple modification of `dolist'.
 (defun properize (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively make a proper list from an improper list."
-  (unless (listp lst) (error "LST is not a list: %s" lst))
+  (assert-list! lst)
   (if (proper-list-p lst)
     lst
     (let (res) 
@@ -884,12 +893,11 @@ This is a a simple modification of `dolist'.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively make a proper list from an improper list."
-  (unless (listp lst) (error "LST is not a list: %s" lst))
+  (assert-list! lst)
   (let ((last (last lst)))
     (when (not (null (cdr last)))
       (setcdr last (cons (cdr last) nil))))
@@ -901,6 +909,7 @@ This is a a simple modification of `dolist'.
 (confirm that (properize! '(1 2 . 3)) returns (1 2 3))
 (confirm that (properize! '(1 2 3)) returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
