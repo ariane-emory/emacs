@@ -24,45 +24,50 @@
     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm:match '(foo '(,bar ,baz)) '(foo '(,bar ,baz)))
 
 
-'(foo '(,bar ,baz))
+(defmacro dolist2 (spec &rest body)
+  "Loop over a list.
+Evaluate BODY with VAR bound to each car from LIST, in turn.
+Then evaluate RESULT to get return value, default nil.
+
+\(fn (VAR LIST [RESULT]) BODY...)"
+  (declare (indent 1) (debug ((symbolp form &optional form) body)))
+  (unless (consp spec)
+    (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (<= 2 (length spec) 3)
+    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
+  (let ((tail (make-symbol "tail")))
+    `(let ((,tail ,(nth 1 spec)))
+       (while ,tail
+         (let ((,(car spec) (car ,tail)))
+           ,@body
+           (setq ,tail (cdr ,tail)))))))
 
 
-'(foo (,bar ,baz))
-
-(length '(foo bar))
-(quote (foo bar))
-
-(dm:match '(,x (,y . ,z)) '(1 (2 . 3)))
-
-(listp '(2 . 3))
+(dolist2 (n '(1 2 3 4 5))
+  (prn "%s" n))
 
 
-(progn
-  (setq il '(1 2 3 4 . 5))
-  (prndiv)
-  (while il
-    (let ((head (if (listp (cdr il)) (car il) (car il))))
-      (prn "il:   %s" il)
-      (prn "head: %s" head)
-      (if (listp (cdr il))
-        (setf il (cdr il))
-        (setf il nil))
-      (debug))))
+(let ((tail '(1 2 3 4 5)))
+  (while tail
+    (let ((n (car tail)))
+      (prn "%s" n)
+      (setq tail (cdr tail)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((lst '(1 2 3 4 . 5)))
+  (while lst
+    (let ((n (if (consp lst) (car lst) lst)))
+      (prn "%s" n)
+      (setq lst (if (consp lst) (cdr lst) nil)))))
 
-(let ((lst '(1 2 3 4 . 5))
-       (result '()))
-  (while (consp lst)
-    (setq result (cons (car lst) result))
-    (setq lst (cdr lst)))
-  (message "Result: %s" (nreverse result)))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((lst '(1 2 3 4 . 5))
        (result '()))
   (while lst
-    (push (if (consp lst) (car lst) lst) result)
-    (setf lst (when (consp lst) (cdr lst))))
+    (setq result (cons (if (consp lst) (car lst) lst) result))
+    (setq lst (if (consp lst) (cdr lst) nil)))
   (message "Result: %s" (nreverse result)))
+
+
