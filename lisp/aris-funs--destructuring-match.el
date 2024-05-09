@@ -355,11 +355,18 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             reference-alist)))
           ;;-----------------------------------------------------------------------------------------
           ;; Early abort case: PATTERN contains more inflexible elements than remain in TARGET:
-          (when (>
-                  (count-inflexibles-length pattern)
-                  (length target))
-            (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
-              pattern target))
+          (let ((inflexibles-length (count-inflexibles-length pattern)))
+            (when (>
+                    inflexibles-length
+                    (length target))
+              (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
+                pattern target))
+            ;; (when (=
+            ;;         inflexibles-length
+            ;;         (length pattern))
+            ;;   (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
+            ;;     pattern target))
+            )
           ;; It's possible that it could match, continue.
           (let ((last-pattern-elem-was-flexible nil))
             (while target
