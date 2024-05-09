@@ -141,13 +141,6 @@ This is a tiny, two-line modification of `dolist'.
   returns ((\, x) \. (\, y)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(let* ( (lst '(,x . ,y))
-        (tail (last lst 2)))
-  (setcar tail (list (car tail) (cadr tail)))
-  (setcdr tail nil)
-  lst) ; ((\, x) (\, y))
-
 ;; properize a pattern
 (let* ( (lst '(,x ,y . ,z))
         (tail (last lst 2)))
