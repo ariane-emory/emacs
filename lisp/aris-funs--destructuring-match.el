@@ -438,8 +438,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                     ;;   (throw 'stop-collecting nil))
                                     (look-0 
                                       ;; If LOOK-0 matched the whole TARGET then we can munge
-                                      ;; LOOK-0 and ALIST into the right shape and return successfully
-                                      ;; immediately:
+                                      ;; LOOK-0 and ALIST into the right shape and return
+                                      ;; successfully immediately:
                                       (setf alist
                                         (nconc
                                           (when (listp look-0)                look-0)
@@ -451,8 +451,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                       (dm::prn "CASE 1: Stopping with munged %s." alist)
                                       (throw 'match alist))
                                     (t
-                                      (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
-                                      (push (dm::log-pop* target) collect))) ; end of collecting `cond'.
+                                      (dm::prn "CASE 2: Nothing else applies, munch %s."
+                                        (car target))
+                                      (push (dm::log-pop* target) collect))
+                                    ) ; end of collecting `cond'.
                                   ) ; end of `let' LOOK-0.
                                 (dm::prn-labeled collect "post")
                                 (when *dm:debug* (debug 'unsplicing))
@@ -460,8 +462,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                 (dm::prnl)
 		                            ) ;; END OF `while' t.
                               ) ;; END OF `catch' STOP-COLLECTING.
-                            ;; We already know that (car pattern) is flexible, if it has a var name then
-                            ;; it must be an UNSPLICE.
+                            ;; We already know that (car pattern) is flexible, if it has a var name 
+                            ;; then it must be an UNSPLICE.
                             (when-let ((var (dm::pat-elem-var-sym (car pattern))))
                               (dm::log-setf-alist-putunique! var (nreverse collect)
                                 alist reference-alist))
@@ -506,93 +508,94 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                      "Ambiguous lambda expression: "
                                                      (format "arg %s overlaps with " arg-name)
                                                      "name of a captured variable"))))))
-                                    (let ( ;; (funcall-expr   `(funcall ,(subst-alist-in-expr pred) ,var-val))
-                                           (funcall-expr2  (macroexp-let-alist (augmented-alist)
-                                                             '(funcall pred var-val))))
-                                      ;; (dm::prn-labeled funcall-expr)
-                                      (dm::prn-labeled funcall-expr2)
-                                      ;; (eval funcall-expr)
-                                      (eval funcall-expr2)))
-                                  (t
-                                    ;; PRED is some other expr, `rsubst-alist' ALIST's values into
-                                    ;; it and `eval':
-                                    (let ( ;; (eval-expr  (subst-alist-in-eval-expr pred))
-                                           (eval-expr2 (macroexp-let-alist (augmented-alist) pred)))
-                                      ;; (dm::prn-labeled eval-expr)
-                                      (dm::prn-labeled eval-expr2)
-                                      ;; (eval eval-expr)
-                                      (eval eval-expr2)
-                                      ))))
-                              (throw 'pred-failed nil)))
-                          t))
-                      (NO-MATCH! "a predicate failed"))
-                    (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)
-                      (dm::log-setf-alist-putunique! var-sym var-val alist reference-alist))
-                    (dm::prn-labeled assoc "take var as")
-                    (dm::log-pop* pattern target)))
-                ;; ----------------------------------------------------------------------------------
-                ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
-                ;; ALIST, unless the result was just t because the sub-pattern being recursed over
-                ;; contained no variables:
-                ;; ----------------------------------------------------------------------------------
-                ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
-                  (setf last-pattern-elem-was-flexible nil)
-                  (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
-                    (car pattern) (car target))
-                  (let ((res (recurse (car pattern) (car target) alist reference-alist)))
-                    (cond
-                      ((eq res t)) ; do nothing.
-                      ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
-                      ;; `dm::match1' only returns t or lists, so by now it must a list.
-                      (t (setf alist res))))
-                  (dm::log-pop* pattern target))
-                ;; ----------------------------------------------------------------------------------
-                ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
-                ;; heads off:
-                ;; ----------------------------------------------------------------------------------
-                ((equal (car pattern) (car target))
-                  (setf last-pattern-elem-was-flexible nil)
-                  (dm::prn "Equal literals, discarding %s." (car target))
-                  (dm::log-pop* pattern target))
-                ;; ----------------------------------------------------------------------------------
-                ;; Otherwise: When the heads aren't `equal' and we didn't have either a DONT-CARE, 
-                ;; an ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
-                ;; ----------------------------------------------------------------------------------
-                (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))
-                ;; ----------------------------------------------------------------------------------
-                ) ; End of the big `cond'.
-              ;; ------------------------------------------------------------------------------------
-              (dm::prndiv)
-              (dm::prnl)
-              ;; ------------------------------------------------------------------------------------
-              ) ;  end of (while target ...
-            ;; --------------------------------------------------------------------------------------
+                                    (let ( ;; (funcall-expr
+                                           ;;   `(funcall ,(subst-alist-in-expr pred) ,var-val))
+                                      (funcall-expr2  (macroexp-let-alist (augmented-alist)
+                                                        '(funcall pred var-val))))
+                                    ;; (dm::prn-labeled funcall-expr)
+                                    (dm::prn-labeled funcall-expr2)
+                                    ;; (eval funcall-expr)
+                                    (eval funcall-expr2)))
+                                (t
+                                  ;; PRED is some other expr, `rsubst-alist' ALIST's values into
+                                  ;; it and `eval':
+                                  (let ( ;; (eval-expr  (subst-alist-in-eval-expr pred))
+                                         (eval-expr2 (macroexp-let-alist (augmented-alist) pred)))
+                                    ;; (dm::prn-labeled eval-expr)
+                                    (dm::prn-labeled eval-expr2)
+                                    ;; (eval eval-expr)
+                                    (eval eval-expr2)
+                                    ))))
+                            (throw 'pred-failed nil)))
+                        t))
+                    (NO-MATCH! "a predicate failed"))
+                  (unless (dm::pat-elem-is-the-symbol? dont-care var-sym)
+                    (dm::log-setf-alist-putunique! var-sym var-val alist reference-alist))
+                  (dm::prn-labeled assoc "take var as")
+                  (dm::log-pop* pattern target)))
+              ;; ----------------------------------------------------------------------------------
+              ;; Case 4: When PATTERN's head is a list, recurse and accumulate the result into 
+              ;; ALIST, unless the result was just t because the sub-pattern being recursed over
+              ;; contained no variables:
+              ;; ----------------------------------------------------------------------------------
+              ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
+                (setf last-pattern-elem-was-flexible nil)
+                (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
+                  (car pattern) (car target))
+                (let ((res (recurse (car pattern) (car target) alist reference-alist)))
+                  (cond
+                    ((eq res t)) ; do nothing.
+                    ((eq res nil) (NO-MATCH! "sub-pattern didn't match"))
+                    ;; `dm::match1' only returns t or lists, so by now it must a list.
+                    (t (setf alist res))))
+                (dm::log-pop* pattern target))
+              ;; ----------------------------------------------------------------------------------
+              ;; Case 5: When PATTERN's head and TARG-HEAD are equal literals, just `pop' the 
+              ;; heads off:
+              ;; ----------------------------------------------------------------------------------
+              ((equal (car pattern) (car target))
+                (setf last-pattern-elem-was-flexible nil)
+                (dm::prn "Equal literals, discarding %s." (car target))
+                (dm::log-pop* pattern target))
+              ;; ----------------------------------------------------------------------------------
+              ;; Otherwise: When the heads aren't `equal' and we didn't have either a DONT-CARE, 
+              ;; an ELLIPSIS, a variable, or a list in PATTERN's head, then no match:
+              ;; ----------------------------------------------------------------------------------
+              (t (NO-MATCH! "expected %s but found %s" (car pattern) (car target)))
+              ;; ----------------------------------------------------------------------------------
+              ) ; End of the big `cond'.
+            ;; ------------------------------------------------------------------------------------
             (dm::prndiv)
-            (dm::prn-labeled pattern "final")
-            (dm::prn-labeled target  "final")
-            ;; --------------------------------------------------------------------------------------
-            ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only
-            ;; contain ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
-            ;; --------------------------------------------------------------------------------------
-            (when pattern
-              (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
-              (dolist (pat-elem pattern)
-                (dm::prn "Running out elem: %s" pat-elem)
-                (unless (dm::pat-elem-is-flexible? pat-elem)
-                  (NO-MATCH! "expected %s but target is empty" pattern))
-                (warn-when-consecutive-flexible-elements-in-pattern)
-                (setf last-pattern-elem-was-flexible t)
-                ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
-                (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
-                  (dm::log-setf-alist-putunique! var-sym nil alist reference-alist))))))
-        alist) ; end of `catch' MATCH.
-      ) ; end of `setf' ALIST.
-    ;; ----------------------------------------------------------------------------------------------
-    ;; Return either the ALIST or just t:
-    ;; ----------------------------------------------------------------------------------------------
-    (let ((match1-result (or alist t)))
-      (dm::prn-labeled match1-result)
-      match1-result)))
+            (dm::prnl)
+            ;; ------------------------------------------------------------------------------------
+            ) ;  end of (while target ...
+          ;; --------------------------------------------------------------------------------------
+          (dm::prndiv)
+          (dm::prn-labeled pattern "final")
+          (dm::prn-labeled target  "final")
+          ;; --------------------------------------------------------------------------------------
+          ;; By this line, TARGET must be nil. Unless PATTERN is also nil, it had better only
+          ;; contain ELLIPSISes and UNSPLICEs. Run out the remainder of PATTERN:
+          ;; --------------------------------------------------------------------------------------
+          (when pattern
+            (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
+            (dolist (pat-elem pattern)
+              (dm::prn "Running out elem: %s" pat-elem)
+              (unless (dm::pat-elem-is-flexible? pat-elem)
+                (NO-MATCH! "expected %s but target is empty" pattern))
+              (warn-when-consecutive-flexible-elements-in-pattern)
+              (setf last-pattern-elem-was-flexible t)
+              ;; We know it's flexible, so, if it has a var-sym now, it must be an UNSPLICE.
+              (when-let ((var-sym (dm::pat-elem-var-sym pat-elem)))
+                (dm::log-setf-alist-putunique! var-sym nil alist reference-alist))))))
+      alist) ; end of `catch' MATCH.
+    ) ; end of `setf' ALIST.
+  ;; ----------------------------------------------------------------------------------------------
+  ;; Return either the ALIST or just t:
+  ;; ----------------------------------------------------------------------------------------------
+  (let ((match1-result (or alist t)))
+    (dm::prn-labeled match1-result)
+    match1-result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-match*
   (let ((*dm:verbose* t))
