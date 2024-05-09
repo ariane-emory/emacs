@@ -753,15 +753,12 @@ This is a a simple modification of `dolist'.
     (signal 'wrong-type-argument (list 'consp spec)))
   (unless (<= 3 (length spec) 4)
     (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
-  (let ( (tail     (gensym "tail-"))
-         (head     (car spec))
+  (let ( (var      (car spec))
          (position (cadr spec))
          (lst      (caddr spec)))
     `(let ((,position ,lst))
        (while ,position
-         (let ( (,head     (car ,position))
-                ;; (,position ,tail)
-                )
+         (let ((,var (car ,position)))
            ,@body
            (setq ,position (cdr ,position))))
        ,@(cdr (cdr (cdr spec))))))
@@ -837,6 +834,22 @@ This is a a simple modification of `dolist'.
            (setq ,tail (if consp (cdr ,tail) nil))))
        ,@(cdr (cdr spec)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let ((res 0))
+    (dolist* (n '(1 2 3 4 5 6 7 8 9 . 10) res)
+      (incf res n)))
+  returns 55)
+(confirm that
+  (let ((res 0))
+    (dolist* (n '(1 2 3 4 5 6 7 8 9 10) res)
+      (incf res n)))
+  returns 55)
+(confirm that
+  (let ((res 0))
+    (dolist* (n nil res)
+      (incf res n)))
+  returns 0)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -853,20 +866,39 @@ This is a a simple modification of `dolist'.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun  properize! (lst)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Destructivelly make a proper list from an improper list."
-;;   (let ((last (last lst)))
-;;     (when (not (null (cdr last)))
-;;       (setcdr last (cons (cdr last) nil)))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (properize! nil) returns nil)
-;; (confirm that (properize! '(1)) returns (1))
-;; (confirm that (properize! '(1 . 2)) returns (1 2))
-;; (confirm that (properize! '(1 2 . 3)) returns (1 2 3))
-;; (confirm that (properize! '(1 2 3)) returns (1 2 3))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively make a proper list from an improper list."
+  (if (proper-list-p lst)
+    lst
+    (let (res) 
+      (dolist* (n lst (nreverse res)) (push n res)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize nil) returns nil)
+(confirm that (properize '(1)) returns (1))
+(confirm that (properize '(1 . 2)) returns (1 2))
+(confirm that (properize '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize '(1 2 3)) returns (1 2 3))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun  properize! (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively make a proper list from an improper list."
+  (let ((last (last lst)))
+    (when (not (null (cdr last)))
+      (setcdr last (cons (cdr last) nil))))
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize! nil) returns nil)
+(confirm that (properize! '(1)) returns (1))
+(confirm that (properize! '(1 . 2)) returns (1 2))
+(confirm that (properize! '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize! '(1 2 3)) returns (1 2 3))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
