@@ -870,6 +870,7 @@ This is a a simple modification of `dolist'.
 (defun properize (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively make a proper list from an improper list."
+  (unless (listp lst) (error "LST is not a list: %s" lst))
   (if (proper-list-p lst)
     lst
     (let (res) 
@@ -885,9 +886,10 @@ This is a a simple modification of `dolist'.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun  properize! (lst)
+(defun properize! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively make a proper list from an improper list."
+  (unless (listp lst) (error "LST is not a list: %s" lst))
   (let ((last (last lst)))
     (when (not (null (cdr last)))
       (setcdr last (cons (cdr last) nil))))
