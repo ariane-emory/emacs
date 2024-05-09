@@ -310,11 +310,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   (catch 'no-match
     (setf alist
       (catch 'match
-        (dm::prn-labeled pattern "initial")
-        (dm::prn-labeled target  "initial")
+        ;; (dm::prn-labeled pattern "initial")
+        ;; (dm::prn-labeled target  "initial")
         ;; (dm::prn-labeled alist  "initial")
         ;; (dm::prn-labeled reference-alist "initial")
-        (dm::prnl)
+        ;; (dm::prnl)
         ;;-------------------------------------------------------------------------------------------
         (cl-macrolet ( (recurse (pattern target alist reference-alist)
                          `(with-indentation
@@ -393,7 +393,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             (dm::prn-pp-labeled-list pattern)
                             (dm::prn-pp-labeled-list target)                      
                             (let ((look-0
-                                    (let ((*dm:verbose* nil))
+                                    (let ((*dm:verbose* t))
+                                      (dm::prn "LOOKING AHEAD...")
                                       (recurse (cdr pattern) target nil alist))))
                               (dm::prndiv ?\-)
                               (dm::prn-labeled look-0)
@@ -414,7 +415,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                           (cons (dm::pat-elem-var-sym (car pattern))
                                             (nreverse collect))))
                                       alist))
-                                  (dm::prn "CASE 1: Stopping with munged %s!" alist)
+                                  (dm::prn "CASE 1: Stopping with munged %s." alist)
                                   (throw 'match alist))
                                 (t
                                   (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
@@ -606,11 +607,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (confirm that (dm:match '(,x 2 3 ,x) '(nil 2 3 4))             returns nil)
     (confirm that (dm:match '(foo ,x (bar ,x)) '(foo 8 (bar 8)))   returns ((x . 8)))
     (confirm that
-      (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
+      (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needles)) '(quux (sprungy 12 13)))
       returns nil)
     (confirm that
-      (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
-      returns ((needle-1 . quux) (needle-2 12 13)))
+      (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needles)) '(quux (quux 12 13)))
+      returns ((needle-1 . quux) (needles 12 13)))
+    (confirm that
+      (dm:match '( ,(needle-1 symbol?) ... (,needle-2 ,@needles)) '(quux (foo 12 13)))
+      returns ((needle-1 . quux) (needle-2 . foo) (needles 12 13)))
+    (confirm that
+      (dm:match '( ,(needle-1 symbol?) (,needle-2 ,@needles)) '(quux (foo 12 13)))
+      returns ((needle-1 . quux) (needle-2 . foo) (needles 12 13)))
     ;;-----------------------------------------------------------------------------------------------
     ;; predicate test cases:
     (confirm that (dm:match '(foo ,(bar)                               quux) '(foo 3   quux))
