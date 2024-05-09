@@ -230,8 +230,8 @@
 (defun dup-var (val var var-alist)
   ;;;;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Duplicate a VAR in VAR-ALIST with a new name."
-  (cl-loop for suffix from 0
-    for new-var = (intern (concat (symbol-name var) (make-string suffix ?*)))
+  (cl-loop for suffix-length from 0
+    for new-var = (intern (concat (symbol-name var) (make-string suffix-length ?*)))
     until (not (assq new-var var-alist))
     finally (nconc var-alist (list (cons new-var val))))
   val)

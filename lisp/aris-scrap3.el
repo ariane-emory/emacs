@@ -57,3 +57,13 @@
   (message "Result: %s" (nreverse result)))
 
 
+'\?x x?
+(list ?x?x?x)
+
+
+(catch 'done
+  (doconses (position '(a 2 b 4 c 6 d 8))
+    (prn "%s" car)
+    (if (eq 'c car)
+      (throw 'done nil))))
+
