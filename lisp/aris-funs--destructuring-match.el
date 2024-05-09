@@ -340,6 +340,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                      (*wm:indent* 0))
                                 (dm::prn warn-msg))
                               (warn warn-msg))))
+                       (count-inflexibles-length (pattern)
+                         `(length (cl-remove-if (lambda (pe) (dm::pat-elem-is-flexible? pe)) ,pattern)))
                        (augmented-alist ()
                          `(append
                             (when dont-care (list (cons dont-care var-val)))
@@ -348,7 +350,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             reference-alist)))
           ;;-----------------------------------------------------------------------------------------
           ;; Early abort case: PATTERN contains more inflexible elements than remain in TARGET:
-          (when (length> (cl-remove-if (lambda (pe) (dm::pat-elem-is-flexible? pe)) pattern)
+          (when (>
+                  (count-inflexibles-length pattern)
                   (length target))
             (NO-MATCH! "PATTERN %S contains more inflexible elements than remain in TARGET %S."
               pattern target))
@@ -375,8 +378,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ((dm::pat-elem-is-flexible? (car pattern))
                   ;; Optimization idea: if the TAIL of pattern contains only inflexible elements and
-                  ;; is the same length as target, we could probably just yank off everything we
-                  ;; need with `cl-sublis'?
+                  ;; is of greater length than target, we could probably just yank off everything we
+                  ;; need with `cl-sublis'? We would have to run out any other remaining flexible
+                  ;; elements...
                   
                   (if-not (cdr pattern)
                     ;; If this is the last PATTERN element, just take everything left in TARGET:
