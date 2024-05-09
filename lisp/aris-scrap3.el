@@ -61,9 +61,39 @@
 (list ?x?x?x)
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro doconses (spec &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Loop over a list's heads
+Evaluate BODY with VAR bound to each cons from LIST and
+CAR bound to each cons' `car', in turn.
+Then evaluate RESULT to get return value, default nil.
+
+This is a tiny, two-line modification of `dolist'.
+
+ (VAR LIST [RESULT]) BODY...)"
+  (declare (indent 1) (debug ((symbolp form &optional form) body)))
+  (unless (consp spec)
+    (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (<= 3 (length spec) 4)
+    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
+  (let ( (tail     (gensym "tail-"))
+         (head     (car spec))
+         (position (cadr spec))
+         (lst      (caddr spec)))
+    `(let ((,tail ,lst))
+       (while ,tail
+         (let ( (,head     (car ,tail))
+                (,position ,tail))
+           ,@body
+           (setq ,tail (cdr ,tail))))
+       ,@(cdr (cdr (cdr spec))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (catch 'done
-  (doconses (position '(a 2 b 4 c 6 d 8))
-    (prn "%s" car)
-    (if (eq 'c car)
+  (doconses (head position '(a 2 b 4 c 6 d 8))
+    (prn "%s" head)
+    (if (eq 'c head)
       (throw 'done nil))))
 
