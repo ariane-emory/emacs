@@ -461,7 +461,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                       (throw 'match alist))
                                     (t
                                       (dm::prn "CASE 2: Nothing else applies, munch %s." (car target))
-                                      (push (dm::log-pop* target) collect))))
+                                      (push (dm::log-pop* target) collect))) ; end of collecting `cond'.
+                                  ) ; end of `let' LOOK-0.
                                 (dm::prn-labeled collect "post")
                                 (when *dm:debug* (debug 'unsplicing))
                                 (dm::prndiv)
@@ -476,8 +477,9 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                             ;; (dm::log-pop* pattern)
                             ) ; end of `let' COLLECT.
                           ) ; end of `with-indentation'.
-                        (dm::log-pop* pattern)
-                        ))) ; end of `let'.
+                        (dm::log-pop* pattern)) ; end of collecting's `cond's t case.
+                      ) ; end of flexible case's `cond'.
+                    ) ; end of `let'.
                   ) ; end of `dm::pat-elem-is-flexible?'s case.
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 3: When PATTERN's head is a variable, put TARGET's head in ALIST:
