@@ -145,9 +145,17 @@ This is a tiny, two-line modification of `dolist'.
 
 (let* ( (lst '(,x . ,y))
         (tail (last lst 2)))
+  (setcar tail '\.)
+  (setcdr tail (list (list (car tail) (cadr tail))))
+  lst) ; ((\, x) \. (\. y))
+
+
+(let* ( (lst '(,x . ,y))
+        (tail (last lst 2)))
   (setcar tail (list (car tail) (cadr tail)))
   (setcdr tail nil)
-  lst)
+  lst) ; ((\, x) (\, y))
+
 
 
 ((\, x) \, y)
