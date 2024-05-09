@@ -13,6 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - preds for flexible-length pattern elements.
+;;  - maybe deal with improper lists some day.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -1055,4 +1056,7 @@ This behaves very similarly to quasiquote."
 
 (dm:match '(,foo ,@bars ,shprungy ',fotz) '(FOO BAR BAZ QUUX CLAITHE SHPRUNGY))
 ;; (dm:match (,x ,y . ,z) '(2 4 . 6)) 
-'(,x ,y . (,z)) 
+'(,x ,y . (,z))
+'(,x . ,y)
+
+
