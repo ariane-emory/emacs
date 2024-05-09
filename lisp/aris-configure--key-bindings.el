@@ -27,6 +27,7 @@
   '( aggressive-indent-mode
      artist-mode
      auto-revert-mode
+     copilot-mode
      follow-mode
      glasses-mode
      global-centered-cursor-mode

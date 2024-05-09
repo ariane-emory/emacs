@@ -75,7 +75,7 @@
   "Non-destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   (assert-list! lst)
-  (when   (or no-test (not (proper-list-p lst)))
+  (when (or no-test (not (proper-list-p lst)))
     (let ((last (last lst)))
       (setcdr last (list '\. (cdr last)))))
   lst)

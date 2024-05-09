@@ -746,10 +746,10 @@ This is adapted from the version in Peter Norvig's book."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro doconses (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Loop over a list's heads and conses.
-Evaluate BODY with VAR bound to each cons from LIST and
-POSITION bound to each cons cell, in turn.
-Then evaluate RESULT to get return value, default nil.
+  "Loop over a list's heads and conses. Evaluate BODY with
+VAR bound to each cons from LIST and POSITION bound
+to each cons cell, in turn. Then evaluate RESULT to get
+return value, default nil.
 
 This is a a simple modification of `dolist'.
 
