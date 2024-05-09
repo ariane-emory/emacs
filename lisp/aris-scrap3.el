@@ -149,8 +149,8 @@ This is a tiny, two-line modification of `dolist'.
         (tail (last lst 2)))
   (when (eq (car tail)  '\,)
     (setcar tail '\.)
-    (setcdr tail (list (list (car tail) (cadr tail)))))
-  lst) ; ((\, x) (\, y) \. (\. z))
+    (setcdr tail (list (list '\, (cadr tail)))))
+  lst) ; ((\, x) (\, y) \. (\, z))
 
 ;; properize a target 
 (let ((lst '(2 4 . 6)))
@@ -166,13 +166,15 @@ This is a tiny, two-line modification of `dolist'.
 (defun properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a pattern."
+  (unless (listp lst)
+    (error "LST is nota list: %s" lst)
   (let* ((tail (last lst 2)))
     (when (eq (car tail)  '\,)
       (setcar tail '\.)
-      (setcdr tail (list (list (car tail) (cadr tail)))))
+      (setcdr tail (list (list '\, (cadr tail)))))
     lst)) ; ((\, x) (\, y) \. (\. z))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\. y))) ; bad
-(confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\. z))) ; bad
+(confirm that (properize-pattern '(,x . ,y)) returns ((\, x) \. (\, y)))
+(confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
 (confirm that (properize-pattern '(,x ,y ,z)) returns ((\, x) (\, y) (\, z)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
