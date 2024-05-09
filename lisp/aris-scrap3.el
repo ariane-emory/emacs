@@ -167,7 +167,7 @@ This is a tiny, two-line modification of `dolist'.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a pattern."
   (unless (listp lst)
-    (error "LST is nota list: %s" lst)
+    (error "LST is not a list: %s" lst))
   (let* ((tail (last lst 2)))
     (when (eq (car tail)  '\,)
       (setcar tail '\.)
@@ -178,3 +178,5 @@ This is a tiny, two-line modification of `dolist'.
 (confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
 (confirm that (properize-pattern '(,x ,y ,z)) returns ((\, x) (\, y) (\, z)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
