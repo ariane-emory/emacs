@@ -751,18 +751,55 @@ This is a tiny, two-line modification of `dolist'.
   (declare (indent 1) (debug ((symbolp form &optional form) body)))
   (unless (consp spec)
     (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 2 (length spec) 3)
-    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
-  (let ((tail (make-symbol "tail")))
-    `(let ((,tail ,(nth 1 spec)))
-       (while ,tail
-         (let ( (car (car ,tail))
-                (,(car spec) ,tail))
+  (unless (<= 3 (length spec) 4)
+    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
+  (let ( (tail     (gensym "tail-"))
+         (head     (car spec))
+         (position (cadr spec))
+         (lst      (caddr spec)))
+    `(let ((,position ,lst))
+       (while ,position
+         (let ( (,head     (car ,position))
+                ;; (,position ,tail)
+                )
            ,@body
-           (setq ,tail (cdr ,tail))))
-       ,@(cdr (cdr spec)))))
+           (setq ,position (cdr ,position))))
+       ,@(cdr (cdr (cdr spec))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(confirm that 
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (when (eq 'c head)
+        (setcar pos (cons head (cadr pos)))
+        (setcdr pos (cddr pos)))))
+  returns (a 2 b 4 (c . 6) d 8))
+(confirm that ; plist to alist
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (setcar pos (cons head (cadr pos)))
+      (setcdr pos (cddr pos))))
+  returns ((a . 2) (b . 4) (c . 6) (d . 8)))
+(confirm that ; plist to let varlist
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (setcar pos (list head (cadr pos)))
+      (setcdr pos (cddr pos))))
+  returns ((a 2) (b 4) (c 6) (d 8)))
+(confirm that ; alist to plist 
+  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+    (doconses (head pos lst lst)
+      (let ((new (cons (cdr head) (cdr pos))))
+        (setcar pos (car head))
+        (setcdr pos new)
+        (setf pos (cdr pos)))))
+  returns (a 2 b 4 c 6 d 8))
+(confirm that ; plist to let varlist
+  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+    (doconses (head pos lst lst)
+      (let ((new (cons (cdr head) (cdr pos))))
+        (setcar pos (list (car head) (cdr head))))))
+  returns ((a 2) (b 4) (c 6) (d 8)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

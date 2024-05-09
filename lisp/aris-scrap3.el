@@ -103,6 +103,12 @@ This is a tiny, two-line modification of `dolist'.
       (setcar pos (cons head (cadr pos)))
       (setcdr pos (cddr pos))))
   returns ((a . 2) (b . 4) (c . 6) (d . 8)))
+(confirm that ; plist to let varlist
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (setcar pos (list head (cadr pos)))
+      (setcdr pos (cddr pos))))
+  returns ((a 2) (b 4) (c 6) (d 8)))
 (confirm that ; alist to plist 
   (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
     (doconses (head pos lst lst)
