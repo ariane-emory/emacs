@@ -393,13 +393,25 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                   (let ((remaining-inflexibles-count (count-inflexibles-length (cdr pattern))))
                     (cond
                       ;; ((= (length (cdr pattern)) remaining-inflexibles-count)
-                      ;;   (debug nil
-                      ;;     (cl-subseq target 0 (* -1 remaining-inflexibles-count))
-                      ;;     (cl-subseq target (* -1 remaining-inflexibles-count)))
+                      ;; (debug nil
+                      ;;   (cl-subseq target 0 (* -1 remaining-inflexibles-count))
+                      ;;   (cl-subseq target (* -1 remaining-inflexibles-count)))
+                      ;; (let ((front (cl-subseq target 0 (* -1 remaining-inflexibles-count)))
+                      ;;        (back (cl-subseq target (* -1 remaining-inflexibles-count))))
                       ;;   (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                      ;;     (dm::log-setf-alist-putunique! var target alist reference-alist))
-                      ;;   (setf target nil)
+                      ;;     (dm::log-setf-alist-putunique! var front alist reference-alist))
+                      ;;   (setf target back)
+
+                      ;;   (dm::prn-labeled front)
+                      ;;   (dm::prn-labeled back)
+                      ;;   (dm::log-pop* pattern)
+
+                      ;;   (dm::prn-labeled pattern)
+                      ;;   (dm::prn-labeled target)
+                      ;;   (dm::prn-pp-alist alist)
+                      ;;   ;;(debug)
                       ;;   )
+                      ;; )
                       ((not (cdr pattern))
                         ;; If this is the last PATTERN element, just take everything left in TARGET:
                         (when-let ((var (dm::pat-elem-var-sym (car pattern))))
@@ -1037,3 +1049,4 @@ This behaves very similarly to quasiquote."
 (dm:match '(... ,(x (lambda (n) (and (integer? n) (odd? n)))) ...) '(a b c 5 d e f)) ; ((x . 5))
 (dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)) ; ((x . 5))
 
+(dm:match '(,foo ,@bars ,shprungy) '(FOO BAR BAZ QUUX SHPRUNGY))
