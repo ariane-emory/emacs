@@ -57,8 +57,7 @@
   (message "Result: %s" (nreverse result)))
 
 
-'\?x x?
-(list ?x?x?x)
+
 
 
 
@@ -112,14 +111,14 @@ This is a tiny, two-line modification of `dolist'.
         (setcdr pos new)
         (setf pos (cdr pos)))))
   returns (a 2 b 4 c 6 d 8))
+(confirm that
+  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+    (doconses (head pos lst lst)
+      (let ((new (cons (cdr head) (cdr pos))))
+        (setcar pos (list (car head) (cdr head))))))
+  returns ((a 2) (b 4) (c 6) (d 8)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 
-(let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-  (doconses (head pos lst lst)
-    (let ((new (cons (cdr head) (cdr pos))))
-      (setcar pos (car head))
-      (setcdr pos new)
-      (setf pos (cdr pos)))))
