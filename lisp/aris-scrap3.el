@@ -167,16 +167,18 @@ This is a tiny, two-line modification of `dolist'.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a target."
   (unless (listp lst) (error "LST is not a list: %s" lst))
-  (when (and (listp lst) (not (proper-list-p lst)))
+  (when (not (proper-list-p lst))
     (let ((last (last lst)))
       (prn "last %s" last)
       (setcdr last (list '\. (cdr last)))))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-target nil) returns nil)
+(confirm that (properize-target  nil)       returns nil)
+(confirm that (properize-target '(2))       returns (2))
+(confirm that (properize-target '(2 . 4))   returns (2 \. 4))
 (confirm that (properize-target '(2 4 . 6)) returns (2 4 \. 6))
-(confirm that (properize-target '(2 4 6)) returns (2 4 6))
-;; (dont confirm that (properize-target '(2 . 4 6)) returns) ;; bullshit input, invalid read syntak
+(confirm that (properize-target '(2 4 6))   returns (2 4 6))
+;; (dont confirm that (properize-target '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -185,17 +187,22 @@ This is a tiny, two-line modification of `dolist'.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a pattern."
   (unless (listp lst) (error "LST is not a list: %s" lst))
-  (let* ((tail (last lst 2)))
-    (when (eq (car tail)  '\,)
-      (setcar tail '\.)
-      (setcdr tail (list (list '\, (cadr tail)))))
-    lst))
+  (if (not (proper-list-p lst))
+    (properize-target lst) ; target fun works in this case.
+    (let* ((tail (last lst 2)))
+      (when (eq (car tail)  '\,) ; will also need to detect unsplice!
+        (setcar tail '\.)
+        (setcdr tail (list (list '\, (cadr tail)))))
+      lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-pattern nil) returns nil)
-(confirm that (properize-pattern '(,x . ,y)) returns ((\, x) \. (\, y)))
-(confirm that (properize-pattern '(,x . y)) returns ((\, x) . y)) ;; bad!
+(confirm that (properize-pattern  nil)          returns nil)
+(confirm that (properize-pattern '(,x))         returns ((\, x)))
+(confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
+(confirm that (properize-pattern '(,x . y))     returns ((\, x) \. y))
 (confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-(confirm that (properize-pattern '(,x ,y ,z)) returns ((\, x) (\, y) (\, z)))
+(confirm that (properize-pattern '(,x ,y . z))  returns ((\, x) (\, y) \. z))
+(confirm that (properize-pattern '(,x ,y ,z))   returns ((\, x) (\, y) (\, z)))
+;; (dont confirm that (properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
