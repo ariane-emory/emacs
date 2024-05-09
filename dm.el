@@ -394,28 +394,21 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                     (cond
                       ((not (cdr pattern))
                         ;; If this is the last PATTERN element, just take everything left in TARGET:
-                        (dm::prn "Last PATTERN element, slurp flexible elements...")
+                        (dm::prn "Last PATTERN element, slurp remaining elements...")
                         (when-let ((var (dm::pat-elem-var-sym (car pattern))))
                           (dm::log-setf-alist-putunique! var target alist reference-alist))
                         (setf target nil)
                         (dm::log-pop* pattern))
                       ((= (length (cdr pattern)) remaining-inflexibles-count)
-                        (dm::prn "Last flexible PATTERN element, slurp flexible elements...")
-                        (let ((front (cl-subseq target 0 (* -1 remaining-inflexibles-count)))
-                               (back (cl-subseq target (* -1 remaining-inflexibles-count))))
+                        (dm::prn "Last flexible PATTERN element, slurp some remaining elements...")
+                        (let ( (take (cl-subseq target 0 (* -1 remaining-inflexibles-count)))
+                               (leave (cl-subseq target   (* -1 remaining-inflexibles-count))))
+                          (dm::prn-labeled take)
+                          (dm::prn-labeled leave)
                           (when-let ((var (dm::pat-elem-var-sym (car pattern))))
-                            (dm::log-setf-alist-putunique! var front alist reference-alist))
-                          (setf target back)
-
-                          (dm::prn-labeled front)
-                          (dm::prn-labeled back)
-                          (dm::log-pop* pattern)
-
-                          (dm::prn-labeled  pattern)
-                          (dm::prn-labeled  target)
-                          (dm::prn-pp-alist alist)
-                          )
-                        )
+                            (dm::log-setf-alist-putunique! var take alist reference-alist))
+                          (setf target leave)
+                          (dm::log-pop* pattern)))
                       (t ;; Otherwise, collect:
                         (dm::prn "Collecting flexible elements...")
                         (warn-when-consecutive-flexible-elements-in-pattern)
@@ -1049,4 +1042,4 @@ This behaves very similarly to quasiquote."
 (dm:match '(... ,(x (lambda (n) (and (integer? n) (odd? n)))) ...) '(a b c 5 d e f)) ; ((x . 5))
 (dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)) ; ((x . 5))
 
-(dm:match '(,foo ,@bars ,shprungy) '(FOO BAR BAZ QUUX SHPRUNGY))
+(dm:match '(,foo ,@bars ,shprungy ',fotz) '(FOO BAR BAZ QUUX CLAITHE SHPRUNGY))

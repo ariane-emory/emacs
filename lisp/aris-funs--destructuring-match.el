@@ -431,7 +431,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                 ;; (dm::prn-pp-labeled-list pattern)
                                 ;; (dm::prn-pp-labeled-list target)                      
                                 (let ((look-0
-                                        (let ((*dm:verbose* t))
+                                        (let (;; (*dm:verbose* t)
+                                               )
                                           (if-not (cdr pattern)
                                             (progn
                                               (dm::prn "NOTHING AHEAD TO LOOK AT!")
