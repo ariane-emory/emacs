@@ -163,11 +163,23 @@ This is a tiny, two-line modification of `dolist'.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize-target (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Properize a target."
+  (unless (listp lst) (error "LST is not a list: %s" lst))
+  (let* ((tail (last lst 2)))
+    (when (eq (car tail)  '\,)
+      (setcar tail '\.)
+      (setcdr tail (list (list '\, (cadr tail)))))
+    lst)) ; ((\, x) (\, y) \. (\. z))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Properize a pattern."
-  (unless (listp lst)
-    (error "LST is not a list: %s" lst))
+  (unless (listp lst) (error "LST is not a list: %s" lst))
   (let* ((tail (last lst 2)))
     (when (eq (car tail)  '\,)
       (setcar tail '\.)
