@@ -43,10 +43,19 @@ Then evaluate RESULT to get return value, default nil.
            ,@body
            (setq ,tail (cdr ,tail)))))))
 
+(defmacro dolist* (spec &rest body)
+  (unless (consp spec)     (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (length= spec 2) (signal 'wrong-number-of-arguments (list '(2 . 2) (length spec))))
+  (let ( (tail (gensym "tail-"))
+         (var  (car (cdr spec)))
+         (lst  (car spec)))
+    `(let ((,tail ,var))
+       (while ,tail
+         (let ((,lst (car ,tail)))
+           ,@body
+           (setq ,tail (cdr ,tail)))))))
 
 (dolist2 (n '(1 2 3 4 5)) (prn "%s" n))
-
-
 (let ((tail-1655 '(1 2 3 4 5)))
   (while tail-1655
     (let ((n (car tail-1655)))
