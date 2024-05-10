@@ -429,9 +429,8 @@
                   ((equal '(if it is) phrase) :WHEN)
                   ((equal '(if it isnt) phrase) :UNLESS)
                   (t (error "Unrecognized phrase %s" phrase))))
-          (expr (if (eq :WHEN mode)
-                  `(,pred ,thing)
-                  `(not (,pred ,thing))))
+          (expr `(,pred ,thing))
+          (expr (if (eq :UNLESS mode) `(not ,expr) expr))
           (sym (gensym)))
     `(let ((,sym ,thing))
        (if ,expr
