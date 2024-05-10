@@ -220,30 +220,28 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   ;; (prndiv)
-  (if (atom lst)
-    lst
-    (nreverse
-      (let (not-first res)
-        (doconses (head pos lst res)
-          (cond
-            ((and (cdr pos) (atom (cdr pos)))
-              ;; found an improper tail, properize it:
-              (push (dm::properize-pattern head) res)
-              (push *dm::improper-indicator* res)
-              (push (cdr pos) res)
-              (setf pos nil))
-            ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
-              ;; found a wayward comma, fix it:
-              (push *dm::improper-indicator* res) 
-              (push
-                (list '\,
-                  (let ((next (cadr pos)))
-                    (if (atom next) next (dm::properize-pattern next))))
-                res)
-              (setf pos nil))
-            ((listp head) (push (dm::properize-pattern head) res))
-            (t (push head res)))
-          (setf not-first t))))))
+  (nreverse
+    (let (not-first res)
+      (doconses (head pos lst res)
+        (cond
+          ((and (cdr pos) (atom (cdr pos)))
+            ;; found an improper tail, properize it:
+            (push (dm::properize-pattern head) res)
+            (push *dm::improper-indicator* res)
+            (push (cdr pos) res)
+            (setf pos nil))
+          ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
+            ;; found a wayward comma, fix it:
+            (push *dm::improper-indicator* res) 
+            (push
+              (list '\,
+                (let ((next (cadr pos)))
+                  (if (atom next) next (dm::properize-pattern next))))
+              res)
+            (setf pos nil))
+          ((listp head) (push (dm::properize-pattern head) res))
+          (t (push head res)))
+        (setf not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
 (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
@@ -281,6 +279,17 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((6.9367909999999995 0 0.0)
+    (6.137823999999999 0 0.0)
+    (7.0196439999999996 32 2.3485959999999864)
+    (8.013167 32 2.3482890000000225))
+
+  ((6.913105 0 0.0)
+    (6.162233 0 0.0)
+    (7.016597 32 2.3439649999999688)
+    (8.174329 32 2.3671600000000126))
+
 
   ((6.92939 0 0.0)
     (6.119363 0 0.0)
