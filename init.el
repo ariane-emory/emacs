@@ -138,7 +138,8 @@
     ;; Customize other properties/functions/lists:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (with-messages "putting some properties"
-      "Confirmation prompts accept y/n instead of yes/no:"
+      nil
+      "Confirmation prompts accept y/n instead of yes/no."
       (fset 'yes-or-no-p 'y-or-n-p)
       "I forget why I do this:"
       (put 'lisp-indent-function 'safe-local-variable 'integerp)
