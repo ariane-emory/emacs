@@ -93,28 +93,45 @@
            (dm::properize-pattern (car lst) nil)
            (dm::properize-pattern (cdr lst) t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern (lst &optional first)
+(defun dm::properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   ;; (prndiv)
-  (nreverse
-    (let ( (improper-indicator '\.)
-           (res nil))
-      (doconses (head pos lst res)
-        (cond
-          ((and (eq '\, head) (not (cddr pos)))
-            (push improper-indicator res) 
-            (push (list '\, (cadr pos)) res)
-            (setf pos (cdr pos))
-            )
-          ((not (listp (cdr pos)))
-            (push head res)
-            (push improper-indicator res)
-            (push (cdr pos) res)
-            (setf  pos nil))
-          (t (push head res)))))))
+  (if (atom lst)
+    lst
+    (nreverse
+      (let ( (improper-indicator '\.)
+             (not-first nil)
+             (res nil))
+        (doconses (head pos lst res)
+          (prndiv)
+          (prn "lst:  %s" lst)
+          (prn "head: %s" head)
+          (prn "pos:  %s" pos)
+          (cond
+            ((and not-first (eq '\, head) (not (cddr pos)))
+              (prn "case 1.")
+              (push improper-indicator res) 
+              (push (list '\,
+                      (with-indentation (dm::properize-pattern (cadr pos))))
+                res)
+              (setf pos (cdr pos))
+              )
+            ((not (listp (cdr pos)))
+              (prn "case 2.")
+              (push (with-indentation (dm::properize-pattern head)) res)
+              (push improper-indicator res)
+              (push (cdr pos) res)
+              (setf  pos nil))
+            ((listp head)
+              (prn "case 5.")
+              (push (dm::properize-pattern head) res))
+            (t
+              (prn "case 4.")
+              (push head res)))
+          (setf not-first t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
 (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
@@ -124,8 +141,10 @@
 (confirm that (dm::properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-(confirm that (dm::properize-pattern '(,v (,w ,x . ,y). ,z))
-  returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+(confirm that (dm::properize-pattern '((,w . ,y). ,z))
+  returns (((\, w) \. (\, y)) \. (\, z)))
+;; (confirm that (dm::properize-pattern '(,v (,w ,x . ,y). ,z))
+;;   returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)))
   returns ((\, x) (\, y) \. (\, (z integer?))))
 ;; this one would not by a legal pattern due to the way ,z is used in the innermost sub-expression,
