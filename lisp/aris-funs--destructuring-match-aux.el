@@ -124,19 +124,18 @@
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
-  (if (atom lst)
-    lst
-    (cond
-      ((and (cdr lst) (atom (cdr lst)))
-        ;; found an improper tail, properize it:
-        (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
-      ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
-        ;; found a wayward comma, fix it:
-        (list *dm::improper-indicator*
-          (list '\, (dm::properize-pattern* (cadr lst) nil))))
-      (t (cons
-           (dm::properize-pattern* (car lst) nil)
-           (dm::properize-pattern* (cdr lst) t))))))
+  (cond
+    ((atom lst) lst)
+    ((and (cdr lst) (atom (cdr lst)))
+      ;; found an improper tail, properize it:
+      (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
+    ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
+      ;; found a wayward comma, fix it:
+      (list *dm::improper-indicator*
+        (list '\, (dm::properize-pattern* (cadr lst) nil))))
+    (t (cons
+         (dm::properize-pattern* (car lst) nil)
+         (dm::properize-pattern* (cdr lst) t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern*  nil)          returns nil)
 (confirm that (dm::properize-pattern* '(,x))         returns ((\, x)))
@@ -281,12 +280,17 @@
 
     (list
       (benchmark-run reps (dm::properize-pattern!* '(,v (,w ,x . ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern* '(,v (,w ,x . ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern! '(,v (,w ,x . ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern*  '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!  '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern   '(,v (,w ,x . ,y) . ,z)))
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((3.478236 0 0.0)
+    (3.458965 16 1.1711880000000008)
+    (3.118033 0 0.0)
+    (4.113893 17 1.2629269999999906))
 
   ;; results of calling variants of my function a half million times using
   ;; benchmark-run (numbers shown are the car of benchmark-run's return):
