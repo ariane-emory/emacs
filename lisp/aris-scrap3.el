@@ -29,12 +29,12 @@
   (let (res)
     (nreverse
       (catch 'result
-        (doconses (head pos lst  res)
+        (doconses (head pos lst res)
           (push head res)
           (unless (listp (cdr pos))
             (push '\. res)
             (push (cdr pos) res)
-            (throw 'result res)))))) )
+            (throw 'result res)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize-target  nil)       returns nil)
 (confirm that (properize-target '(2))       returns (2))
@@ -104,14 +104,22 @@
   (let (res)
     (nreverse
       (catch 'result
-        (doconses (head pos lst  res)
-          (prn "head %s pos %s" head pos)
-          (push head res)
-          (unless (listp (cdr pos))
-            (push '\. res)
-            (push (cdr pos) res)
-            (prn "throw because %s is not a list" (cdr pos))
-            (throw 'result res)))))))
+        (doconses (head pos lst res)
+          (prndiv)
+          (prn "head %s" head)
+          (prn "pos  %s" pos)
+          (prn "res  %s" res)
+          (cond
+            ((and (eq '\, head) (not (cddr pos)))
+              (push '\.                   res)
+              (push (list '\, (cadr pos)) res)
+              (throw 'result res)
+              (debug))
+            ((not (listp (cdr pos)))
+              (push '\.       res)
+              (push (cdr pos) res)
+              (throw 'result res))
+            (t (push head res))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize-pattern  nil)          returns nil)
 (confirm that (properize-pattern '(,x))         returns ((\, x)))
