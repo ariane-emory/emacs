@@ -54,13 +54,25 @@
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
-  (if (not (proper-list-p lst))
-    (dm::properize-target! lst) ; target fun works in this case.
-    (let ((tail (last lst 2)))
-      (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
-        (setcar tail '\.)
-        (setcdr tail (list (list '\, (cadr tail))))))
-    lst))
+  (let ((improper-indicator '\.))
+    (doconses (head pos lst lst)
+      (when (consp head)
+        (setcar pos (dm::properize-pattern! head)))
+      (when (and (cdr pos) (atom (cdr pos)))
+        (setcdr pos
+          (append
+            (when improper-indicator (list improper-indicator))
+            (list (cdr pos))))
+        (setf pos (cdr pos)))))
+
+  ;; (if (not (proper-list-p lst))
+  ;;   (dm::properize-target! lst) ; target fun works in this case.
+  ;;   (let ((tail (last lst 2)))
+  ;;     (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
+  ;;       (setcar tail '\.)
+  ;;       (setcdr tail (list (list '\, (cadr tail))))))
+  ;;   lst)
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern!  nil)          returns nil)
 (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
@@ -75,25 +87,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern (lst &optional not-first)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  ;; flexible elements following the properize symbol should be illegal?
-  (let ((improper-indicator '\.))
-    (cond
-      ((atom lst) lst)
-      ((and (cdr lst) (atom (cdr lst)))
-        (cons
-          (dm::properize-pattern (car lst) nil)
-          (append (when improper-indicator (list improper-indicator))
-            (list (cdr lst)))))
-      ((and not-first (not (cddr lst)) (eq '\, (car lst)))
-        (list improper-indicator (list '\, (dm::properize-pattern (cadr lst) nil))))
-      (t (cons
-           (dm::properize-pattern (car lst) nil)
-           (dm::properize-pattern (cdr lst) t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -121,6 +114,25 @@
           ((listp head) (push (dm::properize-pattern head) res))
           (t (push head res)))
         (setf not-first t)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern (lst &optional not-first)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
+  (let ((improper-indicator '\.))
+    (cond
+      ((atom lst) lst)
+      ((and (cdr lst) (atom (cdr lst)))
+        (cons
+          (dm::properize-pattern (car lst) nil)
+          (append (when improper-indicator (list improper-indicator))
+            (list (cdr lst)))))
+      ((and not-first (not (cddr lst)) (eq '\, (car lst)))
+        (list improper-indicator (list '\, (dm::properize-pattern (cadr lst) nil))))
+      (t (cons
+           (dm::properize-pattern (car lst) nil)
+           (dm::properize-pattern (cdr lst) t))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
 (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
