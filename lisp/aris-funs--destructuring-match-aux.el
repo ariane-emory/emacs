@@ -51,7 +51,6 @@
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
-  (assert-list! lst)
   (if (not (proper-list-p lst))
     (dm::properize-target! lst) ; target fun works in this case.
     (let ((tail (last lst 2)))
@@ -80,6 +79,18 @@
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
+
+  ;; (cond
+  ;;   ((atom lst) lst)
+  ;;   ((and (cdr lst) (atom (cdr lst)))
+  ;;     (cons
+  ;;       (if rec (properize (car lst) rec improper-indicator) (car lst))
+  ;;       (append (when improper-indicator (list improper-indicator))
+  ;;         (list (cdr lst)))))
+  ;;   (t (cons
+  ;;        (if rec (properize (car lst) rec improper-indicator) (car lst))
+  ;;        (properize (cdr lst) rec improper-indicator))))
+
   (nreverse
     (let (res)
       (doconses (head pos lst res)
@@ -87,13 +98,13 @@
           ((and (eq '\, head) (not (cddr pos)))
             (push '\.                   res)
             (push (list '\, (cadr pos)) res)
-            (setf pos (cdr pos))
+            (setf  pos (cdr pos))
             )
           ((not (listp (cdr pos)))
             (push head res)
             (push '\.       res)
             (push (cdr pos) res)
-            (setf pos nil))
+            (setf  pos nil))
           (t (push head res)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
