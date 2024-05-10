@@ -87,7 +87,7 @@
           (append (when improper-indicator (list improper-indicator))
             (list (cdr lst)))))
       ((and not-first (not (cddr lst)) (eq '\, (car lst)))
-        (list improper-indicator (list '\,(dm::properize-pattern (cadr lst) nil))))
+        (list improper-indicator (list '\, (dm::properize-pattern (cadr lst) nil))))
       (t (cons
            (dm::properize-pattern (car lst) nil)
            (dm::properize-pattern (cdr lst) t))))))
