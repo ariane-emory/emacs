@@ -72,7 +72,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-pattern (lst &optional not-first)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -99,39 +98,40 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   ;; (prndiv)
-  (if (atom lst)
-    lst
-    (nreverse
-      (let ( (improper-indicator '\.)
-             (not-first nil)
-             (res nil))
-        (doconses (head pos lst res)
-          (prndiv)
-          (prn "lst:  %s" lst)
-          (prn "head: %s" head)
-          (prn "pos:  %s" pos)
-          (cond
-            ((and not-first (eq '\, head) (not (cddr pos)))
-              (prn "case 1.")
-              (push improper-indicator res) 
-              (push (list '\,
-                      (with-indentation (dm::properize-pattern (cadr pos))))
-                res)
-              (setf pos (cdr pos))
-              )
-            ((not (listp (cdr pos)))
-              (prn "case 2.")
-              (push (with-indentation (dm::properize-pattern head)) res)
-              (push improper-indicator res)
-              (push (cdr pos) res)
-              (setf  pos nil))
-            ((listp head)
-              (prn "case 5.")
-              (push (dm::properize-pattern head) res))
-            (t
-              (prn "case 4.")
-              (push head res)))
-          (setf not-first t))))))
+  (nreverse
+    (let ( (improper-indicator '\.)
+           (not-first nil)
+           (res nil))
+      (doconses (head pos lst res)
+        (prndiv)
+        (prn "lst:  %s" lst)
+        (prn "head: %s" head)
+        (prn "pos:  %s" pos)
+        (cond
+          ((and not-first (eq '\, head) (not (cddr pos)))
+            (prn "case 1.")
+            (push improper-indicator res) 
+            (push (list '\,
+                    (let ((next (cadr pos)))
+                      (if (atom next)
+                        next
+                        (with-indentation (dm::properize-pattern next)))))
+              res)
+            (setf pos (cdr pos))
+            )
+          ((not (listp (cdr pos)))
+            (prn "case 2.")
+            (push (with-indentation (dm::properize-pattern head)) res)
+            (push improper-indicator res)
+            (push (cdr pos) res)
+            (setf  pos nil))
+          ((listp head)
+            (prn "case 5.")
+            (push (dm::properize-pattern head) res))
+          (t
+            (prn "case 4.")
+            (push head res)))
+        (setf not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
 (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
