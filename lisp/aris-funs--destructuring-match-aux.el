@@ -84,7 +84,7 @@
       (when (consp head)
         (setcar pos (dm::properize-pattern! head)))
       (when (and (cdr pos) (atom (cdr pos)))
-        ;; found the improper tail.
+        ;; found an improper tail.
         (setcdr pos
           (append
             (when improper-indicator (list improper-indicator))
@@ -136,7 +136,7 @@
               res)
             (setf pos nil))
           ((not (listp (cdr pos)))
-            ;; found the improper tail.
+            ;; found an improper tail.
             (push (dm::properize-pattern head) res)
             (push improper-indicator res)
             (push (cdr pos) res)
@@ -154,11 +154,13 @@
     (cond
       ((atom lst) lst)
       ((and (cdr lst) (atom (cdr lst)))
+        ;; found an improper tail.
         (cons
           (dm::properize-pattern (car lst) nil)
           (append (when improper-indicator (list improper-indicator))
             (list (cdr lst)))))
       ((and not-first (not (cddr lst)) (eq '\, (car lst)))
+        ;; found a wayward comma.
         (list improper-indicator (list '\, (dm::properize-pattern (cadr lst) nil))))
       (t (cons
            (dm::properize-pattern (car lst) nil)

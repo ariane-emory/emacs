@@ -841,7 +841,7 @@ lists that were originally improper."
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
-      ;; found the improper tail.
+      ;; found an improper tail.
       (cons
         (if rec (properize (car lst) rec improper-indicator) (car lst))
         (append (when improper-indicator (list improper-indicator))
