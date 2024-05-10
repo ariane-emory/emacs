@@ -878,7 +878,7 @@ lists that were originally improper."
         (append
           (when improper-indicator (list improper-indicator))
           (list (cdr pos))))
-      (setf pos (cdr pos)))))
+      (setf pos nil))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize! nil) returns nil)
 (confirm that (properize! '(1 2 3)) returns (1 2 3))
