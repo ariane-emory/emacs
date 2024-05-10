@@ -18,7 +18,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (properize lst t '\.))
+  (properize! lst t '\.))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-target!  nil)       returns nil)
 (confirm that (dm::properize-target! '(2))       returns (2))
