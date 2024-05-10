@@ -14,6 +14,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; properize targets:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-target! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target by inserting a 'properize symbol', '\."
@@ -48,62 +53,65 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; properize patterns:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern! (lst)
+(defun dm::properize-pattern! (lst) ; shallowly recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a pattern by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  ;; flexible elements following the properize symbol should be illegal?
-  (if (not (proper-list-p lst))
-    (dm::properize-target! lst) ; target fun works in this case.
-    (let ((tail (last lst 2)))
-      (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
-        (setcar tail '\.)
-        (setcdr tail (list (list '\, (cadr tail))))))
-    lst))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern! (lst)
-   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (let ( (improper-indicator '\.)
          (not-first nil))
     (doconses (head pos lst lst)
-      (when (consp head)
+      (when (consp head) ; head is a list, properize it:
         (setcar pos (dm::properize-pattern! head)))
-
       (cond
-
         ((and (cdr pos) (atom (cdr pos)))
-          ;; found an improper tail.
+          ;; found an improper tail, properize it:
           (setcdr pos (list improper-indicator (cdr pos)))
           (setf pos nil))
-
-
         ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
-          ;; found a wayward comma.
+          ;; found a wayward comma, fix it:
           (setcar pos improper-indicator)
-          (setcdr pos (list '\, (if (listp (cadr pos)) (dm::properize-pattern! (cadr pos)) (cadr pos))))
+          (setcdr pos
+            (list (list '\,
+                    (if (listp (cadr pos)) (dm::properize-pattern! (cadr pos)) (cadr pos)))))
           (setf pos nil)))
       (setf not-first t)
       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern! (lst &optional not-first) ; deeply recursive version.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
+  (let ((improper-indicator '\.))
+    (cond
+      ((atom lst) lst)
+      ((and (cdr lst) (atom (cdr lst)))
+        ;; found an improper tail, properize it:
+        (cons
+          (dm::properize-pattern! (car lst) nil)
+          (append (when improper-indicator (list improper-indicator))
+            (list (cdr lst)))))
+      ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
+        ;; found a wayward comma, fix it:
+        (list improper-indicator
+          (list '\, (dm::properize-pattern! (cadr lst) nil))))
+      (t (cons
+           (dm::properize-pattern! (car lst) nil)
+           (dm::properize-pattern! (cdr lst) t))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern!  nil)          returns nil)
 (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
 (confirm that (dm::properize-pattern! '(,x .  y))    returns ((\, x) \. y))
+(let ((lst '(,x .  y)))
+  (confirm that (dm::properize-pattern! lst)         returns ((\, x) \. y))
+  (confirm that lst                                  returns ((\, x) \. y)))
 (confirm that (dm::properize-pattern! '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (dm::properize-pattern! '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern! '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
@@ -115,7 +123,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern (lst)
+(defun dm::properize-pattern (lst) ; shallowly recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -128,13 +136,13 @@
       (doconses (head pos lst res)
         (cond
           ((and (cdr pos) (atom (cdr pos)))
-            ;; found an improper tail.
+            ;; found an improper tail, properize it:
             (push (dm::properize-pattern head) res)
             (push improper-indicator res)
             (push (cdr pos) res)
             (setf pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
-            ;; found a wayward comma.
+            ;; found a wayward comma, fix it:
             (push improper-indicator res) 
             (push
               (list '\,
@@ -146,7 +154,7 @@
           (t (push head res)))
         (setf not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern (lst &optional not-first)
+(defun dm::properize-pattern (lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -155,13 +163,13 @@
     (cond
       ((atom lst) lst)
       ((and (cdr lst) (atom (cdr lst)))
-        ;; found an improper tail.
+        ;; found an improper tail, properize it:
         (cons
           (dm::properize-pattern (car lst) nil)
           (append (when improper-indicator (list improper-indicator))
             (list (cdr lst)))))
       ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
-        ;; found a wayward comma.
+        ;; found a wayward comma, fix it:
         (list improper-indicator
           (list '\, (dm::properize-pattern (cadr lst) nil))))
       (t (cons
