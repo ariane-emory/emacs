@@ -89,16 +89,7 @@
           (append
             (when improper-indicator (list improper-indicator))
             (list (cdr pos))))
-        (setf pos (cdr pos)))))
-
-  ;; (if (not (proper-list-p lst))
-  ;;   (dm::properize-target! lst) ; target fun works in this case.
-  ;;   (let ((tail (last lst 2)))
-  ;;     (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
-  ;;       (setcar tail '\.)
-  ;;       (setcdr tail (list (list '\, (cadr tail))))))
-  ;;   lst)
-  )
+        (setf pos (cdr pos))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern!  nil)          returns nil)
 (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
