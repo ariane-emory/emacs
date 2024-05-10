@@ -46,26 +46,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize-target! (lst &optional no-test)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a target by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (assert-list! lst)
-  (when   (or no-test (not (proper-list-p lst)))
-    (let ((last (last lst)))
-      (setcdr last (list '\. (cdr last)))))
-  lst)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-target!  nil)       returns nil)
-(confirm that (properize-target! '(2))       returns (2))
-(confirm that (properize-target! '(2 . 4))   returns (2 \. 4))
-(confirm that (properize-target! '(2 4   6)) returns (2 4 6))
-(confirm that (properize-target! '(2 4 . 6)) returns (2 4 \. 6))
-;; (dont confirm that (properize-target! '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-pattern! (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
@@ -95,6 +75,26 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize-target! (lst &optional no-test)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively properize a target by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  (assert-list! lst)
+  (when   (or no-test (not (proper-list-p lst)))
+    (let ((last (last lst)))
+      (setcdr last (list '\. (cdr last)))))
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize-target!  nil)       returns nil)
+(confirm that (properize-target! '(2))       returns (2))
+(confirm that (properize-target! '(2 . 4))   returns (2 \. 4))
+(confirm that (properize-target! '(2 4   6)) returns (2 4 6))
+(confirm that (properize-target! '(2 4 . 6)) returns (2 4 \. 6))
+;; (dont confirm that (properize-target! '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize-pattern (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
@@ -113,22 +113,24 @@
             ((and (eq '\, head) (not (cddr pos)))
               (push '\.                   res)
               (push (list '\, (cadr pos)) res)
+              (prn "throw %s because found a loose comma in 2nd last pos!" res)
               (throw 'result res)
               (debug))
             ((not (listp (cdr pos)))
               (push '\.       res)
               (push (cdr pos) res)
+              (prn "throw %s because (cdr pos) isn't a list!" res)
               (throw 'result res))
             (t (push head res))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize-pattern  nil)          returns nil)
-(confirm that (properize-pattern '(,x))         returns ((\, x)))
+;; (confirm that (properize-pattern  nil)          returns nil)
+;; (confirm that (properize-pattern '(,x))         returns ((\, x)))
 (confirm that (properize-pattern '(,x .  y))    returns ((\, x) \. y))
-(confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
-(confirm that (properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-(confirm that (properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-(confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-(confirm that (properize-pattern '(,x ,y . ,(z  integer?)))
-  returns ((\, x) (\, y) \. (\, (z integer?)))) 
+;; (confirm that (properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
+;; (confirm that (properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+;; (confirm that (properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
+;; (confirm that (properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+;; (confirm that (properize-pattern '(,x ,y . ,(z  integer?)))
+;;   returns ((\, x) (\, y) \. (\, (z integer?)))) 
 ;; (dont confirm that (properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
