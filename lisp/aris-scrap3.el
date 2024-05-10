@@ -20,26 +20,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize (lst &optional rec)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively make a proper list from an improper list, recursively if REC."
   (cond
     ((atom lst) lst)
-    ((and (cdr lst) (atom (cdr lst))) (list (if rec (properize (car lst) rec) (car lst)) (cdr lst)))
+    ((and (cdr lst) (atom (cdr lst)))
+      (list (if rec (properize (car lst) rec) (car lst)) (cdr lst)))
     (t (cons (if rec (properize (car lst) rec) (car lst)) (properize (cdr lst) rec)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(properize nil) ; => nil
-(properize '(1 2 3)) ; => (1 2 3)
-(properize '(1 2 . 3)) ; => (1 2 3)
-(properize '(1 (2 3 . 4) . 5)) ; => (1 (2 3 . 4) 5)
-(properize '(1 (2 3 . 4) . 5) t) ; => (1 (2 3 4) 5)
+(confirm that (properize nil) returns nil)
+(confirm that (properize '(1 2 3)) returns (1 2 3))
+(confirm that (properize '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
+(confirm that (properize '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(confirm that (properize nil) returns nil)
-(confirm that (properize '(1)) returns (1))
-(confirm that (properize '(1 . 2)) returns (1 2))
-(confirm that (properize '(1 2 . 3)) returns (1 2 3))
-;; (confirm that (properize '(1 2 3)) returns (1 2 3))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize! (lst &optional rec)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively make a proper list from an improper list, recursively if REC."
+  (doconses (head pos lst lst)
+    (when (and rec (consp head))
+      (setcar pos (properize! head rec)))
+    (when (and (cdr pos) (atom (cdr pos)))
+      (setcdr pos (list (cdr pos)))
+      (setf pos (cdr pos)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize! nil) returns nil)
+(confirm that (properize! '(1 2 3)) returns (1 2 3))
+(confirm that (properize! '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize! '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
+(confirm that (properize! '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
