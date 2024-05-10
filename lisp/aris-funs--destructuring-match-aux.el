@@ -59,7 +59,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern! (lst &optional not-first) ; deeply recursive version.
+(defun dm::properize-pattern!* (lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -74,10 +74,40 @@
       ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
         ;; found a wayward comma, fix it:
         (list improper-indicator
-          (list '\, (dm::properize-pattern! (cadr lst) nil))))
+          (list '\, (dm::properize-pattern!* (cadr lst) nil))))
       (t (cons
-           (dm::properize-pattern! (car lst) nil)
-           (dm::properize-pattern! (cdr lst) t))))))
+           (dm::properize-pattern!* (car lst) nil)
+           (dm::properize-pattern!* (cdr lst) t))))))
+(confirm that (dm::properize-pattern!*  nil)          returns nil)
+(confirm that (dm::properize-pattern!* '(,x))         returns ((\, x)))
+(confirm that (dm::properize-pattern!* '(,x .  y))    returns ((\, x) \. y))
+(confirm that (dm::properize-pattern!* '(,x . ,y))    returns ((\, x) \. (\, y)))
+(confirm that (dm::properize-pattern!* '(,x . (y z))) returns ((\, x) y z))
+(confirm that (dm::properize-pattern!* '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+(confirm that (dm::properize-pattern!* '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
+(confirm that (dm::properize-pattern!* '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+(confirm that (dm::properize-pattern!* '((,w . ,y). ,z))
+  returns (((\, w) \. (\, y)) \. (\, z)))
+(confirm that (dm::properize-pattern!* '(,v (,w ,x . ,y). ,z))
+  returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+(confirm that (dm::properize-pattern!* '(,x ,y . ,(z  integer?)))
+  returns ((\, x) (\, y) \. (\, (z integer?))))
+;; this one would not be a legal pattern!* due to the way ,z is used in the innermost sub-expression,
+;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
+(confirm that (dm::properize-pattern!* '(,x ,y . ,(,z integer?)))
+  returns ((\, x) (\, y) \. (\,((\, z) integer?))))
+(let ((lst  '(,v (,w ,x . ,y). ,z)))
+  (confirm that (dm::properize-pattern!* lst)
+    returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+  (confirm that lst
+    returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
+(let ((lst '(,x .  y)))
+  (confirm that (dm::properize-pattern!* lst)         returns ((\, x) \. y))
+  (confirm that lst                                  returns ((\, x) \. y)))
+;; don't confirm: (dm::properize-pattern!* '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-pattern! (lst) ; shallowly recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
