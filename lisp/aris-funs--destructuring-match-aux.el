@@ -92,6 +92,7 @@
 (confirm that (dm::properize-pattern!* '(,x .  y))    returns ((\, x) \. y))
 (confirm that (dm::properize-pattern!* '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (dm::properize-pattern!* '(,x . (y z))) returns ((\, x) y z))
+(confirm that (dm::properize-pattern!* '(,x  y .  z)) returns ((\, x) y \. z))
 (confirm that (dm::properize-pattern!* '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern!* '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern!* '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
@@ -128,7 +129,7 @@
       (cond
         ((and (cdr pos) (atom (cdr pos)))
           ;; found an improper tail, properize it:
-          (setcar pos (dm::properize-pattern! head))
+          (setcar pos (if (atom head) head (dm::properize-pattern! head)))
           (setcdr pos (list *dm::improper-indicator* (cdr pos)))
           (setf pos nil))
         ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
@@ -146,6 +147,7 @@
 (confirm that (dm::properize-pattern! '(,x .  y))    returns ((\, x) \. y))
 (confirm that (dm::properize-pattern! '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (dm::properize-pattern! '(,x . (y z))) returns ((\, x) y z))
+(confirm that (dm::properize-pattern! '(,x  y .  z)) returns ((\, x) y \. z))
 (confirm that (dm::properize-pattern! '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern! '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern! '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
@@ -196,6 +198,7 @@
 (confirm that (dm::properize-pattern* '(,x .  y))    returns ((\, x) \. y))
 (confirm that (dm::properize-pattern* '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (dm::properize-pattern* '(,x . (y z))) returns ((\, x) y z))
+(confirm that (dm::properize-pattern* '(,x  y .  z)) returns ((\, x) y \. z))
 (confirm that (dm::properize-pattern* '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern* '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern* '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
@@ -233,14 +236,13 @@
                   (if (atom next) next (dm::properize-pattern next))))
               res)
             (setf pos nil))
-          ((atom head) (push head res))
-          ;; now we know head's a list.
           ((and (cdr pos) (atom (cdr pos)))
             ;; found an improper tail, properize it:
-            (push (dm::properize-pattern head) res)
+            (push (if (atom head) head (dm::properize-pattern head)) res)
             (push *dm::improper-indicator* res)
             (push (cdr pos) res)
             (setf pos nil))
+          ((atom head) (push head res))
           (t (push (dm::properize-pattern head) res)))
         (setf not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -249,6 +251,7 @@
 (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
 (confirm that (dm::properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
 (confirm that (dm::properize-pattern '(,x . (y z))) returns ((\, x) y z))
+(confirm that (dm::properize-pattern '(,x  y .  z)) returns ((\, x) y \. z))
 (confirm that (dm::properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
