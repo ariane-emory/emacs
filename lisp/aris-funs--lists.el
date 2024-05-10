@@ -9,9 +9,103 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro assert-list! (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Signal an error unless LST is a list."  
+  (if (symbolp lst)
+    (let ((name (upcase (symbol-name lst))))
+      `(unless (listp ,lst) (error "%s is not a list: %s" ,name ,lst)))
+    `(unless (listp ,lst)   (error "Not a list: %s" ,lst))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(font-lock-add-keywords 'emacs-lisp-mode
+  '(("(\\(assert-list\\!\\_>\\)" . font-lock-warning-face)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro doconses (spec &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Loop over a list's heads and conses. Evaluate BODY with
+VAR bound to each cons from LIST and POSITION bound
+to each cons cell, in turn. Then evaluate RESULT to get
+return value, default nil.
+
+This is a a simple modification of `dolist'.
+
+ (VAR POS LIST [RESULT]) BODY...)"
+  (declare (indent 1) (debug ((symbolp form &optional form) body)))
+  (unless (consp spec)
+    (signal 'wrong-type-argument (list 'consp spec)))
+  (unless (<= 3 (length spec) 4)
+    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
+  (let ( (var      (car spec))
+         (position (cadr spec))
+         (lst      (caddr spec)))
+    `(let ((,position ,lst))
+       (assert-list! ,position)
+       (while ,position
+         (let ((,var (car ,position)))
+           ,@body
+           (setq ,position (cdr ,position))))
+       ,@(cdr (cdr (cdr spec))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that 
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (when (eq 'c head)
+        (setcar pos (cons head (cadr pos)))
+        (setcdr pos (cddr pos)))))
+  returns (a 2 b 4 (c . 6) d 8))
+(confirm that ; plist to alist
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (setcar pos (cons head (cadr pos)))
+      (setcdr pos (cddr pos))))
+  returns ((a . 2) (b . 4) (c . 6) (d . 8)))
+(confirm that ; plist to let varlist
+  (let ((lst '(a 2 b 4 c 6 d 8)))
+    (doconses (head pos lst lst)
+      (setcar pos (list head (cadr pos)))
+      (setcdr pos (cddr pos))))
+  returns ((a 2) (b 4) (c 6) (d 8)))
+(confirm that ; alist to plist 
+  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+    (doconses (head pos lst lst)
+      (let ((new (cons (cdr head) (cdr pos))))
+        (setcar pos (car head))
+        (setcdr pos new)
+        (setf pos (cdr pos)))))
+  returns (a 2 b 4 c 6 d 8))
+(confirm that ; plist to let varlist
+  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
+    (doconses (head pos lst lst)
+      (let ((new (cons (cdr head) (cdr pos))))
+        (setcar pos (list (car head) (cdr head))))))
+  returns ((a 2) (b 4) (c 6) (d 8)))
+(confirm that
+  (let ((lst '(,x . ,y)))
+    (doconses (head pos lst lst)
+      (when (eq '\, head)
+        (setcar pos (list head (cadr pos)))
+        (setcdr pos (cddr pos)))))
+  returns ((\, x) (\, y)))
+(confirm that
+  (let ((lst '(,x . ,y)))
+    (doconses (head pos lst lst)
+      (when (eq '\, head)
+        (let ((new (list (list head (cadr pos)))))
+          (setcar pos '\.)
+          (setcdr pos new)
+          (setf pos (cdr pos))))))
+  returns ((\, x) \. (\, y)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun pick (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Pick a random element from LST."
+  (assert-list! lst)
   (elt lst (random (length lst))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -20,6 +114,7 @@
 (defun weighted-pick (weighted-list)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Select the cdr of an element from WEIGHTED-LIST based on the weight in its car."
+  (assert-list! weighted-lst)
   (let* ( (total-weight (apply #'+ (mapcar #'car weighted-list)))
           (random-weight (random total-weight))
           (cumulative-weight 0))
@@ -61,28 +156,6 @@
 (confirm that (any 'even? '(1 3 5 7 9 11)) returns nil)
 (confirm that (any (lambda (x) (even? x)) '(1 3 5 7 9 10)) returns t)
 (confirm that (any (lambda (x) (even? x)) '(1 3 5 7 9 11)) returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compact (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Filter nil items from LST."
-  (unless (list? lst) (error "LST must be a list")) 
-  (while (and lst (nil? (car lst)))
-    (pop lst)) ;; (setq lst (cdr lst)))
-  (when lst
-    (let* ( (result (list (pop lst)))
-            (tail result))
-      (while lst
-        (let ((head (pop lst)))
-          (unless (nil? head)
-            (setq tail (rplacd! tail (list head))))))
-      result)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
-(confirm that (compact '(nil)) returns nil)
-(confirm that (compact nil) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -133,7 +206,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a list containing those members of lst satisfying pred?."
   (unless (fun? pred?) (error "PRED? must be a function"))
-  (unless (list? lst)  (error "LST must be a list"))
+  (assert-list! lst)
   (let (result tail)
     (while lst
       (let ((head (pop lst)))
@@ -141,11 +214,11 @@
           (let ((new-tail (list head)))
             (if tail
               (progn
-                (rplacd! tail new-tail)
+                (setcdr tail new-tail)
                 (setq   tail new-tail))
               (setq
-                result new-tail
-                tail   result))))))
+                result  new-tail
+                tail    result))))))
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (filter 'even? '(1 2 3 4 5 6 7 8 9 10)) returns (2 4 6 8 10))
@@ -730,99 +803,6 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro assert-list! (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Signal an error unless LST is a list."  
-  (if (symbolp lst)
-    (let ((name (upcase (symbol-name lst))))
-      `(unless (listp ,lst) (error "%s is not a list: %s" ,name ,lst)))
-    `(unless (listp ,lst)   (error "Not a list: %s" ,lst))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(font-lock-add-keywords 'emacs-lisp-mode
-  '(("(\\(assert-list\\!\\_>\\)" . font-lock-warning-face)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro doconses (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Loop over a list's heads and conses. Evaluate BODY with
-VAR bound to each cons from LIST and POSITION bound
-to each cons cell, in turn. Then evaluate RESULT to get
-return value, default nil.
-
-This is a a simple modification of `dolist'.
-
- (VAR POS LIST [RESULT]) BODY...)"
-  (declare (indent 1) (debug ((symbolp form &optional form) body)))
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 3 (length spec) 4)
-    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
-  (let ( (var      (car spec))
-         (position (cadr spec))
-         (lst      (caddr spec)))
-    `(let ((,position ,lst))
-       (assert-list! ,position)
-       (while ,position
-         (let ((,var (car ,position)))
-           ,@body
-           (setq ,position (cdr ,position))))
-       ,@(cdr (cdr (cdr spec))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that 
-  (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
-      (when (eq 'c head)
-        (setcar pos (cons head (cadr pos)))
-        (setcdr pos (cddr pos)))))
-  returns (a 2 b 4 (c . 6) d 8))
-(confirm that ; plist to alist
-  (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
-      (setcar pos (cons head (cadr pos)))
-      (setcdr pos (cddr pos))))
-  returns ((a . 2) (b . 4) (c . 6) (d . 8)))
-(confirm that ; plist to let varlist
-  (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
-      (setcar pos (list head (cadr pos)))
-      (setcdr pos (cddr pos))))
-  returns ((a 2) (b 4) (c 6) (d 8)))
-(confirm that ; alist to plist 
-  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-    (doconses (head pos lst lst)
-      (let ((new (cons (cdr head) (cdr pos))))
-        (setcar pos (car head))
-        (setcdr pos new)
-        (setf pos (cdr pos)))))
-  returns (a 2 b 4 c 6 d 8))
-(confirm that ; plist to let varlist
-  (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-    (doconses (head pos lst lst)
-      (let ((new (cons (cdr head) (cdr pos))))
-        (setcar pos (list (car head) (cdr head))))))
-  returns ((a 2) (b 4) (c 6) (d 8)))
-(confirm that
-  (let ((lst '(,x . ,y)))
-    (doconses (head pos lst lst)
-      (when (eq '\, head)
-        (setcar pos (list head (cadr pos)))
-        (setcdr pos (cddr pos)))))
-  returns ((\, x) (\, y)))
-(confirm that
-  (let ((lst '(,x . ,y)))
-    (doconses (head pos lst lst)
-      (when (eq '\, head)
-        (let ((new (list (list head (cadr pos)))))
-          (setcar pos '\.)
-          (setcdr pos new)
-          (setf pos (cdr pos))))))
-  returns ((\, x) \. (\, y)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dolist* (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A version of `dolist` that also handles improper lists."
@@ -910,6 +890,27 @@ This is a a simple modification of `dolist'.
 (confirm that (properize! '(1 2 3)) returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compact (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Filter nil items from LST."
+  (assert-list! lst)
+  (while (and lst (nil? (car lst)))
+    (pop lst))
+  (when lst
+    (let* ( (result (list (pop lst)))
+            (tail result))
+      (while lst
+        (let ((head (pop lst)))
+          (unless (nil? head)
+            (setq tail (rplacd! tail (list head))))))
+      result)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
+(confirm that (compact '(nil)) returns nil)
+(confirm that (compact nil) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
