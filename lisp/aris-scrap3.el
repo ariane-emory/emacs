@@ -23,32 +23,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize (lst &optional rec improper-indicator)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively make a proper list from an improper list, recursively if REC."
+  "Non-destructively make a proper list from an improper list, recursively if REC,
+optionally inserting an IMPROPER-INDICATOR before the last element of
+lists that were originally improper."
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
-
       (cons
         (if rec
           (properize (car lst) rec improper-indicator)
           (car lst))
         (append
           (when improper-indicator (list improper-indicator))
-          (list (cdr lst))))
-      
-      ;; `(
-      ;;    ,(if rec (funcall #'properize (car lst) rec improper-indicator) (car lst))
-      ;;    ,@improper-indicator
-      ;;    ,(cdr lst)
-      ;;    )
-
-      )
+          (list (cdr lst)))))
     (t
-      (cons (if rec (funcall #'properize (car lst) rec improper-indicator) (car lst)) (funcall #'properize (cdr lst) rec improper-indicator)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (cons
+        (if rec (funcall #'properize (car lst) rec improper-indicator) (car lst))
+        (funcall #'properize (cdr lst) rec improper-indicator)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(properize '(1 (2 3 . 4) . 5) t '\.) ; (1 (2 3 \. 4) \. 5)
+(properize '(1 2 . 3) t '\.) ; (1 2 \. 3)
+
 (confirm that (properize nil) returns nil)
 (confirm that (properize '(1 2 3)) returns (1 2 3))
 (confirm that (properize '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize '(1 2 . 3) t '\.) returns (1 2 \. 3))
 (confirm that (properize '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
 (confirm that (properize '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
 (confirm that (properize '(1 (2 3 . 4) . 5) t '\.) returns (1 (2 3 \. 4) \. 5))
