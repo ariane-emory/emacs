@@ -22,18 +22,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize (lst)
+(defun properize (lst &optional rec)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively (and recursively) make a proper list from an improper list.."
+  "Non-destructively make a proper list from an improper list, recursively if REC."
   (cond
     ((atom lst) lst)
-    ((and (cdr lst) (atom (cdr lst))) (list (properize (car lst)) (cdr lst)))
-    (t (cons (properize (car lst)) (properize (cdr lst))))))
+    ((and (cdr lst) (atom (cdr lst))) (list (if rec (properize (car lst) rec) (car lst)) (cdr lst)))
+    (t (cons (if rec (properize (car lst) rec) (car lst)) (properize (cdr lst) rec)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(properize '(1 (2 3 . 4) . 5))
-(properize '(1 2 . 3))
-(properize '(1 2 3))
-(properize nil)
+(properize nil) ; => nil
+(properize '(1 2 3)) ; => (1 2 3)
+(properize '(1 2 . 3)) ; => (1 2 3)
+(properize '(1 (2 3 . 4) . 5)) ; => (1 (2 3 . 4) 5)
+(properize '(1 (2 3 . 4) . 5) t) ; => (1 (2 3 4) 5)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (confirm that (properize nil) returns nil)
 (confirm that (properize '(1)) returns (1))
