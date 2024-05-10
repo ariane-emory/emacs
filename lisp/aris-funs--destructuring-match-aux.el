@@ -54,11 +54,25 @@
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
+  (if (not (proper-list-p lst))
+    (dm::properize-target! lst) ; target fun works in this case.
+    (let ((tail (last lst 2)))
+      (when (eq (car tail)  '\,) ; will also need to detect UNSPLICE!
+        (setcar tail '\.)
+        (setcdr tail (list (list '\, (cadr tail))))))
+    lst))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern! (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
   (let ((improper-indicator '\.))
     (doconses (head pos lst lst)
       (when (consp head)
         (setcar pos (dm::properize-pattern! head)))
       (when (and (cdr pos) (atom (cdr pos)))
+        ;; found the improper tail.
         (setcdr pos
           (append
             (when improper-indicator (list improper-indicator))

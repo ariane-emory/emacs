@@ -841,6 +841,7 @@ lists that were originally improper."
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
+      ;; found the improper tail.
       (cons
         (if rec (properize (car lst) rec improper-indicator) (car lst))
         (append (when improper-indicator (list improper-indicator))
@@ -872,6 +873,7 @@ lists that were originally improper."
     (when (and rec (consp head))
       (setcar pos (properize! head rec improper-indicator)))
     (when (and (cdr pos) (atom (cdr pos)))
+      ;; found the improper tail.
       (setcdr pos
         (append
           (when improper-indicator (list improper-indicator))
