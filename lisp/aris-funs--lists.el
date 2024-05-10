@@ -5,6 +5,7 @@
 (require 'dash)
 (require 'aris-funs--aliases)
 (require 'aris-funs--confirm)
+(require 'aris-funs--ignorebang)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -111,15 +112,15 @@ This is a a simple modification of `dolist'.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun weighted-pick (weighted-list)
+(defun weighted-pick (weighted-lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Select the cdr of an element from WEIGHTED-LIST based on the weight in its car."
+  "Select the cdr of an element from WEIGHTED-LST based on the weight in its car."
   (assert-list! weighted-lst)
-  (let* ( (total-weight (apply #'+ (mapcar #'car weighted-list)))
+  (let* ( (total-weight (apply #'+ (mapcar #'car weighted-lst)))
           (random-weight (random total-weight))
           (cumulative-weight 0))
     (catch 'return
-      (while-let ((item (pop weighted-list)))
+      (while-let ((item (pop weighted-lst)))
         (setq cumulative-weight (+ cumulative-weight (car item)))
         (when (< random-weight cumulative-weight)
           (throw 'return (cdr item)))))))
@@ -889,17 +890,41 @@ This is adapted from the version in Peter Norvig's book."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun compact (lst)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Filter nil items from LST."
+;;   (assert-list! lst)
+;;   (nreverse
+;;     (let (res)
+;;       (dolist (head lst res)
+;;         (unless (null head)
+;;           (push head res))))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
+;; (confirm that (compact '(nil)) returns nil)
+;; (confirm that (compact nil) returns nil)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compact (lst)
+(defun compact (lst &optional rec)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Filter nil items from LST."
+  "Filter nil items from LST, recursively when REC."
   (assert-list! lst)
   (nreverse
     (let (res)
       (dolist (head lst res)
-        (unless (null head)
-          (push head res))))))
+        (cond
+          ((null head)) ; do nothing
+          ((and rec (consp head))
+            (when-let ((compacted-head (compact head rec)))
+              (push compacted-head res)))
+          (t (push head res)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (compact '(1 nil 2 nil (3 nil (4 (nil) 5 nil))) t) returns (1 2 (3 (4 5))))
+(confirm that (compact '(1 nil 2 nil (3 nil (4 (nil) 5 nil))))
+  returns (1 2 (3 nil (4 (nil) 5 nil))))
 (confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
 (confirm that (compact '(nil)) returns nil)
 (confirm that (compact nil) returns nil)
@@ -907,33 +932,10 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compact* (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Recursively filter nil items from LST."
-  (assert-list! lst)
-  (nreverse
-    (let (res)
-      (dolist (head lst res)
-        (cond
-          ((null head)) ; do nothing
-          ((consp head)
-            (when-let ((compacted-head (compact* head)))
-              (push compacted-head res)))
-          (t (push head res))
-          )))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (compact* '(1 nil 2 nil (3 nil (4 (nil) 5 nil)))) returns (1 2 (3 (4 5))))
-(confirm that (compact* '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
-(confirm that (compact* '(nil)) returns nil)
-(confirm that (compact* nil) returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun unrepeat (lst &optional rec)
   "Remove sequentially repeated items from LST, recursively if REC."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let (res (last (gensym "unrepeat-")))
+  (let (res (last (gensym)))
     (while lst
       (let ((popped (pop lst)))
         (when (and rec (consp popped))
@@ -943,6 +945,7 @@ This is adapted from the version in Peter Norvig's book."
           (setq last popped))))
     (reverse res)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat '(a (b b c) (b c c)) t) returns (a (b c)))
 (confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))) t)
   returns (a b a b c a (b c) nil (b (c d e))))
 (confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
@@ -951,26 +954,29 @@ This is adapted from the version in Peter Norvig's book."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unrepeat2 (lst &optional rec)
-  "Remove sequentially repeated items from LST, recursively if REC."
+(ignore! ;; this version is a bit slower than `unrepeat':
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (defun unrepeat2 (lst &optional rec)
+    "Remove sequentially repeated items from LST, recursively if REC."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let (res (last (gensym "unrepeat-")))
-    (while lst
-      (let ((popped (pop lst)))
-        (when (and rec (consp popped))
-          (setq popped (unrepeat popped rec)))
-        (when (not (equal popped last))
-          (push popped res)
-          (setq last popped))))
-    (reverse res)))
+    (cdr
+      (nreverse
+        (let ((res (list (gensym))))
+          (doconses (head pos lst res)
+            (when (and rec (listp head))
+              (setq head (unrepeat2 head rec)))
+            (when (not (equal head (car res)))
+              (push head res)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (unrepeat2 '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))) t)
-  returns (a b a b c a (b c) nil (b (c d e))))
-(confirm that (unrepeat2 '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
-  returns (a b a b c a (b b c) nil (b b (c d d e))))
-(confirm that (unrepeat2 '(nil a nil)) returns (nil a nil))
+  (confirm that (unrepeat2 '(a (b b c) (b c c)) t) returns (a (b c)))
+  (confirm that (unrepeat2 '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))) t)
+    returns (a b a b c a (b c) nil (b (c d e))))
+  (confirm that (unrepeat2 '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+    returns (a b a b c a (b b c) nil (b b (c d d e))))
+  (confirm that (unrepeat2 '(nil a nil)) returns (nil a nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
