@@ -25,6 +25,9 @@
 (confirm that (dm::properize-target! '(2 . 4))   returns (2 \. 4))
 (confirm that (dm::properize-target! '(2 4   6)) returns (2 4 6))
 (confirm that (dm::properize-target! '(2 4 . 6)) returns (2 4 \. 6))
+(let ((lst '(2 4 . 6)))
+  (confirm that (dm::properize-target! lst) returns (2 4 \. 6))
+  (confirm that lst returns (2 4 \. 6)))
 ;; (dont confirm that (dm::properize-target! '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
