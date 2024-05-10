@@ -27,7 +27,7 @@
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
-      (list (if rec (properize (car lst) rec splice) (car lst)) (cdr lst)))
+      `(,(if rec (properize (car lst) rec splice) (car lst)) ,@splice ,(cdr lst)))
     (t (cons (if rec (properize (car lst) rec splice) (car lst)) (properize (cdr lst) rec splice)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize nil) returns nil)
@@ -46,7 +46,7 @@
     (when (and rec (consp head))
       (setcar pos (properize! head rec splice)))
     (when (and (cdr pos) (atom (cdr pos)))
-      (setcdr pos (list (cdr pos)))
+      (setcdr pos `(,@splice ,(cdr pos)))
       (setf pos (cdr pos)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize! nil) returns nil)
