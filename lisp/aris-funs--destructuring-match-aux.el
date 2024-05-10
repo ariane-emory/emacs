@@ -65,19 +65,23 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (let ((improper-indicator '\.))
-    (cond
-      ((atom lst) lst)
-      ((and (cdr lst) (atom (cdr lst)))
-        ;; found an improper tail, properize it:
-        (setcdr lst (list improper-indicator (cdr lst)))
-        lst)
-      ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
-        ;; found a wayward comma, fix it:
-        (list improper-indicator
-          (list '\, (dm::properize-pattern!* (cadr lst) nil))))
-      (t (cons
-           (dm::properize-pattern!* (car lst) nil)
-           (dm::properize-pattern!* (cdr lst) t))))))
+    (prog1
+      lst
+      (cond
+        ((atom lst) lst)
+        ((and (cdr lst) (atom (cdr lst)))
+          ;; found an improper tail, properize it:
+          (setcar lst (dm::properize-pattern!* (car lst) nil))
+          (setcdr lst (list improper-indicator (cdr lst)))
+          lst)
+        ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
+          ;; found a wayward comma, fix it:
+          (setcar lst improper-indicator)
+          (setcdr lst
+            (list  (list '\, (dm::properize-pattern!* (cadr lst) nil)))))
+        (t (setcar lst (dm::properize-pattern!* (car lst) nil))
+          (setcdr lst (dm::properize-pattern!* (cdr lst) t)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern!*  nil)          returns nil)
 (confirm that (dm::properize-pattern!* '(,x))         returns ((\, x)))
 (confirm that (dm::properize-pattern!* '(,x .  y))    returns ((\, x) \. y))
@@ -182,6 +186,7 @@
       (t (cons
            (dm::properize-pattern* (car lst) nil)
            (dm::properize-pattern* (cdr lst) t))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern*  nil)          returns nil)
 (confirm that (dm::properize-pattern* '(,x))         returns ((\, x)))
 (confirm that (dm::properize-pattern* '(,x .  y))    returns ((\, x) \. y))
