@@ -10,6 +10,7 @@
 (require 'aris-funs--trees)
 (require 'aris-funs--unsorted)
 (require 'aris-funs--when-let-alist) ; Only used by some tests.
+(require 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - preds for flexible-length pattern elements.
@@ -1020,43 +1021,3 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (confirm that
-;;   (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (sprungy 12 13)))
-;;   returns nil)
-
-;; (confirm that
-;;   (dm:match '( ,(needle-1 symbol?) ... (,needle-1 ,@needle-2)) '(quux (quux 12 13)))
-;;   returns ((needle-1 . quux) (needle-2 12 13)))
-
-;; (dm:match '(,(x integer?) ,(y integer? (> x))) '(7 9))
-;; (confirm that (dm:match '(,(x integer?) (foo ,(y integer? (> x _)))) '(7 9)) returns nil)
-
-(ignore!
-  (let (*dm:verbose*)
-    (list
-      (benchmark-run 10000 (dm:match '(... ,(x integer? odd?) ...) '(a b c 5 d e f)))
-      (benchmark-run 10000 (dm:match '(... ,(x (lambda (n) (and (integer? n) (odd? n)))) ...) '(a b c 5 d e f)))
-      (benchmark-run 10000 (dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)))))
-
-  ((4.40592 14 0.7038970000000013)
-    (4.7350710000000005 17 0.877867000000002)
-    (4.619365999999999 16 0.8358629999999998))
-
-  ((4.307336 14 0.673171)
-    (4.665961 18 0.8793189999999989)
-    (4.55026 17 0.8443470000000008))
-  )
-
-
-
-(dm:match '(... ,(x integer? odd?) ... ,(y integer? odd?) ...) '(a b 3 c 5 d 7 e f)) ; ((x . 5) (y . 7))
-(dm:match '(... ,(x (lambda (n) (and (integer? n) (odd? n)))) ...) '(a b c 5 d e f)) ; ((x . 5))
-(dm:match '(... ,(x (and (integer? _) (odd? _))) ...) '(a b c 5 d e f)) ; ((x . 5))
-
-(dm:match '(,foo ,@bars ,shprungy ',fotz) '(FOO BAR BAZ QUUX CLAITHE SHPRUNGY))
-;; (dm:match (,x ,y . ,z) '(2 4 . 6)) 
-'(,x ,y . (,z))
-'(,x . ,y)
-
-
