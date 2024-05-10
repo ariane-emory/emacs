@@ -73,23 +73,28 @@
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern! (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a pattern by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  ;; flexible elements following the properize symbol should be illegal?
-  (let ((improper-indicator '\.))
-    (doconses (head pos lst lst)
-      (when (consp head)
-        (setcar pos (dm::properize-pattern! head)))
-      (when (and (cdr pos) (atom (cdr pos)))
-        ;; found an improper tail.
-        (setcdr pos
-          (append
-            (when improper-indicator (list improper-indicator))
-            (list (cdr pos))))
-        (setf pos (cdr pos))))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::properize-pattern! (lst)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Destructively properize a pattern by inserting a 'properize symbol', '\."
+;;   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+;;   ;; flexible elements following the properize symbol should be illegal?
+;;   (let ( (improper-indicator '\.)
+;;          (not-first nil))
+;;     (doconses (head pos lst lst)
+;;       (when (consp head)
+;;         (setcar pos (dm::properize-pattern! head)))
+
+;;       (when (and (cdr pos) (atom (cdr pos)))
+;;         ;; found an improper tail.
+;;         (setcdr pos
+;;           (append
+;;             (when improper-indicator (list improper-indicator))
+;;             (list (cdr pos))))
+;;         (setf pos (cdr pos)))
+
+;;       (setf not-first t)
+;;       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern!  nil)          returns nil)
 (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
