@@ -43,7 +43,8 @@ This is a a simple modification of `dolist'.
          (position (cadr spec))
          (lst      (caddr spec)))
     `(let ((,position ,lst))
-       (assert-list! ,position)
+       (unless (listp ,position)
+         (error "docons's LST must be a list: %s" ,position))
        (while ,position
          (let ((,var (car ,position)))
            ,@body

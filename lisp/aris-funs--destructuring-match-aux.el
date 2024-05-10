@@ -93,17 +93,11 @@
           (setf pos nil))
 
 
-        ;; ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
-        ;;   ;; found a wayward comma.
-        ;;   (push improper-indicator res) 
-        ;;   (push
-        ;;     (list '\,
-        ;;       (let ((next (cadr pos)))
-        ;;         (if (atom next) next (dm::properize-pattern next))))
-        ;;     res)
-        ;;   (setf pos nil))
-
-        )
+        ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
+          ;; found a wayward comma.
+          (setcar pos improper-indicator)
+          (setcdr pos (list '\, (if (listp (cadr pos)) (dm::properize-pattern! (cadr pos)) (cadr pos))))
+          (setf pos nil)))
       (setf not-first t)
       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -168,7 +162,8 @@
             (list (cdr lst)))))
       ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
         ;; found a wayward comma.
-        (list improper-indicator (list '\, (dm::properize-pattern (cadr lst) nil))))
+        (list improper-indicator
+          (list '\, (dm::properize-pattern (cadr lst) nil))))
       (t (cons
            (dm::properize-pattern (car lst) nil)
            (dm::properize-pattern (cdr lst) t))))))
@@ -191,7 +186,7 @@
 ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
 (confirm that (dm::properize-pattern '(,x ,y . ,(,z integer?)))
   returns ((\, x) (\, y) \. (\,((\, z) integer?))))
-;; (dont confirm that (dm::properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
+;; (dont confirm that (dm::properize-pattern '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
