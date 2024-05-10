@@ -127,12 +127,16 @@
       (doconses (head pos lst res)
         (cond
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
+            ;; found a wayward comma.
             (push improper-indicator res) 
             (push
-              (list '\, (let ((next (cadr pos))) (if (atom next) next (dm::properize-pattern next))))
+              (list '\,
+                (let ((next (cadr pos)))
+                  (if (atom next) next (dm::properize-pattern next))))
               res)
             (setf pos nil))
           ((not (listp (cdr pos)))
+            ;; found the improper tail.
             (push (dm::properize-pattern head) res)
             (push improper-indicator res)
             (push (cdr pos) res)
