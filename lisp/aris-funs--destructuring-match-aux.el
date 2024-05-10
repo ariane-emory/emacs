@@ -120,6 +120,7 @@
 (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
 (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
 (confirm that (dm::properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
+(confirm that (dm::properize-pattern '(,x . (y z))) returns ((\, x) y z))
 (confirm that (dm::properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
