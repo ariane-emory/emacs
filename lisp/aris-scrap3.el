@@ -27,6 +27,7 @@
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
+      ;; (list (if rec (properize (car lst) rec) (car lst)) (cdr lst)))
       `(,(if rec (apply #'properize (car lst) rec splice) (car lst)) ,@splice ,(cdr lst)))
     (t
       (cons (if rec (apply #'properize (car lst) rec splice) (car lst)) (apply #'properize (cdr lst) rec splice)))))
@@ -36,9 +37,10 @@
 (confirm that (properize '(1 2 . 3)) returns (1 2 3))
 (confirm that (properize '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
 (confirm that (properize '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
+(confirm that (properize '(1 (2 3 . 4) . 5) t '\.) returns (1 (2 3 \. 4) \. 5))
+(confirm that (properize '(1 (2 3 . 4) . 5) nil '\.) returns (1 (2 3 . 4) \. 5))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(properize '(1 (2 3 . 4) . 5) nil '\.)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize! (lst &optional rec &rest splice)
