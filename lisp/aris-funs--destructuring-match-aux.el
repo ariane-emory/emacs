@@ -180,13 +180,13 @@
   (if (atom lst)
     lst
     (cond
-      ((and (cdr lst) (atom (cdr lst)))
-        ;; found an improper tail, properize it:
-        (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
       ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
         ;; found a wayward comma, fix it:
         (list *dm::improper-indicator*
           (list '\, (dm::properize-pattern* (cadr lst) nil))))
+      ((and (cdr lst) (atom (cdr lst)))
+        ;; found an improper tail, properize it:
+        (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
       (t (cons
            (dm::properize-pattern* (car lst) nil)
            (dm::properize-pattern* (cdr lst) t))))))
@@ -280,6 +280,11 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((6.922224 0 0.0)
+    (6.097473000000001 0 0.0)
+    (6.9254180000000005 32 2.365175000000022)
+    (7.55496 31 2.3072540000000004))
 
   ((6.9353869999999995 0 0.0)
     (6.265205000000001 0 0.0)
