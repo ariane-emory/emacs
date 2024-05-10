@@ -38,12 +38,9 @@ lists that were originally improper."
           (list (cdr lst)))))
     (t
       (cons
-        (if rec (funcall #'properize (car lst) rec improper-indicator) (car lst))
-        (funcall #'properize (cdr lst) rec improper-indicator)))))
+        (if rec (properize (car lst) rec improper-indicator) (car lst))
+        (properize (cdr lst) rec improper-indicator)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(properize '(1 (2 3 . 4) . 5) t '\.) ; (1 (2 3 \. 4) \. 5)
-(properize '(1 2 . 3) t '\.) ; (1 2 \. 3)
-
 (confirm that (properize nil) returns nil)
 (confirm that (properize '(1 2 3)) returns (1 2 3))
 (confirm that (properize '(1 2 . 3)) returns (1 2 3))
@@ -59,26 +56,29 @@ lists that were originally improper."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun properize! (lst &optional rec improper-indicator)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Destructively make a proper list from an improper list, recursively if REC."
-;;   (doconses (head pos lst lst)
-;;     (when (and rec (consp head))
-;;       (setcar pos (funcall #'properize! head rec improper-indicator)))
-;;     (when (and (cdr pos) (atom (cdr pos)))
-;;       (setcdr pos `(,improper-indicator ,(cdr pos)))
-;;       (setf pos (cdr pos)))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (properize! nil) returns nil)
-;; (confirm that (properize! '(1 2 3)) returns (1 2 3))
-;; (confirm that (properize! '(1 2 . 3)) returns (1 2 3))
-;; (confirm that (properize! '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
-;; (confirm that (properize! '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
-;; (confirm that (properize! '((0 . 1) (2 3 . 4) . 5) t '\.)
-;;   returns ((0 \. 1) (2 3 \. 4) \. 5))
-;; (confirm that (properize! '((0 . 1)  (2 3 . 4) . 5) nil '\.)
-;;   returns ((0 . 1) (2 3 . 4) \. 5))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun properize! (lst &optional rec improper-indicator)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively make a proper list from an improper list, recursively if REC."
+  (doconses (head pos lst lst)
+    (when (and rec (consp head))
+      (setcar pos (properize! head rec improper-indicator)))
+    (when (and (cdr pos) (atom (cdr pos)))
+      (setcdr pos
+        (append
+          (when improper-indicator (list improper-indicator))
+          (list (cdr pos))))
+      (setf pos (cdr pos)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (properize! nil) returns nil)
+(confirm that (properize! '(1 2 3)) returns (1 2 3))
+(confirm that (properize! '(1 2 . 3)) returns (1 2 3))
+(confirm that (properize! '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
+(confirm that (properize! '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
+(confirm that (properize! '((0 . 1) (2 3 . 4) . 5) t '\.)
+  returns ((0 \. 1) (2 3 \. 4) \. 5))
+(confirm that (properize! '((0 . 1)  (2 3 . 4) . 5) nil '\.)
+  returns ((0 . 1) (2 3 . 4) \. 5))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
