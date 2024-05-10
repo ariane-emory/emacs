@@ -80,39 +80,22 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   ;; (prndiv)
-  (cond
-    ((atom lst) lst)
-    ((and (eq '\, (car lst)) (not (cddr lst)))
-      (let ((new
-              (list
-                '\,
-                (if rec (dm::properize-pattern (cadr lst) rec improper-indicator t) (cadr lst)))))
-        (if first (list improper-indicator new) new)))
-    ((and (cdr lst) (atom (cdr lst)))
-      (cons
-        (if rec (dm::properize-pattern (car lst) rec improper-indicator nil) (car lst))
-        (append (when improper-indicator (list improper-indicator))
-          (list (cdr lst)))))
-    (t (cons
-         (if rec (dm::properize-pattern (car lst) rec improper-indicator nil) (car lst))
-         (dm::properize-pattern (cdr lst) rec improper-indicator t))))
-
-  ;; (nreverse
-  ;;   (let (res)
-  ;;     (doconses (head pos lst res)
-  ;;       (cond
-  ;;         ((and (eq '\, head) (not (cddr pos)))
-  ;;           (push '\.                   res)
-  ;;           (push (list '\, (cadr pos)) res)
-  ;;           (setf  pos (cdr pos))
-  ;;           )
-  ;;         ((not (listp (cdr pos)))
-  ;;           (push head res)
-  ;;           (push '\.       res)
-  ;;           (push (cdr pos) res)
-  ;;           (setf  pos nil))
-  ;;         (t (push head res))))))
-  )
+  (nreverse
+    (let ( (improper-indicator '\.)
+           (res nil))
+      (doconses (head pos lst res)
+        (cond
+          ((and (eq '\, head) (not (cddr pos)))
+            (push improper-indicator res) 
+            (push (list '\, (cadr pos)) res)
+            (setf pos (cdr pos))
+            )
+          ((not (listp (cdr pos)))
+            (push head res)
+            (push improper-indicator res)
+            (push (cdr pos) res)
+            (setf  pos nil))
+          (t (push head res)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-pattern (lst &optional not-first)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -122,16 +105,13 @@
   (let ((improper-indicator '\.))
     (cond
       ((atom lst) lst)
-      ((and (eq '\, (car lst)) (not (cddr lst)))
-        (let ((new
-                (list '\,
-                  (dm::properize-pattern (cadr lst) t))))
-          (if not-first (list improper-indicator new) new)))
       ((and (cdr lst) (atom (cdr lst)))
         (cons
           (dm::properize-pattern (car lst) nil)
           (append (when improper-indicator (list improper-indicator))
             (list (cdr lst)))))
+      ((and not-first (not (cddr lst)) (eq '\, (car lst)))
+        (list improper-indicator (list '\,(dm::properize-pattern (cadr lst) nil))))
       (t (cons
            (dm::properize-pattern (car lst) nil)
            (dm::properize-pattern (cdr lst) t))))))
@@ -144,7 +124,11 @@
 (confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)))
-  returns ((\, x) (\, y) \. (\, (z integer?)))) 
+  returns ((\, x) (\, y) \. (\, (z integer?))))
+;; this one would not by a legal pattern due to the way ,z is used in the innermost sub-expression,
+;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
+(confirm that (dm::properize-pattern '(,x ,y . ,(,z integer?)))
+  returns ((\, x) (\, y) \. (\,((\, z) integer?))))
 ;; (dont confirm that (dm::properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
