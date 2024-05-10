@@ -169,7 +169,7 @@ This is a a simple modification of `dolist'.
             (tail result))
       (while lst
         (let ((new-tail (list (pop lst))))
-          (rplacd! tail new-tail)
+          (setcdr tail new-tail)
           (setq tail new-tail)))
       result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -270,7 +270,7 @@ This is adapted from the version in Peter Norvig's book."
           (tail   result))
     (while lsts
       (let ((new-tail (list (car (pop lsts)))))
-        (setq tail (rplacd! tail new-tail))))
+        (setq tail (setcdr tail new-tail))))
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (heads '((1 2 3) (4 5 6) (7 8 9))) returns (1 4 7))
@@ -287,7 +287,7 @@ This is adapted from the version in Peter Norvig's book."
           (tail   result))
     (while lsts
       (let ((new-tail (list (cdr (pop lsts)))))
-        (setq tail (rplacd! tail new-tail))))
+        (setq tail (setcdr tail new-tail))))
     result))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (tails '((1 2 3) (4 5 6) (7 8 9))) returns ((2 3) (5 6) (8 9)))
@@ -306,7 +306,7 @@ This is adapted from the version in Peter Norvig's book."
       (while lst
         (let* ( (head     (pop lst))
                 (new-tail (list intercalated head)))
-          (rplacd! tail new-tail)
+          (setcdr tail new-tail)
           (setq tail (cdr new-tail))))
       result)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -331,7 +331,7 @@ This is adapted from the version in Peter Norvig's book."
           current (cdr current)))
       (if prev
         (progn
-          (rplacd! prev nil)
+          (setcdr prev nil)
           (list lst current))
         (list nil lst)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -892,25 +892,66 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun compact (lst)
+(defun old-compact (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Filter nil items from LST."
   (assert-list! lst)
   (while (and lst (nil? (car lst)))
     (pop lst))
   (when lst
-    (let* ( (result (list (pop lst)))
-            (tail result))
+    (let* ( (res  (list (pop lst)))
+            (tail res))
       (while lst
         (let ((head (pop lst)))
           (unless (nil? head)
-            (setq tail (rplacd! tail (list head))))))
-      result)))
+            (setq tail (setcdr tail (list head))))))
+      res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (old-compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
+(confirm that (old-compact '(nil)) returns nil)
+(confirm that (old-compact nil) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compact (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Filter nil items from LST."
+  (assert-list! lst)
+  (nreverse
+    (let (res)
+      (dolist (head lst res)
+        (unless (null head)
+          (push head res))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (compact '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
 (confirm that (compact '(nil)) returns nil)
 (confirm that (compact nil) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun compact* (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Recursively filter nil items from LST."
+  (assert-list! lst)
+  (nreverse
+    (let (res)
+      (dolist (head lst res)
+        (cond
+          ((null head)) ; do nothing
+          ((consp head)
+            (when-let ((compacted-head (compact* head)))
+              (push compacted-head res)))
+          (t (push head res))
+          )))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (compact* '(1 nil 2 nil (3 nil (4 (nil) 5 nil)))) returns (1 2 (3 (4 5))))
+(confirm that (compact* '(1 nil 2 nil 3 nil 4 nil 5 nil)) returns (1 2 3 4 5))
+(confirm that (compact* '(nil)) returns nil)
+(confirm that (compact* nil) returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
