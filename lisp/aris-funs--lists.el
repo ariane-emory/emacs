@@ -705,30 +705,6 @@ This is adapted from the version in Peter Norvig's book."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unrepeat (lst &optional rec)
-  "Remove sequentially repeated items from LST, recursively if REC."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let (res (last (gensym "unrepeat-")))
-    (while lst
-      (let ((popped (pop lst)))
-        (when (and rec (consp popped))
-          (setq popped (unrepeat popped rec)))
-        (when (not (equal popped last))
-          (push popped res)
-          (setq last popped))))
-    (reverse res)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))) t)
-  returns (a b a b c a (b c) nil (b (c d e))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
-  returns (a b a b c a (b b c) nil (b b (c d d e))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (unrepeat '(nil a nil)) returns (nil a nil))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun count>= (count needle lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return t when COUNT or more instances of NEEDLE are found in LST."
@@ -952,6 +928,50 @@ This is adapted from the version in Peter Norvig's book."
 (confirm that (compact* nil) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unrepeat (lst &optional rec)
+  "Remove sequentially repeated items from LST, recursively if REC."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let (res (last (gensym "unrepeat-")))
+    (while lst
+      (let ((popped (pop lst)))
+        (when (and rec (consp popped))
+          (setq popped (unrepeat popped rec)))
+        (when (not (equal popped last))
+          (push popped res)
+          (setq last popped))))
+    (reverse res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))) t)
+  returns (a b a b c a (b c) nil (b (c d e))))
+(confirm that (unrepeat '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+  returns (a b a b c a (b b c) nil (b b (c d d e))))
+(confirm that (unrepeat '(nil a nil)) returns (nil a nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unrepeat2 (lst &optional rec)
+  "Remove sequentially repeated items from LST, recursively if REC."
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (let (res (last (gensym "unrepeat-")))
+    (while lst
+      (let ((popped (pop lst)))
+        (when (and rec (consp popped))
+          (setq popped (unrepeat popped rec)))
+        (when (not (equal popped last))
+          (push popped res)
+          (setq last popped))))
+    (reverse res)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unrepeat2 '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))) t)
+  returns (a b a b c a (b c) nil (b (c d e))))
+(confirm that (unrepeat2 '(a a b a b b c a a (b b c) (b b c) nil nil (b b (c d d e))))
+  returns (a b a b c a (b b c) nil (b b (c d d e))))
+(confirm that (unrepeat2 '(nil a nil)) returns (nil a nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
