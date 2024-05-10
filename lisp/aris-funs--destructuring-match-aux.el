@@ -224,12 +224,6 @@
     (let (not-first res)
       (doconses (head pos lst res)
         (cond
-          ((and (cdr pos) (atom (cdr pos)))
-            ;; found an improper tail, properize it:
-            (push (dm::properize-pattern head) res)
-            (push *dm::improper-indicator* res)
-            (push (cdr pos) res)
-            (setf pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
             (push *dm::improper-indicator* res) 
@@ -239,8 +233,15 @@
                   (if (atom next) next (dm::properize-pattern next))))
               res)
             (setf pos nil))
-          ((listp head) (push (dm::properize-pattern head) res))
-          (t (push head res)))
+          ((atom head) (push head res))
+          ;; now we know head's a list.
+          ((and (cdr pos) (atom (cdr pos)))
+            ;; found an improper tail, properize it:
+            (push (dm::properize-pattern head) res)
+            (push *dm::improper-indicator* res)
+            (push (cdr pos) res)
+            (setf pos nil))
+          (t (push (dm::properize-pattern head) res)))
         (setf not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
@@ -279,6 +280,16 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((6.9353869999999995 0 0.0)
+    (6.265205000000001 0 0.0)
+    (7.010495 32 2.341769999999997)
+    (7.611699 32 2.3612980000000334))
+
+  ((6.931694 0 0.0)
+    (6.261959 0 0.0)
+    (7.016323 32 2.3485039999999913)
+    (7.605618 32 2.355562999999961))
 
   ((6.9367909999999995 0 0.0)
     (6.137823999999999 0 0.0)
