@@ -228,11 +228,15 @@
       (doconses (head pos lst res)
         (cond
           ((and (cdr pos) (atom (cdr pos)))
-            ;; found an improper tail, properize it:
-            (push (if (atom head) head (dm::properize-pattern head)) res)
-            (push *dm::improper-indicator* res)
-            (push (cdr pos) res)
-            (setf pos nil))
+            ;; found an improper tail, properize it.
+            ;; this isn't sexy, but it turns out that nested `conse's and a conjoined
+            ;; `setf' is very slightly faster than the alternatives:
+            (setf res
+              (cons (cdr pos)
+                (cons *dm::improper-indicator*
+                  (cons (if (atom head) head (dm::properize-pattern head))
+                    res)))
+              pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
             (push *dm::improper-indicator* res) 
@@ -284,10 +288,31 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
 
-  ((3.448747 0 0.0)
-    (3.4794829999999997 16 1.1479289999999907)
-    (3.1151910000000003 0 0.0)
-    (3.99515 16 1.1462250000000012))
+  ;; results of calling variants of my function a half million times using
+  ;; benchmark-run (numbers shown are the car of benchmark-run's return):
+  ((3.440058 0 0.0)
+    (3.527742 17 1.200234000000009)
+    (3.101799 0 0.0)
+    (3.986906 16 1.1428229999999928))
+
+  ;; 3 conses and combined setfs:
+  4.016706999999999
+  
+  ;; original code, 3 pushes of this, that and other onto res:
+  4.09058
+
+  ;; 3 conses: (cons other (cons that (cons this res)
+  4.016706999999999
+
+  ;; (spply #'list other that this res):
+  (4.056276 16 1.1914230000000003)
+
+  
+  ((3.4793279999999998 0 0.0)
+    (3.608974 17 1.2552890000000048)
+    (3.125189 0 0.0)
+    (3.9954420000000006 16 1.1494380000000035))
+
 
   ((3.429311 0 0.0)
     (3.3812209999999996 16 1.1168479999999974)
