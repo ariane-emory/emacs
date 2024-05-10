@@ -21,14 +21,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize (lst &optional rec)
+(defun properize (lst &optional rec splice)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively make a proper list from an improper list, recursively if REC."
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
-      (list (if rec (properize (car lst) rec) (car lst)) (cdr lst)))
-    (t (cons (if rec (properize (car lst) rec) (car lst)) (properize (cdr lst) rec)))))
+      (list (if rec (properize (car lst) rec splice) (car lst)) (cdr lst)))
+    (t (cons (if rec (properize (car lst) rec splice) (car lst)) (properize (cdr lst) rec splice)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize nil) returns nil)
 (confirm that (properize '(1 2 3)) returns (1 2 3))
@@ -39,12 +39,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize! (lst &optional rec)
+(defun properize! (lst &optional rec splice)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively make a proper list from an improper list, recursively if REC."
   (doconses (head pos lst lst)
     (when (and rec (consp head))
-      (setcar pos (properize! head rec)))
+      (setcar pos (properize! head rec splice)))
     (when (and (cdr pos) (atom (cdr pos)))
       (setcdr pos (list (cdr pos)))
       (setf pos (cdr pos)))))
