@@ -14,13 +14,11 @@ eln-cache
 elpa
 eshell
 image-dired
-lisp/trav
 multisession
 network-security.data
 nov-places
 request
 transient
-trav
 tree-sitter/*
 url
 games
