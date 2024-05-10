@@ -74,6 +74,25 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern (lst &optional not-first)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
+  (let ((improper-indicator '\.))
+    (cond
+      ((atom lst) lst)
+      ((and (cdr lst) (atom (cdr lst)))
+        (cons
+          (dm::properize-pattern (car lst) nil)
+          (append (when improper-indicator (list improper-indicator))
+            (list (cdr lst)))))
+      ((and not-first (not (cddr lst)) (eq '\, (car lst)))
+        (list improper-indicator (list '\,(dm::properize-pattern (cadr lst) nil))))
+      (t (cons
+           (dm::properize-pattern (car lst) nil)
+           (dm::properize-pattern (cdr lst) t))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-pattern (lst &optional rec improper-indicator first)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
@@ -97,25 +116,6 @@
             (setf  pos nil))
           (t (push head res)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern (lst &optional not-first)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  ;; flexible elements following the properize symbol should be illegal?
-  (let ((improper-indicator '\.))
-    (cond
-      ((atom lst) lst)
-      ((and (cdr lst) (atom (cdr lst)))
-        (cons
-          (dm::properize-pattern (car lst) nil)
-          (append (when improper-indicator (list improper-indicator))
-            (list (cdr lst)))))
-      ((and not-first (not (cddr lst)) (eq '\, (car lst)))
-        (list improper-indicator (list '\,(dm::properize-pattern (cadr lst) nil))))
-      (t (cons
-           (dm::properize-pattern (car lst) nil)
-           (dm::properize-pattern (cdr lst) t))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
 (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
 (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
@@ -124,6 +124,8 @@
 (confirm that (dm::properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
 (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+(confirm that (dm::properize-pattern '(,v (,w ,x . ,y). ,z))
+  returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)))
   returns ((\, x) (\, y) \. (\, (z integer?))))
 ;; this one would not by a legal pattern due to the way ,z is used in the innermost sub-expression,
