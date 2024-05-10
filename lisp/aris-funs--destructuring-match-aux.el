@@ -137,7 +137,7 @@
           (setcar pos *dm::improper-indicator*)
           (setcdr pos
             (list (list '\,
-                    (if (listp (cadr pos)) (dm::properize-pattern! (cadr pos)) (cadr pos)))))
+                    (if (consp (cadr pos)) (dm::properize-pattern! (cadr pos)) (cadr pos)))))
           (setf pos nil))
         ((consp head) (setcar pos (dm::properize-pattern! head))))
       (setf not-first t))))
