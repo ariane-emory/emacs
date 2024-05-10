@@ -73,28 +73,28 @@
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern! (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a pattern by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  ;; flexible elements following the properize symbol should be illegal?
-  (let ( (improper-indicator '\.)
-         (not-first nil))
-    (doconses (head pos lst lst)
-      (when (consp head)
-        (setcar pos (dm::properize-pattern! head)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::properize-pattern! (lst)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Destructively properize a pattern by inserting a 'properize symbol', '\."
+;;   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+;;   ;; flexible elements following the properize symbol should be illegal?
+;;   (let ( (improper-indicator '\.)
+;;          (not-first nil))
+;;     (doconses (head pos lst lst)
+;;       (when (consp head)
+;;         (setcar pos (dm::properize-pattern! head)))
 
-      (when (and (cdr pos) (atom (cdr pos)))
-        ;; found an improper tail.
-        (setcdr pos
-          (append
-            (when improper-indicator (list improper-indicator))
-            (list (cdr pos))))
-        (setf pos (cdr pos)))
+;;       (when (and (cdr pos) (atom (cdr pos)))
+;;         ;; found an improper tail.
+;;         (setcdr pos
+;;           (append
+;;             (when improper-indicator (list improper-indicator))
+;;             (list (cdr pos))))
+;;         (setf pos (cdr pos)))
 
-      (setf not-first t)
-      )))
+;;       (setf not-first t)
+;;       )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern!  nil)          returns nil)
 (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
@@ -122,6 +122,12 @@
            (res nil))
       (doconses (head pos lst res)
         (cond
+          ((and (cdr pos) (atom (cdr pos)))
+            ;; found an improper tail.
+            (push (dm::properize-pattern head) res)
+            (push improper-indicator res)
+            (push (cdr pos) res)
+            (setf pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma.
             (push improper-indicator res) 
@@ -130,12 +136,6 @@
                 (let ((next (cadr pos)))
                   (if (atom next) next (dm::properize-pattern next))))
               res)
-            (setf pos nil))
-          ( (atom (cdr pos))
-            ;; found an improper tail.
-            (push (dm::properize-pattern head) res)
-            (push improper-indicator res)
-            (push (cdr pos) res)
             (setf pos nil))
           ((listp head) (push (dm::properize-pattern head) res))
           (t (push head res)))
@@ -155,7 +155,7 @@
           (dm::properize-pattern (car lst) nil)
           (append (when improper-indicator (list improper-indicator))
             (list (cdr lst)))))
-      ((and not-first (not (cddr lst)) (eq '\, (car lst)))
+      ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
         ;; found a wayward comma.
         (list improper-indicator (list '\, (dm::properize-pattern (cadr lst) nil))))
       (t (cons
