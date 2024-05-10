@@ -272,6 +272,63 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern??? (lst) ; shallowly recursive version.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
+  ;; (prndiv)
+  (nreverse
+    (let (not-first res)
+      (doconses (head pos lst res)
+        (cond
+          ((and (cdr pos) (atom (cdr pos)))
+            ;; found an improper tail, properize it.
+            ;; this isn't sexy, but it turns out that nested `conse's and a conjoined
+            ;; `setf' is very slightly faster than the alternatives:
+            (setf res
+              (cons (cdr pos)
+                (cons *dm::improper-indicator*
+                  (cons (if (atom head) head (dm::properize-pattern??? head))
+                    res)))
+              pos nil))
+          ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
+            ;; found a wayward comma, fix it:
+            (push *dm::improper-indicator* res) 
+            (push
+              (list '\,
+                (let ((next (cadr pos)))
+                  (if (atom next) next (dm::properize-pattern??? next))))
+              res)
+            (setf pos nil))
+          ((atom head) (push head res))
+          (t (push (dm::properize-pattern??? head) res)))
+        (setf not-first t)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::properize-pattern???  nil)          returns nil)
+(confirm that (dm::properize-pattern??? '(,x))         returns ((\, x)))
+(confirm that (dm::properize-pattern??? '(,x .  y))    returns ((\, x) \. y))
+(confirm that (dm::properize-pattern??? '(,x . ,y))    returns ((\, x) \. (\, y)))
+(confirm that (dm::properize-pattern??? '(,x . (y z))) returns ((\, x) y z))
+(confirm that (dm::properize-pattern??? '(,x  y .  z)) returns ((\, x) y \. z))
+(confirm that (dm::properize-pattern??? '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+(confirm that (dm::properize-pattern??? '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
+(confirm that (dm::properize-pattern??? '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+(confirm that (dm::properize-pattern??? '((,w . ,y) . ,z))
+  returns (((\, w) \. (\, y)) \. (\, z)))
+(confirm that (dm::properize-pattern??? '(,v (,w ,x . ,y) . ,z))
+  returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+(confirm that (dm::properize-pattern??? '(,x ,y . ,(z  integer?)))
+  returns ((\, x) (\, y) \. (\, (z integer?))))
+;; this one would not be a legal pattern??? due to the way ,z is used in the innermost sub-expression,
+;; but it isn't `dm::properize-pattern???'s job to try to fix, it, so let's make sure it doesn't try: 
+(confirm that (dm::properize-pattern??? '(,x ,y . ,(,z integer?)))
+  returns ((\, x) (\, y) \. (\,((\, z) integer?))))
+;; don't confirm: (dm::properize-pattern??? '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
@@ -279,10 +336,11 @@
     (setq reps 500000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!* '(,v (,w ,x . ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*  '(,v (,w ,x . ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!  '(,v (,w ,x . ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern   '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!*   '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern*    '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!    '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern     '(,v (,w ,x . ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern??? '(,v (,w ,x . ,y) . ,z)))
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
