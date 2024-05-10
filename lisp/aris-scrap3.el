@@ -21,21 +21,30 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize (lst &optional rec &rest splice)
+(defun properize (lst &optional rec improper-indicator)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively make a proper list from an improper list, recursively if REC."
   (cond
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
 
-      `( ,(if rec (apply #'properize (car lst) rec splice) (car lst))
-         ,@splice
-         ,(cdr lst)
-         )
+      (cons
+        (if rec
+          (properize (car lst) rec improper-indicator)
+          (car lst))
+        (append
+          (when improper-indicator (list improper-indicator))
+          (list (cdr lst))))
+      
+      ;; `(
+      ;;    ,(if rec (funcall #'properize (car lst) rec improper-indicator) (car lst))
+      ;;    ,@improper-indicator
+      ;;    ,(cdr lst)
+      ;;    )
 
       )
     (t
-      (cons (if rec (apply #'properize (car lst) rec splice) (car lst)) (apply #'properize (cdr lst) rec splice)))))
+      (cons (if rec (funcall #'properize (car lst) rec improper-indicator) (car lst)) (funcall #'properize (cdr lst) rec improper-indicator)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (properize nil) returns nil)
 (confirm that (properize '(1 2 3)) returns (1 2 3))
@@ -51,26 +60,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun properize! (lst &optional rec &rest splice)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively make a proper list from an improper list, recursively if REC."
-  (doconses (head pos lst lst)
-    (when (and rec (consp head))
-      (setcar pos (apply #'properize! head rec splice)))
-    (when (and (cdr pos) (atom (cdr pos)))
-      (setcdr pos `(,@splice ,(cdr pos)))
-      (setf pos (cdr pos)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (properize! nil) returns nil)
-(confirm that (properize! '(1 2 3)) returns (1 2 3))
-(confirm that (properize! '(1 2 . 3)) returns (1 2 3))
-(confirm that (properize! '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
-(confirm that (properize! '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
-(confirm that (properize! '((0 . 1) (2 3 . 4) . 5) t '\.)
-  returns ((0 \. 1) (2 3 \. 4) \. 5))
-(confirm that (properize! '((0 . 1)  (2 3 . 4) . 5) nil '\.)
-  returns ((0 . 1) (2 3 . 4) \. 5))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun properize! (lst &optional rec improper-indicator)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Destructively make a proper list from an improper list, recursively if REC."
+;;   (doconses (head pos lst lst)
+;;     (when (and rec (consp head))
+;;       (setcar pos (funcall #'properize! head rec improper-indicator)))
+;;     (when (and (cdr pos) (atom (cdr pos)))
+;;       (setcdr pos `(,improper-indicator ,(cdr pos)))
+;;       (setf pos (cdr pos)))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (properize! nil) returns nil)
+;; (confirm that (properize! '(1 2 3)) returns (1 2 3))
+;; (confirm that (properize! '(1 2 . 3)) returns (1 2 3))
+;; (confirm that (properize! '(1 (2 3 . 4) . 5)) returns (1 (2 3 . 4) 5))
+;; (confirm that (properize! '(1 (2 3 . 4) . 5) t) returns (1 (2 3 4) 5))
+;; (confirm that (properize! '((0 . 1) (2 3 . 4) . 5) t '\.)
+;;   returns ((0 \. 1) (2 3 \. 4) \. 5))
+;; (confirm that (properize! '((0 . 1)  (2 3 . 4) . 5) nil '\.)
+;;   returns ((0 . 1) (2 3 . 4) \. 5))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
