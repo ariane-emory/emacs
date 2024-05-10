@@ -127,13 +127,13 @@
   (if (atom lst)
     lst
     (cond
+      ((and (cdr lst) (atom (cdr lst)))
+        ;; found an improper tail, properize it:
+        (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
       ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
         ;; found a wayward comma, fix it:
         (list *dm::improper-indicator*
           (list '\, (dm::properize-pattern* (cadr lst) nil))))
-      ((and (cdr lst) (atom (cdr lst)))
-        ;; found an improper tail, properize it:
-        (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
       (t (cons
            (dm::properize-pattern* (car lst) nil)
            (dm::properize-pattern* (cdr lst) t))))))
@@ -180,7 +180,7 @@
           (setcar pos *dm::improper-indicator*)
           (setcdr pos
             (list (list '\,
-                    (if (consp (cadr pos)) (dm::properize-pattern! (cadr pos)) (cadr pos)))))
+                    (if (atom (cadr pos)) (cadr pos) (dm::properize-pattern! (cadr pos))))))
           (setf pos nil))
         ((consp head) (setcar pos (dm::properize-pattern! head))))
       (setf not-first t))))
@@ -227,6 +227,12 @@
     (let (not-first res)
       (doconses (head pos lst res)
         (cond
+          ((and (cdr pos) (atom (cdr pos)))
+            ;; found an improper tail, properize it:
+            (push (if (atom head) head (dm::properize-pattern head)) res)
+            (push *dm::improper-indicator* res)
+            (push (cdr pos) res)
+            (setf pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
             (push *dm::improper-indicator* res) 
@@ -235,12 +241,6 @@
                 (let ((next (cadr pos)))
                   (if (atom next) next (dm::properize-pattern next))))
               res)
-            (setf pos nil))
-          ((and (cdr pos) (atom (cdr pos)))
-            ;; found an improper tail, properize it:
-            (push (if (atom head) head (dm::properize-pattern head)) res)
-            (push *dm::improper-indicator* res)
-            (push (cdr pos) res)
             (setf pos nil))
           ((atom head) (push head res))
           (t (push (dm::properize-pattern head) res)))
@@ -283,6 +283,36 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((3.448747 0 0.0)
+    (3.4794829999999997 16 1.1479289999999907)
+    (3.1151910000000003 0 0.0)
+    (3.99515 16 1.1462250000000012))
+
+  ((3.429311 0 0.0)
+    (3.3812209999999996 16 1.1168479999999974)
+    (3.11343 0 0.0)
+    (4.040508 17 1.1928330000000003))
+
+  ((3.4524429999999997 0 0.0)
+    (3.423201 16 1.1535920000000033)
+    (3.071688 0 0.0)
+    (4.021338 17 1.2299700000000016))
+
+  ((3.450784 0 0.0)
+    (3.423189 16 1.1536860000000004)
+    (3.0656760000000003 0 0.0)
+    (4.073945 17 1.2264109999999988))
+
+  ((3.465414 0 0.0)
+    (3.4128000000000003 16 1.1455509999999975)
+    (3.071825 0 0.0)
+    (4.072241 17 1.2219559999999987))
+
+  ((3.475882 0 0.0)
+    (3.3967899999999998 16 1.1343469999999982)
+    (3.06443 0 0.0)
+    (4.070942 17 1.2228969999999961))
 
   ((3.481385 0 0.0)
     (3.488989 17 1.2106969999999997)
