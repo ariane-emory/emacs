@@ -80,33 +80,22 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   ;; (prndiv)
-  ;; (prn "lst:   %s" lst)
-  ;; (prn "top:   %s" (car-safe lst))
-  ;; (prn "indic: %s" improper-indicator)
-  
   (cond
-    ((atom lst)
-      ;; (prn "A!")
-      lst)
+    ((atom lst) lst)
     ((and (eq '\, (car lst)) (not (cddr lst)))
-      ;; (prn "B!")
       (let ((new
               (list
                 '\,
                 (if rec (dm::properize-pattern (cadr lst) rec improper-indicator t) (cadr lst)))))
         (if first (list improper-indicator new) new)))
     ((and (cdr lst) (atom (cdr lst)))
-      ;; (prn "C!")
       (cons
         (if rec (dm::properize-pattern (car lst) rec improper-indicator nil) (car lst))
-        (append
-          (when improper-indicator (list improper-indicator))
+        (append (when improper-indicator (list improper-indicator))
           (list (cdr lst)))))
-    (t
-      ;; (prn "D!")
-      (cons
-        (if rec (dm::properize-pattern (car lst) rec improper-indicator nil) (car lst))
-        (dm::properize-pattern (cdr lst) rec improper-indicator t))))
+    (t (cons
+         (if rec (dm::properize-pattern (car lst) rec improper-indicator nil) (car lst))
+         (dm::properize-pattern (cdr lst) rec improper-indicator t))))
 
   ;; (nreverse
   ;;   (let (res)
@@ -125,20 +114,36 @@
   ;;         (t (push head res))))))
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (prn "res: %S" (dm::properize-pattern '(,x ,y . z) t '\.))
-;; (prndiv)
-;; (prnl)
-;; (prn "res: %S" (dm::properize-pattern '(,x . ,y) t '\.))
-;; (prndiv)
-(confirm that (dm::properize-pattern  nil t '\.)          returns nil)
-(confirm that (dm::properize-pattern '(,x) t '\.)         returns ((\, x)))
-(confirm that (dm::properize-pattern '(,x .  y) t '\.)    returns ((\, x) \. y))
-(confirm that (dm::properize-pattern '(,x . ,y) t '\.)    returns ((\, x) \. (\, y)))
-(confirm that (dm::properize-pattern '(,x ,y   ,z) t '\.) returns ((\, x) (\, y) (\, z)))
-(confirm that (dm::properize-pattern '(,x ,y .  z) t '\.) returns ((\, x) (\, y) \. z))
-(confirm that (dm::properize-pattern '(,x ,y . ,z) t '\.) returns ((\, x) (\, y) \. (\, z)))
-(confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)) t '\.)
+(defun dm::properize-pattern (lst &optional not-first)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
+  (let ((improper-indicator '\.))
+    (cond
+      ((atom lst) lst)
+      ((and (eq '\, (car lst)) (not (cddr lst)))
+        (let ((new
+                (list '\,
+                  (dm::properize-pattern (cadr lst) t))))
+          (if not-first (list improper-indicator new) new)))
+      ((and (cdr lst) (atom (cdr lst)))
+        (cons
+          (dm::properize-pattern (car lst) nil)
+          (append (when improper-indicator (list improper-indicator))
+            (list (cdr lst)))))
+      (t (cons
+           (dm::properize-pattern (car lst) nil)
+           (dm::properize-pattern (cdr lst) t))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::properize-pattern  nil)          returns nil)
+(confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
+(confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
+(confirm that (dm::properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
+(confirm that (dm::properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+(confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
+(confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+(confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)))
   returns ((\, x) (\, y) \. (\, (z integer?)))) 
 ;; (dont confirm that (dm::properize-pattern '(,x . ,y ,z)) ... ; bulshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
