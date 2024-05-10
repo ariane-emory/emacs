@@ -238,7 +238,7 @@
             (setf pos nil))
           ((and (cdr pos) (atom (cdr pos)))
             ;; found an improper tail, properize it:
-            (push (if (consp head) (dm::properize-pattern head) head) res)
+            (push (if (atom head) head (dm::properize-pattern head)) res)
             (push *dm::improper-indicator* res)
             (push (cdr pos) res)
             (setf pos nil))
@@ -283,6 +283,11 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((6.899158 0 0.0)
+    (6.165627 0 0.0)
+    (6.922913 35 2.369831000000005)
+    (8.030407 36 2.4437369999999987))
 
   ((6.922224 0 0.0)
     (6.097473000000001 0 0.0)
