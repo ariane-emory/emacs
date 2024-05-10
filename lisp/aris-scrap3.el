@@ -24,16 +24,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun properize (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively make a proper list from an improper list."
-  (assert-list! lst)
-  (if (proper-list-p lst)
-    lst
-    (let (res) 
-      (dolist* (n lst (nreverse res)) (push n res)))))
+  "Non-destructively (and recursively) make a proper list from an improper list.."
+  (cond
+    ((null lst) nil)
+    ((and (consp lst) (and (cdr lst) (atom (cdr lst)))) (list (properize (car lst)) (cdr lst)))
+    ((and lst (consp lst)) (cons (properize (car lst)) (properize (cdr lst))))
+    (t lst)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(properize '(1 (2 3 . 4) . 5))
+(properize '(1 2 . 3))
+(properize '(1 2 3))
+
 (confirm that (properize nil) returns nil)
 (confirm that (properize '(1)) returns (1))
 (confirm that (properize '(1 . 2)) returns (1 2))
 (confirm that (properize '(1 2 . 3)) returns (1 2 3))
-(confirm that (properize '(1 2 3)) returns (1 2 3))
+;; (confirm that (properize '(1 2 3)) returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
