@@ -28,7 +28,13 @@
     ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
       ;; (list (if rec (properize (car lst) rec) (car lst)) (cdr lst)))
-      `(,(if rec (apply #'properize (car lst) rec splice) (car lst)) ,@splice ,(cdr lst)))
+      
+      `(
+         ,(if rec (apply #'properize (car lst) rec splice) (car lst))
+         ,@splice
+         ,(cdr lst))
+      )
+    
     (t
       (cons (if rec (apply #'properize (car lst) rec splice) (car lst)) (apply #'properize (cdr lst) rec splice)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
