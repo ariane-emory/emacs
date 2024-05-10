@@ -103,34 +103,20 @@
            (not-first nil)
            (res nil))
       (doconses (head pos lst res)
-        (prndiv)
-        (prn "lst:  %s" lst)
-        (prn "head: %s" head)
-        (prn "pos:  %s" pos)
         (cond
-          ((and not-first (eq '\, head) (not (cddr pos)))
-            (prn "case 1.")
+          ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             (push improper-indicator res) 
-            (push (list '\,
-                    (let ((next (cadr pos)))
-                      (if (atom next)
-                        next
-                        (with-indentation (dm::properize-pattern next)))))
+            (push
+              (list '\, (let ((next (cadr pos))) (if (atom next) next (dm::properize-pattern next))))
               res)
-            (setf pos (cdr pos))
-            )
+            (setf pos nil))
           ((not (listp (cdr pos)))
-            (prn "case 2.")
-            (push (with-indentation (dm::properize-pattern head)) res)
+            (push (dm::properize-pattern head) res)
             (push improper-indicator res)
             (push (cdr pos) res)
-            (setf  pos nil))
-          ((listp head)
-            (prn "case 5.")
-            (push (dm::properize-pattern head) res))
-          (t
-            (prn "case 4.")
-            (push head res)))
+            (setf pos nil))
+          ((listp head) (push (dm::properize-pattern head) res))
+          (t (push head res)))
         (setf not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::properize-pattern  nil)          returns nil)
@@ -143,11 +129,11 @@
 (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
 (confirm that (dm::properize-pattern '((,w . ,y). ,z))
   returns (((\, w) \. (\, y)) \. (\, z)))
-;; (confirm that (dm::properize-pattern '(,v (,w ,x . ,y). ,z))
-;;   returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+(confirm that (dm::properize-pattern '(,v (,w ,x . ,y). ,z))
+  returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
 (confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)))
   returns ((\, x) (\, y) \. (\, (z integer?))))
-;; this one would not by a legal pattern due to the way ,z is used in the innermost sub-expression,
+;; this one would not be a legal pattern due to the way ,z is used in the innermost sub-expression,
 ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
 (confirm that (dm::properize-pattern '(,x ,y . ,(,z integer?)))
   returns ((\, x) (\, y) \. (\,((\, z) integer?))))
