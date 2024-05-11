@@ -444,7 +444,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::intern-pattern (pat)
+(defun dm::intern-pattern (pat dont-care ellipsis unsplice)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
@@ -453,11 +453,11 @@
       (car existing)
       ;; `dm::prn' not available here! move it to a new file so it is!
       (prn "Interning pattern %s" pat)
-      (db-put '*dm* pat (dm::properize-pattern* pat)))))
+      (db-put '*dm* (list dont-care ellipsis unsplice pat) (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-    (dm::intern-pattern pat))
+    (dm::intern-pattern pat '_ '... '\,@))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -476,7 +476,7 @@
           (with-indentation
             (dm::unproperize!* (car pos))))
         (when (eq (cadr-safe pos) *dm::improper-indicator*)
-          (when (cadddr pos)
+          (when (or (cadddr pos) (not (cddr pos)))
             (error "properize indicator in unexpected position: %s" lst))
           (setcdr pos (caddr pos))
           (setf pos nil))

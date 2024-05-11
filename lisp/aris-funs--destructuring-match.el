@@ -231,7 +231,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   (dm::prndiv)
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (pattern (dm::intern-pattern pattern))
+  (let* ( (pattern (dm::intern-pattern pattern dont-care ellipsis unsplice))
           (target  (dm::properize-target target))
           (result (with-indentation
                     (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
@@ -351,7 +351,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           ;; don't eat the improper indicator:
                           (when (eq *dm::improper-indicator* (car (last take)))
                             ;; (setf take (butlast take))
-                            (setcdr (last take 2) nil)
+                            (setcdr (last m2 take) nil)
                             (setf leave (cons *dm::improper-indicator* leave)))
                           (dm::prn-labeled take)
                           (dm::prn-labeled leave)
