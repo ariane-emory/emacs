@@ -459,8 +459,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                                                      "name of a captured variable"))))))
                                     (let ( ;; (funcall-expr
                                            ;;   `(funcall ,(subst-alist-in-expr pred) ,var-val))
-                                           (funcall-expr2  (macroexp-let-alist (augmented-alist)
-                                                             '(funcall pred var-val))))
+                                           (funcall-expr2 (macroexp-let-alist (augmented-alist)
+                                                            '(funcall pred var-val))))
                                       ;; (dm::prn-labeled funcall-expr)
                                       (dm::prn-labeled funcall-expr2)
                                       ;; (eval funcall-expr)

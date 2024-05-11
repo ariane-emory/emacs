@@ -444,7 +444,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::intern-pattern (pat dont-care ellipsis unsplice)
+(defun dm::intern-pattern (unsplice ellipsis dont-care pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
@@ -453,11 +453,11 @@
       (car existing)
       ;; `dm::prn' not available here! move it to a new file so it is!
       (prn "Interning pattern %s" pat)
-      (db-put '*dm* (list dont-care ellipsis unsplice pat) (dm::properize-pattern* pat)))))
+      (db-put '*dm* (list unsplice ellipsis dont-care pat) (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-    (dm::intern-pattern pat '_ '... '\,@))
+    (dm::intern-pattern '\,@ '... '_ pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

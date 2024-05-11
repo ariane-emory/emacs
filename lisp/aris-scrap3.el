@@ -81,9 +81,9 @@
 
 
 (dm::reset)
-(dm::intern-pattern '(a b . c) '_ '... '\,@)
-(dm::unproperize!* (dm::intern-pattern '(a b . c) '_ '... '\,@))
-(dm::intern-pattern '(a b . c) '_ '... '\,@)
+(dm::intern-pattern '\,@ '... '_ '(a b . c))
+(dm::unproperize!* (dm::intern-pattern '\,@ '... '_  '(a b . c)))
+(dm::intern-pattern '\,@ '... '_  '(a b . c))
 
 (dm:match '(,thing _ ,thing2) '(three . four))
 
