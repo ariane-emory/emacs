@@ -339,10 +339,6 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (cond
-    ((null lst) ;; (and lst (atom lst))
-      ;;(prn "case 1")
-      ;;(debug lst)
-      )
     ((and (cdr lst) (atom (cdr lst)))
       ;;(prn "case 2")
       ;; found an improper tail, properize it:
@@ -417,6 +413,19 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((1.0610870000000001 0 0.0)
+    (1.186267 0 0.0))
+  ((1.091851 0 0.0)
+    (1.197183 0 0.0))
+
+  ((1.185426 0 0.0)
+    (1.18351 0 0.0))
+  ((1.204754 0 0.0)
+    (1.187984 0 0.0))
+  ((1.0907200000000001 0 0.0)
+    (1.180972 0 0.0))
+  ((1.112672 0 0.0)
+    (1.178603 0 0.0))
   ((1.093515 0 0.0)
     (1.19125 0 0.0))
 
