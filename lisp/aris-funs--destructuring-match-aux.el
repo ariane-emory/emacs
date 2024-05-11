@@ -457,7 +457,7 @@
   (let ((existing (db-get '*dm* pat)))
     (if (cdr existing)
       (car existing)
-      (dm::prn "Interning pattern %s" pat)
+      (prn "Interning pattern %s" pat)
       (db-put '*dm* pat (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that

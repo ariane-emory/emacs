@@ -36,6 +36,7 @@
   (dm::properize-target '(1 2 (3 . 4) . 5)))
 (symbol-plist '*dm*)
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::unproperize!* (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,17 +44,17 @@
   (let ((pos lst))
     (dm::prndiv)
     (while pos
-      (dm::prn "head: %s" (car pos))
+      (dm::prn "head:     %s" (car pos))
       (when (consp (car pos))
         (with-indentation
           (dm::unproperize!* (car pos))))
-      (when (eq (cadr pos) *dm::improper-indicator*)
+      (when (eq (cadr-safe pos) *dm::improper-indicator*)
         (when (cadddr pos)
           (error "properize indicator in unexpected position: %s" lst))
         (setcdr pos (caddr pos))
         (setf pos nil))
       (pop pos)))
-  (dm::prn "lst:  %s" lst)
+  (dm::prn "lst:      %s" lst)
   (dm::prndiv)
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -67,8 +68,14 @@
   (equal pat
     (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
 
-(let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+(let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
+        '(,a ,(b integer? . foo) . ,c) ; sketchy
+        ;; '(,a ,(b integer? foo) . ,(c integer? foo))
+        ))
   (dm::prnl)
-  ;; this doesn't look correct but i think it actually is;
   (equal pat
     (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
+
+
+
+
