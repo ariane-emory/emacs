@@ -34,7 +34,9 @@
 (dm:match
   '(,a ,b (,c . ,d) . ,e)
   (dm::properize-target '(1 2 (3 . 4) . 5)))
+
 (symbol-plist '*dm*)
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,6 +76,31 @@
         ;; '(,a ,(b integer? foo) . ,(c integer? foo))
         ))
   (prnl 2)
-  (equal pat (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
+  (equal pat
+    (dm::unproperize!*
+      (cl-copy-list
+        (dm::intern-pattern
+          (dm::unproperize!*
+            (cl-copy-list
+              (dm::intern-pattern
+                (dm::unproperize!*
+                  (cl-copy-list
+                    (dm::intern-pattern pat)))))))))))
+
+
+(let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
+        '(,a ,(b integer? . foo) . ,c)
+        ;; '(,a ,(b integer? foo) . ,(c integer? foo))
+        ))
+  (prnl 2)
+  (equal pat
+    (dm::unproperize!*
+      (dm::intern-pattern
+        (dm::unproperize!*
+          (dm::intern-pattern
+            (dm::unproperize!*
+              (dm::intern-pattern pat))))))))
+
+
 
 
