@@ -3,6 +3,7 @@
 ;; Auxiliary functions used by `dm:match', my destructuring pattern matching function:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--lists)
+(require 'aris-funs--sym-db)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -218,7 +219,6 @@
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
   (confirm that (dm::properize-pattern* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  
   (confirm that (dm::properize-pattern* '(,x))        returns ((\, x)))  
   (confirm that (dm::properize-pattern*  nil)          returns nil)
   (confirm that (dm::properize-pattern* '(,x))         returns ((\, x)))
@@ -281,7 +281,6 @@
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
   (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-
   (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern!  nil)          returns nil)
@@ -361,7 +360,6 @@
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
   (confirm that (dm::properize-pattern '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-
   (confirm that (dm::properize-pattern  nil)          returns nil)
   (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
   (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
@@ -386,6 +384,36 @@
   (confirm that (dm::properize-pattern '(,x ,y . ,(,z integer?)))
     returns ((\, x) (\, y) \. (\,((\, z) integer?)))))
 ;; don't confirm: (dm::properize-pattern '(,x . ,y ,z)) ... ; bullshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::reset ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Clear any interned patterns."
+  (ensure-db! '*dm*)
+  (clear-db   '*dm*))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (hash-table-p (dm::reset)) returns t)
+(confirm that (length (symbol-plist '*dm*)) returns 2)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::intern-pattern (pat)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
+  (ensure-db! '*dm*)
+  (let ((existing (db-get '*dm* pat)))
+    (if (cdr existing)
+      (car existing)
+      (dm::prn "Interning pattern %s" pat)
+      (db-put '*dm* pat (dm::properize-pattern* pat)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+    (dm::intern-pattern pat))
+  returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -446,6 +474,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 

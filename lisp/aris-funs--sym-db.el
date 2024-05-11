@@ -109,14 +109,14 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun--db-fun db-clear ()
+(defun--db-fun clear-db ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Clear the hashtable on DB-SYM's DB-PROP property."
   (require-db! db-sym db-prop)
   (clrhash db))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(db-clear --db-foo)
-(db-clear --db-foo 'alt)
+(clear-db --db-foo)
+(clear-db --db-foo 'alt)
 (confirm that (db-get --db-foo 'bar) returns (nil))
 (confirm that (db-get --db-foo 'bar 'alt) returns (nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
