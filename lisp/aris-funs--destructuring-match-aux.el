@@ -457,6 +457,7 @@
   (let ((existing (db-get '*dm* pat)))
     (if (cdr existing)
       (car existing)
+      ;; `dm::prn' not available here! move it to a new file so it is!
       (prn "Interning pattern %s" pat)
       (db-put '*dm* pat (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
