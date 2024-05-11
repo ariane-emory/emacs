@@ -112,13 +112,14 @@
       ;;(prn "case 3")
       ;; found a wayward comma, fix it:
       ;; (debug (cadr lst))
-      (setcar lst *dm::improper-indicator*)
-      (setcdr lst (list (list '\,
-                          (cadr lst)
-                          ;; (if (consp (cadr lst))
-                          ;;   (dm::properize-pattern!* (cadr lst) nil)
-                          ;;   (cadr lst))
-                          ))))
+      (let ((indic (car lst)))
+        (setcar lst *dm::improper-indicator*)
+        (setcdr lst (list (list indic
+                            (cadr lst)
+                            ;; (if (consp (cadr lst))
+                            ;;   (dm::properize-pattern!* (cadr lst) nil)
+                            ;;   (cadr lst))
+                            )))))
     ((consp (car lst))
       ;;(prn "case 4")
       (unless (eq '\, (caar lst))
@@ -189,7 +190,7 @@
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;; found a wayward comma, fix it:
       (list *dm::improper-indicator*
-        (list '\,
+        (list (car lst)
           (cadr lst)
           ;; (if (consp (cadr lst))
           ;;   (dm::properize-pattern* (cadr lst) nil)
@@ -258,7 +259,7 @@
           ;; found a wayward comma, fix it:
           (setcar pos *dm::improper-indicator*)
           (setcdr pos
-            (list (list '\,
+            (list (list head
                     (cadr pos)
                     ;; (possibly dm::properize-pattern! (cadr pos) unless it is an atom)
                     )))
@@ -335,7 +336,7 @@
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
             (setq res (cons
-                        (list '\,
+                        (list head
                           (cadr pos)
                           ;; (possibly dm::properize-pattern (cadr pos) unless it is an atom)
                           )
