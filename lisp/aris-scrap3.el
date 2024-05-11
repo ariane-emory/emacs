@@ -72,8 +72,8 @@
   (equal pat (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
 
 (let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
-        '(,a ,(b integer? . foo) . ,c)
-        ;; '(,a ,(b integer? foo) . ,(c integer? foo))
+        ;; '(,a ,(b integer? . foo) . ,c)
+        '(,a ,(b integer? foo) . ,(c integer? foo))
         ))
   (prnl 2)
   (equal pat
@@ -87,6 +87,7 @@
                   (cl-copy-list
                     (dm::intern-pattern pat)))))))))))
 
+(symbol-plist '*dm*)
 
 (let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
         '(,a ,(b integer? . foo) . ,c)
@@ -105,6 +106,5 @@
 
 (dm::reset)
 (dm::intern-pattern '(a b . c))
-(dm::unproperize!* (car (db-get '*dm* '(a b . c))))
-;; (setcar (car (db-get '*dm* '(a b . c))) 'foo)
-(symbol-plist '*dm*)
+(dm::unproperize!* (dm::intern-pattern '(a b . c)))
+(dm::intern-pattern '(a b . c))

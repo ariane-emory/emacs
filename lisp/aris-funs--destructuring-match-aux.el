@@ -469,6 +469,33 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::unproperize!* (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn lists with *dm::improper-indicator* in their second last position back into improper lists."
+  (let ((pos lst))
+    (prndiv)
+    (while (consp pos)
+      (if (atom pos)
+        (prn "atom:     %s"  pos)
+        (prn "head:     %s" (car pos))
+        (when (consp (car pos))
+          (with-indentation
+            (dm::unproperize!* (car pos))))
+        (when (eq (cadr-safe pos) *dm::improper-indicator*)
+          (when (cadddr pos)
+            (error "properize indicator in unexpected position: %s" lst))
+          (setcdr pos (caddr pos))
+          (setf pos nil))
+        (pop pos))))
+  (prn "lst:      %s" lst)
+  (prndiv)
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ADD TESTS!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
