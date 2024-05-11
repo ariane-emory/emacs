@@ -20,4 +20,55 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq lst '(1 2 3 4 5 6 7 8 9))
+(setq al (dm:match '(,x ,@ys) lst))
+(setcar (alist-get 'ys al) 999)
+(setq lst '(my name is ari))
+(setq al (dm:match '(my name is ,@name) lst))
+(setcar (alist-get 'name al) 'bob)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(dm::reset)
+
+(dm:match
+  '(,a ,b (,c . ,d) . ,e)
+  (dm::properize-target '(1 2 (3 . 4) . 5)))
+(symbol-plist '*dm*)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::unproperize!* (lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn lists with *dm::improper-indicator* in their second last position back into improper lists."
+  (let ((pos lst))
+    (dm::prndiv)
+    (while pos
+      (dm::prn "head: %s" (car pos))
+      (when (consp (car pos))
+        (with-indentation
+          (dm::unproperize!* (car pos))))
+      (when (eq (cadr pos) *dm::improper-indicator*)
+        (when (cadddr pos)
+          (error "properize indicator in unexpected position: %s" lst))
+        (setcdr pos (caddr pos))
+        (setf pos nil))
+      (pop pos)))
+  (dm::prn "lst:  %s" lst)
+  (dm::prndiv)
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(dm::unproperize!* '(1 2 3 (4 (a b c (d \. e)) 5 6 \. 7) \. 8))
+
+
+(let ((pat '(,a ,b . ,c)))
+  (dm::prnl)
+  ;; this doesn't look correct but i think it actually is;
+  (equal pat
+    (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
+
+(let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+  (dm::prnl)
+  ;; this doesn't look correct but i think it actually is;
+  (equal pat
+    (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
