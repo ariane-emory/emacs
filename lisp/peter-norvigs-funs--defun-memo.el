@@ -51,7 +51,7 @@
   ;; - ari renamed 'memo to 'memo-table.
   ;; - ari renamed this fun from `memo' to `make-memo-fun'.
   ;; - ari simplified the arguments to this function compared to the original.
-  ;; - ari adjusted this to use backwote so as to align with elisps scoping.
+  ;; - ari adjusted this to use backwote so as to align with elisp's scoping.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return a memo-function of FUN."
   (let ( (fun   (symbol-function fun-name))
