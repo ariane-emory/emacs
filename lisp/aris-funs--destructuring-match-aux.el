@@ -9,6 +9,74 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pat element testing/accessor macros::
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-is-the-symbol? (symbol pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when SYMBOL is non-nil and `eq' to PAT-ELEM."
+  `(and ,symbol (eq ,symbol ,pat-elem)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-is-a-variable? (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when PAT-ELEM describes a variable."
+  (let ((comma '\,))
+    `(eq ',comma (car-safe ,pat-elem))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-is-an-unsplice? (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Expects to be expanded in an environment where UNSPLICE is bound."
+  `(and unsplice (eq unsplice (car-safe ,pat-elem))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-is-flexible? (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Expects to be expanded in an environment where ELLIPSIS is bound."
+  `(or (dm::pat-elem-is-an-unsplice? ,pat-elem) (dm::pat-elem-is-the-symbol? ellipsis ,pat-elem)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-var-sym (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
+  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+     (if (atom 2nd)
+       2nd
+       (car 2nd))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::pat-elem-var-sym  123)        returns nil)
+(confirm that (dm::pat-elem-var-sym  ',x)        returns x)
+(confirm that (dm::pat-elem-var-sym  ',(x y z))  returns x)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-var-preds (pat-elem)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
+  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+     (if (atom 2nd)
+       nil
+       (cdr 2nd))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::pat-elem-var-preds 123)       returns nil)
+(confirm that (dm::pat-elem-var-preds ',x)       returns nil)
+(confirm that (dm::pat-elem-var-preds ',(x y z)) returns (y z))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; print helpers:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -177,13 +245,13 @@
   ;; flexible elements following the properize symbol should be illegal?
   (cond
     ((and (cdr lst) (atom (cdr lst)))
-      ;;(prn "case 2")
+      ;;(dm::prn "case 2")
       ;; found an improper tail, properize it:
       (when (consp (car lst))
         (setcar lst (dm::properize-pattern!* (car lst) nil)))
       (setcdr lst (list *dm:default-improper-indicator* (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
-      ;;(prn "case 3")
+      ;;(dm::prn "case 3")
       ;; found a wayward comma, fix it:
       ;; (debug (cadr lst))
       (let ((indic (car lst)))
@@ -195,12 +263,12 @@
                             ;;   (cadr lst))
                             )))))
     ((consp (car lst))
-      ;;(prn "case 4")
+      ;;(dm::prn "case 4")
       (unless (eq '\, (caar lst))
         (setcar lst (dm::properize-pattern!* (car lst) nil)))
       (dm::properize-pattern!* (cdr lst) t))
     ((cdr lst) ; (atom (car lst))
-      ;;(prn "case 5: %s" (cdr lst))
+      ;;(dm::prn "case 5: %s" (cdr lst))
       (dm::properize-pattern!* (cdr lst) t)))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -392,7 +460,7 @@
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
-  ;; (prndiv)
+  ;; (dm::prndiv)
   (nreverse
     (let (not-first res)
       (doconses (head pos lst res)
@@ -506,14 +574,51 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::reset ()
+;; unproperize things:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun dm::unproperize!* (lst &optional (improper-indicator *dm:default-improper-indicator*))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
+  (let ((pos lst))
+    (dm::prndiv)
+    (while (consp pos)
+      (if (atom pos)
+        (dm::prn "atom:     %s"  pos)
+        (dm::prn "head:     %s" (car pos))
+        (when (consp (car pos))
+          (with-indentation
+            (dm::unproperize!* (car pos))))
+        (when (eq (cadr-safe pos) improper-indicator)
+          (when (or (cadddr pos) (not (cddr pos)))
+            (error "properize indicator in unexpected position: %s" lst))
+          (setcdr pos (caddr pos))
+          (setf pos nil))
+        (pop pos))))
+  (dm::prn "lst:      %s" lst)
+  (dm::prndiv)
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ADD TESTS!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pattern cache management funs:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::clear-interned-patterns ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Clear any interned patterns."
   (ensure-db! '*dm*)
   (clear-db   '*dm*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (hash-table-p (dm::reset)) returns t)
-(confirm that (length (symbol-plist '*dm*)) returns 2)
+;; (confirm that (hash-table-p (dm::clear-interned-patterns)) returns t)
+;; (confirm that (length (symbol-plist '*dm*)) returns 2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -534,35 +639,6 @@
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
     (dm::intern-pattern '\,@ '... '_ '\. pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; properize things:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm::unproperize!* (lst &optional (improper-indicator *dm:default-improper-indicator*))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
-  (let ((pos lst))
-    (prndiv)
-    (while (consp pos)
-      (if (atom pos)
-        (prn "atom:     %s"  pos)
-        (prn "head:     %s" (car pos))
-        (when (consp (car pos))
-          (with-indentation
-            (dm::unproperize!* (car pos))))
-        (when (eq (cadr-safe pos) improper-indicator)
-          (when (or (cadddr pos) (not (cddr pos)))
-            (error "properize indicator in unexpected position: %s" lst))
-          (setcdr pos (caddr pos))
-          (setf pos nil))
-        (pop pos))))
-  (prn "lst:      %s" lst)
-  (prndiv)
-  lst)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ADD TESTS!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

@@ -30,7 +30,7 @@
 (setcar (alist-get 'name al) 'bob)
 
 
-(dm::reset)
+(dm::clear-interned-patterns)
 
 (dm:match
   '(,a ,b (,c . ,d) . ,e)
@@ -80,7 +80,7 @@
 
 
 
-(dm::reset)
+(dm::clear-interned-patterns)
 (dm::intern-pattern '\,@ '... '_ '\. '(a b . c))
 (dm::unproperize!* (dm::intern-pattern '\,@ '... '_ '\.  '(a b . c)))
 (dm::intern-pattern '\,@ '... '_ '\.  '(a b . c))
