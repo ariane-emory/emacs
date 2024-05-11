@@ -323,25 +323,20 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (cond
-    ((null lst) ;; (and lst (atom lst))
+    ((atom lst) ;; (and lst (atom lst))
       ;;(prn "case 1")
       ;;(debug lst)
       )
     ((and (cdr lst) (atom (cdr lst)))
       ;;(prn "case 2")
       ;; found an improper tail, properize it:
-      (setcar lst (if (consp (car lst))
-                    (dm::properize-pattern!*2 (car lst) nil)
-                    (car lst)))
       (setcdr lst (list *dm::improper-indicator* (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(prn "case 3")
       ;; found a wayward comma, fix it:
       (setcar lst *dm::improper-indicator*)
       (setcdr lst (list (list '\,
-                          (if (consp (cadr lst))
-                            (dm::properize-pattern!*2 (cadr lst) nil)
-                            (cadr lst))))))
+                          (dm::properize-pattern!*2 (cadr lst) nil)))))
     ((consp (car lst))
       ;;(prn "case 4")
       (setcar lst (dm::properize-pattern!*2 (car lst) nil))
@@ -398,10 +393,20 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
-  ((1.1192739999999999 0 0.0)
-    (1.192601 0 0.0))
-  ((1.121116 0 0.0)
-    (1.191186 0 0.0))
+  ((1.11989 0 0.0)
+    (1.191337 0 0.0))
+  ((1.117509 0 0.0)
+    (1.1906510000000001 0 0.0))
+
+  ((1.1211820000000001 0 0.0)
+    (1.200364 0 0.0))
+  ((1.124367 0 0.0)
+    (1.19235 0 0.0))
+  ((1.124477 0 0.0)
+    (1.191989 0 0.0))
+
+  ((1.119714 0 0.0)
+    (1.190704 0 0.0))
 
   ((1.149295 0 0.0)
     (1.189412 0 0.0))
