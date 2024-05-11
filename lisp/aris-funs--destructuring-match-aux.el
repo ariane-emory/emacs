@@ -104,7 +104,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-pattern!* (lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
+  "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (cond
@@ -120,9 +120,9 @@
       (setcdr lst (list (list '\, (dm::properize-pattern!* (cadr lst) nil)))))
     ((consp (car lst))
       (setcar lst (dm::properize-pattern!* (car lst) nil))
-      (setcdr lst (dm::properize-pattern!* (cdr lst) t)))
+      (dm::properize-pattern!* (cdr lst) t))
     (t ; (atom (car lst))
-      (setcdr lst (dm::properize-pattern!* (cdr lst) t))))
+      (dm::properize-pattern!* (cdr lst) t)))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
@@ -317,18 +317,149 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern!*2 (lst &optional not-first) ; deeply recursive version.
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Destructively properize a pattern by inserting a 'properize symbol', '\."
+  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
+  ;; flexible elements following the properize symbol should be illegal?
+  (cond
+    ((null lst) ;; (and lst (atom lst))
+      ;;(prn "case 1")
+      ;;(debug lst)
+      )
+    ((and (cdr lst) (atom (cdr lst)))
+      ;;(prn "case 2")
+      ;; found an improper tail, properize it:
+      (setcar lst (if (listp (car lst))
+                    (dm::properize-pattern!*2 (car lst) nil)
+                    (car lst)))
+      (setcdr lst (list *dm::improper-indicator* (cdr lst))))
+    ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
+      ;;(prn "case 3")
+      ;; found a wayward comma, fix it:
+      (setcar lst *dm::improper-indicator*)
+      (setcdr lst (list (list '\,
+                          (if (listp (cadr lst))
+                            (dm::properize-pattern!*2 (cadr lst) nil)
+                            (cadr lst))))))
+    ((consp (car lst))
+      ;;(prn "case 4")
+      (setcar lst (dm::properize-pattern!*2 (car lst) nil))
+      (dm::properize-pattern!*2 (cdr lst) t))
+    ((cdr lst) ; (atom (car lst))
+      ;;(prn "case 5: %s" (cdr lst))
+      (dm::properize-pattern!*2 (cdr lst) t)))
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when *dm:test-aux*
+  (confirm that (dm::properize-pattern!*2 '(,x))         returns ((\, x)))
+  ;; (confirm that (dm::properize-pattern!*2  nil)          returns nil)
+  (confirm that (dm::properize-pattern!*2 '(,x .  y))    returns ((\, x) \. y))
+  (confirm that (dm::properize-pattern!*2 '(,x . ,y))    returns ((\, x) \. (\, y)))
+  (confirm that (dm::properize-pattern!*2 '(,x . (y z))) returns ((\, x) y z))
+  (confirm that (dm::properize-pattern!*2 '(,x  y .  z)) returns ((\, x) y \. z))
+  (confirm that (dm::properize-pattern!*2 '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
+  (confirm that (dm::properize-pattern!*2 '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
+  (confirm that (dm::properize-pattern!*2 '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
+  (confirm that (dm::properize-pattern!*2 '((,w . ,y) . ,z))
+    returns (((\, w) \. (\, y)) \. (\, z)))
+  (confirm that (dm::properize-pattern!*2 '(,v (,w ,x . ,y) . ,z))
+    returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+  (confirm that (dm::properize-pattern!*2 '(,x ,y . ,(z  integer?)))
+    returns ((\, x) (\, y) \. (\, (z integer?))))
+  ;; this one would not be a legal pattern!*2 due to the way ,z is used in the innermost sub-expression,
+  ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
+  (confirm that (dm::properize-pattern!*2 '(,x ,y . ,(,z integer?)))
+    returns ((\, x) (\, y) \. (\,((\, z) integer?))))
+  (let ((lst  '(,v (,w ,x . ,y) . ,z)))
+    (confirm that (dm::properize-pattern!*2 lst)
+      returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
+    (confirm that lst
+      returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
+  (let ((lst '(,x .  y)))
+    (confirm that (dm::properize-pattern!*2 lst)        returns ((\, x) \. y))
+    (confirm that lst                                  returns ((\, x) \. y))
+    ))
+;; don't confirm: (dm::properize-pattern!*2 '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
-    (setq reps 250000)
+    (setq reps 100000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!* '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!*2 '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!*  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern    '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((1.152385 0 0.0)
+    (1.196218 0 0.0)
+    (1.262898 0 0.0)
+    (1.503993 7 0.46370499999999026)
+    (1.823433 8 0.5258280000000042))
+
+  ((1.1111010000000001 0 0.0)
+    (1.1921460000000002 0 0.0)
+    (1.2676619999999998 0 0.0)
+    (1.573158 8 0.5317229999999995)
+    (1.761906 7 0.46225600000000355))
+
+  ((1.085514 0 0.0)
+    (1.194597 0 0.0)
+    (1.2645099999999998 0 0.0)
+    (1.495363 7 0.45707799999999565)
+    (1.8259429999999999 8 0.5281590000000023))
+
+  ((1.108143 0 0.0)
+    (1.190237 0 0.0)
+    (1.268068 0 0.0)
+    (1.565256 8 0.5282460000000029)
+    (1.7550210000000002 7 0.4594579999999979))
+
+  ;; 250k:
+  ((2.745476 0 0.0)
+    (2.984801 0 0.0)
+    (3.167918 0 0.0)
+    (3.8508139999999997 19 1.2566699999999997)
+    (4.435362 18 1.1894869999999997))
+
+  ((2.7469099999999997 0 0.0)
+    (2.9828040000000002 0 0.0)
+    (3.165054 0 0.0)
+    (3.848503 19 1.252804999999995)
+    (4.512521 19 1.265744000000005))
+
+
+  ((2.756316 0 0.0)
+    (2.981145 0 0.0)
+    (3.1631709999999997 0 0.0)
+    (3.852269 19 1.2525680000000001)
+    (4.491689999999999 19 1.2460780000000007))
+
+  ((2.999263 0 0.0)
+    (2.9799499999999997 0 0.0)
+    (3.1813960000000003 0 0.0)
+    (3.8475949999999997 19 1.2499000000000002)
+    (4.499066 19 1.2528980000000018))
+
+  ((2.991221 0 0.0)
+    (2.992302 0 0.0)
+    (3.165289 0 0.0)
+    (3.8324510000000003 19 1.239767999999998)
+    (4.511541 19 1.260944000000002))
+
+  ((2.72603 0 0.0)
+    (2.980267 0 0.0)
+    (3.161387 0 0.0)
+    (3.8817589999999997 20 1.2833929999999993)
+    (4.474498 19 1.2224160000000008))
 
   ((3.241275 0 0.0)
     (3.16588 0 0.0)
@@ -415,7 +546,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
