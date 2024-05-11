@@ -466,14 +466,35 @@
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm::reset)
-
-(dm:match
-  (dm::intern-pattern   '(,a ,b (,c . ,d) . ,e))
-  (dm::properize-target '(1 2 (3 . 4) . 5)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(setq lst '(1 2 3 4 5 6 7 8 9))
+(setq al (dm:match '(,x ,@ys) lst))
+(setcar (alist-get 'ys al) 999)
+
+
+(setq lst '(my name is ari))
+(setq al (dm:match '(my name is ,@name) lst))
+(setcar (alist-get 'name al) 'bob)
+
+(dm::reset)
+
+(dm:match
+  (dm::intern-pattern   '(,a ,b (,c . ,d) . ,e))
+  (dm::properize-target '(1 2 (3 . 4) . 5)))
+(symbol-plist '*dm*)
+
+(defun dm::unproperize (lst)
+  (let ((pos lst))
+    (while pos
+      (when (eq (cadr pos) *dm::improper-indicator*)
+        (setcdr pos (caddr pos))
+        (setf pos nil))
+      (pop pos)))
+  lst)
+
+(dm::unproperize '(1 2 3 \. 4))
