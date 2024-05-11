@@ -330,6 +330,7 @@
     ((and (cdr lst) (atom (cdr lst)))
       ;;(prn "case 2")
       ;; found an improper tail, properize it:
+      (setcar lst (dm::properize-pattern!* (car lst) nil))
       (setcdr lst (list *dm::improper-indicator* (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(prn "case 3")
@@ -373,7 +374,7 @@
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
   (let ((lst '(,x .  y)))
     (confirm that (dm::properize-pattern!*2 lst)        returns ((\, x) \. y))
-    (confirm that lst                                  returns ((\, x) \. y))
+    (confirm that lst                                   returns ((\, x) \. y))
     ))
 ;; don't confirm: (dm::properize-pattern!*2 '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -393,6 +394,11 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((1.08577 0 0.0)
+    (1.190714 0 0.0))
+  ((1.1051819999999999 0 0.0)
+    (1.195256 0 0.0))
+
   ((1.11989 0 0.0)
     (1.191337 0 0.0))
   ((1.117509 0 0.0)
