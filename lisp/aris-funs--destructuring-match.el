@@ -323,7 +323,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
                 ;; ----------------------------------------------------------------------------------
-                ((dm::pat-elem-is-the-symbol? dont-care (car pattern))
+                ((and (dm::pat-elem-is-the-symbol? dont-care (car pattern))
+                   (not (eq *dm::improper-indicator* (car target)))) ;; not quite sure yet?
                   (setf last-pattern-elem-was-flexible nil)
                   (dm::prn "DONT-CARE, discarding %s." (car target))
                   (dm::log-pop* pattern target))

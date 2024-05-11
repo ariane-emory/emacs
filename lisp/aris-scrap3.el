@@ -85,3 +85,9 @@
 (dm::intern-pattern '(a b . c))
 
 (dm:match '(,@things . ,thing) '(one two three . four))
+
+;; ,@ shoulddn't slurp past '\.? Undecided.
+(dm:match '(,@things) '(one two three . four))
+
+(setq l '(1 2 3 . 5))
+`(,@l)
