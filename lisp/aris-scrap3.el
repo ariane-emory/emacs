@@ -38,31 +38,6 @@
 (symbol-plist '*dm*)
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::unproperize!* (lst)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Turn lists with *dm::improper-indicator* in their second last position back into improper lists."
-  (let ((pos lst))
-    (prndiv)
-    (while (consp pos)
-      (if (atom pos)
-        (prn "atom:     %s"  pos)
-        (prn "head:     %s" (car pos))
-        (when (consp (car pos))
-          (with-indentation
-            (dm::unproperize!* (car pos))))
-        (when (eq (cadr-safe pos) *dm::improper-indicator*)
-          (when (cadddr pos)
-            (error "properize indicator in unexpected position: %s" lst))
-          (setcdr pos (caddr pos))
-          (setf pos nil))
-        (pop pos))))
-  (prn "lst:      %s" lst)
-  (prndiv)
-  lst)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (dm::unproperize!* '(1 2 3 (4 (a b c (d \. e)) 5 6 \. 7) \. 8))
 
 
@@ -108,3 +83,5 @@
 (dm::intern-pattern '(a b . c))
 (dm::unproperize!* (dm::intern-pattern '(a b . c)))
 (dm::intern-pattern '(a b . c))
+
+(dm:match '(,@things . ,thing) '(one two three . four))
