@@ -231,7 +231,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   (dm::prndiv)
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (result (with-indentation
+  (let* ( (pattern (dm::intern-pattern pattern))
+          ;; Currently, the next line will cause 2 tests to fail:
+          ;; (target  (dm::properize-target target))
+          (result (with-indentation
                     (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prn-labeled result "FINAL")
