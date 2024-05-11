@@ -117,6 +117,7 @@
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(prn "case 3")
       ;; found a wayward comma, fix it:
+      ;; (debug)
       (setcar lst *dm::improper-indicator*)
       (setcdr lst (list (list '\,
                           (if (consp (cadr lst))
@@ -124,14 +125,22 @@
                             (cadr lst))))))
     ((consp (car lst))
       ;;(prn "case 4")
-      (setcar lst (dm::properize-pattern!* (car lst) nil))
+      (unless (eq '\, (caar lst))
+        (setcar lst (dm::properize-pattern!* (car lst) nil)))
       (dm::properize-pattern!* (cdr lst) t))
     ((cdr lst) ; (atom (car lst))
       ;;(prn "case 5: %s" (cdr lst))
       (dm::properize-pattern!* (cdr lst) t)))
   lst)
+
+
+
+;; '(,(x integer? . foo))
+;; ((\, (x integer? . foo)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
+  (confirm that (dm::properize-pattern!* '(,w ,(x integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern!* '(,x))         returns ((\, x)))
   ;; (confirm that (dm::properize-pattern!*  nil)          returns nil)
   (confirm that (dm::properize-pattern!* '(,x .  y))    returns ((\, x) \. y))
@@ -394,4 +403,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(dm::properize-pattern!* '(,(x integer? . foo)))
+
