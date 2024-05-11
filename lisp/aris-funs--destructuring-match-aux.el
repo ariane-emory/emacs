@@ -330,7 +330,7 @@
     ((and (cdr lst) (atom (cdr lst)))
       ;;(prn "case 2")
       ;; found an improper tail, properize it:
-      (setcar lst (if (listp (car lst))
+      (setcar lst (if (consp (car lst))
                     (dm::properize-pattern!*2 (car lst) nil)
                     (car lst)))
       (setcdr lst (list *dm::improper-indicator* (cdr lst))))
@@ -339,7 +339,7 @@
       ;; found a wayward comma, fix it:
       (setcar lst *dm::improper-indicator*)
       (setcdr lst (list (list '\,
-                          (if (listp (cadr lst))
+                          (if (consp (cadr lst))
                             (dm::properize-pattern!*2 (cadr lst) nil)
                             (cadr lst))))))
     ((consp (car lst))
@@ -398,6 +398,16 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((1.117588 0 0.0)
+    (1.190702 0 0.0)
+    (1.2648709999999999 0 0.0)
+    (1.4856530000000001 7 0.44911899999999605)
+    (1.812742 8 0.5165060000000068))
+  ((1.157605 0 0.0)
+    (1.189629 0 0.0)
+    (1.264866 0 0.0)
+    (1.487328 7 0.4490239999999943)
+    (1.810676 8 0.5164430000000095))
 
   ((1.152385 0 0.0)
     (1.196218 0 0.0)
