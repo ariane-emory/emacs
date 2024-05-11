@@ -196,9 +196,11 @@
       ;; found a wayward comma, fix it:
       (list *dm::improper-indicator*
         (list '\,
-          (if (consp (cadr lst))
-            (dm::properize-pattern* (cadr lst) nil)
-            (cadr lst)))))
+          (cadr lst)
+          ;; (if (consp (cadr lst))
+          ;;   (dm::properize-pattern* (cadr lst) nil)
+          ;;   (cadr lst))
+          )))
     ((consp (car lst))
       (cons
         (if (eq '\, (caar lst))
@@ -212,8 +214,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
+  (confirm that (dm::properize-pattern* '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
   (confirm that (dm::properize-pattern* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
+  
+  (confirm that (dm::properize-pattern* '(,x))        returns ((\, x)))  
   (confirm that (dm::properize-pattern*  nil)          returns nil)
   (confirm that (dm::properize-pattern* '(,x))         returns ((\, x)))
   (confirm that (dm::properize-pattern* '(,x .  y))    returns ((\, x) \. y))
