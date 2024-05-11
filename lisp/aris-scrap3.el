@@ -102,7 +102,9 @@
               (dm::intern-pattern pat))))))))
 
 
+
 (dm::reset)
 (dm::intern-pattern '(a b . c))
-(db-get '*dm* '(a b . c))
-(setcar (car (db-get '*dm* '(a b . c))) 'foo)
+(dm::unproperize!* (car (db-get '*dm* '(a b . c))))
+;; (setcar (car (db-get '*dm* '(a b . c))) 'foo)
+(symbol-plist '*dm*)
