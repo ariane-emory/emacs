@@ -263,10 +263,15 @@
             (list (list '\,
                     (possibly dm::properize-pattern! (cadr pos) unless it is an atom))))
           (setf pos nil))
-        ((consp head) (setcar pos (dm::properize-pattern! head))))
+        ((consp head)
+          (unless (eq '\, (car head))
+            (setcar pos (dm::properize-pattern! head)))))
       (setf not-first t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
+  ;; (unless (eq '\, (caar lst))
+  (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern!  nil)          returns nil)
   (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
   (confirm that (dm::properize-pattern! '(,x .  y))    returns ((\, x) \. y))
@@ -330,10 +335,15 @@
                         (cons *dm::improper-indicator* res)))
             (setq pos nil))
           ((atom head) (push head res))
+          ((consp head)
+            (push (if (eq '\, (car head)) head (dm::properize-pattern head)) res))
           (t (push (dm::properize-pattern head) res)))
         (setq not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
+  ;; (unless (eq '\, (caar lst))
+  (confirm that (dm::properize-pattern '(,w ,(x integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern  nil)          returns nil)
   (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
   (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
