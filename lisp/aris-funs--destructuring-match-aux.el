@@ -346,7 +346,8 @@
     ((and (cdr lst) (atom (cdr lst)))
       ;;(prn "case 2")
       ;; found an improper tail, properize it:
-      (when (consp (car lst)) (setcar lst (dm::properize-pattern!* (car lst) nil)))
+      (when (consp (car lst))
+        (setcar lst (dm::properize-pattern!*2 (car lst) nil)))
       (setcdr lst (list *dm::improper-indicator* (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(prn "case 3")
@@ -416,6 +417,9 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((1.093515 0 0.0)
+    (1.19125 0 0.0))
+
   ((1.0970119999999999 0 0.0)
     (1.190878 0 0.0))
   ((1.087409 0 0.0)
