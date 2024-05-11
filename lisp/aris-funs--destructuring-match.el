@@ -955,3 +955,12 @@ This behaves very similarly to quasiquote."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq lst '(1 2 3 4 5 6 7 8 9))
+(setq al (dm:match '(,x ,@ys) lst))
+(setcar (alist-get 'ys al) 999)
+
+
+(setq lst '(my name is ari))
+(setq al (dm:match '(my name is ,@name) lst))
+(setcar (alist-get 'name al) 'bob)
