@@ -108,26 +108,32 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (cond
-    ((atom lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
+      ;;(prn "case 2")
       ;; found an improper tail, properize it:
-      (setcar lst (dm::properize-pattern!* (car lst) nil))
-      (setcdr lst (list *dm::improper-indicator* (cdr lst)))
-      lst)
+      (when (consp (car lst))
+        (setcar lst (dm::properize-pattern!* (car lst) nil)))
+      (setcdr lst (list *dm::improper-indicator* (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
+      ;;(prn "case 3")
       ;; found a wayward comma, fix it:
       (setcar lst *dm::improper-indicator*)
-      (setcdr lst (list (list '\, (dm::properize-pattern!* (cadr lst) nil)))))
+      (setcdr lst (list (list '\,
+                          (if (consp (cadr lst))
+                            (dm::properize-pattern!* (cadr lst) nil)
+                            (cadr lst))))))
     ((consp (car lst))
+      ;;(prn "case 4")
       (setcar lst (dm::properize-pattern!* (car lst) nil))
       (dm::properize-pattern!* (cdr lst) t))
-    (t ; (atom (car lst))
+    ((cdr lst) ; (atom (car lst))
+      ;;(prn "case 5: %s" (cdr lst))
       (dm::properize-pattern!* (cdr lst) t)))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
-  (confirm that (dm::properize-pattern!*  nil)          returns nil)
   (confirm that (dm::properize-pattern!* '(,x))         returns ((\, x)))
+  ;; (confirm that (dm::properize-pattern!*  nil)          returns nil)
   (confirm that (dm::properize-pattern!* '(,x .  y))    returns ((\, x) \. y))
   (confirm that (dm::properize-pattern!* '(,x . ,y))    returns ((\, x) \. (\, y)))
   (confirm that (dm::properize-pattern!* '(,x . (y z))) returns ((\, x) y z))
@@ -156,7 +162,8 @@
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
   (let ((lst '(,x .  y)))
     (confirm that (dm::properize-pattern!* lst)        returns ((\, x) \. y))
-    (confirm that lst                                  returns ((\, x) \. y))))
+    (confirm that lst                                   returns ((\, x) \. y))
+    ))
 ;; don't confirm: (dm::properize-pattern!* '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -333,79 +340,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern!*2 (lst &optional not-first) ; deeply recursive version.
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Destructively properize a pattern by inserting a 'properize symbol', '\."
-  ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  ;; flexible elements following the properize symbol should be illegal?
-  (cond
-    ((and (cdr lst) (atom (cdr lst)))
-      ;;(prn "case 2")
-      ;; found an improper tail, properize it:
-      (when (consp (car lst))
-        (setcar lst (dm::properize-pattern!*2 (car lst) nil)))
-      (setcdr lst (list *dm::improper-indicator* (cdr lst))))
-    ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
-      ;;(prn "case 3")
-      ;; found a wayward comma, fix it:
-      (setcar lst *dm::improper-indicator*)
-      (setcdr lst (list (list '\,
-                          (if (consp (cadr lst))
-                            (dm::properize-pattern!*2 (cadr lst) nil)
-                            (cadr lst))))))
-    ((consp (car lst))
-      ;;(prn "case 4")
-      (setcar lst (dm::properize-pattern!*2 (car lst) nil))
-      (dm::properize-pattern!*2 (cdr lst) t))
-    ((cdr lst) ; (atom (car lst))
-      ;;(prn "case 5: %s" (cdr lst))
-      (dm::properize-pattern!*2 (cdr lst) t)))
-  lst)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when *dm:test-aux*
-  (confirm that (dm::properize-pattern!*2 '(,x))         returns ((\, x)))
-  ;; (confirm that (dm::properize-pattern!*2  nil)          returns nil)
-  (confirm that (dm::properize-pattern!*2 '(,x .  y))    returns ((\, x) \. y))
-  (confirm that (dm::properize-pattern!*2 '(,x . ,y))    returns ((\, x) \. (\, y)))
-  (confirm that (dm::properize-pattern!*2 '(,x . (y z))) returns ((\, x) y z))
-  (confirm that (dm::properize-pattern!*2 '(,x  y .  z)) returns ((\, x) y \. z))
-  (confirm that (dm::properize-pattern!*2 '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-  (confirm that (dm::properize-pattern!*2 '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-  (confirm that (dm::properize-pattern!*2 '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-  (confirm that (dm::properize-pattern!*2 '((w y) .  z)) returns ((w y) \. z))
-  (confirm that (dm::properize-pattern!*2 '((w . y) .  z)) returns ((w \. y) \. z))
-  (confirm that (dm::properize-pattern!*2 '((w y) .  ,z)) returns ((w y) \. (\, z)))
-  (confirm that (dm::properize-pattern!*2 '((w . y) .  ,z)) returns ((w \. y) \. (\, z)))
-  (confirm that (dm::properize-pattern!*2 '((,w . ,y) . ,z))
-    returns (((\, w) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern!*2 '(,v (,w ,x . ,y) . ,z))
-    returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern!*2 '(,x ,y . ,(z  integer?)))
-    returns ((\, x) (\, y) \. (\, (z integer?))))
-  ;; this one would not be a legal pattern!*2 due to the way ,z is used in the innermost sub-expression,
-  ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
-  (confirm that (dm::properize-pattern!*2 '(,x ,y . ,(,z integer?)))
-    returns ((\, x) (\, y) \. (\,((\, z) integer?))))
-  (let ((lst  '(,v (,w ,x . ,y) . ,z)))
-    (confirm that (dm::properize-pattern!*2 lst)
-      returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-    (confirm that lst
-      returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
-  (let ((lst '(,x .  y)))
-    (confirm that (dm::properize-pattern!*2 lst)        returns ((\, x) \. y))
-    (confirm that lst                                   returns ((\, x) \. y))
-    ))
-;; don't confirm: (dm::properize-pattern!*2 '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
     (setq reps 100000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!*2 '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       (benchmark-run reps (dm::properize-pattern!*  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       ;; (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       ;; (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
@@ -413,16 +352,8 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
-  ((1.072089 0 0.0)
-    (1.192153 0 0.0))
-  ((1.060228 0 0.0)
-    (1.190677 0 0.0))
-  ((1.077323 0 0.0)
-    (1.191545 0 0.0))
-  ((1.088585 0 0.0)
-    (1.192282 0 0.0))
-  ((1.059385 0 0.0)
-    (1.191522 0 0.0))
+  ((1.063021 0 0.0))
+  
   
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
