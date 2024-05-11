@@ -43,17 +43,19 @@
   "Turn lists with *dm::improper-indicator* in their second last position back into improper lists."
   (let ((pos lst))
     (dm::prndiv)
-    (while pos
-      (dm::prn "head:     %s" (car pos))
-      (when (consp (car pos))
-        (with-indentation
-          (dm::unproperize!* (car pos))))
-      (when (eq (cadr-safe pos) *dm::improper-indicator*)
-        (when (cadddr pos)
-          (error "properize indicator in unexpected position: %s" lst))
-        (setcdr pos (caddr pos))
-        (setf pos nil))
-      (pop pos)))
+    (while (consp pos)
+      (if (atom pos)
+        (dm::prn "atom:     %s"  pos)
+        (dm::prn "head:     %s" (car pos))
+        (when (consp (car pos))
+          (with-indentation
+            (dm::unproperize!* (car pos))))
+        (when (eq (cadr-safe pos) *dm::improper-indicator*)
+          (when (cadddr pos)
+            (error "properize indicator in unexpected position: %s" lst))
+          (setcdr pos (caddr pos))
+          (setf pos nil))
+        (pop pos))))
   (dm::prn "lst:      %s" lst)
   (dm::prndiv)
   lst)
@@ -64,17 +66,17 @@
 
 (let ((pat '(,a ,b . ,c)))
   (dm::prnl)
-  ;; this doesn't look correct but i think it actually is;
-  (equal pat
-    (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
+  (dm::prnl)
+  ;; this doesn't look correct intuitively due to wayward comma but i'm pretty sure it actually is:
+  (equal pat (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
 
 (let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
-        '(,a ,(b integer? . foo) . ,c) ; sketchy
+        '(,a ,(b integer? . foo) . ,c)
         ;; '(,a ,(b integer? foo) . ,(c integer? foo))
         ))
   (dm::prnl)
-  (equal pat
-    (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
+  (dm::prnl)
+  (equal pat (dm::unproperize!* (cl-copy-list (dm::intern-pattern pat)))))
 
 
 
