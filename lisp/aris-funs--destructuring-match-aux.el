@@ -202,7 +202,9 @@
             (cadr lst)))))
     ((consp (car lst))
       (cons
-        (dm::properize-pattern* (car lst) nil)
+        (if (eq '\, (caar lst))
+          (car lst)
+          (dm::properize-pattern* (car lst) nil))
         (dm::properize-pattern* (cdr lst) t)))
     (t
       (cons
@@ -210,6 +212,9 @@
         (dm::properize-pattern* (cdr lst) t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
+  ;; (unless (eq '\, (caar lst))
+  (confirm that (dm::properize-pattern* '(,w ,(x integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern*  nil)          returns nil)
   (confirm that (dm::properize-pattern* '(,x))         returns ((\, x)))
   (confirm that (dm::properize-pattern* '(,x .  y))    returns ((\, x) \. y))
