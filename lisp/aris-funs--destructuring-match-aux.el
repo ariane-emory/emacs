@@ -139,6 +139,7 @@
 ;; ((\, (x integer? . foo)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
+  ;; (unless (eq '\, (caar lst))
   (confirm that (dm::properize-pattern!* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern!* '(,x))         returns ((\, x)))
