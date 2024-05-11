@@ -20,87 +20,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::prn (&rest args)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Internal print helper function."
-  (when *dm:verbose* (apply #'prn args)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::prnl (&optional count)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Internal print helper function."
-  (when *dm:verbose* (prnl count)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::prndiv (&optional char)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Internal print helper function."
-  (when *dm:verbose* (funcall #'prndiv (or char ?\=) *dm:div-width*)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defmacro dm::prn-labeled (var &optional extra (width *dm:label-width*))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Print VAR with a label at a given WIDTH, optionally prefixed by EXTRA."
-  (let* ( (label  (concat (upcase (symbol-name var)) ":"))
-          (extra  (if (null extra) "" (capitalize1 (concat extra " "))))
-          (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
-          (fmt    (format "%s%s%s%%s" extra label spaces)))
-    `(dm::prn ,fmt ,var)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ignore!
-  (let ( (foo    123)
-         (barbaz 456)
-         (barbazbarbazbarbazbarbaz 789))
-    (dm::prn-labeled foo)
-    (dm::prn-labeled barbaz)
-    (dm::prn-labeled barbaz "last")
-    (dm::prn-labeled barbazbarbazbarbazbarbaz)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; these expand to:
-;; (dm::prn "FOO:            %s" foo)
-;; (dm::prn "BARBAZ:         %s" barbaz)
-;; and print:
-;; FOO:            123
-;; BARBAZ:         456
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::prn-pp-alist (alist)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Pretty print ALIST."
-  `(when *dm:verbose*
-     (let ((alist ,alist))
-       (if (null alist)
-         (dm::prn-labeled alist)
-         (let ((pp-str (indent-string-lines
-                         (trim-trailing-whitespace
-                           (pp-to-string-without-offset alist)))))
-           (if (<= (count-string-lines pp-str) 1)
-             (dm::prn-labeled alist)
-             (dm::prn "%s:" (upcase (symbol-name ',alist)))
-             (mapc #'prn (string-lines pp-str))))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::prn-pp-labeled-list (lst-sym &optional extra)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Pretty print LST-SYM with a label."
-  `(let* ((,lst-sym (if (cdr ,lst-sym) 
-                      (format "%-12s . %s" (car ,lst-sym) (cdr ,lst-sym))
-                      (format "%s"        (car ,lst-sym)))))
-     (dm::prn-labeled ,lst-sym ,extra)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro dm::log-pop* (&rest lsts)
   "Pop LSTS, logging what was popped from each and returning the value popped from the last list in LSTs."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -215,26 +134,29 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cl-defun dm:match ( pattern target
                      &optional
-                     (dont-care *dm:default-dont-care*)
-                     (ellipsis  *dm:default-ellipsis*)
-                     (unsplice  *dm:default-unsplice*))
+                     (dont-care          *dm:default-dont-care*)
+                     (ellipsis           *dm:default-ellipsis*)
+                     (unsplice           *dm:default-unsplice*)
+                     (improper-indicator *dm:default-improper-indicator*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "My pattern matching/destructuring function."
   (unless (and (listp pattern)
             (listp target)
             (symbolp dont-care)
             (symbolp ellipsis)
-            (symbolp unsplice))
+            (symbolp unsplice)
+            (symbolp improper-indicator))
     (error
       "PATTERN and TARGET must be lists, DONT-CARE, ELLIPSIS and UNSPLICE must be symbols."))
   (dm::prnl)
   (dm::prndiv)
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (pattern (dm::intern-pattern unsplice ellipsis dont-care pattern))
+  (let* ( (pattern (dm::intern-pattern unsplice ellipsis dont-care improper-indicator pattern))
           (target  (dm::properize-target target))
           (result (with-indentation
-                    (dm::match1 pattern pattern target dont-care ellipsis unsplice nil nil)))
+                    (dm::match1 pattern pattern target
+                      dont-care ellipsis unsplice improper-indicator nil nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
@@ -243,7 +165,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::match1 (initial-pattern pattern target dont-care ellipsis unsplice alist reference-alist)
+(defun dm::match1 ( initial-pattern pattern target
+                    dont-care ellipsis unsplice improper-indicator alist reference-alist)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   ;;-------------------------------------------------------------------------------------------------
@@ -259,7 +182,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
         (cl-macrolet ( (recurse (pattern target alist reference-alist)
                          `(with-indentation
                             (dm::match1 initial-pattern ,pattern ,target
-                              dont-care ellipsis unsplice ,alist ,reference-alist)))
+                              dont-care ellipsis unsplice improper-indicator
+                              ,alist ,reference-alist)))
                        (NO-MATCH! (fmt &rest args)
                          `(progn
                             (dm::prn "No match because %s!" (format ,fmt ,@args))
@@ -324,7 +248,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                 ;; Case 1: When PATTERN's head is DONT-CARE, just `pop' the heads off:
                 ;; ----------------------------------------------------------------------------------
                 ((and (dm::pat-elem-is-the-symbol? dont-care (car pattern))
-                   (not (eq *dm::improper-indicator* (car target)))) ;; not quite sure yet?
+                   (not (eq *dm:default-improper-indicator* (car target)))) ;; not quite sure yet?
                   (setf last-pattern-elem-was-flexible nil)
                   (dm::prn "DONT-CARE, discarding %s." (car target))
                   (dm::log-pop* pattern target))
@@ -349,10 +273,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                         (let ( (take  (cl-subseq target 0 (* -1 remaining-pattern-min-length)))
                                (leave (cl-subseq target   (* -1 remaining-pattern-min-length))))
                           ;; don't eat the improper indicator:
-                          (when (eq *dm::improper-indicator* (car (last take)))
+                          (when (eq *dm:default-improper-indicator* (car (last take)))
                             ;; (setf take (butlast take))
                             (setcdr (last m2 take) nil)
-                            (setf leave (cons *dm::improper-indicator* leave)))
+                            (setf leave (cons *dm:default-improper-indicator* leave)))
                           (dm::prn-labeled take)
                           (dm::prn-labeled leave)
                           (when-let ((var (dm::pat-elem-var-sym (car pattern))))

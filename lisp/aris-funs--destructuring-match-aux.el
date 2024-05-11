@@ -4,6 +4,93 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--lists)
 (require 'aris-funs--sym-db)
+(require 'aris-funs--destructuring-match-vars)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; print helpers:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::prn (&rest args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Internal print helper function."
+  (when *dm:verbose* (apply #'prn args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::prnl (&optional count)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Internal print helper function."
+  (when *dm:verbose* (prnl count)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::prndiv (&optional char)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Internal print helper function."
+  (when *dm:verbose* (funcall #'prndiv (or char ?\=) *dm:div-width*)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defmacro dm::prn-labeled (var &optional extra (width *dm:label-width*))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Print VAR with a label at a given WIDTH, optionally prefixed by EXTRA."
+  (let* ( (label  (concat (upcase (symbol-name var)) ":"))
+          (extra  (if (null extra) "" (capitalize1 (concat extra " "))))
+          (spaces (make-string (max 1 (- width (+ (length extra) (length label)))) ?\ ))
+          (fmt    (format "%s%s%s%%s" extra label spaces)))
+    `(dm::prn ,fmt ,var)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ignore!
+  (let ( (foo    123)
+         (barbaz 456)
+         (barbazbarbazbarbazbarbaz 789))
+    (dm::prn-labeled foo)
+    (dm::prn-labeled barbaz)
+    (dm::prn-labeled barbaz "last")
+    (dm::prn-labeled barbazbarbazbarbazbarbaz)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; these expand to:
+;; (dm::prn "FOO:            %s" foo)
+;; (dm::prn "BARBAZ:         %s" barbaz)
+;; and print:
+;; FOO:            123
+;; BARBAZ:         456
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::prn-pp-alist (alist)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Pretty print ALIST."
+  `(when *dm:verbose*
+     (let ((alist ,alist))
+       (if (null alist)
+         (dm::prn-labeled alist)
+         (let ((pp-str (indent-string-lines
+                         (trim-trailing-whitespace
+                           (pp-to-string-without-offset alist)))))
+           (if (<= (count-string-lines pp-str) 1)
+             (dm::prn-labeled alist)
+             (dm::prn "%s:" (upcase (symbol-name ',alist)))
+             (mapc #'prn (string-lines pp-str))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::prn-pp-labeled-list (lst-sym &optional extra)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Pretty print LST-SYM with a label."
+  `(let* ((,lst-sym (if (cdr ,lst-sym) 
+                      (format "%-12s . %s" (car ,lst-sym) (cdr ,lst-sym))
+                      (format "%s"        (car ,lst-sym)))))
+     (dm::prn-labeled ,lst-sym ,extra)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -431,7 +518,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::intern-pattern (unsplice ellipsis dont-care pat)
+(defun dm::intern-pattern (unsplice ellipsis dont-care improper-indicator pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
@@ -440,17 +527,20 @@
       (car existing)
       ;; `dm::prn' not available here! move it to a new file so it is!
       (prn "Interning pattern %s" pat)
-      (db-put '*dm* (list unsplice ellipsis dont-care pat) (dm::properize-pattern* pat)))))
+      (db-put '*dm* (list unsplice ellipsis dont-care improper-indicator pat)
+        (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-    (dm::intern-pattern '\,@ '... '_ pat))
+    (dm::intern-pattern '\,@ '... '_ '\. pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::unproperize!* (lst)
+;; properize things:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun dm::unproperize!* (lst &optional (improper-indicator *dm:default-improper-indicator*))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
   (let ((pos lst))
@@ -462,7 +552,7 @@
         (when (consp (car pos))
           (with-indentation
             (dm::unproperize!* (car pos))))
-        (when (eq (cadr-safe pos) *dm:default-improper-indicator*)
+        (when (eq (cadr-safe pos) improper-indicator)
           (when (or (cadddr pos) (not (cddr pos)))
             (error "properize indicator in unexpected position: %s" lst))
           (setcdr pos (caddr pos))
