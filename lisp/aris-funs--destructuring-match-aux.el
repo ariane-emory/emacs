@@ -627,13 +627,12 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
-  (let ((existing (db-get '*dm* pat)))
+  (let* ( (key (list unsplice ellipsis dont-care improper-indicator pat))
+          (existing (db-get '*dm* key)))
     (if (cdr existing)
       (car existing)
-      ;; `dm::prn' not available here! move it to a new file so it is!
       (prn "Interning pattern %s" pat)
-      (db-put '*dm* (list unsplice ellipsis dont-care improper-indicator pat)
-        (dm::properize-pattern* pat)))))
+      (db-put '*dm* key (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))

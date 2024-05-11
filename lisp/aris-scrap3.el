@@ -101,6 +101,6 @@
 (dm:match '(,@things . ...)  '(one two three four))
 (dm:match '(,@things . (three four))  '(one two three four))
 
-(symbol-plist '*dm*)
+
 
 
