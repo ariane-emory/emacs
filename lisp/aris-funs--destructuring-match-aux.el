@@ -631,7 +631,8 @@
           (existing (db-get '*dm* key)))
     (if (cdr existing)
       (car existing)
-      (prn "Interning pattern %s" pat)
+      (prn "Interning pattern %s" pat) ; weird print bug if this is commented out.
+      (prn "With key          %s" key)
       (db-put '*dm* key (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
