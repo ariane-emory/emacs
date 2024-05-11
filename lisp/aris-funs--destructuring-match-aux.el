@@ -392,12 +392,32 @@
     (list
       (benchmark-run reps (dm::properize-pattern!*2 '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       (benchmark-run reps (dm::properize-pattern!*  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern    '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      ;; (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      ;; (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      ;; (benchmark-run reps (dm::properize-pattern    '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((1.1192739999999999 0 0.0)
+    (1.192601 0 0.0))
+  ((1.121116 0 0.0)
+    (1.191186 0 0.0))
+
+  ((1.149295 0 0.0)
+    (1.189412 0 0.0))
+
+  ((1.131025 0 0.0)
+    (1.1760709999999999 0 0.0)
+    (1.256165 0 0.0)
+    (1.572902 8 0.5307849999999945)
+    (1.749189 7 0.45411700000001076))
+
+  ((1.1555549999999999 0 0.0)
+    (1.1782789999999999 0 0.0)
+    (1.260386 0 0.0)
+    (1.4768379999999999 7 0.44884700000000066)
+    (1.808689 8 0.5166719999999998))
+
   ((1.117588 0 0.0)
     (1.190702 0 0.0)
     (1.2648709999999999 0 0.0)
