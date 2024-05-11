@@ -266,7 +266,9 @@
           (setcar pos *dm::improper-indicator*)
           (setcdr pos
             (list (list '\,
-                    (possibly dm::properize-pattern! (cadr pos) unless it is an atom))))
+                    (cadr pos)
+                    ;; (possibly dm::properize-pattern! (cadr pos) unless it is an atom)
+                    )))
           (setf pos nil))
         ((consp head)
           (unless (eq '\, (car head))
@@ -275,6 +277,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
+  (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
+  (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo))))
+
   (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
   (confirm that (dm::properize-pattern!  nil)          returns nil)
@@ -336,7 +343,10 @@
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
             (setq res (cons
-                        (list '\, (possibly dm::properize-pattern (cadr pos) unless it is an atom))
+                        (list '\,
+                          (cadr pos)
+                          ;; (possibly dm::properize-pattern (cadr pos) unless it is an atom)
+                          )
                         (cons *dm::improper-indicator* res)))
             (setq pos nil))
           ((atom head) (push head res))
@@ -347,8 +357,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
+  (confirm that (dm::properize-pattern '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+    returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
   (confirm that (dm::properize-pattern '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
+
   (confirm that (dm::properize-pattern  nil)          returns nil)
   (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
   (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
@@ -382,13 +395,24 @@
     (setq reps 100000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!*  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern    '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!*  '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern    '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
       )
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((0.6473749999999999 0 0.0)
+    (0.6357649999999999 0 0.0)
+    (0.864646 4 0.27644699999999034)
+    (0.976884 4 0.26985899999999674))
+
+  ((0.774393 0 0.0)
+    (0.789689 0 0.0)
+    (1.0495340000000002 5 0.3593659999999943)
+    (1.2390130000000001 5 0.3422210000000092))
+
   ((1.075528 0 0.0)
     (1.278024 0 0.0)
     (1.510217 7 0.47671199999999914)
