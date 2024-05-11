@@ -102,5 +102,7 @@
               (dm::intern-pattern pat))))))))
 
 
-
-
+(dm::reset)
+(dm::intern-pattern '(a b . c))
+(db-get '*dm* '(a b . c))
+(setcar (car (db-get '*dm* '(a b . c))) 'foo)
