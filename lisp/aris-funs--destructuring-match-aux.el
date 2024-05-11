@@ -118,7 +118,8 @@
       ;; found a wayward comma, fix it:
       (setcar lst *dm::improper-indicator*)
       (setcdr lst (list (list '\, (dm::properize-pattern!* (cadr lst) nil)))))
-    ((consp (car lst)) (setcar lst (dm::properize-pattern!* (car lst) nil))
+    ((consp (car lst))
+      (setcar lst (dm::properize-pattern!* (car lst) nil))
       (setcdr lst (dm::properize-pattern!* (cdr lst) t)))
     (t ; (atom (car lst))
       (setcdr lst (dm::properize-pattern!* (cdr lst) t))))
@@ -171,9 +172,14 @@
       ;; found a wayward comma, fix it:
       (list *dm::improper-indicator*
         (list '\, (dm::properize-pattern* (cadr lst) nil))))
-    (t (cons
-         (dm::properize-pattern* (car lst) nil)
-         (dm::properize-pattern* (cdr lst) t)))))
+    ((consp (car lst))
+      (cons
+        (dm::properize-pattern* (car lst) nil)
+        (dm::properize-pattern* (cdr lst) t)))
+    (t
+      (cons
+        (car lst)
+        (dm::properize-pattern* (cdr lst) t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   (confirm that (dm::properize-pattern*  nil)          returns nil)
@@ -323,6 +329,11 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+
+  ((3.241275 0 0.0)
+    (3.16588 0 0.0)
+    (3.830754 19 1.2302300000000006)
+    (4.499739 19 1.2378339999999994))
 
   ((3.263362 0 0.0)
     (3.163977 0 0.0)
