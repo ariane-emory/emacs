@@ -1016,7 +1016,7 @@ lists that were originally improper."
     (cons first (apply #'list* rest))
     first))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (list* 1) returns 1) ; =>  1
+(confirm that (list* 1) returns 1)
 (confirm that (list* 'a 'b 'c 'd) returns (a b c . d))
 (confirm that (list* 'a 'b 'c '(d e f)) returns (a b c d e f))
 (confirm that (list* 'a 'b 'c nil) returns (a b c))
