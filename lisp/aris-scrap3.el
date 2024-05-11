@@ -84,10 +84,21 @@
 (dm::unproperize!* (dm::intern-pattern '(a b . c)))
 (dm::intern-pattern '(a b . c))
 
+(dm:match '(,thing _ ,thing2) '(three . four))
+
 (dm:match '(,@things . ,thing) '(one two three . four))
 
 ;; ,@ shoulddn't slurp past '\.? Undecided.
 (dm:match '(,@things) '(one two three . four))
 
+(dm:match '(,@things . _) '(one two three . four))
+
+;; make these illegal:
+(dm:match '(,@things . ,@zs) '(one two three . four))
+(dm:match '(,@things . ...)  '(one two three . four))
+
 (setq l '(1 2 3 . 5))
 `(,@l)
+
+(setq l '(one two three four))
+(setcdr (last l 2) nil)
