@@ -132,11 +132,6 @@
       ;;(prn "case 5: %s" (cdr lst))
       (dm::properize-pattern!* (cdr lst) t)))
   lst)
-
-
-
-;; '(,(x integer? . foo))
-;; ((\, (x integer? . foo)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
