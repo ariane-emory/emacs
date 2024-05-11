@@ -107,24 +107,22 @@
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
-  (if (atom lst)
-    lst
-    (cond
-      ;; ((atom lst) lst)
-      ((and (cdr lst) (atom (cdr lst)))
-        ;; found an improper tail, properize it:
-        (setcar lst (dm::properize-pattern!* (car lst) nil))
-        (setcdr lst (list *dm::improper-indicator* (cdr lst)))
-        lst)
-      ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
-        ;; found a wayward comma, fix it:
-        (setcar lst *dm::improper-indicator*)
-        (setcdr lst (list (list '\, (dm::properize-pattern!* (cadr lst) nil)))))
-      ((consp (car lst)) (setcar lst (dm::properize-pattern!* (car lst) nil))
-        (setcdr lst (dm::properize-pattern!* (cdr lst) t)))
-      (t ; (atom (car lst))
-        (setcdr lst (dm::properize-pattern!* (cdr lst) t))))
-    lst))
+  (cond
+    ((atom lst) lst)
+    ((and (cdr lst) (atom (cdr lst)))
+      ;; found an improper tail, properize it:
+      (setcar lst (dm::properize-pattern!* (car lst) nil))
+      (setcdr lst (list *dm::improper-indicator* (cdr lst)))
+      lst)
+    ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
+      ;; found a wayward comma, fix it:
+      (setcar lst *dm::improper-indicator*)
+      (setcdr lst (list (list '\, (dm::properize-pattern!* (cadr lst) nil)))))
+    ((consp (car lst)) (setcar lst (dm::properize-pattern!* (car lst) nil))
+      (setcdr lst (dm::properize-pattern!* (cdr lst) t)))
+    (t ; (atom (car lst))
+      (setcdr lst (dm::properize-pattern!* (cdr lst) t))))
+  lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   (confirm that (dm::properize-pattern!*  nil)          returns nil)
@@ -270,12 +268,13 @@
         (cond
           ((and (cdr pos) (atom (cdr pos)))
             ;; found an improper tail, properize it.
-            ;; this isn't sexy, but it turns out that nested `conse's and a conjoined
+            ;; this isn't sexy, but it turns out that nested `cons'es and a conjoined
             ;; `setf' is very slightly faster than the alternatives:
             (setq res
               (cons (cdr pos)
                 (cons *dm::improper-indicator*
-                  (cons (possibly dm::properize-pattern head unless it is an atom) res)))
+                  (cons (possibly dm::properize-pattern head unless it is an atom)
+                    res)))
               pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
@@ -317,14 +316,34 @@
     (setq reps 250000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!* '(,v (,w ,x (a . b) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!  '(,v (,w ,x (a . b) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*  '(,v (,w ,x (a . b) (,a b ,c (,d . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern   '(,v (,w ,x (a . b) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!* '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern*  '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern   '(,v (,w ,x (a . (b c . d)) (,a b ,c (,d . e)) ,y) . ,z)))
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
 
+  ((3.263362 0 0.0)
+    (3.163977 0 0.0)
+    (3.908312 17 1.1300460000000072)
+    (4.372341 17 1.1301349999999957))
+  ((3.534412 0 0.0)
+    (3.176284 0 0.0)
+    (3.9534949999999998 17 1.1753929999999997)
+    (4.43239 17 1.1783140000000003))
+
+  ((3.255306 0 0.0)
+    (3.165536 0 0.0)
+    (3.9446260000000004 17 1.1695180000000107)
+    (4.497001 18 1.2412149999999968))
+
+  ((3.5435890000000003 0 0.0)
+    (3.1610300000000002 0 0.0)
+    (3.969637 17 1.1800970000000035)
+    (4.4320319999999995 17 1.1753900000000073))
+
+  
   ((3.331073 0 0.0)
     (3.00392 0 0.0)
     (3.770642 17 1.1825889999999504)
