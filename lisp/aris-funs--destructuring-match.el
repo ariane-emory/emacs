@@ -15,48 +15,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - preds for flexible-length pattern elements.
-;;  - maybe deal with improper lists some day.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-pop* (&rest lsts)
-  "Pop LSTS, logging what was popped from each and returning the value popped from the last list in LSTs."
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (macroexp-progn
-    (rmapcar lsts
-      (lambda (lst)
-        `(let ((popped (pop ,lst)))
-           (dm::prn "Popped %s from %s, remaining: %s" popped ',lst ,lst)
-           popped)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::log-setf-alist-putunique! (key val alist reference-alist)
-  "Set KEY to VAL in ALIST, logging the operation and throwing 'no-match if
-KEY has a non-`equal' VAL in REFERENCE-ALIST."
-  `(prog1
-     (setf ,alist (alist-putunique ,key ,val ,alist ,reference-alist 'no-match))
-     ;; (dm::prn "Set %s to %s in %s: %s." ,key ,val ',alist ,alist)
-     (dm::prn "Set %s to %s in %s." ,key ,val ',alist)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let ( (al '((b . 2) (c . 3)))
-         (*dm:verbose* nil))
-    (dm::log-setf-alist-putunique! 'a 123 al al))
-  returns ((a . 123) (b . 2) (c . 3)))
-(confirm that
-  (let ( (al '((a . 123) (b . 2) (c . 3)))
-         (*dm:verbose* nil))
-    (dm::log-setf-alist-putunique! 'a 123 al al))
-  returns ((a . 123) (b . 2) (c . 3)))
-(confirm that
-  (let ( (al '((b . 2) (c . 3)))
-         (ref '((a . 123)))
-         (*dm:verbose* nil))
-    (dm::log-setf-alist-putunique! 'a 123 al ref))
-  returns ((b . 2) (c . 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
