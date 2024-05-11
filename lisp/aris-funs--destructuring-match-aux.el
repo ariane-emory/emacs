@@ -8,19 +8,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defcustom *dm::improper-indicator* '\.
-  "The symbol used to indicate that a list has been properized."
-  :group  'destructuring-match
-  :type  'symbol)
-;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-aux* t
-  "Whether or not test of destructuring match's auxiliary functions  are enabled."
-  :group 'destructuring-match
-  :type 'boolean)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; properize targets:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,7 +45,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (properize! lst t *dm::improper-indicator*))
+  (properize! lst t *dm:default-improper-indicator*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   (confirm that (dm::properize-target!  nil)       returns nil)
@@ -78,7 +65,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (properize lst t *dm::improper-indicator*))
+  (properize lst t *dm:default-improper-indicator*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   (confirm that (dm::properize-target  nil)       returns nil)
@@ -107,13 +94,13 @@
       ;; found an improper tail, properize it:
       (when (consp (car lst))
         (setcar lst (dm::properize-pattern!* (car lst) nil)))
-      (setcdr lst (list *dm::improper-indicator* (cdr lst))))
+      (setcdr lst (list *dm:default-improper-indicator* (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(prn "case 3")
       ;; found a wayward comma, fix it:
       ;; (debug (cadr lst))
       (let ((indic (car lst)))
-        (setcar lst *dm::improper-indicator*)
+        (setcar lst *dm:default-improper-indicator*)
         (setcdr lst (list (list indic
                             (cadr lst)
                             ;; (if (consp (cadr lst))
@@ -186,10 +173,10 @@
         (if (consp (car lst))
           (dm::properize-pattern* (car lst) nil)
           (car lst))
-        *dm::improper-indicator* (cdr lst)))
+        *dm:default-improper-indicator* (cdr lst)))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;; found a wayward comma, fix it:
-      (list *dm::improper-indicator*
+      (list *dm:default-improper-indicator*
         (list (car lst)
           (cadr lst)
           ;; (if (consp (cadr lst))
@@ -253,11 +240,11 @@
         ((and (cdr pos) (atom (cdr pos)))
           ;; found an improper tail, properize it:
           (setcar pos (possibly dm::properize-pattern! head unless it is an atom))
-          (setcdr pos (list *dm::improper-indicator* (cdr pos)))
+          (setcdr pos (list *dm:default-improper-indicator* (cdr pos)))
           (setf pos nil))
         ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
           ;; found a wayward comma, fix it:
-          (setcar pos *dm::improper-indicator*)
+          (setcar pos *dm:default-improper-indicator*)
           (setcdr pos
             (list (list head
                     (cadr pos)
@@ -329,7 +316,7 @@
             ;; `setf' is very slightly faster than the alternatives:
             (setq res
               (cons (cdr pos)
-                (cons *dm::improper-indicator*
+                (cons *dm:default-improper-indicator*
                   (cons (possibly dm::properize-pattern head unless it is an atom)
                     res)))
               pos nil))
@@ -340,7 +327,7 @@
                           (cadr pos)
                           ;; (possibly dm::properize-pattern (cadr pos) unless it is an atom)
                           )
-                        (cons *dm::improper-indicator* res)))
+                        (cons *dm:default-improper-indicator* res)))
             (setq pos nil))
           ((atom head) (push head res))
           ((consp head)
@@ -465,7 +452,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::unproperize!* (lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Turn lists with *dm::improper-indicator* in their second last position back into improper lists."
+  "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
   (let ((pos lst))
     (prndiv)
     (while (consp pos)
@@ -475,7 +462,7 @@
         (when (consp (car pos))
           (with-indentation
             (dm::unproperize!* (car pos))))
-        (when (eq (cadr-safe pos) *dm::improper-indicator*)
+        (when (eq (cadr-safe pos) *dm:default-improper-indicator*)
           (when (or (cadddr pos) (not (cddr pos)))
             (error "properize indicator in unexpected position: %s" lst))
           (setcdr pos (caddr pos))

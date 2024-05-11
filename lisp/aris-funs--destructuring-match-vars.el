@@ -32,13 +32,18 @@ Turn this off at your own risk."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:test-match* t
-  "Whether or not dm:match's unit tests are enabled."
+(defcustom *dm:test-aux* t
+  "Whether or not unit tests of destructuring match's auxiliary functions are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:test-fill* t
   "Whether or not dm:fill's unit tests are enabled."
+  :group 'destructuring-match
+  :type 'boolean)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:test-match* t
+  "Whether or not dm:match's unit tests are enabled."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
@@ -66,6 +71,11 @@ Turn this off at your own risk."
   "dm:match's default UNSPLICE indicator."
   :group 'destructuring-match
   :type 'symbol)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *dm:default-improper-indicator* '\.
+  "The symbol used to indicate that a list has been properized."
+  :group  'destructuring-match
+  :type  'symbol)
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *dm:fill-unsplice-atoms* t
   "Whether or not fill should allow 'unsplicing' an atom (or improper list) as if it were a list of 1 item"
