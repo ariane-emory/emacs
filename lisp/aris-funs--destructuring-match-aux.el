@@ -175,14 +175,21 @@
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (cond
-    ((atom lst) lst)
+    ((null lst) lst)
     ((and (cdr lst) (atom (cdr lst)))
       ;; found an improper tail, properize it:
-      (list (dm::properize-pattern* (car lst) nil) *dm::improper-indicator* (cdr lst)))
+      (list
+        (if (consp (car lst))
+          (dm::properize-pattern* (car lst) nil)
+          (car lst))
+        *dm::improper-indicator* (cdr lst)))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;; found a wayward comma, fix it:
       (list *dm::improper-indicator*
-        (list '\, (dm::properize-pattern* (cadr lst) nil))))
+        (list '\,
+          (if (consp (cadr lst))
+            (dm::properize-pattern* (cadr lst) nil)
+            (cadr lst)))))
     ((consp (car lst))
       (cons
         (dm::properize-pattern* (car lst) nil)
@@ -352,6 +359,22 @@
       )
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((1.075528 0 0.0)
+    (1.278024 0 0.0)
+    (1.510217 7 0.47671199999999914)
+    (1.868028 8 0.5601659999999988))
+  ((1.078125 0 0.0)
+    (1.277194 0 0.0)
+    (1.583483 8 0.548649000000001)
+    (1.7798720000000001 7 0.4769609999999993))
+  ((1.091493 0 0.0)
+    (1.275776 0 0.0)
+    (1.51251 7 0.4795790000000011)
+    (1.861343 8 0.5510710000000003))
+  ((1.063638 0 0.0)
+    (1.264557 0 0.0)
+    (1.575855 8 0.5448719999999998)
+    (1.782602 7 0.47675100000000015))
   ((1.05327 0 0.0)
     (1.270699 0 0.0)
     (1.589 8 0.5424309999999988)
@@ -371,3 +394,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(dm::properize-pattern!* '(,(x integer? . foo)))
