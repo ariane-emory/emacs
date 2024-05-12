@@ -243,38 +243,38 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-target! (lst)
+(defun dm::properize-target! (improper-indicator lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (properize! lst t *dm:default-improper-indicator*))
+  (properize! lst t improper-indicator))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
-  (confirm that (dm::properize-target!  nil)       returns nil)
-  (confirm that (dm::properize-target! '(2))       returns (2))
-  (confirm that (dm::properize-target! '(2 . 4))   returns (2 \. 4))
-  (confirm that (dm::properize-target! '(2 4   6)) returns (2 4 6))
-  (confirm that (dm::properize-target! '(2 4 . 6)) returns (2 4 \. 6))
+  (confirm that (dm::properize-target! *dm:default-improper-indicator* nil)  returns nil)
+  (confirm that (dm::properize-target! *dm:default-improper-indicator* '(2)) returns (2))
+  (confirm that (dm::properize-target! *dm:default-improper-indicator* '(2 . 4))   returns (2 \. 4))
+  (confirm that (dm::properize-target! *dm:default-improper-indicator* '(2 4   6)) returns (2 4 6))
+  (confirm that (dm::properize-target! *dm:default-improper-indicator* '(2 4 . 6)) returns (2 4 \. 6))
   (let ((lst '(2 4 . 6)))
-    (confirm that (dm::properize-target! lst) returns (2 4 \. 6))
+    (confirm that (dm::properize-target! *dm:default-improper-indicator* lst) returns (2 4 \. 6))
     (confirm that lst returns (2 4 \. 6))))
 ;; don't confirm: (dm::properize-target! '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-target (lst)
+(defun dm::properize-target (improper-indicator lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a target by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
-  (properize lst t *dm:default-improper-indicator*))
+  (properize lst t improper-indicator))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
-  (confirm that (dm::properize-target  nil)       returns nil)
-  (confirm that (dm::properize-target '(2))       returns (2))
-  (confirm that (dm::properize-target '(2 . 4))   returns (2 \. 4))
-  (confirm that (dm::properize-target '(2 4   6)) returns (2 4 6))
-  (confirm that (dm::properize-target '(2 4 . 6)) returns (2 4 \. 6)))
+  (confirm that (dm::properize-target *dm:default-improper-indicator*  nil)       returns nil)
+  (confirm that (dm::properize-target *dm:default-improper-indicator* '(2))       returns (2))
+  (confirm that (dm::properize-target *dm:default-improper-indicator* '(2 . 4))   returns (2 \. 4))
+  (confirm that (dm::properize-target *dm:default-improper-indicator* '(2 4   6)) returns (2 4 6))
+  (confirm that (dm::properize-target *dm:default-improper-indicator* '(2 4 . 6)) returns (2 4 \. 6)))
 ;; don't confirm: (dm::properize-target '(2 . 4 6)) ... ; bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -285,7 +285,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern!* (lst &optional not-first) ; deeply recursive version.
+(defun dm::properize-pattern!* (improper-indicator lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -295,74 +295,91 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       ;;(dm::prn "case 2")
       ;; found an improper tail, properize it:
       (when (consp (car lst))
-        (setcar lst (dm::properize-pattern!* (car lst) nil)))
-      (setcdr lst (list *dm:default-improper-indicator* (cdr lst))))
+        (setcar lst (dm::properize-pattern!* improper-indicator(car lst) nil)))
+      (setcdr lst (list improper-indicator (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(dm::prn "case 3")
       ;; found a wayward comma, fix it:
       ;; (debug (cadr lst))
       (let ((indic (car lst)))
-        (setcar lst *dm:default-improper-indicator*)
+        (setcar lst improper-indicator)
         (setcdr lst (list (list indic
                             (cadr lst)
                             ;; (if (consp (cadr lst))
-                            ;;   (dm::properize-pattern!* (cadr lst) nil)
+                            ;;   (dm::properize-pattern!* improper-indicator(cadr lst) nil)
                             ;;   (cadr lst))
                             )))))
     ((consp (car lst))
       ;;(dm::prn "case 4")
       (unless (eq '\, (caar lst))
-        (setcar lst (dm::properize-pattern!* (car lst) nil)))
-      (dm::properize-pattern!* (cdr lst) t))
+        (setcar lst (dm::properize-pattern!* improper-indicator(car lst) nil)))
+      (dm::properize-pattern!* improper-indicator(cdr lst) t))
     ((cdr lst) ; (atom (car lst))
       ;;(dm::prn "case 5: %s" (cdr lst))
-      (dm::properize-pattern!* (cdr lst) t)))
+      (dm::properize-pattern!* improper-indicator(cdr lst) t)))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
-  (confirm that (dm::properize-pattern!* '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+  (confirm that
+    (dm::properize-pattern!* *dm:default-improper-indicator*
+      '(,w ,(x integer? . foo) . ,(y integer? . foo)))
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
-  (confirm that (dm::properize-pattern!* '(,w ,(x integer? . foo)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  (confirm that (dm::properize-pattern!* '(,x))         returns ((\, x)))
-  ;; (confirm that (dm::properize-pattern!*  nil)          returns nil)
-  (confirm that (dm::properize-pattern!* '(,x .  y))    returns ((\, x) \. y))
-  (confirm that (dm::properize-pattern!* '(,x . ,y))    returns ((\, x) \. (\, y)))
-  (confirm that (dm::properize-pattern!* '(,x . (y z))) returns ((\, x) y z))
-  (confirm that (dm::properize-pattern!* '(,x  y .  z)) returns ((\, x) y \. z))
-  (confirm that (dm::properize-pattern!* '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-  (confirm that (dm::properize-pattern!* '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-  (confirm that (dm::properize-pattern!* '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-  (confirm that (dm::properize-pattern!* '((w y) .  z)) returns ((w y) \. z))
-  (confirm that (dm::properize-pattern!* '((w . y) .  z)) returns ((w \. y) \. z))
-  (confirm that (dm::properize-pattern!* '((w y) .  ,z)) returns ((w y) \. (\, z)))
-  (confirm that (dm::properize-pattern!* '((w . y) .  ,z)) returns ((w \. y) \. (\, z)))
-  (confirm that (dm::properize-pattern!* '((,w . ,y) . ,z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x))
+    returns ((\, x)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator*  nil)
+    returns nil)
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x .  y))
+    returns ((\, x) \. y))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x . ,y))
+    returns ((\, x) \. (\, y)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x . (y z)))
+    returns ((\, x) y z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x  y .  z))
+    returns ((\, x) y \. z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y   ,z))
+    returns ((\, x) (\, y) (\, z)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y .  z))
+    returns ((\, x) (\, y) \. z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y . ,z))
+    returns ((\, x) (\, y) \. (\, z)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w y) .  z))
+    returns ((w y) \. z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w . y) .  z))
+    returns ((w \. y) \. z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w y) .  ,z))
+    returns ((w y) \. (\, z)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w . y) .  ,z))
+    returns ((w \. y) \. (\, z)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((,w . ,y) . ,z))
     returns (((\, w) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern!* '(,v (,w ,x . ,y) . ,z))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,v (,w ,x . ,y) . ,z))
     returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern!* '(,x ,y . ,(z  integer?)))
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y . ,(z  integer?)))
     returns ((\, x) (\, y) \. (\, (z integer?))))
-  ;; this one would not be a legal pattern!* due to the way ,z is used in the innermost sub-expression,
-  ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
-  (confirm that (dm::properize-pattern!* '(,x ,y . ,(,z integer?)))
+  ;; this one would not be a legal pattern!* due to the way ,z is used in the innermost
+  ;; sub-expression, but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure
+  ;; it doesn't try: 
+  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y . ,(,z integer?)))
     returns ((\, x) (\, y) \. (\,((\, z) integer?))))
   (let ((lst  '(,v (,w ,x . ,y) . ,z)))
-    (confirm that (dm::properize-pattern!* lst)
+    (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* lst)
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
     (confirm that lst
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
   (let ((lst '(,x .  y)))
-    (confirm that (dm::properize-pattern!* lst)        returns ((\, x) \. y))
-    (confirm that lst                                   returns ((\, x) \. y))
-    ))
-;; don't confirm: (dm::properize-pattern!* '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
+    (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* lst)
+      returns ((\, x) \. y))
+    (confirm that lst                                   returns ((\, x) \. y))))
+;; don't confirm: (dm::properize-pattern!* *dm:default-improper-indicator* '(,x . ,y ,z)) ...
+;; ^ bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern* (lst &optional not-first) ; deeply recursive version.
+(defun dm::properize-pattern* (improper-indicator lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -373,12 +390,12 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       ;; found an improper tail, properize it:
       (list
         (if (consp (car lst))
-          (dm::properize-pattern* (car lst) nil)
+          (dm::properize-pattern* improper-indicator (car lst) nil)
           (car lst))
-        *dm:default-improper-indicator* (cdr lst)))
+        improper-indicator (cdr lst)))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;; found a wayward comma, fix it:
-      (list *dm:default-improper-indicator*
+      (list improper-indicator
         (list (car lst)
           (cadr lst)
           ;; (if (consp (cadr lst))
@@ -389,49 +406,65 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (cons
         (if (eq '\, (caar lst))
           (car lst)
-          (dm::properize-pattern* (car lst) nil))
-        (dm::properize-pattern* (cdr lst) t)))
+          (dm::properize-pattern* improper-indicator (car lst) nil))
+        (dm::properize-pattern* improper-indicator (cdr lst) t)))
     (t
       (cons
         (car lst)
-        (dm::properize-pattern* (cdr lst) t)))))
+        (dm::properize-pattern* improper-indicator (cdr lst) t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
-  (confirm that (dm::properize-pattern* '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+  (confirm that
+    (dm::properize-pattern* *dm:default-improper-indicator*
+      '(,w ,(x integer? . foo) . ,(y integer? . foo)))
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
-  (confirm that (dm::properize-pattern* '(,w ,(x integer? . foo)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  (confirm that (dm::properize-pattern* '(,x))        returns ((\, x)))  
-  (confirm that (dm::properize-pattern*  nil)          returns nil)
-  (confirm that (dm::properize-pattern* '(,x))         returns ((\, x)))
-  (confirm that (dm::properize-pattern* '(,x .  y))    returns ((\, x) \. y))
-  (confirm that (dm::properize-pattern* '(,x . ,y))    returns ((\, x) \. (\, y)))
-  (confirm that (dm::properize-pattern* '(,x . (y z))) returns ((\, x) y z))
-  (confirm that (dm::properize-pattern* '(,x  y .  z)) returns ((\, x) y \. z))
-  (confirm that (dm::properize-pattern* '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-  (confirm that (dm::properize-pattern* '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-  (confirm that (dm::properize-pattern* '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-  (confirm that (dm::properize-pattern* '((w y) .  z)) returns ((w y) \. z))
-  (confirm that (dm::properize-pattern* '((w . y) .  z)) returns ((w \. y) \. z))
-  (confirm that (dm::properize-pattern* '((w y) .  ,z)) returns ((w y) \. (\, z)))
-  (confirm that (dm::properize-pattern* '((w . y) .  ,z)) returns ((w \. y) \. (\, z)))
-  (confirm that (dm::properize-pattern* '((,w . ,y) . ,z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x))
+    returns ((\, x)))  
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator*  nil)
+    returns nil)
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x))
+    returns ((\, x)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x .  y))
+    returns ((\, x) \. y))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x . ,y))
+    returns ((\, x) \. (\, y)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x . (y z)))
+    returns ((\, x) y z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x  y .  z))
+    returns ((\, x) y \. z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x ,y   ,z))
+    returns ((\, x) (\, y) (\, z)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x ,y .  z))
+    returns ((\, x) (\, y) \. z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x ,y . ,z))
+    returns ((\, x) (\, y) \. (\, z)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '((w y) .  z))
+    returns ((w y) \. z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '((w . y) .  z))
+    returns ((w \. y) \. z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '((w y) .  ,z))
+    returns ((w y) \. (\, z)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '((w . y) .  ,z))
+    returns ((w \. y) \. (\, z)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '((,w . ,y) . ,z))
     returns (((\, w) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern* '(,v (,w ,x . ,y) . ,z))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,v (,w ,x . ,y) . ,z))
     returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern* '(,x ,y . ,(z  integer?)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x ,y . ,(z  integer?)))
     returns ((\, x) (\, y) \. (\, (z integer?))))
   ;; this one would not be a legal pattern due to the way ,z is used in the innermost sub-expression,
   ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
-  (confirm that (dm::properize-pattern* '(,x ,y . ,(,z integer?)))
+  (confirm that (dm::properize-pattern* *dm:default-improper-indicator* '(,x ,y . ,(,z integer?)))
     returns ((\, x) (\, y) \. (\,((\, z) integer?)))))
-;; don't confirm: (dm::properize-pattern* '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
+;; don't confirm: (dm::properize-pattern* *dm:default-improper-indicator* '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern! (lst) ; shallowly recursive version.
+(defun dm::properize-pattern! (improper-indicator lst) ; shallowly recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -441,7 +474,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (cond
         ((and (cdr pos) (atom (cdr pos)))
           ;; found an improper tail, properize it:
-          (setcar pos (possibly dm::properize-pattern! head unless it is an atom))
+          (setcar pos
+            (if (atom head)
+              head
+              (dm::properize-pattern! improper-indicator head)))
           (setcdr pos (list *dm:default-improper-indicator* (cdr pos)))
           (setf pos nil))
         ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
@@ -455,54 +491,71 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           (setf pos nil))
         ((consp head)
           (unless (eq '\, (car head))
-            (setcar pos (dm::properize-pattern! head)))))
+            (setcar pos (dm::properize-pattern! improper-indicator head)))))
       (setf not-first t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
-  (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+  (confirm that
+    (dm::properize-pattern! *dm:default-improper-indicator*
+      '(,w ,(x integer? . foo) . ,(y integer? . foo)))
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
-  (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  (confirm that (dm::properize-pattern! '(,w ,(x integer? . foo)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  (confirm that (dm::properize-pattern!  nil)          returns nil)
-  (confirm that (dm::properize-pattern! '(,x))         returns ((\, x)))
-  (confirm that (dm::properize-pattern! '(,x .  y))    returns ((\, x) \. y))
-  (confirm that (dm::properize-pattern! '(,x . ,y))    returns ((\, x) \. (\, y)))
-  (confirm that (dm::properize-pattern! '(,x . (y z))) returns ((\, x) y z))
-  (confirm that (dm::properize-pattern! '(,x  y .  z)) returns ((\, x) y \. z))
-  (confirm that (dm::properize-pattern! '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-  (confirm that (dm::properize-pattern! '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-  (confirm that (dm::properize-pattern! '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-  (confirm that (dm::properize-pattern! '((w y) .  z)) returns ((w y) \. z))
-  (confirm that (dm::properize-pattern! '((w . y) .  z)) returns ((w \. y) \. z))
-  (confirm that (dm::properize-pattern! '((w y) .  ,z)) returns ((w y) \. (\, z)))
-  (confirm that (dm::properize-pattern! '((w . y) .  ,z)) returns ((w \. y) \. (\, z)))
-  (confirm that (dm::properize-pattern! '((,w . ,y) . ,z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator*  nil)
+    returns nil)
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x))
+    returns ((\, x)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x .  y))
+    returns ((\, x) \. y))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x . ,y))
+    returns ((\, x) \. (\, y)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x . (y z)))
+    returns ((\, x) y z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x  y .  z))
+    returns ((\, x) y \. z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x ,y   ,z))
+    returns ((\, x) (\, y) (\, z)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x ,y .  z))
+    returns ((\, x) (\, y) \. z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x ,y . ,z))
+    returns ((\, x) (\, y) \. (\, z)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '((w y) .  z))
+    returns ((w y) \. z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '((w . y) .  z))
+    returns ((w \. y) \. z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '((w y) .  ,z))
+    returns ((w y) \. (\, z)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '((w . y) .  ,z))
+    returns ((w \. y) \. (\, z)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '((,w . ,y) . ,z))
     returns (((\, w) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern! '(,v (,w ,x . ,y) . ,z))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,v (,w ,x . ,y) . ,z))
     returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern! '(,x ,y . ,(z  integer?)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x ,y . ,(z  integer?)))
     returns ((\, x) (\, y) \. (\, (z integer?))))
   ;; this one would not be a legal pattern! due to the way ,z is used in the innermost sub-expression,
   ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
-  (confirm that (dm::properize-pattern! '(,x ,y . ,(,z integer?)))
+  (confirm that (dm::properize-pattern! *dm:default-improper-indicator* '(,x ,y . ,(,z integer?)))
     returns ((\, x) (\, y) \. (\,((\, z) integer?))))
   (let ((lst  '(,v (,w ,x . ,y) . ,z)))
-    (confirm that (dm::properize-pattern! lst)
+    (confirm that (dm::properize-pattern! *dm:default-improper-indicator* lst)
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
     (confirm that lst
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
   (let ((lst '(,x .  y)))
-    (confirm that (dm::properize-pattern! lst)         returns ((\, x) \. y))
+    (confirm that (dm::properize-pattern! *dm:default-improper-indicator* lst)
+      returns ((\, x) \. y))
     (confirm that lst                                  returns ((\, x) \. y))))
-;; don't confirm: (dm::properize-pattern! '(,x . ,y ,z)) ... ;bullshit input, invalid read syntax!
+;; don't confirm: (dm::properize-pattern! *dm:default-improper-indicator* '(,x . ,y ,z)) ...
+;; ^ bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern (lst) ; shallowly recursive version.
+(defun dm::properize-pattern (improper-indicator lst) ; shallowly recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -518,8 +571,11 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
             ;; `setf' is very slightly faster than the alternatives:
             (setq res
               (cons (cdr pos)
-                (cons *dm:default-improper-indicator*
-                  (cons (possibly dm::properize-pattern head unless it is an atom)
+                (cons improper-indicator
+                  (cons
+                    (if (atom head)
+                      head
+                      (dm::properize-pattern improper-indicator head))
                     res)))
               pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
@@ -529,44 +585,91 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
                           (cadr pos)
                           ;; (possibly dm::properize-pattern (cadr pos) unless it is an atom)
                           )
-                        (cons *dm:default-improper-indicator* res)))
+                        (cons improper-indicator res)))
             (setq pos nil))
           ((atom head) (push head res))
           ((consp head)
-            (push (if (eq '\, (car head)) head (dm::properize-pattern head)) res))
-          (t (push (dm::properize-pattern head) res)))
+            (push (if (eq '\, (car head)) head (dm::properize-pattern improper-indicator head)) res))
+          (t (push (dm::properize-pattern improper-indicator head) res)))
         (setq not-first t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
-  (confirm that (dm::properize-pattern '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+  (confirm that
+    (dm::properize-pattern *dm:default-improper-indicator*
+      '(,w ,(x integer? . foo) . ,(y integer? . foo)))
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
-  (confirm that (dm::properize-pattern '(,w ,(x integer? . foo)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  (confirm that (dm::properize-pattern  nil)          returns nil)
-  (confirm that (dm::properize-pattern '(,x))         returns ((\, x)))
-  (confirm that (dm::properize-pattern '(,x .  y))    returns ((\, x) \. y))
-  (confirm that (dm::properize-pattern '(,x . ,y))    returns ((\, x) \. (\, y)))
-  (confirm that (dm::properize-pattern '(,x . (y z))) returns ((\, x) y z))
-  (confirm that (dm::properize-pattern '(,x  y .  z)) returns ((\, x) y \. z))
-  (confirm that (dm::properize-pattern '(,x ,y   ,z)) returns ((\, x) (\, y) (\, z)))
-  (confirm that (dm::properize-pattern '(,x ,y .  z)) returns ((\, x) (\, y) \. z))
-  (confirm that (dm::properize-pattern '(,x ,y . ,z)) returns ((\, x) (\, y) \. (\, z)))
-  (confirm that (dm::properize-pattern '((w y) .  z)) returns ((w y) \. z))
-  (confirm that (dm::properize-pattern '((w . y) .  z)) returns ((w \. y) \. z))
-  (confirm that (dm::properize-pattern '((w y) .  ,z)) returns ((w y) \. (\, z)))
-  (confirm that (dm::properize-pattern '((w . y) .  ,z)) returns ((w \. y) \. (\, z)))
-  (confirm that (dm::properize-pattern '((,w . ,y) . ,z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator*  nil)
+    returns nil)
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x))
+    returns ((\, x)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x .  y))
+    returns ((\, x) \. y))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x . ,y))
+    returns ((\, x) \. (\, y)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x . (y z)))
+    returns ((\, x) y z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x  y .  z))
+    returns ((\, x) y \. z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x ,y   ,z))
+    returns ((\, x) (\, y) (\, z)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x ,y .  z))
+    returns ((\, x) (\, y) \. z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x ,y . ,z))
+    returns ((\, x) (\, y) \. (\, z)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '((w y) .  z))
+    returns ((w y) \. z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '((w . y) .  z))
+    returns ((w \. y) \. z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '((w y) .  ,z))
+    returns ((w y) \. (\, z)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '((w . y) .  ,z))
+    returns ((w \. y) \. (\, z)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '((,w . ,y) . ,z))
     returns (((\, w) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern '(,v (,w ,x . ,y) . ,z))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,v (,w ,x . ,y) . ,z))
     returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern '(,x ,y . ,(z  integer?)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x ,y . ,(z  integer?)))
     returns ((\, x) (\, y) \. (\, (z integer?))))
   ;; this one would not be a legal pattern due to the way ,z is used in the innermost sub-expression,
   ;; but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure it doesn't try: 
-  (confirm that (dm::properize-pattern '(,x ,y . ,(,z integer?)))
+  (confirm that (dm::properize-pattern *dm:default-improper-indicator* '(,x ,y . ,(,z integer?)))
     returns ((\, x) (\, y) \. (\,((\, z) integer?)))))
-;; don't confirm: (dm::properize-pattern '(,x . ,y ,z)) ... ; bullshit input, invalid read syntax!
+;; don't confirm: (dm::properize-pattern *dm:default-improper-indicator* '(,x . ,y ,z)) ... ; bullshit input, invalid read syntax!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; unproperize things:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun dm::unproperize!* (improper-indicator lst)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
+  (let ((pos lst))
+    (dm::prndiv)
+    (while (consp pos)
+      (if (atom pos)
+        (dm::prn "atom:     %s"  pos)
+        (dm::prn "head:     %s" (car pos))
+        (when (consp (car pos))
+          (with-indentation
+            (dm::unproperize!* improper-indicator (car pos))))
+        (when (eq (cadr-safe pos) improper-indicator)
+          (when (or (cadddr pos) (not (cddr pos)))
+            (error "properize indicator in unexpected position: %s" lst))
+          (setcdr pos (caddr pos))
+          (setf pos nil))
+        (pop pos))))
+  (dm::prn "lst:      %s" lst)
+  (dm::prndiv)
+  lst)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ADD TESTS!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -578,10 +681,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (setq reps 100000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!*  '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!   '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*   '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern    '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!* *dm:default-improper-indicator*
+                            '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern!  *dm:default-improper-indicator*
+                            '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern*  *dm:default-improper-indicator*
+                            '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
+      (benchmark-run reps (dm::properize-pattern   *dm:default-improper-indicator*
+                            '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
       )
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -621,38 +728,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; unproperize things:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm::unproperize!* (lst &optional (improper-indicator *dm:default-improper-indicator*))
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
-  (let ((pos lst))
-    (dm::prndiv)
-    (while (consp pos)
-      (if (atom pos)
-        (dm::prn "atom:     %s"  pos)
-        (dm::prn "head:     %s" (car pos))
-        (when (consp (car pos))
-          (with-indentation
-            (dm::unproperize!* (car pos))))
-        (when (eq (cadr-safe pos) improper-indicator)
-          (when (or (cadddr pos) (not (cddr pos)))
-            (error "properize indicator in unexpected position: %s" lst))
-          (setcdr pos (caddr pos))
-          (setf pos nil))
-        (pop pos))))
-  (dm::prn "lst:      %s" lst)
-  (dm::prndiv)
-  lst)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ADD TESTS!
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pattern cache management funs:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -670,7 +745,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::compile-pattern (unsplice ellipsis dont-care improper-indicator pat)
+(defun dm::compile-pattern (improper-indicator unsplice ellipsis dont-care pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
@@ -679,14 +754,15 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (if (cdr existing)
       (car existing)
       (let ((*dm:verbose* t))
-        (dm::prndiv)
+        (dm::prndiv ?\-)
         (dm::prn "Compiling pattern %S." pat)
-        (dm::prn "Storing compiled pattern in key %S" key))
-      (db-put '*dm* key (dm::properize-pattern* pat)))))
+        (dm::prn "Storing compiled pattern under key %S" key)
+        (dm::prndiv ?\-))
+      (db-put '*dm* key (dm::properize-pattern* improper-indicator pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-    (dm::compile-pattern '\,@ '... '_ '\. pat))
+    (dm::compile-pattern '\. '\,@ '... '_ pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
