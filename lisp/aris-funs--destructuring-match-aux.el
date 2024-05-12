@@ -848,12 +848,42 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           (dm::prn "pos:      %s" pos)
           (dm::prn "head:     %s" (car pos))
           (dm::prndiv ?\-)
-          (when (listp (car pos))
+          (when (and (listp (car pos)) (not (eq '\, (caar pos))))
             (with-indentation
-              (dm::validate-pattern improper-indicator ellipsis dont-care unsplice (car pos) t)))          
+              (dm::validate-pattern improper-indicator ellipsis dont-care unsplice (car pos) t)))
           (pop pos)))
       (setq not-first t)))
   (unless inner (dm::prndiv) (dm::prnl)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; enter at base case:
+(dm::validate-pattern *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice* nil)
+;; boring:
+(dm::validate-pattern
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(1 2 (3 . 4)))
+;; legal:
+(dm::prndiv)
+(dm::prn "LEGAL:")
+(dm::validate-pattern
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(1 2 (3 ,(x . ...) ,@things)))
+;; illegal, this will properly signal:
+(ignore!
+  (dm::prndiv)
+  (dm::prn "ILLEGAL:")
+  (dm::validate-pattern
+    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+    *dm:default-unsplice*
+    '(1 2 (3 . ,@things))))
+;; illegal, this will properly signal:
+(ignore!
+  (dm::validate-pattern
+    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+    *dm:default-unsplice*
+    '(1 2 (3 . ...))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
