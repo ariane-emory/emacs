@@ -257,7 +257,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern!* (improper-indicator lst &optional not-first) ; deeply recursive version.
+(defun dm::properize-pattern!* (improper-indicator ellipsis dont-care unsplice lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -267,91 +267,130 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       ;;(dm::prn "case 2")
       ;; found an improper tail, properize it:
       (when (consp (car lst))
-        (setcar lst (dm::properize-pattern!* improper-indicator(car lst) nil)))
+        (setcar lst (dm::properize-pattern!* improper-indicator ellipsis dont-care unsplice (car lst) nil)))
       (setcdr lst (list improper-indicator (cdr lst))))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;;(dm::prn "case 3")
       ;; found a wayward comma, fix it:
       ;; (debug (cadr lst))
-      (let ((indic (car lst)))
+      (let ((comma (car lst)))
         (setcar lst improper-indicator)
-        (setcdr lst (list (list indic
-                            (cadr lst)
-                            ;; (if (consp (cadr lst))
-                            ;;   (dm::properize-pattern!* improper-indicator(cadr lst) nil)
-                            ;;   (cadr lst))
-                            )))))
+        (setcdr lst (list (list comma (cadr lst))))))
     ((consp (car lst))
       ;;(dm::prn "case 4")
       (unless (eq '\, (caar lst))
-        (setcar lst (dm::properize-pattern!* improper-indicator(car lst) nil)))
-      (dm::properize-pattern!* improper-indicator(cdr lst) t))
+        (setcar lst (dm::properize-pattern!* improper-indicator ellipsis dont-care unsplice (car lst) nil)))
+      (dm::properize-pattern!* improper-indicator ellipsis dont-care unsplice (cdr lst) t))
     ((cdr lst) ; (atom (car lst))
       ;;(dm::prn "case 5: %s" (cdr lst))
-      (dm::properize-pattern!* improper-indicator(cdr lst) t)))
+      (dm::properize-pattern!* improper-indicator ellipsis dont-care unsplice (cdr lst) t)))
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
   (confirm that
-    (dm::properize-pattern!* *dm:default-improper-indicator*
-      '(,w ,(x integer? . foo) . ,(y integer? . foo)))
+    (dm::properize-pattern!*
+      *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+      *dm:default-unsplice* '(,w ,(x integer? . foo) . ,(y integer? . foo)))
     returns ((\, w) (\,(x integer? . foo)) \. (\,(y integer? . foo))))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,w ,(x integer? . foo)))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,w ,(x integer? . foo)))
     returns ((\, w) (\,(x integer? . foo))))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x))
     returns ((\, x)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator*  nil)
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice*  nil)
     returns nil)
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x .  y))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x .  y))
     returns ((\, x) \. y))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x . ,y))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x . ,y))
     returns ((\, x) \. (\, y)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x . (y z)))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x . (y z)))
     returns ((\, x) y z))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x  y .  z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x  y .  z))
     returns ((\, x) y \. z))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y   ,z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x ,y   ,z))
     returns ((\, x) (\, y) (\, z)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y .  z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x ,y .  z))
     returns ((\, x) (\, y) \. z))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y . ,z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x ,y . ,z))
     returns ((\, x) (\, y) \. (\, z)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w y) .  z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '((w y) .  z))
     returns ((w y) \. z))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w . y) .  z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '((w . y) .  z))
     returns ((w \. y) \. z))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w y) .  ,z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '((w y) .  ,z))
     returns ((w y) \. (\, z)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((w . y) .  ,z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '((w . y) .  ,z))
     returns ((w \. y) \. (\, z)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '((,w . ,y) . ,z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '((,w . ,y) . ,z))
     returns (((\, w) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,v (,w ,x . ,y) . ,z))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,v (,w ,x . ,y) . ,z))
     returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y . ,(z  integer?)))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x ,y . ,(z  integer?)))
     returns ((\, x) (\, y) \. (\, (z integer?))))
   ;; this one would not be a legal pattern!* due to the way ,z is used in the innermost
   ;; sub-expression, but it isn't `dm::properize-pattern's job to try to fix, it, so let's make sure
   ;; it doesn't try: 
-  (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* '(,x ,y . ,(,z integer?)))
+  (confirm that (dm::properize-pattern!*
+                  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                  *dm:default-unsplice* '(,x ,y . ,(,z integer?)))
     returns ((\, x) (\, y) \. (\,((\, z) integer?))))
   (let ((lst  '(,v (,w ,x . ,y) . ,z)))
-    (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* lst)
+    (confirm that (dm::properize-pattern!*
+                    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                    *dm:default-unsplice* lst)
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z)))
     (confirm that lst
       returns ((\, v) ((\, w) (\, x) \. (\, y)) \. (\, z))))
   (let ((lst '(,x .  y)))
-    (confirm that (dm::properize-pattern!* *dm:default-improper-indicator* lst)
+    (confirm that (dm::properize-pattern!*
+                    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+                    *dm:default-unsplice* lst)
       returns ((\, x) \. y))
     (confirm that lst                                   returns ((\, x) \. y))))
-;; don't confirm: (dm::properize-pattern!* *dm:default-improper-indicator* '(,x . ,y ,z)) ...
+;; don't confirm: (dm::properize-pattern!* *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice* '(,x . ,y ,z)) ...
 ;; ^ bullshit input, invalid read syntax!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::properize-pattern* (improper-indicator lst &optional not-first) ; deeply recursive version.
+;; improper-indicator ellipsis dont-care unsplice
+;; *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::properize-pattern* (improper-indicator ellipsis dont-care unsplice lst &optional not-first) ; deeply recursive version.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Non-destructively properize a pattern by inserting a 'properize symbol', '\."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
@@ -362,7 +401,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       ;; found an improper tail, properize it:
       (list
         (if (consp (car lst))
-          (dm::properize-pattern* improper-indicator (car lst) nil)
+          (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice (car lst) nil)
           (car lst))
         improper-indicator (cdr lst)))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
@@ -378,12 +417,12 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (cons
         (if (eq '\, (caar lst))
           (car lst)
-          (dm::properize-pattern* improper-indicator (car lst) nil))
-        (dm::properize-pattern* improper-indicator (cdr lst) t)))
+          (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice (car lst) nil))
+        (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice (cdr lst) t)))
     (t
       (cons
         (car lst)
-        (dm::properize-pattern* improper-indicator (cdr lst) t)))))
+        (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice (cdr lst) t)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
