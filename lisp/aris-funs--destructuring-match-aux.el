@@ -674,15 +674,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
-  (let* ( (key (list unsplice ellipsis dont-care improper-indicator pat))
-          (existing (db-get '*dm* key)))
-    (prndiv)
-    (if (cdr existing)
-      (progn
-        (prn "Reusing pattern   %S" key)
-        (car existing))
-      (progn 
-        (prn "Interning pattern %S" key)
+  (let ((*dm:verbose* t))
+    (let* ( (key (list unsplice ellipsis dont-care improper-indicator pat))
+            (existing (db-get '*dm* key)))
+      (if (cdr existing)
+        (car existing)
+        ;; (progn 
+        ;;      (message "Interning pattern %s" pat)
+        (dm::prn "Interning pattern %S under key %S" pat key) 
         ;; (prn "Interning pattern %S" key)
         (db-put '*dm* key (dm::properize-pattern* pat))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
