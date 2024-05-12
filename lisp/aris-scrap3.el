@@ -103,6 +103,9 @@
 ;; this seems okay to permit?
 (dm:match '(,@things . (three four))  '(one two three four))
 
+;; this should probably match?
+(dm:match '(,@things . four)  '(one two three four))
+
 
 (dm::clear-compiled-patterns)
 (symbol-plist '*dm*)
