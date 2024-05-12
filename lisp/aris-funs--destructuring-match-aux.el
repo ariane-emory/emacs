@@ -835,8 +835,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (dm::prndiv)
     ;;(dm::prn "pat:      %s" pat)
     (while pos
-      (when (and not-first (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
-        (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
       (if (atom pos)
         (progn
           (when (eq ellipsis pos)
@@ -844,6 +842,8 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           (dm::prn "tail tip: %s"  pos)
           (setf pos nil))
         (progn
+          (when (and not-first (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
+            (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
           (dm::prn "pos:      %s" pos)
           (dm::prn "head:     %s" (car pos))
           (dm::prndiv ?\-)
