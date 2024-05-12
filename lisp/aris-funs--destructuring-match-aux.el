@@ -215,34 +215,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro possibly (fun thing &rest phrase)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let* ( (pred (car (last phrase)))
-          (phrase (butlast phrase))
-          (mode (cond
-                  ((equal '(if it is) phrase) :WHEN)
-                  ((equal '(if it isnt) phrase) :UNLESS)
-                  ((equal '(if it isnt a) phrase) :UNLESS)
-                  ((equal '(if it isnt an) phrase) :UNLESS)
-                  ((equal '(if it is not) phrase) :UNLESS)
-                  ((equal '(if it is not a) phrase) :UNLESS)
-                  ((equal '(if it is not an) phrase) :UNLESS)
-                  ((equal '(unless it is) phrase) :UNLESS)
-                  ((equal '(unless it is a) phrase) :UNLESS)
-                  ((equal '(unless it is an) phrase) :UNLESS)
-                  (t (error "Unrecognized phrase %s" phrase))))
-          (expr `(,pred ,thing))
-          (expr (if (eq :UNLESS mode) `(not ,expr) expr))
-          (sym (gensym)))
-    `(let ((,sym ,thing))
-       (if ,expr (,fun ,sym) ,sym))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (possibly double 7 if it is odd?) returns 14)
-(confirm that (possibly double 7 if it isnt odd?) returns 7)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::properize-target! (improper-indicator lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively properize a target by inserting a 'properize symbol', '\."
@@ -483,11 +455,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
         ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
           ;; found a wayward comma, fix it:
           (setcar pos *dm:default-improper-indicator*)
-          (setcdr pos
-            (list (list head
-                    (cadr pos)
-                    ;; (possibly dm::properize-pattern! (cadr pos) unless it is an atom)
-                    )))
+          (setcdr pos (list (list head (cadr pos))))
           (setf pos nil))
         ((consp head)
           (unless (eq '\, (car head))
@@ -580,12 +548,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
               pos nil))
           ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
             ;; found a wayward comma, fix it:
-            (setq res (cons
-                        (list head
-                          (cadr pos)
-                          ;; (possibly dm::properize-pattern (cadr pos) unless it is an atom)
-                          )
-                        (cons improper-indicator res)))
+            (setq res (cons (list head (cadr pos)) (cons improper-indicator res)))
             (setq pos nil))
           ((atom head) (push head res))
           ((consp head)
