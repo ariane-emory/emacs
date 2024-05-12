@@ -304,7 +304,7 @@
                 ;; ALIST, unless the result was just t because the sub-pattern being recursed over
                 ;; contained no variables:
                 ;; ----------------------------------------------------------------------------------
-                ((and (proper-list-p (car pattern)) (proper-list-p (car target)))
+                ((and (listp (car pattern)) (listp (car target)))
                   (setf last-pattern-elem-was-flexible nil)
                   (dm::prn "Recursively match %s against %s because PATTERN's head is a list:"
                     (car pattern) (car target))
