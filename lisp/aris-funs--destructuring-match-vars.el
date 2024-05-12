@@ -27,7 +27,7 @@ Turn this off at your own risk."
   :group 'destructuring-match
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *dm:warn-on-consecutive-flexible-elements* nil
+(defcustom *dm:warn-when-consecutive-flexible-elements* nil
   "Whether or not 'destructuring-match' should warn if it encounters consecutive flexible pattern elements."
   :group 'destructuring-match
   :type 'boolean)
