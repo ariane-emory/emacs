@@ -89,7 +89,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; pat element testing/accessor macros::
+;; pat element testing/accessor funs/macros:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -140,12 +140,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Expects to be expanded in an environment where ELLIPSIS is bound."
+;;   `(or (dm::pat-elem-is-an-unsplice? ,unsplice ,pat-elem)
+;;      (dm::pat-elem-is-the-symbol? ,ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
+(defun dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Expects to be expanded in an environment where ELLIPSIS is bound."
-  `(or (dm::pat-elem-is-an-unsplice? ,unsplice ,pat-elem)
-     (dm::pat-elem-is-the-symbol? ,ellipsis ,pat-elem)))
+  "t when PAT-ELEM is a flexible pattern element."
+  (or (dm::pat-elem-is-an-unsplice? unsplice pat-elem)
+    (dm::pat-elem-is-the-symbol? ellipsis pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
