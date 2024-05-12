@@ -125,21 +125,22 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-an-unsplice? (pat-elem)
+(defmacro dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when PAT-ELEM is an unsplice."
-  `(and unsplice (eq unsplice (car-safe ,pat-elem))))
+  `(and ,unsplice (eq ,unsplice (car-safe ,pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(\,@ 1 2 3)) returns t)
-;; (confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(1 2 3)) returns nil)
+(confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(\,@ 1 2 3)) returns t)
+(confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-flexible? (pat-elem)
+(defmacro dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Expects to be expanded in an environment where ELLIPSIS is bound."
-  `(or (dm::pat-elem-is-an-unsplice? ,pat-elem) (dm::pat-elem-is-the-symbol? ellipsis ,pat-elem)))
+  `(or (dm::pat-elem-is-an-unsplice? ,unsplice ,pat-elem)
+     (dm::pat-elem-is-the-symbol? ,ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

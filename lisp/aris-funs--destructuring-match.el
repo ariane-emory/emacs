@@ -98,7 +98,9 @@
                                 (dm::prn warn-msg))
                               (warn warn-msg))))
                        (count-min-pattern-length (pattern)
-                         `(length (cl-remove-if (lambda (pe) (dm::pat-elem-is-flexible? pe)) ,pattern)))
+                         `(length (cl-remove-if
+                                    (lambda (pe) (dm::pat-elem-is-flexible? ellipsis unsplice pe))
+                                    ,pattern)))
                        (augmented-alist ()
                          `(append
                             (when dont-care (list (cons dont-care var-val)))
@@ -148,7 +150,7 @@
                 ;; ----------------------------------------------------------------------------------
                 ;; Case 2: When PATTERN's head is flexible, collect items:
                 ;; ----------------------------------------------------------------------------------
-                ((dm::pat-elem-is-flexible? (car pattern))
+                ((dm::pat-elem-is-flexible? ellipsis unsplice (car pattern))
                   ;; Optimization idea: if the TAIL of pattern contains only inflexible elements,
                   ;; we could probably just yank off everything we with need `cl-sublis'? We would
                   ;; have to run out any other remaining flexible elements...
@@ -209,7 +211,8 @@
                                       (setf alist
                                         (nconc
                                           (when (listp look-0)                look-0)
-                                          (when (dm::pat-elem-is-an-unsplice? (car pattern))
+                                          (when (dm::pat-elem-is-an-unsplice? unsplice
+                                                  (car pattern))
                                             (list
                                               (cons (dm::pat-elem-var-sym (car pattern))
                                                 (nreverse collect))))
@@ -347,7 +350,7 @@
               (dm::prn "RUNNING OUT REMAINING PATTERN: %s" pattern)
               (dolist (pat-elem pattern)
                 (dm::prn "Running out elem: %s" pat-elem)
-                (unless (dm::pat-elem-is-flexible? pat-elem)
+                (unless (dm::pat-elem-is-flexible? ellipsis unsplice pat-elem)
                   (NO-MATCH! "expected %s but target is empty" pattern))
                 (warn-when-consecutive-flexible-elements-in-pattern)
                 (setf last-pattern-elem-was-flexible t)
@@ -711,7 +714,7 @@ This behaves very similarly to quasiquote."
             (if-let ((assoc (assoc (dm::pat-elem-var-sym thing) alist)))
               (push (cdr assoc) res)
               (error "var %s not found." (dm::pat-elem-var-sym thing))))
-          ((dm::pat-elem-is-an-unsplice? thing)
+          ((dm::pat-elem-is-an-unsplice? unsplice thing)
             (let ((var (dm::pat-elem-var-sym thing)))
               (dm::prn "VAR:     %s" var)
               (if-let ((assoc (assoc (cadr thing) alist)))
