@@ -124,11 +124,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "t when PAT-ELEM is an unsplice."
+;;   `(and ,unsplice (eq ,unsplice (car-safe ,pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
+(defun dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when PAT-ELEM is an unsplice."
-  `(and ,unsplice (eq ,unsplice (car-safe ,pat-elem))))
+  (and unsplice (eq unsplice (car-safe pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(\,@ 1 2 3)) returns t)
 (confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(1 2 3)) returns nil)
