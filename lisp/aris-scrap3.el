@@ -84,14 +84,20 @@
 (dm::unproperize!* '\. (dm::compile-pattern '\,@ '... '_ '\.  '(a b . c)))
 (dm::compile-pattern '\. '\,@ '... '_  '(a b . c))
 
-(dm:match '(,thing _ ,thing2) '(three . four))
-
 (dm:match '(,@things . ,thing) '(one two three . four))
 
 ;; ,@ shoulddn't slurp past '\.? Undecided.
 (dm:match '(,@things) '(one two three . four))
-
 (dm:match '(,@things . _) '(one two three . four))
+
+;; this seems okay to permit?
+(dm:match '(,@things . (three four))  '(one two three four))
+
+(dm:match '(,@things . four)  '(one two three . four))
+(dm:match '(,@things four)  '(one two three four))
+
+(dm::clear-compiled-patterns)
+(symbol-plist '*dm*)
 
 ;; make these illegal, probably?
 (dm::clear-compiled-patterns)
@@ -99,13 +105,3 @@
 (prnl 2)
 (dm:match '(,@things . ...)  '(one two three . four))
 (dm:match '(,@things . ...)  '(one two three four))
-
-;; this seems okay to permit?
-(dm:match '(,@things . (three four))  '(one two three four))
-
-;; this should probably match?
-(dm:match '(,@things . four)  '(one two three four))
-
-
-(dm::clear-compiled-patterns)
-(symbol-plist '*dm*)
