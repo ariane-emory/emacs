@@ -86,12 +86,6 @@
 
 (dm:match '(,@things . ,thing) '(one two three . four))
 
-;; ,@ shoulddn't slurp past '\.? Undecided.
-(dm:match '(,@things) '(one two three . four))
-(dm:match '(,@things . _) '(one two three . four))
-
-;; this seems okay to permit?
-(dm:match '(,@things . (three four))  '(one two three four))
 
 (dm:match '(,@things . four)  '(one two three . four))
 (dm:match '(,@things four)  '(one two three four))
@@ -99,9 +93,25 @@
 (dm::clear-compiled-patterns)
 (symbol-plist '*dm*)
 
+(dm:match '(,@things) '(one two three . four))
+(dm:match '(,@things . _) '(one two three . four))
+(dm:match '(... . ,x) '(one two three . four))
+
+;; this seems okay to permit?
+(dm:match '(,@things . (three four))  '(one two three four))
+
 ;; make these illegal, probably?
-(dm::clear-compiled-patterns)
+(dm:match '(,@things . ,@zs) '(one two three four))
 (dm:match '(,@things . ,@zs) '(one two three . four))
-(prnl 2)
-(dm:match '(,@things . ...)  '(one two three . four))
+
 (dm:match '(,@things . ...)  '(one two three four))
+(dm:match '(,@things . ...)  '(one two three . four))
+
+;; these seem like they could be maee sense of?
+(dm:match '(one two . ,@zs)  '(one two three four))
+(dm:match '(one two . ,@zs)  '(one two three . four))
+
+(dm:match '(one two . ...)   '(one two three four))
+(dm:match '(one two . ...)   '(one two three . four))
+
+(dm::clear-compiled-patterns)
