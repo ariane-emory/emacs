@@ -80,9 +80,9 @@
 
 
 (dm::clear-compiled-patterns)
-(dm::compile-pattern '\,@ '... '_ '\. '(a b . c))
-(dm::unproperize!* (dm::compile-pattern '\,@ '... '_ '\.  '(a b . c)))
-(dm::compile-pattern '\,@ '... '_ '\.  '(a b . c))
+(dm::compile-pattern '\. '\,@ '... '_ '(a b . c))
+(dm::unproperize!* '\. (dm::compile-pattern '\,@ '... '_ '\.  '(a b . c)))
+(dm::compile-pattern '\. '\,@ '... '_  '(a b . c))
 
 (dm:match '(,thing _ ,thing2) '(three . four))
 

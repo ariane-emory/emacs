@@ -9,7 +9,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar last-result 0)
+(defvar nolex-width 90)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun make-member-sym-p2 (lst)
@@ -404,10 +408,10 @@
             (new-var
               (setf kvp       (cons var nil)) ; this used to set it to t...
               (setf var-alist (cons kvp var-alist)) ; attach to VAR-ALIST.
-              (prndiv2)
+              (prndiv2 ?\= nolex-width)
               (prn2 "NEW-VAR:   %s" var)))
           (dolist (fun funs)
-            (prndiv2)
+            (prndiv2 ?\= nolex-width)
             (prn2 "var:       %s" var)
             (let ((val (cdr kvp)))
               (prn2 "val:       %s" val)
@@ -427,9 +431,9 @@
                 (prn2 "funres:    %s" res)
                 (setf (cdr kvp) res)))
             (prn-var-alist 2)))))
-    (prndiv2)
+    (prndiv2 ?\= nolex-width)
     (prn2 "DONE PROC FUNS.")
-    (prndiv2)
+    (prndiv2 ?\= nolex-width)
     var-alist))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *proc-funs-verbose* nil)
@@ -1419,8 +1423,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
              (recently i have been starting to feel angry at the world)
              (i have been feeling like you might be a robot)
              ))
-  
-  (prndiv)
+  (prndiv ?\= nolex-width)
   (prn "INPUT:     %s" (prettify-sentence input))
   (let ((response (get-response input)))
     (prn "CASE:      %s" (car response))
