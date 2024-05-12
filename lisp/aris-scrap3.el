@@ -122,19 +122,41 @@ Example:
 (unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3)) 
 (unify1 '(,x + 1) '(2 + ,x)) ; bad case.
 
-(unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-(unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun reuse-cons (x y x-y)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return (cons x y), or reuse x-y if it is equal to (cons x y)"
+  (if (and (eql x (car x-y)) (eql y (cdr x-y)))
+    x-y
+    (cons x y)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun subst-bindings (bindings x)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Substitute the value of variables in bindings into x,
+ taking recursively bound variables into account."
+  ;; (debug bindings x)
+  (cond
+    ((null bindings) nil)
+    ((eq bindings t) x)
+    ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
+      (subst-bindings bindings (cdr (assoc x bindings))))
+    ((atom x) x)
+    (t (reuse-cons (subst-bindings bindings (car x))
+         (subst-bindings bindings (cdr x)) x))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun unifier (pat1 pat2)
   (let ((bindings (unify1 pat1 pat2)))
-    (prn "opt1: %s" (cl-sublis bindings pat1 :test #'equal))
-    (prn "opt2: %s" (cl-sublis bindings pat2 :test #'equal))
-    (cl-sublis bindings pat1 :test #'equal)))
+    (subst-bindings bindings pat1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; (unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 
-(cl-sublis '(((\, y) . 1) ((\, x) . 2))
-  '(,x + 1 + ,a) :test #'equal)
-
-(unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
+;; (unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
