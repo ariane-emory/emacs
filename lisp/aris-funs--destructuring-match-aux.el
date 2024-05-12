@@ -93,67 +93,81 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dm::pat-elem-is-the-symbol? (symbol pat-elem)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "t when SYMBOL is non-nil and `eq' to PAT-ELEM."
-;;   `(and ,symbol (eq ,symbol ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pat-elem-is-the-symbol? (symbol pat-elem)
+(defmacro dm::pat-elem-is-the-symbol? (symbol pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when SYMBOL is non-nil and `eq' to PAT-ELEM."
-  (and symbol (eq symbol pat-elem)))
+  `(and ,symbol (eq ,symbol ,pat-elem)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::pat-elem-is-the-symbol? (symbol pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "t when SYMBOL is non-nil and `eq' to PAT-ELEM."
+;;   (and symbol (eq symbol pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::pat-elem-is-the-symbol? 'foo 'foo) returns t)
 (confirm that (dm::pat-elem-is-the-symbol? 'foo 1234) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dm::pat-elem-is-a-variable? (pat-elem)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "t when PAT-ELEM describes a variable."
-;;   (let ((comma '\,))
-;;     `(eq ',comma (car-safe ,pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pat-elem-is-a-variable? (pat-elem)
+(defmacro dm::pat-elem-is-a-variable? (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when PAT-ELEM describes a variable."
   (let ((comma '\,))
-    (eq comma (car-safe pat-elem))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
+    `(eq ',comma (car-safe ,pat-elem))))
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
+;; (defun dm::pat-elem-is-a-variable? (pat-elem)
 ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "t when PAT-ELEM is an unsplice."
-;;   `(and ,unsplice (eq ,unsplice (car-safe ,pat-elem))))
+;;   "t when PAT-ELEM describes a variable."
+;;   (let ((comma '\,))
+;;     (eq comma (car-safe pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
+(confirm that (dm::pat-elem-is-a-variable? ',(x integer?)) returns t)
+(confirm that (dm::pat-elem-is-a-variable? ',x) returns t)
+(confirm that (dm::pat-elem-is-a-variable? 'x)  returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when PAT-ELEM is an unsplice."
-  (and unsplice (eq unsplice (car-safe pat-elem))))
+  `(and ,unsplice (eq ,unsplice (car-safe ,pat-elem))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::pat-elem-is-an-unsplice? (unsplice pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "t when PAT-ELEM is an unsplice."
+;;   (and unsplice (eq unsplice (car-safe pat-elem))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (dm::pat-elem-is-an-unsplice? '\,@ '...) returns nil)
 (confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(\,@ 1 2 3)) returns t)
 (confirm that (dm::pat-elem-is-an-unsplice? '\,@ '(1 2 3)) returns nil)
+(confirm that (dm::pat-elem-is-an-unsplice? '\,@ ',(x integer?)) returns nil)
+(confirm that (dm::pat-elem-is-an-unsplice? '\,@ ',x) returns nil)
+(confirm that (dm::pat-elem-is-an-unsplice? '\,@ 'x)  returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Expects to be expanded in an environment where ELLIPSIS is bound."
-;;   `(or (dm::pat-elem-is-an-unsplice? ,unsplice ,pat-elem)
-;;      (dm::pat-elem-is-the-symbol? ,ellipsis ,pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
+(defmacro dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "t when PAT-ELEM is a flexible pattern element."
-  (or (dm::pat-elem-is-an-unsplice? unsplice pat-elem)
-    (dm::pat-elem-is-the-symbol? ellipsis pat-elem)))
+  "Expects to be expanded in an environment where ELLIPSIS is bound."
+  `(or (dm::pat-elem-is-an-unsplice? ,unsplice ,pat-elem)
+     (dm::pat-elem-is-the-symbol? ,ellipsis ,pat-elem)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::pat-elem-is-flexible? (ellipsis unsplice pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "t when PAT-ELEM is a flexible pattern element."
+;;   (or (dm::pat-elem-is-an-unsplice? unsplice pat-elem)
+;;     (dm::pat-elem-is-the-symbol? ellipsis pat-elem)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(confirm that (dm::pat-elem-is-flexible? '... '\,@ '...) returns t)
+(confirm that (dm::pat-elem-is-flexible? '... '\,@ '(\,@ 1 2 3)) returns t)
+(confirm that (dm::pat-elem-is-flexible? '... '\,@ '(1 2 3)) returns nil)
+(confirm that (dm::pat-elem-is-flexible? '... '\,@ ',(x integer?)) returns nil)
+(confirm that (dm::pat-elem-is-flexible? '... '\,@ ',x) returns nil)
+(confirm that (dm::pat-elem-is-flexible? '... '\,@ 'x)  returns nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defmacro dm::pat-elem-var-sym (pat-elem)
@@ -174,6 +188,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::pat-elem-var-sym  123)        returns nil)
 (confirm that (dm::pat-elem-var-sym  ',x)        returns x)
+(confirm that (dm::pat-elem-var-sym  ',@xs)      returns xs)
 (confirm that (dm::pat-elem-var-sym  ',(x y z))  returns x)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
