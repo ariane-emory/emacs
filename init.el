@@ -776,6 +776,7 @@
       (add-hook 'markdown-mode-hook
         (lambda ()
           (toggle-truncate-lines -1)
+          (display-line-numbers-mode -1)
           (face-remap-add-relative 'default '(:family "XITS" :height 1.33))))
 
       (add-hook 'tetris-mode-hook
