@@ -887,8 +887,55 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::compile-pattern (improper-indicator ellipsis dont-care unsplice pat)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
+;;   (ensure-db! '*dm*)
+;;   (let* ( (key (list improper-indicator ellipsis dont-care unsplice pat))
+;;           (existing (db-get '*dm* key)))
+;;     (if (cdr existing)
+;;       (car existing)
+;;       (let ((*dm:verbose* t))
+;;         (dm::prndiv ?\-)
+;;         (dm::prn "Compiling pattern: %S." pat)
+;;         (let ((*dm:verbose* nil))
+;;           (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
+;;         (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
+;;           (dm::prn "Into compiled:     %S." compiled)
+;;           (dm::prn "Under key:         %S" key)
+;;           (dm::prndiv ?\-)
+;;           (db-put '*dm* key compiled))))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that
+;;   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+;;     (dm::compile-pattern '\. '... '_ '\,@ pat))
+;;   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::compile-pattern (improper-indicator ellipsis dont-care unsplice pat)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "\='Compile' a pattern without interning it."
+  (let ((*dm:verbose* t))
+    (dm::prn "Compiling pattern: %S." pat)
+    (let ((*dm:verbose* nil))
+      (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
+    (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
+      (dm::prn "Into compiled:     %S." compiled)
+      compiled)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+    (dm::compile-pattern '\. '... '_ '\,@ pat))
+  returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::intern-pattern (improper-indicator ellipsis dont-care unsplice pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
@@ -898,18 +945,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (car existing)
       (let ((*dm:verbose* t))
         (dm::prndiv ?\-)
-        (dm::prn "Compiling pattern %S." pat)
-        (let ((*dm:verbose* nil))
-          (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
-        (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
-          (dm::prn "Into              %S." compiled)
-          (dm::prn "Storing compiled pattern under key %S" key)
+        (let ((compiled (dm::compile-pattern improper-indicator ellipsis dont-care unsplice pat)))
+          (dm::prn "Storing under key: %S" key)
           (dm::prndiv ?\-)
           (db-put '*dm* key compiled))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-    (dm::compile-pattern '\. '... '_ '\,@ pat))
+    (dm::intern-pattern '\. '... '_ '\,@ pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

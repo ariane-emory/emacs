@@ -15,6 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO:
 ;;  - preds for flexible-length pattern elements.
+;;  - improper list handling for `fill'.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -39,7 +40,7 @@
   (dm::prndiv)
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (pattern (dm::compile-pattern    improper-indicator ellipsis dont-care unsplice pattern))
+  (let* ( (pattern (dm::intern-pattern    improper-indicator ellipsis dont-care unsplice pattern))
           (target  (dm::properize-target!  improper-indicator target))
           (result (with-indentation
                     (dm::match1 pattern pattern target
@@ -591,6 +592,26 @@
     (confirm that (dm:match '(,x ,@ys)         '(1 2 3 4))         returns ((x . 1) (ys 2 3 4)))
     (confirm that (dm:match '(,x ...)          '(1 2 3 4))         returns ((x . 1)))
     (confirm that (dm:match '(,x ... ,z)       '(X 2 3))           returns ((x . X) (z . 3)))
+    ;;-----------------------------------------------------------------------------------------------
+    ;; improper lists, NEED MORE OF THESE TESTS!
+    (confirm that (dm:match '(,(x integer?) . ,(y integer?))  '(8 . 9))
+      returns ((x . 8) (y . 9)))
+    (confirm that (dm:match '(,(x integer?) . ,(y integer?))  '(8 . (9 10)))
+      returns nil)
+    (confirm that (dm:match '(,@things . ,thing) '(one two three . four))
+      returns ((things one two three) (thing . four)))
+    (confirm that (dm:match '(,@things . four)  '(one two three . four))
+      returns ((things one two three)))
+    (confirm that (dm:match '(,@things . ,four)  '(one two three . four))
+      returns ((things one two three) (four . four)))
+    (confirm that (dm:match '(,@things) '(one two three . four))
+      returns ((things one two three . four)))
+    (confirm that (dm:match '(,@things . _) '(one two three . four))
+      returns ((things one two three)))
+    (confirm that (dm:match '(... . ,x) '(one two three . four))
+      returns ((x . four)))
+    (confirm that (dm:match '(,@things . (three ,four))  '(one two three four))
+      returns ((things one two) (four . four)))
     ;;-----------------------------------------------------------------------------------------------
     ;; stupid-but-legal, consecutive flexible elements:
     (let (*dm:warn-on-consecutive-flexible-elements*)
