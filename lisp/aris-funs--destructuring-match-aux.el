@@ -749,7 +749,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
-  (let* ( (key (list improper-indicator unsplice ellipsis dont-care pat))
+  (let* ( (key (list improper-indicator ellipsis dont-care unsplice pat))
           (existing (db-get '*dm* key)))
     (if (cdr existing)
       (car existing)
