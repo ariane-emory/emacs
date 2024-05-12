@@ -289,24 +289,6 @@
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::walk* (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A version of `dolist` that also handles improper lists."
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 3 (length spec) 4)
-    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
-  (let* ( (var         (car spec))
-          (pos         (car (cdr spec)))
-          (lst         (car (cdr (cdr spec)))))
-    `(let ((,pos ,lst))
-       (while ,pos
-         (let ((,var (if (consp pos) (car ,pos) ,pos)))
-           ,@body
-           (setf ,pos (if (consp pos) (cdr ,pos) nil))))
-       ,@(cdr (cdr (cdr spec))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defun fun (expr)
