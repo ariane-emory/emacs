@@ -34,18 +34,18 @@
 
 (dm:match
   '(,a ,b (,c . ,d) . ,e)
-  (dm::properize-target '(1 2 (3 . 4) . 5)))
+  (dm::properize-target '\. '(1 2 (3 . 4) . 5)))
 
 (symbol-plist '*dm*)
 
 
-(dm::unproperize!* '(1 2 3 (4 (a b c (d \. e)) 5 6 \. 7) \. 8))
+(dm::unproperize!* '\. '(1 2 3 (4 (a b c (d \. e)) 5 6 \. 7) \. 8))
 
 
 (let ((pat '(,a ,b . ,c)))
   (prnl 2)
   ;; this doesn't look correct intuitively due to wayward comma but i'm pretty sure it actually is:
-  (equal pat (dm::unproperize!* (cl-copy-list (dm::compile-pattern '\,@ '... '_ '\. pat)))))
+  (equal pat (dm::unproperize!* '\. (cl-copy-list (dm::compile-pattern '\. '\,@ '... '_ pat)))))
 
 (let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
         ;; '(,a ,(b integer? . foo) . ,c)
@@ -53,15 +53,15 @@
         ))
   (prnl 2)
   (equal pat
-    (dm::unproperize!*
+    (dm::unproperize!* '\. 
       (cl-copy-list
-        (dm::compile-pattern '\,@ '... '_ '\.
-          (dm::unproperize!*
+        (dm::compile-pattern '\. '\,@ '... '_
+          (dm::unproperize!* '\. 
             (cl-copy-list
-              (dm::compile-pattern '\,@ '... '_ '\.
-                (dm::unproperize!*
+              (dm::compile-pattern '\. '\,@ '... '_ 
+                (dm::unproperize!* '\. 
                   (cl-copy-list
-                    (dm::compile-pattern '\,@ '... '_ '\. pat)))))))))))
+                    (dm::compile-pattern '\. '\,@ '... '_ pat)))))))))))
 
 (symbol-plist '*dm*)
 
@@ -71,13 +71,12 @@
         ))
   (prnl 2)
   (equal pat
-    (dm::unproperize!*
-      (dm::compile-pattern '\,@ '... '_ '\.
-        (dm::unproperize!*
-          (dm::compile-pattern '\,@ '... '_ '\.
-            (dm::unproperize!*
-              (dm::compile-pattern '\,@ '... '_ '\. pat))))))))
-
+    (dm::unproperize!* '\.
+      (dm::compile-pattern '\. '\,@ '... '_ 
+        (dm::unproperize!* '\. 
+          (dm::compile-pattern '\. '\,@ '... '_ 
+            (dm::unproperize!* '\. 
+              (dm::compile-pattern '\. '\,@ '... '_  pat))))))))
 
 
 (dm::clear-compiled-patterns)
