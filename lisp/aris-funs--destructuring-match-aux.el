@@ -753,12 +753,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           (existing (db-get '*dm* key)))
     (if (cdr existing)
       (car existing)
-      (let ((*dm:verbose* t))
+      (let* ( (*dm:verbose* t)
+              (compiled (dm::properize-pattern* improper-indicator pat)))
         (dm::prndiv ?\-)
-        (dm::prn "Compiling pattern %S." pat)
+        (dm::prn "Compiled pattern %S." pat)
+        (dm::prn "Into             %S." compiled)
         (dm::prn "Storing compiled pattern under key %S" key)
-        (dm::prndiv ?\-))
-      (db-put '*dm* key (dm::properize-pattern* improper-indicator pat)))))
+        (dm::prndiv ?\-)
+        (db-put '*dm* key compiled)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
