@@ -115,3 +115,45 @@
 (dm:match '(one two . ...)   '(one two three . four))
 
 (dm::clear-compiled-patterns)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(cl-defun dm::validate (improper-indicator ellipsis dont-care unsplice pat)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Look for patterrns with flexible elemends in an improper tail."
+  (let ((pos pat))
+    (dm::prndiv)
+    (while (consp pos)
+      (if (atom pos)
+        (dm::prn "tail tip: %s"  pos)
+        (dm::prn "head:     %s" (car pos))
+        (when (consp (car pos))
+          (with-indentation
+            (dm::validate improper-indicator ellipsis dont-care unsplice (car pos))))
+        (pop pos))))
+  (dm::prn "pat:      %s" pat)
+  (dm::prndiv)
+  pat)
+
+(dm::validate
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(1 (3 . 4)))
+
+(dm::validate
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(,@things . ,@zs))
+(dm::validate
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(,@things . ,@zs))
+(dm::validate
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(,@things . ...))
+(dm::validate
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(,@things . ...))
