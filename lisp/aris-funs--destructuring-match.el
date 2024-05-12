@@ -283,8 +283,8 @@
                                       ;; (eval funcall-expr)
                                       (eval funcall-expr2)))
                                   (t
-                                    ;; PRED is some other expr, `rsubst-alist' ALIST's values into
-                                    ;; it and `eval':
+                                    ;; PRED is some other expr, wrap in an `let-alist'-like
+                                    ;; expression and `eval':
                                     (let ( ;; (eval-expr  (subst-alist-in-eval-expr pred))
                                            (eval-expr2 (macroexp-let-alist (augmented-alist) pred)))
                                       ;; (dm::prn-labeled eval-expr)

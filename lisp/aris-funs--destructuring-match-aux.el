@@ -370,35 +370,34 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   ;; (dm::prndiv)
-  (nreverse
-    (let (not-first res)
-      (dolist* (head pos lst res)
-        (cond
-          ((and (cdr pos) (atom (cdr pos)))
-            ;; found an improper tail, properize it.
-            ;; this isn't sexy, but it turns out that nested `cons'es and a conjoined
-            ;; `setf' is very slightly faster than the alternatives:
-            (setq res
-              (cons (cdr pos)
-                (cons improper-indicator
-                  (cons
-                    (if (atom head)
-                      head
-                      (dm::properize-pattern improper-indicator ellipsis dont-care unsplice head))
-                    res)))
-              pos nil))
-          ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
-            ;; found a wayward comma, fix it:
-            (setq res (cons (list head (cadr pos)) (cons improper-indicator res)))
-            (setq pos nil))
-          ((atom head) (push head res))
-          ((consp head)
-            (push (if (eq '\, (car head))
+  (let (not-first res)
+    (dolist* (head pos lst (nreverse res))
+      (cond
+        ((and (cdr pos) (atom (cdr pos)))
+          ;; found an improper tail, properize it.
+          ;; this isn't sexy, but it turns out that nested `cons'es and a conjoined
+          ;; `setf' is very slightly faster than the alternatives:
+          (setq res
+            (cons (cdr pos)
+              (cons improper-indicator
+                (cons
+                  (if (atom head)
                     head
                     (dm::properize-pattern improper-indicator ellipsis dont-care unsplice head))
-              res))
-          (t (push (dm::properize-pattern improper-indicator ellipsis dont-care unsplice head) res)))
-        (setq not-first t)))))
+                  res)))
+            pos nil))
+        ((and not-first (eq '\, head) (cdr pos) (not (cddr pos)))
+          ;; found a wayward comma, fix it:
+          (setq res (cons (list head (cadr pos)) (cons improper-indicator res)))
+          (setq pos nil))
+        ((atom head) (push head res))
+        ((consp head)
+          (push (if (eq '\, (car head))
+                  head
+                  (dm::properize-pattern improper-indicator ellipsis dont-care unsplice head))
+            res))
+        (t (push (dm::properize-pattern improper-indicator ellipsis dont-care unsplice head) res)))
+      (setq not-first t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *dm:test-aux*
   ;; (unless (eq '\, (caar lst))
@@ -958,120 +957,120 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (dm::prndiv ?\-)
       (setq not-first t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; enter at base case:
-  (dm::validate-pattern *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-    *dm:default-unsplice* nil)
-  ;; boring:
-  (dm::validate-pattern
-    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-    *dm:default-unsplice*
-    '(1 2 (3 . 4)))
-  ;; legal:
+;; enter at base case:
+(dm::validate-pattern *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice* nil)
+;; boring:
+(dm::validate-pattern
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(1 2 (3 . 4)))
+;; legal:
+(dm::prndiv)
+(dm::prn "LEGAL:")
+(dm::validate-pattern
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice*
+  '(1 2 (3 ,(x . ...) ,@things)))
+;; illegal, this will properly signal:
+(ignore!
   (dm::prndiv)
-  (dm::prn "LEGAL:")
+  (dm::prn "ILLEGAL:")
   (dm::validate-pattern
     *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
     *dm:default-unsplice*
-    '(1 2 (3 ,(x . ...) ,@things)))
-  ;; illegal, this will properly signal:
-  (ignore!
-    (dm::prndiv)
-    (dm::prn "ILLEGAL:")
-    (dm::validate-pattern
-      *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-      *dm:default-unsplice*
-      '(1 2 (3 . ,@things))))
-  ;; illegal, this will properly signal:
-  (ignore!
-    (dm::validate-pattern
-      *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-      *dm:default-unsplice*
-      '(1 2 (3 . ...))))
+    '(1 2 (3 . ,@things))))
+;; illegal, this will properly signal:
+(ignore!
+  (dm::validate-pattern
+    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+    *dm:default-unsplice*
+    '(1 2 (3 . ...))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-  ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; (defun dm::compile-pattern (improper-indicator ellipsis dont-care unsplice pat)
-  ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
-  ;;   (ensure-db! '*dm*)
-  ;;   (let* ( (key (list improper-indicator ellipsis dont-care unsplice pat))
-  ;;           (existing (db-get '*dm* key)))
-  ;;     (if (cdr existing)
-  ;;       (car existing)
-  ;;       (let ((*dm:verbose* t))
-  ;;         (dm::prndiv ?\-)
-  ;;         (dm::prn "Compiling pattern: %S." pat)
-  ;;         (let ((*dm:verbose* nil))
-  ;;           (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
-  ;;         (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
-  ;;           (dm::prn "Into compiled:     %S." compiled)
-  ;;           (dm::prn "Under key:         %S" key)
-  ;;           (dm::prndiv ?\-)
-  ;;           (db-put '*dm* key compiled))))))
-  ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; (confirm that
-  ;;   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-  ;;     (dm::compile-pattern '\. '... '_ '\,@ pat))
-  ;;   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
-  ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::compile-pattern (improper-indicator ellipsis dont-care unsplice pat)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
+;;   (ensure-db! '*dm*)
+;;   (let* ( (key (list improper-indicator ellipsis dont-care unsplice pat))
+;;           (existing (db-get '*dm* key)))
+;;     (if (cdr existing)
+;;       (car existing)
+;;       (let ((*dm:verbose* t))
+;;         (dm::prndiv ?\-)
+;;         (dm::prn "Compiling pattern: %S." pat)
+;;         (let ((*dm:verbose* nil))
+;;           (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
+;;         (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
+;;           (dm::prn "Into compiled:     %S." compiled)
+;;           (dm::prn "Under key:         %S" key)
+;;           (dm::prndiv ?\-)
+;;           (db-put '*dm* key compiled))))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that
+;;   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+;;     (dm::compile-pattern '\. '... '_ '\,@ pat))
+;;   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun dm::compile-pattern (improper-indicator ellipsis dont-care unsplice pat)
+(defun dm::compile-pattern (improper-indicator ellipsis dont-care unsplice pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "\='Compile' a pattern without interning it."
-    (let ((*dm:verbose* t))
-      (dm::prn "Compiling pattern: %S." pat)
-      (let ((*dm:verbose* nil))
-        (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
-      (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
-        (dm::prn "Into compiled:     %S." compiled)
-        compiled)))
+  "\='Compile' a pattern without interning it."
+  (let ((*dm:verbose* t))
+    (dm::prn "Compiling pattern: %S." pat)
+    (let ((*dm:verbose* nil))
+      (dm::validate-pattern improper-indicator ellipsis dont-care unsplice pat))
+    (let ((compiled (dm::properize-pattern* improper-indicator ellipsis dont-care unsplice pat)))
+      (dm::prn "Into compiled:     %S." compiled)
+      compiled)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (confirm that
-    (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-      (dm::compile-pattern '\. '... '_ '\,@ pat))
-    returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
-  (confirm that
-    (let ((pat '(,a ,(b integer? . foo) . ,c)))
-      (equal pat
-        (dm::unproperize!* '\.
-          (dm::compile-pattern '\. '... '_ '\,@  
-            (dm::unproperize!* '\. 
-              (dm::compile-pattern '\. '... '_ '\,@  
-                (dm::unproperize!* '\. 
-                  (dm::compile-pattern '\. '... '_ '\,@   pat))))))))
-    returns t)
+(confirm that
+  (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+    (dm::compile-pattern '\. '... '_ '\,@ pat))
+  returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
+(confirm that
+  (let ((pat '(,a ,(b integer? . foo) . ,c)))
+    (equal pat
+      (dm::unproperize!* '\.
+        (dm::compile-pattern '\. '... '_ '\,@  
+          (dm::unproperize!* '\. 
+            (dm::compile-pattern '\. '... '_ '\,@  
+              (dm::unproperize!* '\. 
+                (dm::compile-pattern '\. '... '_ '\,@   pat))))))))
+  returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun dm::intern-pattern (improper-indicator ellipsis dont-care unsplice pat)
+(defun dm::intern-pattern (improper-indicator ellipsis dont-care unsplice pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
-    (ensure-db! '*dm*)
-    (let* ( (key (list improper-indicator ellipsis dont-care unsplice pat))
-            (existing (db-get '*dm* key)))
-      (if (cdr existing)
-        (car existing)
-        (let ((*dm:verbose* t))
+  "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
+  (ensure-db! '*dm*)
+  (let* ( (key (list improper-indicator ellipsis dont-care unsplice pat))
+          (existing (db-get '*dm* key)))
+    (if (cdr existing)
+      (car existing)
+      (let ((*dm:verbose* t))
+        (dm::prndiv ?\-)
+        (let ((compiled (dm::compile-pattern improper-indicator ellipsis dont-care unsplice pat)))
+          (dm::prn "Storing under key: %S" key)
           (dm::prndiv ?\-)
-          (let ((compiled (dm::compile-pattern improper-indicator ellipsis dont-care unsplice pat)))
-            (dm::prn "Storing under key: %S" key)
-            (dm::prndiv ?\-)
-            (db-put '*dm* key compiled))))))
+          (db-put '*dm* key compiled))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (confirm that
-    (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-      (dm::intern-pattern '\. '... '_ '\,@ pat))
-    returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
+(confirm that
+  (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
+    (dm::intern-pattern '\. '... '_ '\,@ pat))
+  returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (provide 'aris-funs--destructuring-match-aux)
+(provide 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
