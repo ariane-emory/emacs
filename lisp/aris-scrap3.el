@@ -102,5 +102,5 @@
 (dm:match '(,@things . (three four))  '(one two three four))
 
 
-
-
+(dm::clear-interned-patterns)
+(symbol-plist '*dm*)

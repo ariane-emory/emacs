@@ -664,7 +664,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   (ensure-db! '*dm*)
   (clear-db   '*dm*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (hash-table-p (dm::clear-interned-patterns)) returns t)
+(confirm that (hash-table-p (dm::clear-interned-patterns)) returns t)
 ;; (confirm that (length (symbol-plist '*dm*)) returns 2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -676,11 +676,15 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   (ensure-db! '*dm*)
   (let* ( (key (list unsplice ellipsis dont-care improper-indicator pat))
           (existing (db-get '*dm* key)))
+    (prndiv)
     (if (cdr existing)
-      (car existing)
-      (prn "Interning pattern %S" pat) ; weird print bug if this is commented out.
-      (prn "under key         %S" key)
-      (db-put '*dm* key (dm::properize-pattern* pat)))))
+      (progn
+        (prn "Reusing pattern   %S" key)
+        (car existing))
+      (progn 
+        (prn "Interning pattern %S" key)
+        ;; (prn "Interning pattern %S" key)
+        (db-put '*dm* key (dm::properize-pattern* pat))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
