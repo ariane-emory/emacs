@@ -749,7 +749,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           (setf pos nil))
         (pop pos))))
   (dm::prn "lst:      %s" lst)
-  (dm::prndiv)
+  ;; (dm::prndiv)
   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ADD TESTS!
@@ -887,7 +887,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 (defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat &optional inner)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Look for patterrns with flexible elemends in an improper tail."
-  (let ((pos pat) not-first)    
+  (let (not-first)
     (walk* pat
       (dm::prndiv)
       (dm::prn "pos:      %s" pos)
@@ -977,6 +977,16 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
     (dm::compile-pattern '\. '... '_ '\,@ pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
+(confirm that
+  (let ((pat '(,a ,(b integer? . foo) . ,c)))
+    (equal pat
+      (dm::unproperize!* '\.
+        (dm::compile-pattern '\. '... '_ '\,@  
+          (dm::unproperize!* '\. 
+            (dm::compile-pattern '\. '... '_ '\,@  
+              (dm::unproperize!* '\. 
+                (dm::compile-pattern '\. '... '_ '\,@   pat))))))))
+  returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

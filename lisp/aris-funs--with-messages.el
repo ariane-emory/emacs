@@ -39,6 +39,7 @@
 (defvar *wm:indent* 0 "The current indentation level in `with-messages'.
 This variable is not meant to be customized but can be safely dynamically shadowed." )
 (defvar *wm:last-prn-was-div* nil "Whether the last `prn' was a `prndiv'.")
+(setf *wm:last-prn-was-div* nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -230,9 +231,10 @@ arguments ARGS, returning VAL."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Print a divider line with the current indentation level."
   ;; (indented-message "%s" (make-string count char))
-  (unless *wm:last-prn-was-div*
-    (indented-message "%s" (make-string (- count (wm::actual-indent)) char)))
-  (setf *wm:last-prn-was-div* t)
+  (when (not *wm:last-prn-was-div*)
+    (indented-message "%s" (make-string (- count (wm::actual-indent)) char))
+    (setf *wm:last-prn-was-div* (wm::actual-indent)))
+  ;; (setf *wm:last-prn-was-div* nil)
   nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
