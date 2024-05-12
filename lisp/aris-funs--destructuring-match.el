@@ -39,7 +39,7 @@
   (dm::prndiv)
   (dm::prn "BEGIN MATCHING:       %S" pattern)
   (dm::prn "AGAINST:              %S" target)
-  (let* ( (pattern (dm::compile-pattern    improper-indicator unsplice ellipsis dont-care pattern))
+  (let* ( (pattern (dm::compile-pattern    improper-indicator ellipsis dont-care unsplice pattern))
           (target  (dm::properize-target!  improper-indicator target))
           (result (with-indentation
                     (dm::match1 pattern pattern target
