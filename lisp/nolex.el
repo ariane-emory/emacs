@@ -1429,7 +1429,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
     (prn "CASE:      %s" (car response))
     (prn "RESPONSE:  %s" (prettify-sentence response t))))
 
-(prndiv)
+(prndiv ?\= nolex-width)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;(dm:match '(,(subject subject?) ,(modal modal?) never ,@verb about ,(a/the a/the?) ,@things)
