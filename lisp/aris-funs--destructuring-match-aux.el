@@ -828,6 +828,17 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro walk* (lst &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Walk a possibly improper list."
+  `(let ((pos ,lst))
+     (while pos
+       ,@body
+       (setf pos (if (atom pos) nil (cdr pos))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat &optional inner)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Look for patterrns with flexible elemends in an improper tail."
@@ -872,6 +883,24 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
       (setq not-first t)
       (setf pos (if (atom pos) nil (cdr pos)))))
   (unless inner (dm::prndiv) (dm::prnl)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat &optional inner)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Look for patterrns with flexible elemends in an improper tail."
+  (let ((pos pat) not-first)    
+    (walk* pat
+      (dm::prndiv)
+      (dm::prn "pos:      %s" pos)
+      (cond
+        ((eq ellipsis pos)
+          (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
+        ((and not-first (consp pos) (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
+          (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
+        ((and (consp pos) (listp (car-safe pos)) (not (eq '\, (car (car-safe pos)))))
+          (with-indentation
+            (dm::validate-pattern improper-indicator ellipsis dont-care unsplice (car pos) t))))
+      (dm::prndiv ?\-)
+      (setq not-first t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; enter at base case:
 (dm::validate-pattern *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*

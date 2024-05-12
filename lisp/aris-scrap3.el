@@ -356,61 +356,23 @@
 
 (dm:match '(,(x integer?) ,(y integer? (< x _))) '(7 9))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::validate-pattern2 (improper-indicator ellipsis dont-care unsplice pat &optional inner)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Look for patterrns with flexible elemends in an improper tail."
-  (let ((pos pat) not-first)    
-    (dm::prndiv)
-    ;;(dm::prn "pat:      %s" pat)
-    (while pos
-      (cond
-        ((eq ellipsis pos)
-          (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
-        ((and not-first (consp pos) (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
-          (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice)))
-      (dm::prn "pos:      %s" pos)
-      (dm::prndiv ?\-)
-      (when (and (listp (car pos)) (not (eq '\, (caar pos))))
-        (with-indentation
-          (dm::validate-pattern2 improper-indicator ellipsis dont-care unsplice (car pos) t)))
-      (setq not-first t)
-      (if (atom pos)
-        (setf pos nil)
-        (pop pos))
-      ))
-  (unless inner (dm::prndiv) (dm::prnl)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro walk* (lst &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let ((pos ,lst))
-     (dm::prndiv)
-     ;;(dm::prn "lst:      %s" lst)
-     (while pos
-       ,@body
-       (if (atom pos)
-         (setf pos nil)
-         (pop pos)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::validate-pattern3 (improper-indicator ellipsis dont-care unsplice pat &optional inner)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Look for patterrns with flexible elemends in an improper tail."
+  (dm::prndiv)
   (let (not-first)
-    (dm::prndiv)
     (walk* pat
+      (dm::prn "pos:      %s" pos)
       (cond
         ((eq ellipsis pos)
           (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
         ((and not-first (consp pos) (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
           (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice)))
-      (dm::prn "pos:      %s" pos)
-      (dm::prndiv ?\-)
       (when (and (listp (car pos)) (not (eq '\, (caar pos))))
         (with-indentation
           (dm::validate-pattern3 improper-indicator ellipsis dont-care unsplice (car pos) t)))
@@ -419,6 +381,11 @@
 
 
 
+
+
+(dm::validate-pattern3
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
+  '(thing (,x ,y ,zs) ,@things))
 
 
 (dm::validate-pattern3
