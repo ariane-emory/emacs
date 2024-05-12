@@ -5,7 +5,7 @@
   'toxikat
 
   '(cursor ((t (:foreground "yellow1" :background "#8db"))))
-  '(default ((t (:inherit nil :extend nil :stipple nil :background "#000" :foreground "#60b890" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 230 :width normal :foundry "nil" :family "Iosevka")))) 
+  '(default ((t (:inherit nil :extend nil :stipple nil :background "#000" :foreground "#60b890" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 180 :width normal :foundry "nil" :family "Iosevka")))) 
   '(error ((t (:foreground "Red" :weight bold))))
   '(fill-column-indicator ((t (:inherit highlight :stipple nil :background "#061b21" :foreground "#050" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal)))) 
   '(fixed-pitch ((t (:family "Monospace"))))
