@@ -678,7 +678,10 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
           (existing (db-get '*dm* key)))
     (if (cdr existing)
       (car existing)
-      (message "Compiling pattern %S under key %S" pat key)
+      (let ((*dm:verbose* t))
+        (dm::prndiv)
+        (dm::prn "Compiling pattern %S." pat)
+        (dm::prn "Storing compiled pattern in key %S" key))
       (db-put '*dm* key (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
