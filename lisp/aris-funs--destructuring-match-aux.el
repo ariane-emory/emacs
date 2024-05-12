@@ -776,7 +776,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (when (eq improper-indicator (cadr-safe pos))
       (when (or (cadddr pos) (not (cddr pos)))
         (error "properize indicator in unexpected position: %S" lst))
-      (prn "slice!")
       (setcdr pos (caddr pos)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ADD TESTS!

@@ -1447,7 +1447,6 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 ;;   '(you would never dance with the stars))
 ;; (dm:match '( ... i ... have been ... feeling ,@things ) '(lately i have been feeling angry at the world))
 
-(benchmark-run 1000000000 '(get-response (you cannot conquer the empire of the necromancers)))
 
 
 
