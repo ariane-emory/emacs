@@ -93,11 +93,14 @@
 
 (dm:match '(,@things . _) '(one two three . four))
 
-;; make these illegal:
+;; make these illegal, probably?
+(dm::clear-compiled-patterns)
 (dm:match '(,@things . ,@zs) '(one two three . four))
 (prnl 2)
 (dm:match '(,@things . ...)  '(one two three . four))
 (dm:match '(,@things . ...)  '(one two three four))
+
+;; this seems okay to permit?
 (dm:match '(,@things . (three four))  '(one two three four))
 
 

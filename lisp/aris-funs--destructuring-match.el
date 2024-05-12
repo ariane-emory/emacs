@@ -43,7 +43,8 @@
           (target  (dm::properize-target improper-indicator target))
           (result (with-indentation
                     (dm::match1 pattern pattern target
-                      dont-care ellipsis unsplice improper-indicator nil nil)))
+                      improper-indicator ellipsis dont-care unsplice 
+                      nil nil)))
           (result (if (listp result) (nreverse result) result)))
     (dm::prn-labeled result "FINAL")
     (dm::prndiv)
@@ -53,7 +54,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::match1 ( initial-pattern pattern target
-                    dont-care ellipsis unsplice improper-indicator alist reference-alist)
+                    improper-indicator ellipsis dont-care unsplice
+                    alist reference-alist
+                    ;; dont-care ellipsis unsplice improper-indicator alist reference-alist
+                    )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal function used by `dm:match'."
   ;;-------------------------------------------------------------------------------------------------
@@ -69,7 +73,7 @@
         (cl-macrolet ( (recurse (pattern target alist reference-alist)
                          `(with-indentation
                             (dm::match1 initial-pattern ,pattern ,target
-                              dont-care ellipsis unsplice improper-indicator
+                              improper-indicator ellipsis dont-care unsplice
                               ,alist ,reference-alist)))
                        (NO-MATCH! (fmt &rest args)
                          `(progn
