@@ -273,12 +273,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(setq al '((x . 88) (_ . 99)))
-
-(macroexp-let-alist al '(< x _))
 
 (let ((x 88) (_ 99)) (< x _))
 
 (dm:match '(,(x integer?) ,(y integer? (< x _))) '(7 9))
 
+(setq expr '(,(x integer?) ,(y integer? (< x _))))
 
+(defun fun (expr)
+  (walk* expr
+    (prndiv)
+    (prn "pos: *%s" pos)
+    ;; (debug)
+    (when (consp (car pos))
+      (with-indentation (fun (car pos))))))
+
+(fun expr)
