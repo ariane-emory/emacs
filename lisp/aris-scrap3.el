@@ -304,11 +304,9 @@
           (pos-is-cons (symbolicate pos "-is-cons")))
     `(let ((,pos ,lst))
        (while ,pos
-         (let* ( (,pos-is-cons (consp ,pos))
-                 (,var         (if ,pos-is-cons (car ,pos) ,pos))
-                 (,var-is-cons (consp ,var)))
+         (let* ((,var (if (consp pos) (car ,pos) ,pos)))
            ,@body
-           (setf ,pos (if ,pos-is-cons (cdr ,pos) nil))))
+           (setf ,pos (if (consp pos) (cdr ,pos) nil))))
        ,@(cdr (cdr (cdr spec))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -316,12 +314,13 @@
 (defun fun (expr)
   (walk2* (thing pos expr)
     (prndiv)
-    (prn "pos:   *%s" pos)
-    (prn "thing: *%s" thing)
+    (prn "pos:   %s" pos)
+    (prn "thing: %s" thing)
     ;; (debug)
-    (when thing-is-cons (with-indentation (fun thing))))
-  )
+    (when (consp thing) (with-indentation (fun thing)))))
 
-(setq expr '(,(x integer?) ,(y integer? (< x _ . 333))))
 
-(fun expr)
+;; (fun expr)
+(fun '(1 2 3 (4 5) . 6))
+
+(fun '(,(x integer?) ,(y integer? (< x _ . 333))))
