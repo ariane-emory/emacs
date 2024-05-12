@@ -348,8 +348,46 @@
             ))))
 
 
-(macroexp-let-alist '((x . 88) (_ . 99)) '(> x _))
-(let ((x 88) (_ 99)) (> x _))
+(setq al '((x . 88) (_ . 99)))
 
-(confirm that (dm:match '(,(x integer?) ,(y integer? (> x _))) '(9 7)) returns ((x . 9) (y . 7)))
+(macroexp-let-alist al '(< x _))
 
+(let ((x 88) (_ 99)) (< x _))
+
+(dm:match '(,(x integer?) ,(y integer? (< x _))) '(7 9))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::validate-pattern2 (improper-indicator ellipsis dont-care unsplice pat &optional inner)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Look for patterrns with flexible elemends in an improper tail."
+  (let ((pos pat) not-first)    
+    (dm::prndiv)
+    ;;(dm::prn "pat:      %s" pat)
+    (while pos
+      (when (and not-first (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
+        (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
+      (if (atom pos)
+        (progn
+          (when (eq ellipsis pos)
+            (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
+          (dm::prn "tail tip: %s"  pos)
+          (setf pos nil))
+        (progn
+          (dm::prn "pos:      %s" pos)
+          (dm::prn "head:     %s" (car pos))
+          (dm::prndiv ?\-)
+          (when (and (listp (car pos)) (not (eq '\, (caar pos))))
+            (with-indentation
+              (dm::validate-pattern2 improper-indicator ellipsis dont-care unsplice (car pos) t)))
+          (pop pos)))
+      (setq not-first t)))
+  (unless inner (dm::prndiv) (dm::prnl)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(dm::validate-pattern
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
+  '(,@things))
+
+(dm::validate-pattern
+  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
+  '(,thing . ,@things))

@@ -831,8 +831,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 (defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat &optional inner)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Look for patterrns with flexible elemends in an improper tail."
-  (let ((pos pat) not-first)
-    
+  (let ((pos pat) not-first)    
     (dm::prndiv)
     ;;(dm::prn "pat:      %s" pat)
     (while pos
