@@ -86,7 +86,7 @@
                          ;; sub-patterns, a call to `dm:match' may trigger this warning more than 
                          ;; once: preventing this wasn't worth the bother, just fix your crappy
                          ;; PATTERN!
-                         `(when (and *dm:warn-on-consecutive-flexible-elements*
+                         `(when (and *dm:warn-when-consecutive-flexible-elements*
                                   last-pattern-elem-was-flexible)
                             (let ((warn-msg (format
                                               (concat
@@ -617,7 +617,7 @@
       returns ((things one two) (four . four)))
     ;;-----------------------------------------------------------------------------------------------
     ;; stupid-but-legal, consecutive flexible elements:
-    (let (*dm:warn-on-consecutive-flexible-elements*)
+    (let (*dm:warn-when-consecutive-flexible-elements*)
       (confirm that (dm:match '(,@as ,@bs ,@cs)     '(1 2))        returns ((as) (bs) (cs 1 2)))
       (confirm that (dm:match '(,@as ,@bs ,@cs foo) '(1 2 foo))    returns ((as) (bs) (cs 1 2)))
       (confirm that (dm:match '(,x ,@ys ,@zs foo) '(1 2 3 foo))    returns ((x . 1) (ys) (zs 2 3)))

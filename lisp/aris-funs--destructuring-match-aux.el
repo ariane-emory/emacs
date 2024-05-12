@@ -169,22 +169,22 @@
 (confirm that (dm::pat-elem-is-flexible? '... '\,@ 'x)  returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dm::pat-elem-var-sym (pat-elem)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
-;;   `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
-;;      (if (atom 2nd)
-;;        2nd
-;;        (car 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pat-elem-var-sym (pat-elem)
+(defmacro dm::pat-elem-var-sym (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
-  (let ((2nd (car-safe (cdr-safe pat-elem))))
-    (if (atom 2nd)
-      2nd
-      (car 2nd))))
+  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+     (if (atom 2nd)
+       2nd
+       (car 2nd))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::pat-elem-var-sym (pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
+;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
+;;     (if (atom 2nd)
+;;       2nd
+;;       (car 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::pat-elem-var-sym  123)        returns nil)
 (confirm that (dm::pat-elem-var-sym  ',x)        returns x)
@@ -193,26 +193,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro dm::pat-elem-var-preds (pat-elem)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
-;;   `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
-;;      (if (atom 2nd)
-;;        nil
-;;        (cdr 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::pat-elem-var-preds (pat-elem)
+(defmacro dm::pat-elem-var-preds (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
-  (let ((2nd (car-safe (cdr-safe pat-elem))))
-    (if (atom 2nd)
-      nil
-      (cdr 2nd))))
+  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+     (if (atom 2nd)
+       nil
+       (cdr 2nd))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::pat-elem-var-preds (pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
+;;   (let ((2nd (car-safe (cdr-safe pat-elem))))
+;;     (if (atom 2nd)
+;;       nil
+;;       (cdr 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (dm::pat-elem-var-preds 123)       returns nil)
-(confirm that (dm::pat-elem-var-preds ',x)       returns nil)
-(confirm that (dm::pat-elem-var-preds ',(x y z)) returns (y z))
+(confirm that (dm::pat-elem-var-preds 123)                      returns nil)
+(confirm that (dm::pat-elem-var-preds ',x)                      returns nil)
+(confirm that (dm::pat-elem-var-preds ',(x integer? (> _ 8) z)) returns (integer? (> _ 8) z))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
