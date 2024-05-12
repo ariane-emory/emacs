@@ -22,55 +22,7 @@
 
 
 
-(setq lst '(1 2 3 4 5 6 7 8 9))
-(setq al (dm:match '(,x ,@ys) lst))
-(setcar (alist-get 'ys al) 999)
-(setq lst '(my name is ari))
-(setq al (dm:match '(my name is ,@name) lst))
-(setcar (alist-get 'name al) 'bob)
-
-(dm::clear-compiled-patterns)
-
-(dm:match
-  '(,a ,b (,c . ,d) . ,e)
-  (dm::properize-target '\. '(1 2 (3 . 4) . 5)))
-
-(symbol-plist '*dm*)
-
-(dm::unproperize!* '\. '(1 2 3 (4 (a b c (d \. e)) 5 6 \. 7) \. 8))
-
-
-(let ((pat '(,a ,b . ,c)))
-  (prnl 2)
-  ;; this doesn't look correct intuitively due to wayward comma but i'm pretty sure it actually is:
-  (equal pat (dm::unproperize!* '\. (cl-copy-list (dm::compile-pattern '\. '\,@ '... '_ pat)))))
-
-(symbol-plist '*dm*)
-
-
-
-(dm::clear-compiled-patterns)
-(dm::compile-pattern '\. '... '_ '\,@  '(a b . c))
-(dm::unproperize!* '\. (dm::compile-pattern '\,@ '... '_ '\.  '(a b . c)))
-(dm::compile-pattern '\. '... '_ '\,@   '(a b . c))
-
-
-(dm::clear-compiled-patterns)
-(symbol-plist '*dm*)
-
-
-
-;; this seems okay to permit?
-
-(dm::clear-compiled-patterns)
-
-
-(dm:match '(,(x integer?) . ,(y integer?))  '(8 . 9))
-
-
-
-(symbol-plist '*dm*)
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (db #s(hash-table size 145 test equal rehash-size 1.5 rehash-threshold 0.8125 data
           ( (\. \... _ \,@ ((\,(subject subject?)) (\,(had/have had/have?)) (\,(a/an a/an?)) (\,@ things)))
@@ -318,6 +270,7 @@
             (\. \... _ \,@ ((\, form) (\, name) ((\, arg)) (\,@ body)))
             ((\, form) (\, name) ((\, arg)) (\,@ body))
             ))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (setq al '((x . 88) (_ . 99)))
