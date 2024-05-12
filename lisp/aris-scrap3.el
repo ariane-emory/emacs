@@ -107,7 +107,7 @@
 (dm:match '(,@things . ...)  '(one two three four))
 (dm:match '(,@things . ...)  '(one two three . four))
 
-;; these seem like they could be maee sense of?
+;; these seem like they could be maee sense of, but also like a shitty way to write them.
 (dm:match '(one two . ,@zs)  '(one two three four))
 (dm:match '(one two . ,@zs)  '(one two three . four))
 

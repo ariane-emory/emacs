@@ -623,13 +623,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
         improper-indicator (cdr lst)))
     ((and not-first (eq '\, (car lst)) (cdr lst) (not (cddr lst)))
       ;; found a wayward comma, fix it:
-      (list improper-indicator
-        (list (car lst)
-          (cadr lst)
-          ;; (if (consp (cadr lst))
-          ;;   (dm::properize-pattern* (cadr lst) nil)
-          ;;   (cadr lst))
-          )))
+      (list improper-indicator (list (car lst) (cadr lst))))
     ((consp (car lst))
       (cons
         (if (eq '\, (caar lst))
