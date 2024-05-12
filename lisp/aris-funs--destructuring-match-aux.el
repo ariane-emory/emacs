@@ -57,13 +57,6 @@
     (dm::prn-labeled barbaz "last")
     (dm::prn-labeled barbazbarbazbarbazbarbaz)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; these expand to:
-;; (dm::prn "FOO:            %s" foo)
-;; (dm::prn "BARBAZ:         %s" barbaz)
-;; and print:
-;; FOO:            123
-;; BARBAZ:         456
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -263,7 +256,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   ;; flexible pattern elements in final position will need to dodge the properize symbol '\.
   ;; flexible elements following the properize symbol should be illegal?
   (let (not-first)
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (cond
         ((and (cdr pos) (atom (cdr pos)))
           ;; found an improper tail, properize it:
@@ -379,7 +372,7 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   ;; (dm::prndiv)
   (nreverse
     (let (not-first res)
-      (doconses (head pos lst res)
+      (dolist* (head pos lst res)
         (cond
           ((and (cdr pos) (atom (cdr pos)))
             ;; found an improper tail, properize it.
@@ -724,33 +717,68 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dm::walk* (spec &rest body)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "A version of `dolist` that also handles improper lists."
+;;   (unless (consp spec)
+;;     (signal 'wrong-type-argument (list 'consp spec)))
+;;   (unless (<= 3 (length spec) 4)
+;;     (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
+;;   (let* ( (var (car spec))
+;;           (pos (car (cdr spec)))
+;;           (lst (car (cdr (cdr spec)))))
+;;     `(let ((,pos ,lst))
+;;        (while ,pos
+;;          (let ((,var (if (consp pos) (car ,pos) ,pos)))
+;;            ,@body
+;;            (setf ,pos (if (consp pos) (cdr ,pos) nil))))
+;;        ,@(cdr (cdr (cdr spec))))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; unproperize things:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun dm::unproperize!* (improper-indicator lst)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
+;;   (let ((pos lst))
+;;     (dm::prndiv)
+;;     (while (consp pos)
+;;       (if (atom pos)
+;;         (dm::prn "atom:     %s"  pos)
+;;         (dm::prn "head:     %s" (car pos))
+;;         (when (consp (car pos))
+;;           (with-indentation
+;;             (dm::unproperize!* improper-indicator (car pos))))
+;;         (when (eq (cadr-safe pos) improper-indicator)
+;;           (when (or (cadddr pos) (not (cddr pos)))
+;;             (error "properize indicator in unexpected position: %s" lst))
+;;           (setcdr pos (caddr pos))
+;;           (setf pos nil))
+;;         (pop pos))))
+;;   (dm::prn "lst:      %s" lst)
+;;   ;; (dm::prndiv)
+;;   lst)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm::unproperize!* (improper-indicator lst)
+(defun dm::unproperize!* (improper-indicator lst)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn lists with *dm:default-improper-indicator* in their second last position back into improper lists."
-  (let ((pos lst))
+  (dolist* (elem pos lst lst)
     (dm::prndiv)
-    (while (consp pos)
-      (if (atom pos)
-        (dm::prn "atom:     %s"  pos)
-        (dm::prn "head:     %s" (car pos))
-        (when (consp (car pos))
-          (with-indentation
-            (dm::unproperize!* improper-indicator (car pos))))
-        (when (eq (cadr-safe pos) improper-indicator)
-          (when (or (cadddr pos) (not (cddr pos)))
-            (error "properize indicator in unexpected position: %s" lst))
-          (setcdr pos (caddr pos))
-          (setf pos nil))
-        (pop pos))))
-  (dm::prn "lst:      %s" lst)
-  ;; (dm::prndiv)
-  lst)
+    ;; (prn "pos:   %S" pos)
+    ;; (prn "elem:  %S" elem)
+    (when (consp elem)
+      (with-indentation
+        (dm::unproperize!* improper-indicator elem)))
+    (when (eq improper-indicator (cadr-safe pos))
+      (when (or (cadddr pos) (not (cddr pos)))
+        (error "properize indicator in unexpected position: %S" lst))
+      (prn "slice!")
+      (setcdr pos (caddr pos)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ADD TESTS!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -764,18 +792,45 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
     (setq reps 100000)
 
     (list
-      (benchmark-run reps (dm::properize-pattern!* *dm:default-improper-indicator*
+      (benchmark-run reps (dm::properize-pattern!*
+                            *dm:default-improper-indicator* *dm:default-ellipsis*
+                            *dm:default-dont-care* *dm:default-unsplice* 
                             '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern!  *dm:default-improper-indicator*
+      (benchmark-run reps (dm::properize-pattern!
+                            *dm:default-improper-indicator* *dm:default-ellipsis*
+                            *dm:default-dont-care* *dm:default-unsplice* 
                             '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern*  *dm:default-improper-indicator*
+      (benchmark-run reps (dm::properize-pattern*
+                            *dm:default-improper-indicator* *dm:default-ellipsis*
+                            *dm:default-dont-care* *dm:default-unsplice* 
                             '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
-      (benchmark-run reps (dm::properize-pattern   *dm:default-improper-indicator*
+      (benchmark-run reps (dm::properize-pattern
+                            *dm:default-improper-indicator* *dm:default-ellipsis*
+                            *dm:default-dont-care* *dm:default-unsplice* 
                             '(,v (,w ,x (a . (b c . d)) (,a b ,c ,(d integer? . e)) ,y) . ,z)))
       )
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     )
+  ((0.798995 0 0.0)
+    (0.762206 0 0.0)
+    (0.961459 4 0.2660809999999998)
+    (1.123289 5 0.3341390000000004))
+  ((0.805455 0 0.0)
+    (0.764429 0 0.0)
+    (0.971856 4 0.2731279999999998)
+    (1.057006 4 0.2683070000000001))
+
+  ((0.763871 0 0.0)
+    (0.76459 0 0.0)
+    (0.957627 4 0.26417999999999964)
+    (1.057983 4 0.26854900000000015))
+  ((0.7910579999999999 0 0.0)
+    (0.764218 0 0.0)
+    (0.965691 4 0.2686710000000012)
+    (1.120076 5 0.333124999999999))
+
+  
   ((0.6473749999999999 0 0.0)
     (0.6357649999999999 0 0.0)
     (0.864646 4 0.27644699999999034)
@@ -884,31 +939,14 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 ;;       (setf pos (if (atom pos) nil (cdr pos)))))
 ;;   (unless inner (dm::prndiv) (dm::prnl)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::walk* (spec &rest body)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A version of `dolist` that also handles improper lists."
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 3 (length spec) 4)
-    (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
-  (let* ( (var         (car spec))
-          (pos         (car (cdr spec)))
-          (lst         (car (cdr (cdr spec)))))
-    `(let ((,pos ,lst))
-       (while ,pos
-         (let ((,var (if (consp pos) (car ,pos) ,pos)))
-           ,@body
-           (setf ,pos (if (consp pos) (cdr ,pos) nil))))
-       ,@(cdr (cdr (cdr spec))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Look for patterrns with flexible elemends in an improper tail."
   (let (not-first)
-    (dm::walk* (elem pos pat)
-      (dm::prndiv)
-      (dm::prn "pos:      %s" pos)
-      (dm::prn "elem:     %s" elem)
+    (dolist* (elem pos pat)
+      ;; (dm::prndiv)
+      ;; (dm::prn "pos:      %s" pos)
+      ;; (dm::prn "elem:     %s" elem)
       (cond
         ((eq ellipsis pos)
           (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))

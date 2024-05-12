@@ -24,7 +24,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro doconses (spec &rest body)
+(defmacro dolist* (spec &rest body)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Loop over a list's heads and conses. Evaluate BODY with
 VAR bound to each cons from LIST and POSITION bound
@@ -34,45 +34,42 @@ return value, default nil.
 This is a a simple modification of `dolist'.
 
  (VAR POS LIST [RESULT]) BODY...)"
-  (declare (indent 1) (debug ((symbolp form &optional form) body)))
   (unless (consp spec)
     (signal 'wrong-type-argument (list 'consp spec)))
   (unless (<= 3 (length spec) 4)
     (signal 'wrong-number-of-arguments (list '(3 . 4) (length spec))))
-  (let ( (var      (car spec))
-         (position (cadr spec))
-         (lst      (caddr spec)))
-    `(let ((,position ,lst))
-       (unless (listp ,position)
-         (error "docons's LST must be a list: %s" ,position))
-       (while ,position
-         (let ((,var (car ,position)))
+  (let* ( (var (car spec))
+          (pos (car (cdr spec)))
+          (lst (car (cdr (cdr spec)))))
+    `(let ((,pos ,lst))
+       (while ,pos
+         (let ((,var (if (consp pos) (car ,pos) ,pos)))
            ,@body
-           (setq ,position (cdr ,position))))
+           (setf ,pos (if (consp pos) (cdr ,pos) nil))))
        ,@(cdr (cdr (cdr spec))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that 
   (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (when (eq 'c head)
         (setcar pos (cons head (cadr pos)))
         (setcdr pos (cddr pos)))))
   returns (a 2 b 4 (c . 6) d 8))
 (confirm that ; plist to alist
   (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (setcar pos (cons head (cadr pos)))
       (setcdr pos (cddr pos))))
   returns ((a . 2) (b . 4) (c . 6) (d . 8)))
 (confirm that ; plist to let varlist
   (let ((lst '(a 2 b 4 c 6 d 8)))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (setcar pos (list head (cadr pos)))
       (setcdr pos (cddr pos))))
   returns ((a 2) (b 4) (c 6) (d 8)))
 (confirm that ; alist to plist 
   (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (let ((new (cons (cdr head) (cdr pos))))
         (setcar pos (car head))
         (setcdr pos new)
@@ -80,20 +77,20 @@ This is a a simple modification of `dolist'.
   returns (a 2 b 4 c 6 d 8))
 (confirm that ; plist to let varlist
   (let ((lst '((a . 2) (b . 4) (c . 6) (d . 8))))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (let ((new (cons (cdr head) (cdr pos))))
         (setcar pos (list (car head) (cdr head))))))
   returns ((a 2) (b 4) (c 6) (d 8)))
 (confirm that
   (let ((lst '(,x . ,y)))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (when (eq '\, head)
         (setcar pos (list head (cadr pos)))
         (setcdr pos (cddr pos)))))
   returns ((\, x) (\, y)))
 (confirm that
   (let ((lst '(,x . ,y)))
-    (doconses (head pos lst lst)
+    (dolist* (head pos lst lst)
       (when (eq '\, head)
         (let ((new (list (list head (cadr pos)))))
           (setcar pos '\.)
@@ -780,42 +777,42 @@ This is adapted from the version in Peter Norvig's book."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dolist* (spec &rest body)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A version of `dolist` that also handles improper lists."
-  (unless (consp spec)
-    (signal 'wrong-type-argument (list 'consp spec)))
-  (unless (<= 2 (length spec) 3)
-    (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
-  (let ( (tail (gensym "tail-"))
-         (lst  (car (cdr spec)))
-         (elem (car spec)))
-    `(let* ((,tail ,lst))
-       (assert-list! ,tail)
-       (while ,tail
-         (let* ( (consp (consp ,tail))
-                 (,elem (if consp (car ,tail) ,tail)))
-           ,@body
-           (setq ,tail (if consp (cdr ,tail) nil))))
-       ,@(cdr (cdr spec)))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let ((res 0))
-    (dolist* (n '(1 2 3 4 5 6 7 8 9 . 10) res)
-      (incf res n)))
-  returns 55)
-(confirm that
-  (let ((res 0))
-    (dolist* (n '(1 2 3 4 5 6 7 8 9 10) res)
-      (incf res n)))
-  returns 55)
-(confirm that
-  (let ((res 0))
-    (dolist* (n nil res)
-      (incf res n)))
-  returns 0)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dolist* (spec &rest body)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "A version of `dolist` that also handles improper lists."
+;;   (unless (consp spec)
+;;     (signal 'wrong-type-argument (list 'consp spec)))
+;;   (unless (<= 2 (length spec) 3)
+;;     (signal 'wrong-number-of-arguments (list '(2 . 3) (length spec))))
+;;   (let ( (tail (gensym "tail-"))
+;;          (lst  (car (cdr spec)))
+;;          (elem (car spec)))
+;;     `(let* ((,tail ,lst))
+;;        (assert-list! ,tail)
+;;        (while ,tail
+;;          (let* ( (consp (consp ,tail))
+;;                  (,elem (if consp (car ,tail) ,tail)))
+;;            ,@body
+;;            (setq ,tail (if consp (cdr ,tail) nil))))
+;;        ,@(cdr (cdr spec)))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that
+;;   (let ((res 0))
+;;     (dolist* (n '(1 2 3 4 5 6 7 8 9 . 10) res)
+;;       (incf res n)))
+;;   returns 55)
+;; (confirm that
+;;   (let ((res 0))
+;;     (dolist* (n '(1 2 3 4 5 6 7 8 9 10) res)
+;;       (incf res n)))
+;;   returns 55)
+;; (confirm that
+;;   (let ((res 0))
+;;     (dolist* (n nil res)
+;;       (incf res n)))
+;;   returns 0)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -826,7 +823,7 @@ This is adapted from the version in Peter Norvig's book."
   (if (proper-list-p lst)
     (length lst)
     (let ((count 0)) 
-      (dolist* (n lst count) (cl-incf count)))))
+      (dolist* (n pos lst count) (cl-incf count)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (length* '(1 2 . 3)) returns 3)
 (confirm that (length* '(1 2 3)) returns 3)
@@ -870,7 +867,7 @@ lists that were originally improper."
 (defun properize! (lst &optional rec improper-indicator)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Destructively make a proper list from an improper list, recursively if REC."
-  (doconses (head pos lst lst)
+  (dolist* (head pos lst lst)
     (when (and rec (consp head))
       (setcar pos (properize! head rec improper-indicator)))
     (when (and (cdr pos) (atom (cdr pos)))
@@ -991,7 +988,7 @@ lists that were originally improper."
     (cdr
       (nreverse
         (let ((res (list (gensym))))
-          (doconses (head pos lst res)
+          (dolist* (head pos lst res)
             (when (and rec (listp head))
               (setq head (unrepeat2 head rec)))
             (when (not (equal head (car res)))

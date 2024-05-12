@@ -290,6 +290,10 @@
 
 
 
+;; ;; (fun expr)
+;; (fun '(1 2 3 (4 5) . 6))
+
+;; (fun '(,(x integer?) ,(y integer? (< x _ . 333))))
 
 (defun fun (expr)
   (dm::walk* (thing pos expr)
@@ -300,7 +304,6 @@
     (when (consp thing) (with-indentation (fun thing)))))
 
 
-;; (fun expr)
-(fun '(1 2 3 (4 5) . 6))
 
-(fun '(,(x integer?) ,(y integer? (< x _ . 333))))
+
+
