@@ -1125,7 +1125,7 @@ This was very quick 'n' dirty and could probably be a lot cleaner."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(dm::clear-interned-patterns)
+(dm::clear-compiled-patterns)
 (prndiv)
 (prn "START:")
 (dolist (input

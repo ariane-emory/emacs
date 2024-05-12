@@ -658,36 +658,37 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::clear-interned-patterns ()
+(defun dm::clear-compiled-patterns ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Clear any interned patterns."
   (ensure-db! '*dm*)
   (clear-db   '*dm*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (hash-table-p (dm::clear-interned-patterns)) returns t)
+(confirm that (hash-table-p (dm::clear-compiled-patterns)) returns t)
 ;; (confirm that (length (symbol-plist '*dm*)) returns 2)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::intern-pattern (unsplice ellipsis dont-care improper-indicator pat)
+(defun dm::compile-pattern (unsplice ellipsis dont-care improper-indicator pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Store properized patterns in a hashtable to avoid repeatetly properizing the same pattern."
   (ensure-db! '*dm*)
-  (let ((*dm:verbose* t))
-    (let* ( (key (list unsplice ellipsis dont-care improper-indicator pat))
-            (existing (db-get '*dm* key)))
-      (if (cdr existing)
-        (car existing)
-        ;; (progn 
-        ;;      (message "Interning pattern %s" pat)
-        (dm::prn "Interning pattern %S under key %S" pat key) 
-        ;; (prn "Interning pattern %S" key)
-        (db-put '*dm* key (dm::properize-pattern* pat))))))
+  (let* ( (key (list unsplice ellipsis dont-care improper-indicator pat))
+          (existing (db-get '*dm* key)))
+    (if (cdr existing)
+      (car existing)
+      ;; (progn 
+      ;;      (message "Interning pattern %s" pat)
+      (let ((*dm:verbose* t))
+        (dm::prn "Interning pattern %S under key %S" pat key)
+        ) ;; end of `let'.
+      ;; (prn "Interning pattern %S" key)
+      (db-put '*dm* key (dm::properize-pattern* pat)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((pat '(,w ,(x integer? . foo) . ,(y integer? . foo))))
-    (dm::intern-pattern '\,@ '... '_ '\. pat))
+    (dm::compile-pattern '\,@ '... '_ '\. pat))
   returns ((\, w) (\, (x integer? . foo)) \. (\, (y integer? . foo))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -30,7 +30,7 @@
 (setcar (alist-get 'name al) 'bob)
 
 
-(dm::clear-interned-patterns)
+(dm::clear-compiled-patterns)
 
 (dm:match
   '(,a ,b (,c . ,d) . ,e)
@@ -45,7 +45,7 @@
 (let ((pat '(,a ,b . ,c)))
   (prnl 2)
   ;; this doesn't look correct intuitively due to wayward comma but i'm pretty sure it actually is:
-  (equal pat (dm::unproperize!* (cl-copy-list (dm::intern-pattern '\,@ '... '_ '\. pat)))))
+  (equal pat (dm::unproperize!* (cl-copy-list (dm::compile-pattern '\,@ '... '_ '\. pat)))))
 
 (let ((pat ;; '(,w ,(x integer? . foo) . ,(y integer? . foo))
         ;; '(,a ,(b integer? . foo) . ,c)
@@ -55,13 +55,13 @@
   (equal pat
     (dm::unproperize!*
       (cl-copy-list
-        (dm::intern-pattern '\,@ '... '_ '\.
+        (dm::compile-pattern '\,@ '... '_ '\.
           (dm::unproperize!*
             (cl-copy-list
-              (dm::intern-pattern '\,@ '... '_ '\.
+              (dm::compile-pattern '\,@ '... '_ '\.
                 (dm::unproperize!*
                   (cl-copy-list
-                    (dm::intern-pattern '\,@ '... '_ '\. pat)))))))))))
+                    (dm::compile-pattern '\,@ '... '_ '\. pat)))))))))))
 
 (symbol-plist '*dm*)
 
@@ -72,18 +72,18 @@
   (prnl 2)
   (equal pat
     (dm::unproperize!*
-      (dm::intern-pattern '\,@ '... '_ '\.
+      (dm::compile-pattern '\,@ '... '_ '\.
         (dm::unproperize!*
-          (dm::intern-pattern '\,@ '... '_ '\.
+          (dm::compile-pattern '\,@ '... '_ '\.
             (dm::unproperize!*
-              (dm::intern-pattern '\,@ '... '_ '\. pat))))))))
+              (dm::compile-pattern '\,@ '... '_ '\. pat))))))))
 
 
 
-(dm::clear-interned-patterns)
-(dm::intern-pattern '\,@ '... '_ '\. '(a b . c))
-(dm::unproperize!* (dm::intern-pattern '\,@ '... '_ '\.  '(a b . c)))
-(dm::intern-pattern '\,@ '... '_ '\.  '(a b . c))
+(dm::clear-compiled-patterns)
+(dm::compile-pattern '\,@ '... '_ '\. '(a b . c))
+(dm::unproperize!* (dm::compile-pattern '\,@ '... '_ '\.  '(a b . c)))
+(dm::compile-pattern '\,@ '... '_ '\.  '(a b . c))
 
 (dm:match '(,thing _ ,thing2) '(three . four))
 
@@ -102,5 +102,5 @@
 (dm:match '(,@things . (three four))  '(one two three four))
 
 
-(dm::clear-interned-patterns)
+(dm::clear-compiled-patterns)
 (symbol-plist '*dm*)
