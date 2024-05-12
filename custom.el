@@ -55,7 +55,7 @@
  '(truncate-lines t)
  '(use-short-answers t)
  '(word-wrap t)
- '(zoom-mode t nil (zoom))
+ '(zoom-mode nil nil (zoom))
  '(zoom-size '(120 . 22)))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.

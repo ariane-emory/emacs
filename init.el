@@ -377,9 +377,9 @@
 
       (use-package zoom :ensure t
         :diminish zoom-mode
-        :init
-        (setq zoom-size '(95 . 24))
-        :config
+        ;; :init
+        ;; (setq zoom-size '(95 . 24))
+        ;; :config
         ;; (zoom-mode 1)
         )
       
@@ -752,7 +752,7 @@
 
       (add-hook 'Custom-mode-hook
         (lambda () (face-remap-add-relative 'default '(:family "XITS" :height 1.25))))
-
+      
       (add-hook 'find-file-hooks
         (lambda ()
           "Hides the DOS end-of-line (EOL) characters in the current buffer."
@@ -773,6 +773,11 @@
         (lambda ()
           (aris-setup-lisp)))
       
+      (add-hook 'markdown-mode-hook
+        (lambda ()
+          (toggle-truncate-lines -1)
+          (face-remap-add-relative 'default '(:family "XITS" :height 1.33))))
+
       (add-hook 'tetris-mode-hook
         (lambda ()
           (setq-local global-hl-line-mode nil)
