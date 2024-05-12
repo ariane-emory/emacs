@@ -232,7 +232,8 @@ arguments ARGS, returning VAL."
   ;; (indented-message "%s" (make-string count char))
   (unless *wm:last-prn-was-div*
     (indented-message "%s" (make-string (- count (wm::actual-indent)) char)))
-  (setf *wm:last-prn-was-div* t))
+  (setf *wm:last-prn-was-div* t)
+  nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

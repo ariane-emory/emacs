@@ -119,41 +119,57 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl-defun dm::validate (improper-indicator ellipsis dont-care unsplice pat)
+(defun dm::validate (improper-indicator ellipsis dont-care unsplice pat &optional inner)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Look for patterrns with flexible elemends in an improper tail."
   (let ((pos pat))
+    (unless inner (dm::prnl))
     (dm::prndiv)
-    (while (consp pos)
+    (dm::prn "pat:      %s" pat)
+    (while pos
       (if (atom pos)
-        (dm::prn "tail tip: %s"  pos)
-        (dm::prn "head:     %s" (car pos))
-        (when (consp (car pos))
-          (with-indentation
-            (dm::validate improper-indicator ellipsis dont-care unsplice (car pos))))
-        (pop pos))))
-  (dm::prn "pat:      %s" pat)
-  (dm::prndiv)
-  pat)
+        (progn
+          (when (eq ellipsis pos)
+            (error "Ellipsis in pattern's tailtip is not permitted"))
+          (dm::prn "tail tip: %s"  pos)
+          (setf pos nil))
+        (progn
+          (dm::prn "head:     %s" (car pos))
+          (when (listp (car pos))
+            (with-indentation
+              (dm::validate improper-indicator ellipsis dont-care unsplice (car pos) t)))          
+          (pop pos)))))
+  (unless inner (dm::prndiv)))
 
 (dm::validate
   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
   *dm:default-unsplice*
-  '(1 (3 . 4)))
+  '(1 2 (3 . 4)))
 
-(dm::validate
-  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-  *dm:default-unsplice*
-  '(,@things . ,@zs))
-(dm::validate
-  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-  *dm:default-unsplice*
-  '(,@things . ,@zs))
-(dm::validate
-  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-  *dm:default-unsplice*
-  '(,@things . ...))
-(dm::validate
-  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-  *dm:default-unsplice*
-  '(,@things . ...))
+(dm::validate *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+  *dm:default-unsplice* nil)
+
+;; this will properly signal:
+(ignore!
+  (dm::validate
+    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+    *dm:default-unsplice*
+    '(1 2 (3 . ...))))
+
+;; (dm::validate
+;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+;;   *dm:default-unsplice*
+;;   '(,@things . ,@zs))
+;; (dm::validate
+;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+;;   *dm:default-unsplice*
+;;   '(,@things . ,@zs))
+;; (dm::validate
+;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+;;   *dm:default-unsplice*
+;;   '(,@things . ...))
+;; (dm::validate
+;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+;;   *dm:default-unsplice*
+;;   '(,@things . ...))
+
