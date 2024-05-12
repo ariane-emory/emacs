@@ -364,30 +364,29 @@
     (dm::prndiv)
     ;;(dm::prn "pat:      %s" pat)
     (while pos
-      (when (and not-first (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
+      (when (eq ellipsis pos)
+        (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
+      (when (and not-first (consp pos) (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
         (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
+      (dm::prn "pos:      %s" pos)
+      (dm::prndiv ?\-)
+      (when (and (listp (car pos)) (not (eq '\, (caar pos))))
+        (with-indentation
+          (dm::validate-pattern2 improper-indicator ellipsis dont-care unsplice (car pos) t)))
       (if (atom pos)
         (progn
-          (when (eq ellipsis pos)
-            (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
-          (dm::prn "tail tip: %s"  pos)
           (setf pos nil))
-        (progn
-          (dm::prn "pos:      %s" pos)
-          (dm::prn "head:     %s" (car pos))
-          (dm::prndiv ?\-)
-          (when (and (listp (car pos)) (not (eq '\, (caar pos))))
-            (with-indentation
-              (dm::validate-pattern2 improper-indicator ellipsis dont-care unsplice (car pos) t)))
+        (progn          
           (pop pos)))
       (setq not-first t)))
   (unless inner (dm::prndiv) (dm::prnl)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(dm::validate-pattern
+(dm::validate-pattern2
   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
-  '(,@things))
+  '(thing (,x ,y ,zs) ,@things))
 
-(dm::validate-pattern
-  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
-  '(,thing . ,@things))
+(ignore!
+  (dm::validate-pattern2
+    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care* *dm:default-unsplice*
+    '(,thing . ,@things)))
