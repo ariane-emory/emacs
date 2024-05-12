@@ -833,7 +833,6 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
   "Look for patterrns with flexible elemends in an improper tail."
   (let ((pos pat) not-first)    
     (dm::prndiv)
-    ;;(dm::prn "pat:      %s" pat)
     (while pos
       (if (atom pos)
         (progn
@@ -852,6 +851,26 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
               (dm::validate-pattern improper-indicator ellipsis dont-care unsplice (car pos) t)))
           (pop pos)))
       (setq not-first t)))
+  (unless inner (dm::prndiv) (dm::prnl)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat &optional inner)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Look for patterrns with flexible elemends in an improper tail."
+  (let ((pos pat) not-first)    
+    (dm::prndiv)
+    (while pos
+      (dm::prn "pos:      %s" pos)
+      (cond
+        ((eq ellipsis pos)
+          (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
+        ((and not-first (consp pos) (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
+          (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
+        ((and (consp pos) (listp (car-safe pos)) (not (eq '\, (car (car-safe pos)))))
+          (with-indentation
+            (dm::validate-pattern improper-indicator ellipsis dont-care unsplice (car pos) t))))
+      (dm::prndiv ?\-)
+      (setq not-first t)
+      (setf pos (if (atom pos) nil (cdr pos)))))
   (unless inner (dm::prndiv) (dm::prnl)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; enter at base case:
