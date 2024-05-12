@@ -132,14 +132,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dm::pat-elem-var-sym (pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
+;;   `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+;;      (if (atom 2nd)
+;;        2nd
+;;        (car 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-var-sym (pat-elem)
+(defun dm::pat-elem-var-sym (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "If PAT-ELEM is a variable / unsplice, return it's name, otherwise return nil."
-  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
-     (if (atom 2nd)
-       2nd
-       (car 2nd))))
+  (let ((2nd (car-safe (cdr-safe pat-elem))))
+    (if (atom 2nd)
+      2nd
+      (car 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::pat-elem-var-sym  123)        returns nil)
 (confirm that (dm::pat-elem-var-sym  ',x)        returns x)
@@ -147,14 +155,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro dm::pat-elem-var-preds (pat-elem)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
+;;   `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
+;;      (if (atom 2nd)
+;;        nil
+;;        (cdr 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro dm::pat-elem-var-preds (pat-elem)
+(defun dm::pat-elem-var-preds (pat-elem)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "If PAT-ELEM is a variable / unsplice, return it's predicates, otherwise return nil."
-  `(let ((2nd (car-safe (cdr-safe ,pat-elem))))
-     (if (atom 2nd)
-       nil
-       (cdr 2nd))))
+  (let ((2nd (car-safe (cdr-safe pat-elem))))
+    (if (atom 2nd)
+      nil
+      (cdr 2nd))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (dm::pat-elem-var-preds 123)       returns nil)
 (confirm that (dm::pat-elem-var-preds ',x)       returns nil)
