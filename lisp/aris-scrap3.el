@@ -20,16 +20,6 @@
 ;;     ))
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun fun (expr)
-  (dolist* (thing pos expr)
-    (prndiv)
-    (prn "pos:   %s" pos)
-    (prn "thing: %s" thing)
-    ;; (debug)
-    (when (consp thing) (with-indentation (fun thing)))))
-
-;; (fun '(,(x integer?) ,(y integer? (< x _ . 333))))
-
 (dm::pat-elem-is-a-variable? ',x) ;; => t
 (dm::pat-elem-is-a-variable? 'x)  ;; => nil
 (dm::pat-elem-is-a-variable?  1)  ;; => nil
@@ -71,7 +61,6 @@ Example:
                      (push (cons pat1-elem pat2-elem) bindings))
                    (t ; do nothing?)
                      )))))
-
             ((dm::pat-elem-is-a-variable? pat1-elem)
               (prn "pat1-elem is a variable")
               (let ((binding (assoc pat1-elem bindings)))
@@ -138,25 +127,45 @@ Example:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Substitute the value of variables in bindings into x,
  taking recursively bound variables into account."
+  ;;
+  (prndiv)
   ;; (debug bindings x)
-  (cond
-    ((null bindings) nil)
-    ((eq bindings t) x)
-    ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
-      (subst-bindings bindings (cdr (assoc x bindings))))
-    ((atom x) x)
-    (t (reuse-cons (subst-bindings bindings (car x))
-         (subst-bindings bindings (cdr x)) x))))
+  (prn "x:        %s" x)
+  (let
+    ((res 
+       (cond
+         ((null bindings)
+           (prn "case 1")
+           nil)
+         ((eq bindings t)
+           (prn "case 2")
+           x)
+         ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
+           (prn "case 3")
+           (with-indentation (subst-bindings bindings (cdr (assoc x bindings)))))
+         ((atom x) x)
+         (t
+           (prn "case 4")
+           (reuse-cons
+             (with-indentation (subst-bindings bindings (car x)))
+             (with-indentation (subst-bindings bindings (cdr x)))
+             x)))))
+    (prn "result:   %s" res)
+    (prndiv)
+    res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun unifier (pat1 pat2)
   (let ((bindings (unify1 pat1 pat2)))
+    (prn "bindings: %s" bindings)
+    (prndiv)
+    (prnl)
     (subst-bindings bindings pat1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-(unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-
-;; (unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+  returns (2 + 1 + 2 + 2))
+(confirm that (unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
+  returns (2 + 1 + (\, a)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
