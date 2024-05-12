@@ -853,6 +853,36 @@ KEY has a non-`equal' VAL in REFERENCE-ALIST."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dm::validate-pattern (improper-indicator ellipsis dont-care unsplice pat &optional inner)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Look for patterrns with flexible elemends in an improper tail."
+  (let ((pos pat) not-first)
+    
+    (dm::prndiv)
+    ;;(dm::prn "pat:      %s" pat)
+    (while pos
+      (when (and not-first (eq (car-safe pos) unsplice) (not (cdr (cdr-safe pos))))
+        (error "UNSPLICE %s in pattern's tailtip is not permitted" unsplice))
+      (if (atom pos)
+        (progn
+          (when (eq ellipsis pos)
+            (error "ELLIPSIS %s in pattern's tailtip is not permitted" ellipsis))
+          (dm::prn "tail tip: %s"  pos)
+          (setf pos nil))
+        (progn
+          (dm::prn "pos:      %s" pos)
+          (dm::prn "head:     %s" (car pos))
+          (dm::prndiv ?\-)
+          (when (listp (car pos))
+            (with-indentation
+              (dm::validate-pattern improper-indicator ellipsis dont-care unsplice (car pos) t)))          
+          (pop pos)))
+      (setq not-first t)))
+  (unless inner (dm::prndiv) (dm::prnl)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--destructuring-match-aux)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

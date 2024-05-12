@@ -117,76 +117,55 @@
 ;; (dm::clear-compiled-patterns)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dm::validate (improper-indicator ellipsis dont-care unsplice pat &optional inner)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Look for patterrns with flexible elemends in an improper tail."
-  (let ((pos pat))
-    
-    (dm::prndiv)
-    (dm::prn "pat:      %s" pat)
-    (while pos
-      (if (atom pos)
-        (progn
-          (when (eq ellipsis pos)
-            (error "Ellipsis in pattern's tailtip is not permitted"))
-          (dm::prn "tail tip: %s"  pos)
-          (setf pos nil))
-        (progn
-          (dm::prn "head:     %s" (car pos))
-          (when (listp (car pos))
-            (with-indentation
-              (dm::validate improper-indicator ellipsis dont-care unsplice (car pos) t)))          
-          (pop pos)))))
-  (unless inner (dm::prndiv) (dm::prnl)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; enter at base case:
-(dm::validate *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+(dm::validate-pattern *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
   *dm:default-unsplice* nil)
 
 ;; boring:
-(dm::validate
+(dm::validate-pattern
   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
   *dm:default-unsplice*
   '(1 2 (3 . 4)))
 
-;; illegal:
-(dm::prndiv)
-(dm::prn "ILLEGAL:")
-(dm::validate
-  *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
-  *dm:default-unsplice*
-  '(1 2 (3 . ,@things)))
 
 ;; legal:
 (dm::prndiv)
 (dm::prn "LEGAL:")
-(dm::validate
+(dm::validate-pattern
   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
   *dm:default-unsplice*
   '(1 2 (3 ,@things)))
 
-;; this will properly signal:
+;; illegal, this will properly signal:
 (ignore!
-  (dm::validate
+  (dm::prndiv)
+  (dm::prn "ILLEGAL:")
+  (dm::validate-pattern
+    *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
+    *dm:default-unsplice*
+    '(1 2 (3 . ,@things))))
+
+;; illegal, this will properly signal:
+(ignore!
+  (dm::validate-pattern
     *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
     *dm:default-unsplice*
     '(1 2 (3 . ...))))
 
-;; (dm::validate
+;; (dm::validate-pattern
 ;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
 ;;   *dm:default-unsplice*
 ;;   '(,@things . ,@zs))
-;; (dm::validate
+;; (dm::validate-pattern
 ;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
 ;;   *dm:default-unsplice*
 ;;   '(,@things . ,@zs))
-;; (dm::validate
+;; (dm::validate-pattern
 ;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
 ;;   *dm:default-unsplice*
 ;;   '(,@things . ...))
-;; (dm::validate
+;; (dm::validate-patterny
 ;;   *dm:default-improper-indicator* *dm:default-ellipsis* *dm:default-dont-care*
 ;;   *dm:default-unsplice*
 ;;   '(,@things . ...))
