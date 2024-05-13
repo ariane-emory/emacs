@@ -19,10 +19,11 @@
   :group 'unify
   :type 'integer)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:occurs-check* t
-  "Whether to perform the occurs check."
+(defcustom *u:occurs-check* :soft
+  "Whether to perform the occurs check, can be nil, t or :soft."
   :group 'unify
-  :type 'boolen)
+  :type 'symbol)
+;;---------------------------------------------------------------------------------------------------
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *u:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -397,9 +398,10 @@ Example:
       (u::style variable)
       (u::style value))
     (cond
-      ((occurs variable value)
-        (u::prn "occurs check failed.")
-        nil)
+      ((and *u:occurs-check* (occurs variable value))
+        (when (eq *u:occurs-check* :soft)
+          (u::prn "occurs check failed, not unifying.")
+          (u::unify2 (cdr pat1) (cdr pat2) bindings)))
       ((and binding (not (eql value (cdr binding))))
         (u::prn "variable %s is already bound to a different value, %s."
           (u::style variable)
@@ -650,4 +652,5 @@ Example:
 (u::unify2 '(,x ,y a) '(,y ,x ,x) nil) ;; => ((,Y . A) (,X . ,Y))
 
 
-(u::unify2 '(,x) '((f ,x)) nil)
+(u::unify2 '(,y ,x) '(7 (f ,x)) nil)
+(u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)) nil)
