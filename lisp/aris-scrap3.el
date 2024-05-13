@@ -19,11 +19,15 @@
   :group 'unify
   :type 'integer)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:occurs-check* :soft
-  "Whether to perform the occurs check, can be nil, t or :soft."
+(defcustom *u:occurs-check* t
+  "Whether to perform the occurs check, can be nil, t or :SOFT."
   :group 'unify
   :type 'symbol)
 ;;---------------------------------------------------------------------------------------------------
+(defcustom *u:occurs-check-fun* #'occurs
+  "Function to use to perform the occurs check."
+  :group 'unify
+  :type 'function)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *u:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -206,6 +210,7 @@
            (u::style (car ,value-pat)))
          (cond
            ((and binding (not (eql (car ,value-pat) (cdr binding))))
+             ;; ADD OCCURS CHECK!
              (u::prn "%s elem %s is already bound to a different value, %s."
                ,variable-pat-name
                (u::style (car ,variable-pat))
@@ -398,8 +403,8 @@ Example:
       (u::style variable)
       (u::style value))
     (cond
-      ((and *u:occurs-check* (occurs variable value))
-        (when (eq *u:occurs-check* :soft)
+      ((and *u:occurs-check* (funcall *u:occurs-check-fun* variable value))
+        (when (eq *u:occurs-check* :SOFT)
           (u::prn "occurs check failed, not unifying.")
           (u::unify2 (cdr pat1) (cdr pat2) bindings)))
       ((and binding (not (eql value (cdr binding))))
@@ -629,8 +634,18 @@ Example:
   returns (2 + 1 + (\, a))) ; )
 (confirm that (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
   returns (333 + 333 + 333))
+(confirm that
+  (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
+  returns (2 + 1 + 8 + 8))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(ignore!
+  (progn
+    (trace-function #'u:unifier)
+    (trace-function #'u::unify1)
+    (trace-function #'u::unify2)
+    (trace-function #'u::reuse-cons)
+    (trace-function #'u::subst-bindings)))
 
 (let ((*u:verbose* t))
   (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil))
@@ -641,16 +656,19 @@ Example:
 (ignore!
   (list
     (benchmark-run 10000 (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z)))
-    (benchmark-run 10000 (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)))
-  )
-
+    (benchmark-run 10000 (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))))
 
 (u::unify2 '(,x ,x) '(,y ,y) nil)
-
 (u::unify2 '(,x ,y a) '(,y ,x ,x) nil)
 (u::unify2 '(,x ,y) '(,y ,x) nil) ;; => ((,X . ,Y))
 (u::unify2 '(,x ,y a) '(,y ,x ,x) nil) ;; => ((,Y . A) (,X . ,Y))
 
-
 (u::unify2 '(,y ,x) '(7 (f ,x)) nil)
 (u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)) nil)
+(u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
+
+(u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil) ;; => ((,y f ,x) (,x f ,y))
+;; bad:
+(ignore!
+  ( ((\, y) f (\, x))
+    ((\, x) f (\, y))))
