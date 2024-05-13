@@ -323,10 +323,12 @@ Example:
 ;;              (u::unify2 (cdr ,variable-pat) (cdr ,value-pat)
 ;;                (cons (cons (car ,variable-pat) (car ,value-pat)) bindings))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value2 (variable value pat1 pat2 bindings)
+(defun u::unify-variable-with-value2 (pat1 pat2 bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
-  (let ((binding (assoc variable bindings)))
+  (let* ( (variable (car pat1))
+          (value    (car pat2))
+          (binding  (assoc variable bindings)))
     (u::prn "try to unify the variable %s and with the value %s."
       (u::style variable)
       (u::style value))
@@ -474,11 +476,11 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      (u::unify-variable-with-value2 (car pat1) (car pat2) pat1 pat2 bindings))
+      (u::unify-variable-with-value2 pat1 pat2 bindings))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1:
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
-      (u::unify-variable-with-value2 (car pat2) (car pat1) pat2 pat1 bindings))
+      (u::unify-variable-with-value2 pat2 pat1 bindings))
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
