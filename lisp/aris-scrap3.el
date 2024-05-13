@@ -392,6 +392,10 @@ Example:
   (u::prn "pat2:     %S" pat2)
   (u::prn "bindings: %S" bindings)
   (u::prndiv ?\-)
+  (when (and pat1 (atom pat1))
+    (setf pat1 (list pat1)))
+  (when (and pat2 (atom pat2))
+    (setf pat2 (list pat2)))
   (cond
     ;;----------------------------------------------------------------------------------------------
     ((not (or pat1 pat2))
@@ -770,19 +774,20 @@ are relevant to the unit tests correctly."
   (let ((*u:occurs-check* :soft))
     (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))  ;; => (((\, x) f (\, y)))
 
-  (variable variable)
-  (variable cons)
-  (variable atom)
-  (cons     variable)
-  (atom     variable)
-  (cons     cons)
-  (atom     cons)
-  (cons     atom)
-  (atom     atom)
+  (variable variable) ; bind var...
+  (variable atom)     ; bind var...
+  (atom     variable) ; bind var...
+  (variable cons)     ; ???
+  (cons     variable) ; ???
+  (cons     cons)     ; recurse!
+  (atom     cons)     ; FAIL.
+  (cons     atom)     ; FAIL.
+  (atom     atom)     ; `eql'.
 
   (defun unify (x y &optional (bindings no-bindings))
     "See if x and y match with given bindings."
-    (cond ((eq bindings fail) fail)
+    (cond
+      ((eq bindings fail) fail)
       ((eql x y) bindings) ;*** moved this line
       ((variable-p x) (unify-variable x y bindings))
       ((variable-p y) (unify-variable y x bindings))
@@ -793,3 +798,4 @@ are relevant to the unit tests correctly."
 
   )
 
+(u::unify2 '(,x ,y . ,z) '(1 2 . 3) nil)
