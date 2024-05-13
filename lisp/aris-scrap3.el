@@ -523,7 +523,9 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; comparison tests:
+;; comparison tests between `u::unify1' and `u::unify2'.
+;; NOTE: `u::unify1' does not have occurs checking yet, so comparisons related to the occurs check
+;;   are not included.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((*u:bind-conses* t))
@@ -586,6 +588,10 @@ Example:
   returns (2 + 1 + 8 + 8))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; junk:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
     (trace-function #'u:unifier)
@@ -595,29 +601,29 @@ Example:
     (trace-function #'u::occurs)
     (trace-function #'u::unify-variable-with-value2)
     (trace-function #'u::unify-variable-with-variable)
-    (trace-function #'u::subst-bindings)))
+    (trace-function #'u::subst-bindings))
 
-(let ((*u:verbose* t))
-  (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil))
+  (let ((*u:verbose* t))
+    (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil))
 
-(let ((*u:verbose* t))
-  (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))
+  (let ((*u:verbose* t))
+    (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))
 
-(ignore!
   (list
     (benchmark-run 10000 (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z)))
-    (benchmark-run 10000 (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))))
+    (benchmark-run 10000 (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)))
 
-(u::unify2 '(,x ,x) '(,y ,y) nil)
-(u::unify2 '(,x ,y a) '(,y ,x ,x) nil)
-(u::unify2 '(,x ,y) '(,y ,x) nil) ;; => ((,X . ,Y))
-(u::unify2 '(,x ,y a) '(,y ,x ,x) nil) ;; => ((,Y . A) (,X . ,Y))
+  (u::unify2 '(,x ,x) '(,y ,y) nil)
+  (u::unify2 '(,x ,y a) '(,y ,x ,x) nil)
+  (u::unify2 '(,x ,y) '(,y ,x) nil) ;; => ((,X . ,Y))
+  (u::unify2 '(,x ,y a) '(,y ,x ,x) nil) ;; => ((,Y . A) (,X . ,Y))
 
-(u::unify2 '(,y ,x) '(7 (f ,x)) nil)
-(u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)) nil)
-(u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
+  (u::unify2 '(,y ,x) '(7 (f ,x)) nil)
+  (u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)) nil)
+  (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
 
-(u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil) ;; => ((,y f ,x) (,x f ,y))
+  (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil) ;; => ((,y f ,x) (,x f ,y))
 
-(let ((*u:occurs-check* :soft))
-  (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)) ;; => ((,y f ,x) (,x f ,y))
+  (let ((*u:occurs-check* :soft))
+    (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))  ;; => (((\, x) f (\, y)))
+  )
