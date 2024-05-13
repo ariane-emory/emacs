@@ -383,6 +383,34 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun u::unify-variable-with-value2 (variable-pat value-pat)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
+  (let ((binding (assoc (car variable-pat) bindings)))
+    (u::prn "try to unify the variable %s and with the value %s."
+      (u::style (car variable-pat))
+      (u::style (car value-pat)))
+    (cond
+      ((and binding (not (eql (car value-pat) (cdr binding))))
+        (u::prn "variable %s is already bound to a different value, %s."
+          (u::style (car variable-pat))
+          (u::style (cdr binding)))
+        nil)
+      (binding
+        (u::prn "variable %s is already bound to the same value, %s."
+          (u::style (car variable-pat))
+          (u::style (cdr binding)))
+        (with-indentation (u::unify2 (cdr variable-pat) (cdr value-pat) bindings)))
+      (t
+        (u::prn "binding variable %s to value %s." (u::style (car variable-pat))
+          (u::style (car value-pat)))
+        (with-indentation
+          (u::unify2 (cdr variable-pat) (cdr value-pat)
+            (cons (cons (car variable-pat) (car value-pat)) bindings)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro u::unify-variable-with-variable (pat1 pat2 binding bindings)
   (let ( (pat1-name (upcase (symbol-name pat1)))
          (pat2-name (upcase (symbol-name pat2))))
