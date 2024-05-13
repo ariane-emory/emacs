@@ -344,7 +344,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify2 (pat1 pat2 &optional bindings)
+(defun u::unify2 (pat1 pat2 bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A tail recursive variation on `u::unify1'. Recursively unify two patterns, returning an alist of variable bindings.
 
@@ -427,33 +427,33 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
   returns (((\, x) \, z) ((\, z) . 333)))
-(confirm that (u::unify2 '(333 + ,x) '(,x + 333))
+(confirm that (u::unify2 '(333 + ,x) '(,x + 333) nil)
   returns (((\, x) . 333)))
-(confirm that (u::unify2 '(2 + 1) '(2 + 1))
+(confirm that (u::unify2 '(2 + 1) '(2 + 1) nil)
   returns t)
-(confirm that (u::unify2 '(,x + 1) '(2 + 1))
+(confirm that (u::unify2 '(,x + 1) '(2 + 1) nil)
   returns (((\, x) . 2)))
-(confirm that (u::unify2 '(2 + 1) '(,x + 1))
+(confirm that (u::unify2 '(2 + 1) '(,x + 1) nil)
   returns (((\, x) . 2)))
-(confirm that (u::unify2 '(,y + 1) '(,x + ,x))
+(confirm that (u::unify2 '(,y + 1) '(,x + ,x) nil)
   returns (((\, x) . 1) ((\, y) \, x)))
-(confirm that (u::unify2 '(,x + 1) '(2 + ,y))
+(confirm that (u::unify2 '(,x + 1) '(2 + ,y) nil)
   returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify2 '(,x + 1) '(2 + ,y + 1))
+(confirm that (u::unify2 '(,x + 1) '(2 + ,y + 1) nil)
   returns nil)
-(confirm that (u::unify2 '(,x + 1 + 2) '(2 + ,y + 3))
+(confirm that (u::unify2 '(,x + 1 + 2) '(2 + ,y + 3) nil)
   returns nil)
-(confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a) nil)
   returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b))
+(confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil)
   returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+(confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b + 3) nil)
   returns nil)
-(confirm that (u::unify2 '(,x + 1) '(2 + ,x))
+(confirm that (u::unify2 '(,x + 1) '(2 + ,x) nil)
   returns nil)
-(confirm that (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+(confirm that (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
   returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -465,7 +465,7 @@ Example:
   (let ((*u:bind-conses* t))
     (equal
       (u::unify1 '(1 + ,x) '(,y + (2 . 3)))
-      (u::unify2 '(1 + ,x) '(,y + (2 . 3)))))
+      (u::unify2 '(1 + ,x) '(,y + (2 . 3)) nil)))
   returns t)
 (confirm that
   (let ((*u:bind-conses* nil))
@@ -493,10 +493,10 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u:unifier (fun pat1 pat2)
+(defun u:unifier (fun pat1 pat2 &rest rest )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Norvig's  unifier."
-  (let ((bindings (funcall fun pat1 pat2)))
+  (let ((bindings (apply fun pat1 pat2 rest)))
     (u::prn "unified bindings: %s" bindings)
     (let ((expr (u::subst-bindings bindings pat1)))
       (u::prn "substituted expr: %s" expr)
@@ -511,11 +511,11 @@ Example:
   returns (2 + 1 + (\, a)))
 (confirm that (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
   returns (333 + 333 + 333))
-(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil)
   returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a) nil)
   returns (2 + 1 + (\, a))) ; )
-(confirm that (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
   returns (333 + 333 + 333))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
