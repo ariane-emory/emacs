@@ -199,7 +199,7 @@ Example:
 (defun u::style (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (if (atom thing)
-    (format "`%S'" thing)
+    (format-message "`%S'" thing)
     (format "%S" thing)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -225,7 +225,9 @@ Example:
       (u::prn "pat2 ran out.")
       nil)
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
-      (u::prn "`%S' and `%S' are eql atoms." (car pat1) (car pat2))
+      (u::prn "%s and %s are eql atoms."
+        (u::style (car pat1))
+        (u::style (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
