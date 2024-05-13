@@ -3,6 +3,9 @@
 (require 'aris-funs--destructuring-match-aux)
 (require 'aris-funs--trees)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; NOTE: `u::unify1's circular binding avoidance and use of the occurs check isn't up to snuff
+;; compared to `u::unify2'.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -336,10 +339,17 @@ Example:
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
     (if (and (dm::pat-elem-is-a-variable? (cdr binding2))
-          (u::occurs (car pat1) (cdr binding2) bindings))
+          ;; (u::occurs (car pat1) (cdr binding2) bindings)
+          )
       (progn
-        (u::prn "avoid circular binding!")
-        (u::unify2 (cdr pat1) (cdr pat2) bindings))
+        (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
+          (u::style (car pat1))
+          (u::style (car pat2))
+          (u::style (cdr binding2)))
+        (with-indentation
+          (u::unify2 pat1 (cons (cdr binding2) (cdr pat2)) bindings))
+        ;; (u::unify2 (cdr pat1) (cdr pat2) bindings)
+        )
       (u::prn "variable %s is unbound, unifying it with %s."
         (u::style (car pat1))
         (u::style (car pat2)))
@@ -438,12 +448,10 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
-(u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
-
-(u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))     ; (((\, a) \, b) ((\, y) . 1) ((\, x) . 2))
-(u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil) ; (((\, b) \, a) ((\, y) . 1) ((\, x) . 2))
-
+(confirm that (u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
+  returns (((\, x) \, y) ((\, w) \, x)))
+(confirm that (u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
+  returns (((\, y) \, z) ((\, x) \, y) ((\, w) \, x)))
 (confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
   returns (((\, x) \, z) ((\, z) . 333)))
 (confirm that (u::unify2 '(333 + ,x) '(,x + 333) nil)
