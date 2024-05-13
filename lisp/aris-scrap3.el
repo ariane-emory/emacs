@@ -605,7 +605,7 @@ Example:
     (u::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
     (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil))
   returns t)
-(confirm that ;; sails:
+(confirm that ;; fails:
   (equal
     (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
     (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil))
@@ -649,14 +649,14 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
-    (trace-function #'u:unifier)
-    (trace-function #'u::unify1)
-    (trace-function #'u::unify2)
-    (trace-function #'u::reuse-cons)
-    (trace-function #'u::occurs)
-    (trace-function #'u::unify-variable-with-value2)
-    (trace-function #'u::unify-variable-with-variable)
-    (trace-function #'u::subst-bindings))
+    (untrace-function #'u:unifier)
+    (untrace-function #'u::unify1)
+    (untrace-function #'u::unify2)
+    (untrace-function #'u::reuse-cons)
+    (untrace-function #'u::occurs)
+    (untrace-function #'u::unify-variable-with-value2)
+    (untrace-function #'u::unify-variable-with-variable)
+    (untrace-function #'u::subst-bindings))
 
   (let ((*u:verbose* t))
     (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil))
@@ -682,3 +682,4 @@ Example:
   (let ((*u:occurs-check* :soft))
     (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))  ;; => (((\, x) f (\, y)))
   )
+
