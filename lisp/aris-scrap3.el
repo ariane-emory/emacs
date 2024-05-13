@@ -197,7 +197,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::style (thing)
+(defun u::format (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cond
     ((atom thing) (format-message "`%S'" thing))
@@ -209,34 +209,34 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro u::unify-variable-with-value (variable-pat value-pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
   (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
          (value-pat-name    (upcase (symbol-name value-pat))))
-    `(progn
+    `(let ((binding (assoc (car ,variable-pat) bindings)))
        (u::prn "%s elem is the variable %s and %s elem is the atom %s."
          ,variable-pat-name
-         (u::style (car ,variable-pat))
+         (u::format (car ,variable-pat))
          ,value-pat-name
-         (u::style (car ,value-pat)))
-       (let ((binding (assoc (car ,variable-pat) bindings)))
-         (cond
-           ((and binding (not (eql (car ,value-pat) (cdr binding))))
-             (u::prn "%s elem %s is already bound to a different value, %s."
-               ,variable-pat-name
-               (u::style (car ,variable-pat))
-               (u::style (cdr binding)))
-             nil)
-           (binding
-             (u::prn "%s elem %s is already bound to the same value, %s."
-               ,variable-pat-name
-               (u::style (car ,variable-pat))
-               (u::style (cdr binding)))
-             (with-indentation (u::unify2 (cdr ,variable-pat) (cdr ,value-pat) bindings)))
-           (t
-             (u::prn "binding variable %s to atom %s." (u::style (car ,variable-pat))
-               (u::style (car ,value-pat)))
-             (with-indentation
-               (u::unify2 (cdr ,variable-pat) (cdr ,value-pat)
-                 (cons (cons (car ,variable-pat) (car ,value-pat)) bindings)))))))))
+         (u::format (car ,value-pat)))
+       (cond
+         ((and binding (not (eql (car ,value-pat) (cdr binding))))
+           (u::prn "%s elem %s is already bound to a different value, %s."
+             ,variable-pat-name
+             (u::format (car ,variable-pat))
+             (u::format (cdr binding)))
+           nil)
+         (binding
+           (u::prn "%s elem %s is already bound to the same value, %s."
+             ,variable-pat-name
+             (u::format (car ,variable-pat))
+             (u::format (cdr binding)))
+           (with-indentation (u::unify2 (cdr ,variable-pat) (cdr ,value-pat) bindings)))
+         (t
+           (u::prn "binding variable %s to atom %s." (u::format (car ,variable-pat))
+             (u::format (car ,value-pat)))
+           (with-indentation
+             (u::unify2 (cdr ,variable-pat) (cdr ,value-pat)
+               (cons (cons (car ,variable-pat) (car ,value-pat)) bindings))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -266,15 +266,15 @@ Example:
       nil)
     ;;----------------------------------------------------------------------------------------------
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
-      (u::prn "%s and %s are eql atoms." (u::style (car pat1)) (u::style (car pat2)))
+      (u::prn "%s and %s are eql atoms." (u::format (car pat1)) (u::format (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1)) (dm::pat-elem-var-sym (car pat2))))
       (u::prn "%s and %s are the same variable."
-        (u::style (car pat1))
-        (u::style (car pat2)))
+        (u::format (car pat1))
+        (u::format (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
     ;;----------------------------------------------------------------------------------------------
@@ -282,7 +282,7 @@ Example:
        (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1))
          (dm::pat-elem-var-sym (car pat2))))
-      (u::prn "PAT1 elem and PAT2 elem are the same variable, %s." (u::style (car pat1)))
+      (u::prn "PAT1 elem and PAT2 elem are the same variable, %s." (u::format (car pat1)))
       (u::unify2 (cdr pat1) (cdr pat2) bindings))
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2)))
@@ -290,11 +290,11 @@ Example:
       (let ( (binding1 (assoc (car pat1) bindings))
              (binding2 (assoc (car pat2) bindings)))
         (u::prn "%s = %s"
-          (u::style (car pat1))
-          (if binding1 (u::style (cdr binding1)) "<unbound>"))
+          (u::format (car pat1))
+          (if binding1 (u::format (cdr binding1)) "<unbound>"))
         (u::prn "%s = %s"
-          (u::style (car pat2))
-          (if binding2 (u::style (cdr binding2)) "<unbound>"))
+          (u::format (car pat2))
+          (if binding2 (u::format (cdr binding2)) "<unbound>"))
         (cond
           ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
             (u::prn "already bound to different terms.")
@@ -306,17 +306,15 @@ Example:
                 (cons (cons (car pat1) (car pat2))
                   bindings))))
           ((not binding1)
-            ;; (debug)
-            (u::prn "PAT1 elem %s is unbound, unifying it with %s." (u::style (car pat1))
-              (u::style (car binding2)))
+            (u::prn "PAT1 elem %s is unbound, unifying it with %s." (u::format (car pat1))
+              (u::format (car binding2)))
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2)
                 (cons (cons (car pat1) (car pat2))
                   bindings))))
           ((not binding2)
-            ;; (debug)
-            (u::prn "PAT2 elem %s is unbound, unifying it with %s." (u::style (car pat2))
-              (u::style (car binding1)))
+            (u::prn "PAT2 elem %s is unbound, unifying it with %s." (u::format (car pat2))
+              (u::format (car binding1)))
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2)
                 (cons (cons (car pat2) (car pat1))
@@ -326,42 +324,42 @@ Example:
             (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings))))))
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      ;; (u::unify-variable-with-value pat1 pat2)
-      (u::prn "PAT1 elem is the variable %s and PAT2 elem is the atom %s." (u::style (car pat1))
-        (u::style (car pat2)))
-      (let ((binding (assoc (car pat1) bindings)))
-        (cond
-          ((and binding (not (eql (car pat2) (cdr binding))))
-            (u::prn "PAT1 elem is already bound to a different value.")
-            nil)
-          (binding
-            (u::prn "PAT1 elem %s is already bound to the same value, %s." (u::style (car pat1))
-              (u::style (cdr binding)))
-            (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings)))
-          (t
-            (u::prn "binding variable %s to atom %s." (u::style (car pat1)) (u::style (car pat2)))
-            (with-indentation
-              (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))))
+      (u::unify-variable-with-value pat1 pat2)
+      ;; (u::prn "PAT1 elem is the variable %s and PAT2 elem is the atom %s." (u::format (car pat1))
+      ;;   (u::format (car pat2)))
+      ;; (let ((binding (assoc (car pat1) bindings)))
+      ;;   (cond
+      ;;     ((and binding (not (eql (car pat2) (cdr binding))))
+      ;;       (u::prn "PAT1 elem is already bound to a different value.")
+      ;;       nil)
+      ;;     (binding
+      ;;       (u::prn "PAT1 elem %s is already bound to the same value, %s." (u::format (car pat1))
+      ;;         (u::format (cdr binding)))
+      ;;       (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings)))
+      ;;     (t
+      ;;       (u::prn "binding variable %s to atom %s." (u::format (car pat1)) (u::format (car pat2)))
+      ;;       (with-indentation
+      ;;         (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))))
       )
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
-      ;; (u::unify-variable-with-value pat2 pat1)
-      (u::prn "PAT1 elem is the atom %s and PAT2 elem is the variable %s."
-        (u::style (car pat1))
-        (u::style (car pat2)))
-      (let ((binding (assoc (car pat2) bindings)))
-        (cond
-          ((and binding (not (eql (car pat1) (cdr binding))))
-            (u::prn "PAT2 elem is already bound to a different value, %s." (u::style (cdr binding)))
-            nil)
-          (binding
-            (u::prn "PAT2 elem %s is already bound to the same value, %s." (u::style (car pat2))
-              (u::style (cdr binding)))
-            (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings)))
-          (t
-            (u::prn "binding variable %s to atom %s." (u::style (car pat2)) (u::style (car pat1)))
-            (with-indentation
-              (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat2) (car pat1)) bindings))))))
+      (u::unify-variable-with-value pat2 pat1)
+      ;; (u::prn "PAT1 elem is the atom %s and PAT2 elem is the variable %s."
+      ;;   (u::format (car pat1))
+      ;;   (u::format (car pat2)))
+      ;; (let ((binding (assoc (car pat2) bindings)))
+      ;;   (cond
+      ;;     ((and binding (not (eql (car pat1) (cdr binding))))
+      ;;       (u::prn "PAT2 elem is already bound to a different value, %s." (u::format (cdr binding)))
+      ;;       nil)
+      ;;     (binding
+      ;;       (u::prn "PAT2 elem %s is already bound to the same value, %s." (u::format (car pat2))
+      ;;         (u::format (cdr binding)))
+      ;;       (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings)))
+      ;;     (t
+      ;;       (u::prn "binding variable %s to atom %s." (u::format (car pat2)) (u::format (car pat1)))
+      ;;       (with-indentation
+      ;;         (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat2) (car pat1)) bindings))))))
       )
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
@@ -383,7 +381,7 @@ Example:
 (confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (((\, y) . 1) ((\, x) . 2)))
 (confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b))
-  returns (((\, a) \, b) ((\, y) . 1) ((\, x) . 2)))
+  returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
 (confirm that (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
   returns nil)
 (confirm that (u::unify2 '(,x + 1) '(2 + ,x))
@@ -441,50 +439,17 @@ Example:
   (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
     returns (2 + 1 + 2 + 2))
   (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+    returns (2 + 1 + (\, a)))
+  (confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+    returns (2 + 1 + 2 + 2))
+  (confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
     returns (2 + 1 + (\, a))))
-(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-  returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
-  returns (2 + 1 + (\, a)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 (let ((*u:verbose* t))
   (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
-
-
-
-
-(defmacro u::unify-variable-with-atom (variable-pat value-pat)
-  (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
-         (value-pat-name    (upcase (symbol-name value-pat))))
-    `(progn
-       (u::prn "%s elem is the variable %s and %s elem is the atom %s."
-         ,variable-pat-name
-         (u::style (car ,variable-pat))
-         ,value-pat-name
-         (u::style (car ,value-pat)))
-       (let ((binding (assoc (car ,variable-pat) bindings)))
-         (cond
-           ((and binding (not (eql (car ,value-pat) (cdr binding))))
-             (u::prn "%s elem is already bound to a different value."
-               ,variable-pat-name)
-             nil)
-           (binding
-             (u::prn "%s elem %s is already bound to the same value, %s."
-               ,variable-pat-name
-               (u::style (car ,variable-pat))
-               (u::style (cdr binding)))
-             (with-indentation (u::unify2 (cdr ,variable-pat) (cdr ,value-pat) bindings)))
-           (t
-             (u::prn "binding variable %s to atom %s." (u::style (car ,variable-pat))
-               (u::style (car ,value-pat)))
-             (with-indentation
-               (u::unify2 (cdr ,variable-pat) (cdr ,value-pat)
-                 (cons (cons (car ,variable-pat) (car ,value-pat)) bindings)))))))))
-
 
 
 
