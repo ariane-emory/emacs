@@ -1,12 +1,14 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'aris-funs--destructuring-match-aux)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* nil
+(defcustom *u:verbose* t
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
@@ -57,30 +59,30 @@
   "Substitute the value of variables in bindings into x,
  taking recursively bound variables into account."
   ;;
-  (u::prndiv)
+  ;; (u::prndiv)
   ;; (debug bindings x)
-  (u::prn "x:        %s" x)
+  ;; (u::prn "x:        %s" x)
   (let
     ((res 
        (cond
          ((null bindings)
-           (u::prn "case 1")
+           ;; (u::prn "case 1")
            nil)
          ((eq bindings t)
-           (u::prn "case 2")
+           ;; (u::prn "case 2")
            x)
          ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
-           (u::prn "case 3")
+           ;; (u::prn "case 3")
            (with-indentation (u::subst-bindings bindings (cdr (assoc x bindings)))))
          ((atom x) x)
          (t
-           (u::prn "case 4")
+           ;; (u::prn "case 4")
            (u::reuse-cons
              (with-indentation (u::subst-bindings bindings (car x)))
              (with-indentation (u::subst-bindings bindings (cdr x)))
              x)))))
-    (u::prn "result:   %s" res)
-    (u::prndiv)
+    ;; (u::prn "result:   %s" res)
+    ;; (u::prndiv)
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -360,17 +362,17 @@ Example:
     (u::prnl)
     (u::subst-bindings bindings pat1)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u:unifier #'u:unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u:unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (2 + 1 + (\, a)))
-(confirm that (u:unifier #'u:unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u:unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (2 + 1 + (\, a)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
-(u:unifier #'u:unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-(u:unifier #'u:unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
