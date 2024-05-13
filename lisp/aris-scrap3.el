@@ -8,7 +8,7 @@
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* nil
+(defcustom *u:verbose* t
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
@@ -188,7 +188,7 @@
            ,value-pat-name
            (u::style (car ,value-pat)))
          (cond
-           ((and binding (not (eql (car ,value-patt) (cdr binding))))
+           ((and binding (not (eql (car ,value-pat) (cdr binding))))
              (u::prn "%s elem %s is already bound to a different value, %s."
                ,variable-pat-name
                (u::style (car ,variable-pat))
@@ -276,51 +276,55 @@ Example:
             ;;----------------------------------------------------------------------------------------------
             ;; variable on PAT1, value on PAT2:
             ((dm::pat-elem-is-a-variable? pat1-elem)
-              (u::prn "pat1-elem is a variable")
-              (let ((binding (assoc pat1-elem bindings)))
-                (u::prn "PAT1 elem is the variable %s and PAT2 elem is the atom %s."
-                  (u::style pat1-elem) (u::style pat2-elem))
-                (cond
-                  ((and binding (not (eql pat2-elem (cdr binding))))
-                    (u::prn "PAT1 elem %s is already bound to a different value, %s."
-                      (u::style pat1-elem)
-                      (u::style (cdr binding)))
-                    (throw 'not-unifiable nil))
-                  (binding
-                    (u::prn "PAT1 elem %s is already bound to the same value, %s."
-                      (u::style pat1-elem)
-                      (u::style (cdr binding))))
-                  ((not (or *u:bind-conses* (atom pat2-elem)))
-                    (throw 'not-unifiable nil))
-                  (t
-                    (u::prn "binding variable %s to atom %s."
-                      (u::style (car pat1-elem))
-                      (u::style (cdr binding)))
-                    (push (cons pat1-elem pat2-elem) bindings)))))
+              (u::unify-variable-with-value2 pat1 pat2)
+              ;; (u::prn "pat1-elem is a variable")
+              ;; (let ((binding (assoc pat1-elem bindings)))
+              ;;   (u::prn "PAT1 elem is the variable %s and PAT2 elem is the atom %s."
+              ;;     (u::style pat1-elem) (u::style pat2-elem))
+              ;;   (cond
+              ;;     ((and binding (not (eql pat2-elem (cdr binding))))
+              ;;       (u::prn "PAT1 elem %s is already bound to a different value, %s."
+              ;;         (u::style pat1-elem)
+              ;;         (u::style (cdr binding)))
+              ;;       (throw 'not-unifiable nil))
+              ;;     (binding
+              ;;       (u::prn "PAT1 elem %s is already bound to the same value, %s."
+              ;;         (u::style pat1-elem)
+              ;;         (u::style (cdr binding))))
+              ;;     ((not (or *u:bind-conses* (atom pat2-elem)))
+              ;;       (throw 'not-unifiable nil))
+              ;;     (t
+              ;;       (u::prn "binding variable %s to atom %s."
+              ;;         (u::style (car pat1-elem))
+              ;;         (u::style (cdr binding)))
+              ;;       (push (cons pat1-elem pat2-elem) bindings))))
+              )
             ;;----------------------------------------------------------------------------------------------
             ;; variable on PAT2, value on PAT1:
             ((dm::pat-elem-is-a-variable? pat2-elem)
-              (u::prn "pat2-elem is a variable")
-              (let ((binding (assoc pat2-elem bindings)))
-                (u::prn "PAT2 elem is the variable %s and PAT1 elem is the atom %s."
-                  (u::style pat1-elem) (u::style pat2-elem))
-                (cond
-                  ((and binding (not (eql pat1-elem (cdr binding))))
-                    (u::prn "PAT2 elem %s is already bound to a different value, %s."
-                      (u::style pat2-elem)
-                      (u::style (cdr binding)))
-                    (throw 'not-unifiable nil))
-                  (binding
-                    (u::prn "PAT2 elem %s is already bound to the same value, %s."
-                      (u::style pat2-elem)
-                      (u::style (cdr binding))))
-                  ((not (or *u:bind-conses* (atom pat1-elem)))
-                    (throw 'not-unifiable nil))
-                  (t
-                    (u::prn "binding variable %s to atom %s."
-                      (u::style (car pat2-elem))
-                      (u::style (cdr binding)))
-                    (push (cons pat2-elem pat1-elem) bindings)))))
+              (u::unify-variable-with-value2 pat2 pat1)
+              ;; (u::prn "pat2-elem is a variable")
+              ;; (let ((binding (assoc pat2-elem bindings)))
+              ;;   (u::prn "PAT2 elem is the variable %s and PAT1 elem is the atom %s."
+              ;;     (u::style pat1-elem) (u::style pat2-elem))
+              ;;   (cond
+              ;;     ((and binding (not (eql pat1-elem (cdr binding))))
+              ;;       (u::prn "PAT2 elem %s is already bound to a different value, %s."
+              ;;         (u::style pat2-elem)
+              ;;         (u::style (cdr binding)))
+              ;;       (throw 'not-unifiable nil))
+              ;;     (binding
+              ;;       (u::prn "PAT2 elem %s is already bound to the same value, %s."
+              ;;         (u::style pat2-elem)
+              ;;         (u::style (cdr binding))))
+              ;;     ((not (or *u:bind-conses* (atom pat1-elem)))
+              ;;       (throw 'not-unifiable nil))
+              ;;     (t
+              ;;       (u::prn "binding variable %s to atom %s."
+              ;;         (u::style (car pat2-elem))
+              ;;         (u::style (cdr binding)))
+              ;;       (push (cons pat2-elem pat1-elem) bindings))))
+              )
             ((equal pat1-elem pat2-elem)
               (u::prn "pat1-elem and pat2-elem are equal"))
             (t (u::prn "pat1-elem and pat2-elem are not equal")            
