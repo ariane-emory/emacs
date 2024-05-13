@@ -357,7 +357,7 @@ Example:
   (u::prndiv ?\-)
   (cond
     ;;----------------------------------------------------------------------------------------------
-    ((not (or  pat1 pat2))
+    ((not (or pat1 pat2))
       (u::prn "PAT1 and PAT2 both ran out.")
       (or bindings t))
     ;;----------------------------------------------------------------------------------------------
@@ -522,6 +522,9 @@ Example:
 
 (let ((*u:verbose* t))
   (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
+
+(let ((*u:verbose* t))
+  (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
 
 (ignore!
   (list
