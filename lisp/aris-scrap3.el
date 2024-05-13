@@ -241,17 +241,16 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-variable (pat1 pat2)
+(defmacro u::unify-variable-with-variable (pat1 pat2 binding bindings)
   (let ( (pat1-name (upcase (symbol-name pat1)))
-         (pat2-name    (upcase (symbol-name value-pat))))
+         (pat2-name (upcase (symbol-name pat2))))
     `(progn
-       (u::prn "%s elem %s is unbound, unifying it with %s." pat1-name (u::format (car ,pat1))
-         (u::format (car binding2)))            
+       (u::prn "%s elem %s is unbound, unifying it with %s." ,pat1-name (u::format (car ,pat1))
+         (u::format (car ,binding)))            
        (with-indentation
-         (u::unify2 (cdr pat1) (cdr pat2)
-           (cons (cons (car pat1) (car pat2))
-             bindings))))))
+         (u::unify2 (cdr ,pat1) (cdr ,pat2) (cons (cons (car ,pat1) (car ,pat2)) ,bindings))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify2 (pat1 pat2 &optional bindings)
@@ -285,9 +284,7 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1)) (dm::pat-elem-var-sym (car pat2))))
-      (u::prn "%s and %s are the same variable."
-        (u::format (car pat1))
-        (u::format (car pat2)))
+      (u::prn "%s and %s are the same variable." (u::format (car pat1)) (u::format (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
     ;;----------------------------------------------------------------------------------------------
@@ -315,23 +312,25 @@ Example:
           ((not (or binding1 binding2))
             (u::prn "both unbound.")
             (with-indentation
-              (u::unify2 (cdr pat1) (cdr pat2)
-                (cons (cons (car pat1) (car pat2))
-                  bindings))))
+              (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))
           ((not binding1)
-            (u::prn "PAT1 elem %s is unbound, unifying it with %s." (u::format (car pat1))
-              (u::format (car binding2)))
-            (with-indentation
-              (u::unify2 (cdr pat1) (cdr pat2)
-                (cons (cons (car pat1) (car pat2))
-                  bindings))))
+            (u::unify-variable-with-variable pat1 pat2 binding2 bindings)
+            ;; (u::prn "PAT1 elem %s is unbound, unifying it with %s." (u::format (car pat1))
+            ;;   (u::format (car binding2)))
+            ;; (with-indentation
+            ;;   (u::unify2 (cdr pat1) (cdr pat2)
+            ;;     (cons (cons (car pat1) (car pat2))
+            ;;       bindings)))
+            )
           ((not binding2)
-            (u::prn "PAT2 elem %s is unbound, unifying it with %s." (u::format (car pat2))
-              (u::format (car binding1)))
-            (with-indentation
-              (u::unify2 (cdr pat1) (cdr pat2)
-                (cons (cons (car pat2) (car pat1))
-                  bindings))))
+            (u::unify-variable-with-variable pat2 pat1 binding1 bindings)
+            ;; (u::prn "PAT2 elem %s is unbound, unifying it with %s." (u::format (car pat2))
+            ;;   (u::format (car binding1)))
+            ;; (with-indentation
+            ;;   (u::unify2 (cdr pat1) (cdr pat2)
+            ;;     (cons (cons (car pat2) (car pat1))
+            ;;       bindings)))
+            )
           ;; may be impossible?
           (t (debug)
             (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings))))))
