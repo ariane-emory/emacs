@@ -8,7 +8,7 @@
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* t
+(defcustom *u:verbose* nil
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
@@ -46,7 +46,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::reuse-cons (x y x-y)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return (cons x y), or u::reuse x-y if it is equal to (cons x y)"
+  "Return (cons x y), or u::reuse x-y if it is equal to (cons x y). Norvig's."
   (if (and (eql x (car x-y)) (eql y (cdr x-y)))
     x-y
     (cons x y)))
@@ -57,8 +57,7 @@
 (defun u::subst-bindings (bindings x)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Substitute the value of variables in bindings into x,
- taking recursively bound variables into account."
-  ;;
+ taking recursively bound variables into account. Norvig's with tweaks."
   ;; (u::prndiv)
   ;; (debug bindings x)
   ;; (u::prn "x:        %s" x)
@@ -123,8 +122,11 @@ Example:
                     (push (cons pat1-elem pat2-elem) bindings))
                   ((not binding2)
                     (push (cons pat2-elem pat1-elem) bindings))
-                  (t ; do nothing?)
-                    ))))
+                  (t
+                    (u::prn
+                      (concat "pat1-elem and pat2-elem are bound to the same value, "
+                        "unifying destructively."))
+                    (setcdr binding1 (car binding2))))))
             ((dm::pat-elem-is-a-variable? pat1-elem)
               (u::prn "pat1-elem is a variable")
               (let ((binding (assoc pat1-elem bindings)))
@@ -170,29 +172,33 @@ Example:
         (or bindings t))
       (u::prndiv))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ignore!
-  (confirm that (u::unify1 '(2 + 1) '(2 + 1))
-    returns t)
-  (confirm that (u::unify1 '(,x + 1) '(2 + 1))
-    returns (((\, x) . 2)))
-  (confirm that (u::unify1 '(2 + 1) '(,x + 1))
-    returns (((\, x) . 2)))
-  (confirm that (u::unify1 '(,y + 1) '(,x + ,x))
-    returns (((\, x) . 1) ((\, y) \, x)))
-  (confirm that (u::unify1 '(,x + 1) '(2 + ,y))
-    returns (((\, y) . 1) ((\, x) . 2)))
-  (confirm that (u::unify1 '(,x + 1) '(2 + ,y + 1))
-    returns nil)
-  (confirm that (u::unify1 '(,x + 1 + 2) '(2 + ,y + 3))
-    returns nil)
-  (confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
-    returns (((\, y) . 1) ((\, x) . 2)))
-  (confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
-    returns (((\, a) \, b) ((\, y) . 1) ((\, x) . 2)))
-  (confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
-    returns nil)
-  (confirm that (u::unify1 '(,x + 1) '(2 + ,x))
-    returns nil))
+;;(ignore!
+(confirm that (u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
+  returns (((\, x) \, z) ((\, z) . 333)))
+(confirm that (u::unify1 '(333 + ,x) '(,x + 333))
+  returns (((\, x) . 333)))
+(confirm that (u::unify1 '(2 + 1) '(2 + 1))
+  returns t)
+(confirm that (u::unify1 '(,x + 1) '(2 + 1))
+  returns (((\, x) . 2)))
+(confirm that (u::unify1 '(2 + 1) '(,x + 1))
+  returns (((\, x) . 2)))
+(confirm that (u::unify1 '(,y + 1) '(,x + ,x))
+  returns (((\, x) . 1) ((\, y) \, x)))
+(confirm that (u::unify1 '(,x + 1) '(2 + ,y))
+  returns (((\, y) . 1) ((\, x) . 2)))
+(confirm that (u::unify1 '(,x + 1) '(2 + ,y + 1))
+  returns nil)
+(confirm that (u::unify1 '(,x + 1 + 2) '(2 + ,y + 3))
+  returns nil)
+(confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+  returns (((\, y) . 1) ((\, x) . 2)))
+(confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
+  returns (((\, a) \, b) ((\, y) . 1) ((\, x) . 2)))
+(confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+  returns nil)
+(confirm that (u::unify1 '(,x + 1) '(2 + ,x))
+  returns nil) ;; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -403,6 +409,8 @@ Example:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u:unifier (fun pat1 pat2)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Norvig's  unifier."
   (let ((bindings (funcall fun pat1 pat2)))
     (u::prn "unified bindings: %s" bindings)
     (let ((expr (u::subst-bindings bindings pat1)))
@@ -411,20 +419,27 @@ Example:
       (u::prnl)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ignore!
-  (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-    returns (2 + 1 + 2 + 2))
-  (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
-    returns (2 + 1 + (\, a)))
-  (confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-    returns (2 + 1 + 2 + 2))
-  (confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
-    returns (2 + 1 + (\, a))))
+;; (ignore!
+(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+  returns (2 + 1 + 2 + 2))
+(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+  returns (2 + 1 + (\, a)))
+(confirm that (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
+  returns (333 + 333 + 333))
+(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+  returns (2 + 1 + 2 + 2))
+(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
+  returns (2 + 1 + (\, a))) ; )
+(confirm that (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
+  returns (333 + 333 + 333))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (let ((*u:verbose* t))
   (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
 
-(let ((*u:verbose* t))
-  (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
+(ignore!
+  (list
+    (benchmark-run 10000 (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z)))
+    (benchmark-run 10000 (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))))
+  )
