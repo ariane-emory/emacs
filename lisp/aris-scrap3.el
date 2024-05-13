@@ -24,7 +24,7 @@
   :group 'unify
   :type 'symbol)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:occurs-check-fun* #'u::occurs2
+(defcustom *u:occurs-check-fun* #'u::occurs
   "Function to use to perform the occurs check."
   :group 'unify
   :type 'function)
@@ -109,28 +109,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::occurs (var expr bindings)
-  "Does VAR occur anywhere inside EXPR?"
-  (cond
-    ((equal var expr) t)
-    ((consp expr) (or (occurs var (car expr)) (occurs var (cdr expr))))
-    (t nil)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::occurs2 (var expr bindings)
   "Does var occur anywhere inside expr?"
+  (u::prn "check if %s occurs in %s" (u::style var) (u::style expr))
   (cond
-    ;; this could be replaced with a more precise/efficient test for '\,:
-    ((equal var expr) t)
+    ((and (atom expr) (eq var expr)))
+    ((and (dm::pat-elem-is-a-variable? var)
+       (dm::pat-elem-is-a-variable? expr)
+       (eq (cadr expr) (cadr var))))
     ((and (dm::pat-elem-is-a-variable? expr) (assoc expr bindings))
-      (u::occurs2 var (cdr (assoc expr bindings)) bindings))
-    ((consp expr) (or (u::occurs2 var (car expr) bindings)
-                    (u::occurs2 var (cdr expr) bindings)))
+      (u::occurs var (cdr (assoc expr bindings)) bindings))
+    ((and (consp expr) (not (dm::pat-elem-is-a-variable? expr)))
+      (or (u::occurs var (car expr) bindings)
+        (u::occurs var (cdr expr) bindings)))
     (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)
-(confirm that (u::occurs2 '(\, y) '(f (\, x)) '(((\, x) f (\, y)))) returns t)
+(confirm that (u::occurs '(\, y) '(f (\, x)) '(((\, x) f (\, y)))) returns t)
+(u::occurs 'x '(f (\, x)) nil)
+(u::occurs 'x '(f (\, x)) '(((\, x) f (\, y))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -344,8 +340,8 @@ Example:
       (u::style value))
     (cond
       ((and *u:occurs-check* (funcall *u:occurs-check-fun* variable value bindings))
+        (u::prn "occurs check failed, not unifying.")
         (when (eq *u:occurs-check* :SOFT)
-          (u::prn "occurs check failed, not unifying.")
           (u::unify2 (cdr pat1) (cdr pat2) bindings)))
       ((and binding (not (eql value (cdr binding))))
         (u::prn "variable %s is already bound to a different value, %s."
@@ -586,7 +582,6 @@ Example:
     (trace-function #'u::unify2)
     (trace-function #'u::reuse-cons)
     (trace-function #'u::occurs)
-    (trace-function #'u::occurs2)
     (trace-function #'u::unify-variable-with-value2)
     (trace-function #'u::unify-variable-with-variable)
     (trace-function #'u::subst-bindings)))
