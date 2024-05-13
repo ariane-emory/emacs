@@ -391,8 +391,6 @@ Example:
         (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
-(u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify2 (pat1 pat2 bindings)
@@ -455,11 +453,15 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            (u::unify-variable-with-variable pat1 pat2 bindings))
+            ;; (u::unify-variable-with-value2 (car pat1) (car pat2) pat1 pat2 bindings)
+            (u::unify-variable-with-variable pat1 pat2 bindings)
+            )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            (u::unify-variable-with-variable pat2 pat1 bindings))
+            ;; (u::unify-variable-with-value2 (car pat2) (car pat1) pat2 pat1 bindings)
+            (u::unify-variable-with-variable pat2 pat1 bindings)
+            )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
@@ -480,6 +482,9 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
+(u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
+
 (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil)
 
 (confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
