@@ -769,5 +769,27 @@ are relevant to the unit tests correctly."
 
   (let ((*u:occurs-check* :soft))
     (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))  ;; => (((\, x) f (\, y)))
+
+  (variable variable)
+  (variable cons)
+  (variable atom)
+  (cons     variable)
+  (atom     variable)
+  (cons     cons)
+  (atom     cons)
+  (cons     atom)
+  (atom     atom)
+
+  (defun unify (x y &optional (bindings no-bindings))
+    "See if x and y match with given bindings."
+    (cond ((eq bindings fail) fail)
+      ((eql x y) bindings) ;*** moved this line
+      ((variable-p x) (unify-variable x y bindings))
+      ((variable-p y) (unify-variable y x bindings))
+      ((and (consp x) (consp y))
+        (unify (rest x) (rest y)
+          (unify (first x) (first y) bindings)))
+      (t fail)))
+
   )
 
