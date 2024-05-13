@@ -109,7 +109,7 @@ Example:
                     (throw 'not-unifiable nil))
                   ((not binding1)
                     (push (cons pat1-elem pat2-elem) bindings))
-                  ((not  binding2)
+                  ((not binding2)
                     (push (cons pat2-elem pat1-elem) bindings))
                   (t ; do nothing?)
                     ))))
