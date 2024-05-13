@@ -123,6 +123,7 @@
                 (NO-MATCH!
                   "PATTERN %S needs at least %d elements but TARGET %S contains only %d elements."
                   pattern pattern-min-length target target-length))))
+          ;;-----------------------------------------------------------------------------------------
           ;; It's possible that it could match, continue.
           (let ((last-pattern-elem-was-flexible nil))
             (while target
