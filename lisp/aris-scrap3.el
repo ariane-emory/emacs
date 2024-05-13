@@ -109,19 +109,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::occurs (var expr bindings)
-  "Does var occur anywhere inside expr?"
+  "Doe VAR occur anywhere inside EXPR?"
   (u::prn "check if %s occurs in %s" (u::style var) (u::style expr))
-  (cond
-    ((and (atom expr) (eq var expr)))
-    ((and (dm::pat-elem-is-a-variable? var)
-       (dm::pat-elem-is-a-variable? expr)
-       (eq (cadr expr) (cadr var))))
-    ((and (dm::pat-elem-is-a-variable? expr) (assoc expr bindings))
-      (u::occurs var (cdr (assoc expr bindings)) bindings))
-    ((and (consp expr) (not (dm::pat-elem-is-a-variable? expr)))
-      (or (u::occurs var (car expr) bindings)
-        (u::occurs var (cdr expr) bindings)))
-    (t nil)))
+  (if (dm::pat-elem-is-a-variable? expr)
+    (cond
+      ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
+      ((assoc expr bindings) (u::occurs var (cdr (assoc expr bindings)) bindings))
+      (t nil))
+    (cond
+      ((consp expr) (or (u::occurs var (car expr) bindings) (u::occurs var (cdr expr) bindings)))
+      ((eq var expr)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)
 (confirm that (u::occurs '(\, y) '(f (\, x)) '(((\, x) f (\, y)))) returns t)
