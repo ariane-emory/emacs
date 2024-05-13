@@ -357,7 +357,23 @@ Example:
         (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(ignore!
 
+  (u::unify2
+    '(,v ,w ,w)
+    '(,u ,x ,u) nil)
+
+  ( ((\, u) \, x)
+    ((\, w) \, x)
+    ((\, v) \, u))
+
+
+  (u::unify2
+    '(,v ,w ,x ,y ,w)
+    '(,u ,x ,y ,w ,u) nil)
+
+  
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify2 (pat1 pat2 bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -397,7 +413,10 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ;; both different variables:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2)))
-      (u::prn "both PAT1 elem and PAT2 elem are variables.")
+      (u::prn "both PAT1 elem %s and PAT2 elem %s are variables."
+        (u::style (car pat1))
+        (u::style (car pat2))
+        )
       (let ( (binding1 (assoc (car pat1) bindings))
              (binding2 (assoc (car pat2) bindings)))
         (u::prn "%s = %s" (u::style (car pat1))
