@@ -666,6 +666,9 @@ are relevant to the unit tests correctly."
 (confirm that
   (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
   returns (2 + 1 + 8 + 8))
+(u:unifier #'u::unify2
+  '(,v ,u ,w ,x)
+  '(,u ,x ,v 333) nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
