@@ -308,18 +308,17 @@ Example:
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))
           ;;-----------------------------------------------------------------------------------------
-          ;; PAT1's var not bound:
+          ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
             (u::unify-variable-with-variable pat1 pat2 binding2 bindings))
           ;;-----------------------------------------------------------------------------------------
-          ;; PAT2's var not bound:
+          ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
             (u::unify-variable-with-variable pat2 pat1 binding1 bindings))
-          (t
-            ;; may be impossible?
-            ;; to hit this case, both vars would have to be bound to equal values... hmm.
-            (debug)
-            (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings))))))
+          ;;-----------------------------------------------------------------------------------------
+          ;; PAT1 and PAT2's vars are bound to the same value, unify them
+          (t (u::unify-variable-with-variable pat2 pat1
+               (cons (car binding1) (car binding2)) bindings)))))
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
       (u::unify-variable-with-value pat1 pat2))
@@ -329,9 +328,8 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u::unify2 '(333 + ,x) '(,z + 333))
-  returns (((\, x) . 333) ((\, z) . 333)))
-
+(confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
+  returns (((\, z) \, x) ((\, x) . 333) ((\, z) . 333))) ;; not great...
 (confirm that (u::unify2 '(333 + ,x) '(,x + 333))
   returns (((\, x) . 333)))
 (confirm that (u::unify2 '(2 + 1) '(2 + 1))
