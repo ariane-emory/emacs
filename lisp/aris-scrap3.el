@@ -17,8 +17,13 @@
   "Div width used by functions in the 'unify' group."
   :group 'unify
   :type 'integer)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *u:occurs-check* t
+  "Whether to perform the occurs check."
+  :group 'unify
+  :type 'boolen)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *u:bind-conses* nil)
+(defvar *u:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -431,6 +436,23 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro u::unify-variable-with-variable (variable pat1 pat2 bindings)
+  (let ( (pat1-name (upcase (symbol-name pat1)))
+         (pat2-name (upcase (symbol-name pat2))))
+    `(progn
+       (if (equal (car ,pat1) (cdr (assoc (car ,pat2) bindings)))
+         (progn
+           (u::prn "avoid circular binding!")
+           ;; (debug (car ,pat1) (car ,pat2) bindings)
+           (u::unify2 (cdr ,pat1) (cdr ,pat2) bindings))
+         (u::prn "%s elem %s is unbound, unifying it with %s." ,pat1-name (u::style (car ,pat1))
+           (u::style variable))
+         (with-indentation
+           (u::unify2 (cdr ,pat1) (cdr ,pat2) (cons (cons (car ,pat1) (car ,pat2)) ,bindings)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify2 (pat1 pat2 bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A tail recursive variation on `u::unify1'. Recursively unify two patterns, returning an alist of variable bindings.
@@ -491,11 +513,11 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            (u::unify-variable-with-variable binding2 pat1 pat2 bindings))
+            (u::unify-variable-with-variable (car binding2) pat1 pat2 bindings))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            (u::unify-variable-with-variable binding1 pat2 pat1 bindings))
+            (u::unify-variable-with-variable (car binding1) pat2 pat1 bindings))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
@@ -627,3 +649,6 @@ Example:
 (u::unify2 '(,x ,y a) '(,y ,x ,x) nil)
 (u::unify2 '(,x ,y) '(,y ,x) nil) ;; => ((,X . ,Y))
 (u::unify2 '(,x ,y a) '(,y ,x ,x) nil) ;; => ((,Y . A) (,X . ,Y))
+
+
+(u::unify2 '(,x) '((f ,x)) nil)
