@@ -392,10 +392,13 @@ Example:
   (u::prn "pat2:     %S" pat2)
   (u::prn "bindings: %S" bindings)
   (u::prndiv ?\-)
-  (when (and pat1 (atom pat1))
-    (setf pat1 (list pat1)))
-  (when (and pat2 (atom pat2))
-    (setf pat2 (list pat2)))
+  ;; uncurl tails:
+  (cond
+    ((and pat1 (atom pat1)) (setf pat1 (list pat1)))
+    ((and (eq (car pat1) '\,) (not (cddr pat1))) (setf pat1 (list (list '\, (cadr pat1))))))
+  (cond
+    ((and pat2 (atom pat2)) (setf pat2 (list pat2)))
+    ((and (eq (car pat2) '\,) (not (cddr pat2))) (setf pat2 (list (list '\, (cadr pat2))))))
   (cond
     ;;----------------------------------------------------------------------------------------------
     ((not (or pat1 pat2))
