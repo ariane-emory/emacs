@@ -395,11 +395,10 @@ Example:
         (u::prn "variable %s is already bound to a different value, %s."
           (u::style variable)
           (u::style (cdr binding)))
-        ;; (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
-        nil
-        ;; (debug (cdr binding) (car value-pat) variable-pat value-pat bindings)
-        ;; (u::unify-variable-with-value2 (cdr binding) (car value-pat))
-        ) ;; )
+        (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
+          nil
+          ;; (debug (cdr binding) variable value pat1 pat2 bindings)
+          (u::unify-variable-with-value2 (cdr binding) value pat1 pat2 bindings)))
       (binding
         (u::prn "variable %s is already bound to the same value, %s."
           (u::style variable)
@@ -415,7 +414,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-variable (pat1 pat2 binding bindings)
+(defmacro u::unify-variable-with-variable (binding pat1 pat2 bindings)
   (let ( (pat1-name (upcase (symbol-name pat1)))
          (pat2-name (upcase (symbol-name pat2))))
     `(progn
@@ -492,11 +491,11 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            (u::unify-variable-with-variable pat1 pat2 binding2 bindings))
+            (u::unify-variable-with-variable binding2 pat1 pat2 bindings))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            (u::unify-variable-with-variable pat2 pat1 binding1 bindings))
+            (u::unify-variable-with-variable binding1 pat2 pat1 bindings))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
