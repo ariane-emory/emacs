@@ -20,7 +20,7 @@
   :type 'integer)
 ;;---------------------------------------------------------------------------------------------------
 (defcustom *u:occurs-check* t
-  "Whether to perform the occurs check, can be nil, t or :SOFT."
+  "Whether to perform the occurs check, can be nil, t or :soft."
   :group 'unify
   :type 'symbol)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -109,10 +109,13 @@
   (if (dm::pat-elem-is-a-variable? expr)
     (cond
       ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
-      ((assoc expr bindings) (u::occurs var (cdr (assoc expr bindings)) bindings))
+      ((assoc expr bindings)
+        (with-indentation (u::occurs var (cdr (assoc expr bindings)) bindings)))
       (t nil))
     (cond
-      ((consp expr) (or (u::occurs var (car expr) bindings) (u::occurs var (cdr expr) bindings)))
+      ((consp expr) (or
+                      (with-indentation (u::occurs var (car expr) bindings))
+                      (with-indentation (u::occurs var (cdr expr) bindings))))
       ((eq var expr)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)
@@ -137,7 +140,7 @@
            ,value-pat-name
            (u::style (car ,value-pat)))
          (cond
-           ((and binding (not (eql (car ,value-pat) (cdr binding))))
+           ((and binding (not (eql (car ,value-pat) (cdr binding)))) ;; should this be `equal'?
              ;; ADD OCCURS CHECK!
              (u::prn "%s elem %s is already bound to a different value, %s."
                ,variable-pat-name
@@ -333,7 +336,9 @@ Example:
     (cond
       ((and *u:occurs-check* (u::occurs variable value bindings))
         (u::prn "occurs check failed, not unifying.")
-        (when (eq *u:occurs-check* :SOFT)
+        (when (eq *u:occurs-check* :soft)
+          (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
+          ;; (debug)
           (u::unify2 (cdr pat1) (cdr pat2) bindings)))
       ((and binding (not (eql value (cdr binding))))
         (u::prn "variable %s is already bound to a different value, %s."
@@ -600,12 +605,5 @@ Example:
 
 (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil) ;; => ((,y f ,x) (,x f ,y))
 
-
-
-
-
-
-;; bad:
-(ignore!
-  ( ((\, y) f (\, x))
-    ((\, x) f (\, y))))
+(let ((*u:occurs-check* :soft))
+  (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)) ;; => ((,y f ,x) (,x f ,y))
