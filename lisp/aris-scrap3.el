@@ -26,6 +26,50 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun reuse-cons (x y x-y)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return (cons x y), or reuse x-y if it is equal to (cons x y)"
+  (if (and (eql x (car x-y)) (eql y (cdr x-y)))
+    x-y
+    (cons x y)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun subst-bindings (bindings x)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Substitute the value of variables in bindings into x,
+ taking recursively bound variables into account."
+  ;;
+  (prndiv)
+  ;; (debug bindings x)
+  (prn "x:        %s" x)
+  (let
+    ((res 
+       (cond
+         ((null bindings)
+           (prn "case 1")
+           nil)
+         ((eq bindings t)
+           (prn "case 2")
+           x)
+         ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
+           (prn "case 3")
+           (with-indentation (subst-bindings bindings (cdr (assoc x bindings)))))
+         ((atom x) x)
+         (t
+           (prn "case 4")
+           (reuse-cons
+             (with-indentation (subst-bindings bindings (car x)))
+             (with-indentation (subst-bindings bindings (cdr x)))
+             x)))))
+    (prn "result:   %s" res)
+    (prndiv)
+    res))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun unify1 (pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Recursively unify two patterns, returning an alist of variable bindings.
@@ -85,7 +129,7 @@ Example:
             ((equal pat1-elem pat2-elem)
               (prn "pat1-elem and pat2-elem are equal"))
             (t (prn "pat1-elem and pat2-elem are not equal")            
-              (setq bindings nil))))
+              (throw 'not-unifiable nil))))
         (pop pat1)
         (pop pat2)
         (prn "bindings: %s" bindings)
@@ -100,7 +144,7 @@ Example:
           (prn "pat2: %s" pat2)
           (prn "not unifiable, return no bindings")
           nil)
-        bindings)
+        (or bindings t))
       (prndiv))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (unify1 '(2 + 1) '(2 + 1))
@@ -115,11 +159,8 @@ Example:
   returns (((\, y) . 1) ((\, x) . 2)))
 (confirm that (unify1 '(,x + 1) '(2 + ,y + 1))
   returns nil)
-
-;; bad:
 (confirm that (unify1 '(,x + 1 + 2) '(2 + ,y + 3))
   returns nil)
-
 (confirm that (unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (((\, y) . 1) ((\, x) . 2)))
 (confirm that (unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
@@ -129,66 +170,6 @@ Example:
 (confirm that (unify1 '(,x + 1) '(2 + ,x))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun reuse-cons (x y x-y)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return (cons x y), or reuse x-y if it is equal to (cons x y)"
-  (if (and (eql x (car x-y)) (eql y (cdr x-y)))
-    x-y
-    (cons x y)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun subst-bindings (bindings x)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Substitute the value of variables in bindings into x,
- taking recursively bound variables into account."
-  ;;
-  (prndiv)
-  ;; (debug bindings x)
-  (prn "x:        %s" x)
-  (let
-    ((res 
-       (cond
-         ((null bindings)
-           (prn "case 1")
-           nil)
-         ((eq bindings t)
-           (prn "case 2")
-           x)
-         ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
-           (prn "case 3")
-           (with-indentation (subst-bindings bindings (cdr (assoc x bindings)))))
-         ((atom x) x)
-         (t
-           (prn "case 4")
-           (reuse-cons
-             (with-indentation (subst-bindings bindings (car x)))
-             (with-indentation (subst-bindings bindings (cdr x)))
-             x)))))
-    (prn "result:   %s" res)
-    (prndiv)
-    res))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unifier (pat1 pat2)
-  (let ((bindings (unify1 pat1 pat2)))
-    (prn "bindings: %s" bindings)
-    (prndiv)
-    (prnl)
-    (subst-bindings bindings pat1)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-  returns (2 + 1 + 2 + 2))
-(confirm that (unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
-  returns (2 + 1 + (\, a)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -236,11 +217,27 @@ Example:
             (prn "already bound to different terms")
             nil)
           ((not (or binding1 binding2))
+            (prn "both unbound")
             (with-indentation
               (unify2 (cdr pat1) (cdr pat2)
                 (cons (cons (car pat1) (car pat2))
                   bindings))))
-          (t (with-indentation (unify2 (cdr pat1) (cdr pat2) bindings))))))
+          ((not binding1)
+            (prn "pat1-elem is unbound")
+            (with-indentation
+              (unify2 (cdr pat1) (cdr pat2)
+                (cons (cons (car pat1) (car pat2))
+                  bindings)))
+            )
+          ((not binding2)
+            (prn "pat2-elem is unbound")
+            (with-indentation
+              (unify2 (cdr pat1) (cdr pat2)
+                (cons (cons (car pat2) (car pat1))
+                  bindings)))
+            )
+          ;; (t (with-indentation (unify2 (cdr pat1) (cdr pat2) bindings)))
+          )))
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (atom (car pat2)))
       (prn "pat1-elem is the variable %s and pat2-elem is atom %s" (car pat1) (car pat2))
       (let ((binding (assoc (car pat1) bindings)))
@@ -250,7 +247,7 @@ Example:
             nil)
           (binding
             (prn "pat1-elem is already bound to the same value")
-            (with-indentation (unify2 (cdr pat1) (cdr pat2) bingins)))
+            (with-indentation (unify2 (cdr pat1) (cdr pat2) bindings)))
           (t
             (prn "binding variaable %s to atom %s" (car pat1) (car pat2))
             (with-indentation
@@ -295,3 +292,29 @@ Example:
 (confirm that (unify2 '(,x + 1) '(2 + ,x))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unifier (fun pat1 pat2)
+  (let ((bindings (funcall fun pat1 pat2)))
+    (prn "bindings: %s" bindings)
+    (prndiv)
+    (prnl)
+    (subst-bindings bindings pat1)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (unifier #'unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+  returns (2 + 1 + 2 + 2))
+(confirm that (unifier #'unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+  returns (2 + 1 + (\, a)))
+(confirm that (unifier #'unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+  returns (2 + 1 + 2 + 2))
+(confirm that (unifier #'unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
+  returns (2 + 1 + (\, a)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+
+(unify1 '(1 + ,x) '(,y + (2 . 3)))
+
