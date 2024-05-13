@@ -26,11 +26,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *u:bind-conses* nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun reuse-cons (x y x-y)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return (cons x y), or reuse x-y if it is equal to (cons x y)"
@@ -71,6 +66,12 @@
     (prn "result:   %s" res)
     (prndiv)
     res))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *u:bind-conses* nil)
+(setq *u:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -120,6 +121,8 @@ Example:
                     (throw 'not-unifiable nil))
                   (binding
                     (prn "pat1-elem is already bound to the same value"))
+                  ((not (or *u:bind-conses* (atom pat2-elem)))
+                    (throw 'not-unifiable nil))
                   (t (push (cons pat1-elem pat2-elem) bindings)))))
             ((dm::pat-elem-is-a-variable? pat2-elem)
               (prn "pat2-elem is a variable")
@@ -130,6 +133,8 @@ Example:
                     (throw 'not-unifiable nil))
                   (binding
                     (prn "pat2-elem is already bound to the same value"))
+                  ((not (or *u:bind-conses* (atom pat2-elem)))
+                    (throw 'not-unifiable nil))
                   (t (push (cons pat2-elem pat1-elem) bindings)))))
             ((equal pat1-elem pat2-elem)
               (prn "pat1-elem and pat2-elem are equal"))
