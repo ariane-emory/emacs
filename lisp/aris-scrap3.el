@@ -241,6 +241,19 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro u::unify-variable-with-variable (pat1 pat2)
+  (let ( (pat1-name (upcase (symbol-name pat1)))
+         (pat2-name    (upcase (symbol-name value-pat))))
+    `(progn
+       (u::prn "%s elem %s is unbound, unifying it with %s." pat1-name (u::format (car ,pat1))
+         (u::format (car binding2)))            
+       (with-indentation
+         (u::unify2 (cdr pat1) (cdr pat2)
+           (cons (cons (car pat1) (car pat2))
+             bindings))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify2 (pat1 pat2 &optional bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A tail recursive variation on `u::unify1'. Recursively unify two patterns, returning an alist of variable bindings.
