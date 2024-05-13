@@ -23,11 +23,6 @@
   "Whether to perform the occurs check, can be nil, t or :SOFT."
   :group 'unify
   :type 'symbol)
-;;---------------------------------------------------------------------------------------------------
-(defcustom *u:occurs-check-fun* #'u::occurs
-  "Function to use to perform the occurs check."
-  :group 'unify
-  :type 'function)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *u:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -336,7 +331,7 @@ Example:
       (u::style variable)
       (u::style value))
     (cond
-      ((and *u:occurs-check* (funcall *u:occurs-check-fun* variable value bindings))
+      ((and *u:occurs-check* (u::occurs variable value bindings))
         (u::prn "occurs check failed, not unifying.")
         (when (eq *u:occurs-check* :SOFT)
           (u::unify2 (cdr pat1) (cdr pat2) bindings)))
