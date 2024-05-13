@@ -309,6 +309,40 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; comparison tests:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (let ((*u:bind-conses* t))
+    (equal
+      (unify1 '(1 + ,x) '(,y + (2 . 3)))
+      (unify2 '(1 + ,x) '(,y + (2 . 3)))))
+  returns t)
+(confirm that
+  (let ((*u:bind-conses* nil))
+    (equal
+      (unify1 '(1 + ,x) '(,y + (2 . 3)))
+      (unify2 '(1 + ,x) '(,y + (2 . 3)))))
+  returns t)
+(confirm that
+  (let ((*u:bind-conses* nil))
+    (unify1 '(1 + ,x) '(,y + (2 . 3))))
+  returns nil)
+(confirm that
+  (let ((*u:bind-conses* t))
+    (unify1 '(1 + ,x) '(,y + (2 . 3))))
+  returns (((\, x) 2 . 3) ((\, y) . 1)))
+(confirm that
+  (let ((*u:bind-conses* nil))
+    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  returns nil)
+(confirm that
+  (let ((*u:bind-conses* t))
+    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  returns (((\, x) 2 . 3) ((\, y) . 1)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun unifier (fun pat1 pat2)
   (let ((bindings (funcall fun pat1 pat2)))
     (prn "bindings: %s" bindings)
@@ -327,42 +361,6 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-(unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 
-
-(confirm that
-  (let ((*u:bind-conses* t))
-    (equal
-      (unify1 '(1 + ,x) '(,y + (2 . 3)))
-      (unify2 '(1 + ,x) '(,y + (2 . 3)))))
-  returns t)
-
-(confirm that
-  (let ((*u:bind-conses* nil))
-    (equal
-      (unify1 '(1 + ,x) '(,y + (2 . 3)))
-      (unify2 '(1 + ,x) '(,y + (2 . 3)))))
-  returns t)
-
-(confirm that
-  (let ((*u:bind-conses* nil))
-    (unify1 '(1 + ,x) '(,y + (2 . 3))))
-  returns nil)
-
-(confirm that
-  (let ((*u:bind-conses* t))
-    (unify1 '(1 + ,x) '(,y + (2 . 3))))
-  returns (((\, x) 2 . 3) ((\, y) . 1)))
-
-(confirm that
-  (let ((*u:bind-conses* nil))
-    (unify2 '(1 + ,x) '(,y + (2 . 3))))
-  returns nil)
-
-(confirm that
-  (let ((*u:bind-conses* t))
-    (unify2 '(1 + ,x) '(,y + (2 . 3))))
-  returns (((\, x) 2 . 3) ((\, y) . 1)))
-
-
+(unifier #'unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(unifier #'unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
