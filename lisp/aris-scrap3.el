@@ -539,22 +539,77 @@ Example:
       (u::unify1 '(1 + ,x) '(,y + (2 . 3)))
       (u::unify2 '(1 + ,x) '(,y + (2 . 3)) nil)))
   returns t)
+
 (confirm that
-  (let ((*u:bind-conses* nil))
-    (u::unify1 '(1 + ,x) '(,y + (2 . 3))))
-  returns nil)
+  (equal
+    (u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
+    (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))
+  returns t)
 (confirm that
-  (let ((*u:bind-conses* t))
-    (u::unify1 '(1 + ,x) '(,y + (2 . 3))))
-  returns (((\, x) 2 . 3) ((\, y) . 1)))
+  (equal
+    (u::unify1 '(333 + ,x) '(,x + 333))
+    (u::unify2 '(333 + ,x) '(,x + 333) nil))
+  returns t)
 (confirm that
-  (let ((*u:bind-conses* nil))
-    (u::unify2 '(1 + ,x) '(,y + (2 . 3)) nil))
-  returns nil)
+  (equal
+    (u::unify1 '(2 + 1) '(2 + 1))
+    (u::unify2 '(2 + 1) '(2 + 1) nil))
+  returns t)
 (confirm that
-  (let ((*u:bind-conses* t))
-    (u::unify2 '(1 + ,x) '(,y + (2 . 3)) nil))
-  returns (((\, x) 2 . 3) ((\, y) . 1)))
+  (equal
+    (u::unify1 '(,x + 1) '(2 + 1))
+    (u::unify2 '(,x + 1) '(2 + 1) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(2 + 1) '(,x + 1))
+    (u::unify2 '(2 + 1) '(,x + 1) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,y + 1) '(,x + ,x))
+    (u::unify2 '(,y + 1) '(,x + ,x) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1) '(2 + ,y))
+    (u::unify2 '(,x + 1) '(2 + ,y) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1) '(2 + ,y + 1))
+    (u::unify2 '(,x + 1) '(2 + ,y + 1) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1 + 2) '(2 + ,y + 3))
+    (u::unify2 '(,x + 1 + 2) '(2 + ,y + 3) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+    (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+    (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b + 3) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1) '(2 + ,x))
+    (u::unify2 '(,x + 1) '(2 + ,x) nil))
+  returns t)
+(confirm that
+  (equal
+    (u::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+    (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil))
+  returns t)
+(confirm that ;; sails:
+  (equal
+    (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
+    (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil))
+  returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
