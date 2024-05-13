@@ -122,7 +122,9 @@
          (cond
            ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
            ((assoc expr bindings)
-             (with-indentation (u::occurs var (cdr (assoc expr bindings)) bindings)))
+             (with-indentation
+               (u::prndiv ?\-)
+               (u::occurs var (cdr (assoc expr bindings)) bindings)))
            (t nil))
          (cond
            ((consp expr) (or
@@ -136,14 +138,15 @@
     (u::prn "%s %s in %s"
       (u::style var)
       (if res "         occurs" "DOES NOT occur ")
+      ;; (if res "occurs" "DOES NOT occur ")
       (u::style expr))
-    (u::prndiv ?\-)
+    ;; (u::prndiv ?\-)
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)
 (confirm that (u::occurs '(\, y) '(f (\, x)) '(((\, x) f (\, y)))) returns t)
-(u::occurs 'x '(f (\, x)) nil)
-(u::occurs 'x '(f (\, x)) '(((\, x) f (\, y))))
+(confirm that (u::occurs 'x '(f (\, x)) nil) returns nil)
+(confirm that (u::occurs 'x '(f (\, x)) '(((\, x) f (\, y)))) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -689,9 +692,22 @@ are relevant to the unit tests correctly."
 (confirm that
   (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
   returns (2 + 1 + 8 + 8))
-
+(confirm that
+  (let ( (*u:verbose* t)
+         (*u:unifier-simplifies* nil))
+    (u:unifier #'u::unify2
+      '(,v ,u ,w ,x)
+      '(,u ,x ,v 333) nil))
+  returns (333 333 333 333))
+(confirm that
+  (let ( (*u:verbose* t)
+         (*u:unifier-simplifies* t))
+    (u:unifier #'u::unify2
+      '(,v ,u ,w ,x)
+      '(,u ,x ,v 333) nil))
+  returns (333 333 333 333))
 (ignore!
-  (let ((reps 10000))
+  (let ((reps 50000))
     (list
       (benchmark-run reps
         (let ( (*u:verbose* nil)
@@ -704,9 +720,7 @@ are relevant to the unit tests correctly."
                (*u:unifier-simplifies* t))
           (u:unifier #'u::unify2
             '(,v ,u ,w ,x)
-            '(,u ,x ,v 333) nil)))))
-
-  )
+            '(,u ,x ,v 333) nil))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
