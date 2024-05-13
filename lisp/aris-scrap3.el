@@ -601,8 +601,7 @@ are relevant to the unit tests correctly."
     (u::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
     (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil))
   returns t)
-;;---------------------------------------------------------------------------------------------------
-(confirm that ;; fails:
+(confirm that
   (u::equivalent-bindings?
     (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
     (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil))
