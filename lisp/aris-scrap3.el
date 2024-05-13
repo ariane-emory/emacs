@@ -374,20 +374,24 @@ Example:
 ;;          (with-indentation
 ;;            (u::unify2 (cdr ,pat1) (cdr ,pat2) (cons (cons (car ,pat1) (car ,pat2)) ,bindings)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-variable (variable pat1 pat2 bindings)
-  (progn
-    (if (equal (car pat1) (cdr (assoc (car pat2) bindings)))
+(defun u::unify-variable-with-variable (pat1 pat2 bindings)
+  ;; if we entered this fun we already know that (car pat2) is a bound variable and that (car pat1)
+  ;; is unbound.
+  (let ((binding2 (assoc (car pat2) bindings)))
+    (if (and
+          (dm::pat-elem-is-a-variable? (cdr binding2))
+          (u::occurs (car pat1) (cdr binding2) bindings))
       (progn
         (u::prn "avoid circular binding!")
-        ;; (debug (car pat1) (car pat2) bindings)
         (u::unify2 (cdr pat1) (cdr pat2) bindings))
-      (u::prn "variable %s is unbound, unifying it with %s." variable
-        (u::style variable))
+      (u::prn "variable %s is unbound, unifying it with %s."
+        (u::style (car pat1))
+        (u::style (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; bad case:
+(u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
 (u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -451,11 +455,11 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            (u::unify-variable-with-variable (car binding2) pat1 pat2 bindings))
+            (u::unify-variable-with-variable pat1 pat2 bindings))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            (u::unify-variable-with-variable (car binding1) pat2 pat1 bindings))
+            (u::unify-variable-with-variable pat2 pat1 bindings))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
