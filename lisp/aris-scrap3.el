@@ -316,5 +316,9 @@ Example:
 (unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 (unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 
-(unify1 '(1 + ,x) '(,y + (2 . 3)))
+(confirm that
+  (equal
+    (unify1 '(1 + ,x) '(,y + (2 . 3)))
+    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  returns t)
 
