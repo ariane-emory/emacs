@@ -318,9 +318,12 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
-          (t
+          (t (u::prn
+               (concat "PAT1's var %s and PAT2's var %s are bound to the same value, "
+                 "unifying them destructively.")
+               (u::format (car pat1)) (u::format (car pat2)))
             (setcdr binding1 (car binding2))
-            (u::unify2 (cdr pat1) (cdr pat2) bindings)
+            (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings))
             ;; (u::unify-variable-with-variable pat2 pat1
             ;;   (cons (car binding1) (car binding2)) bindings)
             ))))
@@ -420,10 +423,8 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 (let ((*u:verbose* t))
   (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
-
 
 (let ((*u:verbose* t))
   (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
