@@ -171,6 +171,44 @@
 ;;           nil)
 ;;         (or bindings t))
 ;;       (u::prndiv))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro u::unify-variable-with-value2 (variable-pat value-pat)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Not portable: expects BINDING in surrounding env."
+  (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
+         (value-pat-name    (upcase (symbol-name value-pat))))
+    `(progn
+       (u::prn "%s elem is a variable" ,variable-pat-name)
+       (let ((binding (assoc (car ,variable-pat) bindings)))
+         (u::prn "%s elem is the variable %s and %s elem is the atom %s."
+           ,variable-pat-name
+           (u::style (car ,variable-pat))
+           ,value-pat-name
+           (u::style (car ,value-pat)))
+         (cond
+           ((and binding (not (eql (car ,value-patt) (cdr binding))))
+             (u::prn "%s elem %s is already bound to a different value, %s."
+               ,variable-pat-name
+               (u::style (car ,variable-pat))
+               (u::style (cdr binding)))
+             (throw 'not-unifiable nil))
+           (binding
+             (u::prn "%s elem %s is already bound to the same value, %s."
+               ,variable-pat-name
+               (u::style (car ,variable-pat))
+               (u::style (cdr binding))))
+           ((not (or *u:bind-conses* (atom (car ,value-pat))))
+             (throw 'not-unifiable nil))
+           (t
+             (u::prn "binding variable %s to atom %s."
+               (u::style (car ,variable-pat))
+               (u::style (car ,value-pat)))
+             (push (cons (car ,variable-pat) (car ,value-pat)) bindings)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify1 (pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
