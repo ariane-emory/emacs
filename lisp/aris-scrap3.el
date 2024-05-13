@@ -8,7 +8,7 @@
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* t
+(defcustom *u:verbose* nil
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
@@ -196,6 +196,15 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun u::style (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (if (atom thing)
+    (format "`%S'" thing)
+    (format "%S" thing)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify2 (pat1 pat2 &optional bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "A tail recursive variation on `u::unify1'. Recursively unify two patterns, returning an alist of variable bindings.
@@ -206,6 +215,7 @@ Example:
   (u::prn "pat1:     %S" pat1)
   (u::prn "pat2:     %S" pat2)
   (u::prn "bindings: %S" bindings)
+  (u::prndiv ?\-)
   (cond
     ((not (or  pat1 pat2)) (or bindings t))
     ((not pat1)
@@ -233,8 +243,8 @@ Example:
       (u::prn "both PAT1 elem and PAT2 elem are variables.")
       (let ( (binding1 (assoc (car pat1) bindings))
              (binding2 (assoc (car pat2) bindings)))
-        (u::prn "`%S' = `%s'" (car pat1) (if binding1 (cdr binding1) "<unbound>"))
-        (u::prn "`%S' = `%s'" (car pat2) (if binding2 (cdr binding2) "<unbound>"))
+        (u::prn "`%S' = `%S'" (car pat1) (if binding1 (cdr binding1) "<unbound>"))
+        (u::prn "`%S' = `%S'" (car pat2) (if binding2 (cdr binding2) "<unbound>"))
         (cond
           ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
             (u::prn "already bound to different terms.")
@@ -375,4 +385,5 @@ Example:
 
 
 (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-(u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(let ((*u:verbose* t))
+  (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
