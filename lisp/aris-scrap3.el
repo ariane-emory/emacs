@@ -330,9 +330,18 @@ Example:
 (unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 (unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 
+
 (confirm that
-  (equal
-    (unify1 '(1 + ,x) '(,y + (2 . 3)))
-    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  (let ((*u:bind-conses* t))
+    (equal
+      (unify1 '(1 + ,x) '(,y + (2 . 3)))
+      (unify2 '(1 + ,x) '(,y + (2 . 3)))))
+  returns t)
+
+(confirm that
+  (let ((*u:bind-conses* nil))
+    (equal
+      (unify1 '(1 + ,x) '(,y + (2 . 3)))
+      (unify2 '(1 + ,x) '(,y + (2 . 3)))))
   returns t)
 
