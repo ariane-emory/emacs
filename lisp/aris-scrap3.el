@@ -345,3 +345,24 @@ Example:
       (unify2 '(1 + ,x) '(,y + (2 . 3)))))
   returns t)
 
+(confirm that
+  (let ((*u:bind-conses* nil))
+    (unify1 '(1 + ,x) '(,y + (2 . 3))))
+  returns nil)
+
+(confirm that
+  (let ((*u:bind-conses* t))
+    (unify1 '(1 + ,x) '(,y + (2 . 3))))
+  returns (((\, x) 2 . 3) ((\, y) . 1)))
+
+(confirm that
+  (let ((*u:bind-conses* nil))
+    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  returns nil)
+
+(confirm that
+  (let ((*u:bind-conses* t))
+    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  returns (((\, x) 2 . 3) ((\, y) . 1)))
+
+
