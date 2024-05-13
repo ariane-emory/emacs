@@ -316,9 +316,14 @@ Example:
           ((not binding2)
             (u::unify-variable-with-variable pat2 pat1 binding1 bindings))
           ;;-----------------------------------------------------------------------------------------
-          ;; PAT1 and PAT2's vars are bound to the same value, unify them
-          (t (u::unify-variable-with-variable pat2 pat1
-               (cons (car binding1) (car binding2)) bindings)))))
+          ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
+          ;; not totally sure about this but it seems to work, so far.
+          (t
+            (setcdr binding1 (car binding2))
+            (u::unify2 (cdr pat1) (cdr pat2) bindings)
+            ;; (u::unify-variable-with-variable pat2 pat1
+            ;;   (cons (car binding1) (car binding2)) bindings)
+            ))))
     ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
       (u::unify-variable-with-value pat1 pat2))
@@ -329,7 +334,7 @@ Example:
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
-  returns (((\, z) \, x) ((\, x) . 333) ((\, z) . 333))) ;; not great...
+  returns (((\, x) \, z) ((\, z) . 333)))
 (confirm that (u::unify2 '(333 + ,x) '(,x + 333))
   returns (((\, x) . 333)))
 (confirm that (u::unify2 '(2 + 1) '(2 + 1))
@@ -420,5 +425,5 @@ Example:
   (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
 
 
-
-
+(let ((*u:verbose* t))
+  (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
