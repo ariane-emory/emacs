@@ -2,6 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--destructuring-match-aux)
 (require 'aris-funs--trees)
+(require 'trace)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; NOTE: `u::unify1's circular binding avoidance and use of the occurs check isn't up to snuff
 ;; compared to `u::unify2'.
@@ -26,6 +27,11 @@
   "Whether to perform the occurs check, can be nil, t or :soft."
   :group 'unify
   :type 'symbol)
+;;---------------------------------------------------------------------------------------------------
+(defcustom *u:unifier-simplifies* nil
+  "Whether `u::unifier' simplifies BINDINGS before substituting."
+  :group 'unify
+  :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *u:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -108,18 +114,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::occurs (var expr bindings)
   "Doe VAR occur anywhere inside EXPR?"
+  (u::prndiv ?\-)
   (u::prn "check if %s occurs in %s" (u::style var) (u::style expr))
-  (if (dm::pat-elem-is-a-variable? expr)
-    (cond
-      ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
-      ((assoc expr bindings)
-        (with-indentation (u::occurs var (cdr (assoc expr bindings)) bindings)))
-      (t nil))
-    (cond
-      ((consp expr) (or
-                      (with-indentation (u::occurs var (car expr) bindings))
-                      (with-indentation (u::occurs var (cdr expr) bindings))))
-      ((eq var expr)))))
+  (let
+    ((res
+       (if (dm::pat-elem-is-a-variable? expr)
+         (cond
+           ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
+           ((assoc expr bindings)
+             (with-indentation (u::occurs var (cdr (assoc expr bindings)) bindings)))
+           (t nil))
+         (cond
+           ((consp expr) (or
+                           (with-indentation
+                             (u::prndiv ?\-)
+                             (u::occurs var (car expr) bindings))
+                           (with-indentation
+                             (u::prndiv ?\-)
+                             (u::occurs var (cdr expr) bindings))))
+           ((eq var expr))))))
+    (u::prn "%s %s in %s"
+      (u::style var)
+      (if res "         occurs" "DOES NOT occur ")
+      (u::style expr))
+    (u::prndiv ?\-)
+    res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil)
 (confirm that (u::occurs '(\, y) '(f (\, x)) '(((\, x) f (\, y)))) returns t)
@@ -505,6 +524,7 @@ Example:
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Simplify BINDINGS by finding anything bound directly to another variable and rebinding it to what that variable is
 bound to."
+  (u::prn "simplifying       %s." bindings)
   (dolist (pair1 bindings bindings)
     (dolist (pair2 bindings)
       (when (equal (cdr pair2) (car pair1))
@@ -642,7 +662,10 @@ are relevant to the unit tests correctly."
 (defun u:unifier (fun pat1 pat2 &rest rest )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Norvig's  unifier."
-  (let ((bindings (apply fun pat1 pat2 rest)))
+  (let* ( (bindings (apply fun pat1 pat2 rest))
+          (bindings (if *u:unifier-simplifies*
+                      (u::simplify-bindings bindings)
+                      bindings)))
     (u::prn "unified bindings: %s" bindings)
     (let ((expr (u::subst-bindings bindings pat1)))
       (u::prn "substituted expr: %s" expr)
@@ -666,9 +689,24 @@ are relevant to the unit tests correctly."
 (confirm that
   (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
   returns (2 + 1 + 8 + 8))
-(u:unifier #'u::unify2
-  '(,v ,u ,w ,x)
-  '(,u ,x ,v 333) nil)
+
+(ignore!
+  (let ((reps 10000))
+    (list
+      (benchmark-run reps
+        (let ( (*u:verbose* nil)
+               (*u:unifier-simplifies* nil))
+          (u:unifier #'u::unify2
+            '(,v ,u ,w ,x)
+            '(,u ,x ,v 333) nil)))
+      (benchmark-run reps
+        (let ( (*u:verbose* nil)
+               (*u:unifier-simplifies* t))
+          (u:unifier #'u::unify2
+            '(,v ,u ,w ,x)
+            '(,u ,x ,v 333) nil)))))
+
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -682,14 +720,17 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
-    (untrace-function #'u:unifier)
-    (untrace-function #'u::unify1)
-    (untrace-function #'u::unify2)
-    (untrace-function #'u::reuse-cons)
-    (untrace-function #'u::occurs)
-    (untrace-function #'u::unify-variable-with-value2)
-    (untrace-function #'u::unify-variable-with-variable)
-    (untrace-function #'u::subst-bindings))
+    (trace-function #'u:unifier)
+    (trace-function #'u::unify1)
+    (trace-function #'u::unify2)
+    (trace-function #'u::reuse-cons)
+    (trace-function #'u::occurs)
+    (trace-function #'u::unify-variable-with-value2)
+    (trace-function #'u::unify-variable-with-variable)
+    (trace-function #'u::simplify-bindings)
+    (trace-function #'u::subst-bindings))
+
+  (untrace-all)
 
   (let ((*u:verbose* t))
     (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil))
