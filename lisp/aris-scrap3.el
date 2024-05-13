@@ -44,6 +44,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun u::style (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cond
+    ((atom thing) (format-message "`%S'" thing))
+    ((dm::pat-elem-is-a-variable? thing) (format "%S" thing))
+    (t (format "%S" thing))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::reuse-cons (x y x-y)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return (cons x y), or u::reuse x-y if it is equal to (cons x y). Norvig's."
@@ -174,7 +184,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-value2 (variable-pat value-pat)
+(defmacro u::unify-variable-with-value (variable-pat value-pat)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Not portable: expects BINDING in surrounding env."
   (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
@@ -282,11 +292,11 @@ Example:
             ;;----------------------------------------------------------------------------------------------
             ;; variable on PAT1, value on PAT2:
             ((dm::pat-elem-is-a-variable? pat1-elem)
-              (u::unify-variable-with-value2 pat1 pat2))
+              (u::unify-variable-with-value pat1 pat2))
             ;;----------------------------------------------------------------------------------------------
             ;; variable on PAT2, value on PAT1:
             ((dm::pat-elem-is-a-variable? pat2-elem)
-              (u::unify-variable-with-value2 pat2 pat1))
+              (u::unify-variable-with-value pat2 pat1))
             ((equal pat1-elem pat2-elem)
               (u::prn "pat1-elem and pat2-elem are equal"))
             (t (u::prn "pat1-elem and pat2-elem are not equal")            
@@ -338,48 +348,38 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::style (thing)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (cond
-    ((atom thing) (format-message "`%S'" thing))
-    ((dm::pat-elem-is-a-variable? thing) (format "%S" thing))
-    (t (format "%S" thing))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-value2 (variable-pat value-pat)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
-  (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
-         (value-pat-name    (upcase (symbol-name value-pat))))
-    `(let ((binding (assoc (car ,variable-pat) bindings)))
-       (u::prn "%s elem is the variable %s and %s elem is the value %s."
-         ,variable-pat-name
-         (u::style (car ,variable-pat))
-         ,value-pat-name
-         (u::style (car ,value-pat)))
-       (cond
-         ((and binding (not (eql (car ,value-pat) (cdr binding))))
-           (u::prn "%s elem %s is already bound to a different value, %s."
-             ,variable-pat-name
-             (u::style (car ,variable-pat))
-             (u::style (cdr binding)))
-           nil)
-         (binding
-           (u::prn "%s elem %s is already bound to the same value, %s."
-             ,variable-pat-name
-             (u::style (car ,variable-pat))
-             (u::style (cdr binding)))
-           (with-indentation (u::unify2 (cdr ,variable-pat) (cdr ,value-pat) bindings)))
-         (t
-           (u::prn "binding variable %s to atom %s." (u::style (car ,variable-pat))
-             (u::style (car ,value-pat)))
-           (with-indentation
-             (u::unify2 (cdr ,variable-pat) (cdr ,value-pat)
-               (cons (cons (car ,variable-pat) (car ,value-pat)) bindings))))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro u::unify-variable-with-value2 (variable-pat value-pat)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
+;;   (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
+;;          (value-pat-name    (upcase (symbol-name value-pat))))
+;;     `(let ((binding (assoc (car ,variable-pat) bindings)))
+;;        (u::prn "%s elem is the variable %s and %s elem is the value %s."
+;;          ,variable-pat-name
+;;          (u::style (car ,variable-pat))
+;;          ,value-pat-name
+;;          (u::style (car ,value-pat)))
+;;        (cond
+;;          ((and binding (not (eql (car ,value-pat) (cdr binding))))
+;;            (u::prn "%s elem %s is already bound to a different value, %s."
+;;              ,variable-pat-name
+;;              (u::style (car ,variable-pat))
+;;              (u::style (cdr binding)))
+;;            nil)
+;;          (binding
+;;            (u::prn "%s elem %s is already bound to the same value, %s."
+;;              ,variable-pat-name
+;;              (u::style (car ,variable-pat))
+;;              (u::style (cdr binding)))
+;;            (with-indentation (u::unify2 (cdr ,variable-pat) (cdr ,value-pat) bindings)))
+;;          (t
+;;            (u::prn "binding variable %s to atom %s." (u::style (car ,variable-pat))
+;;              (u::style (car ,value-pat)))
+;;            (with-indentation
+;;              (u::unify2 (cdr ,variable-pat) (cdr ,value-pat)
+;;                (cons (cons (car ,variable-pat) (car ,value-pat)) bindings))))))))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -395,18 +395,22 @@ Example:
         (u::prn "variable %s is already bound to a different value, %s."
           (u::style (car variable-pat))
           (u::style (cdr binding)))
-        nil)
-      (binding
-        (u::prn "variable %s is already bound to the same value, %s."
-          (u::style (car variable-pat))
-          (u::style (cdr binding)))
-        (with-indentation (u::unify2 (cdr variable-pat) (cdr value-pat) bindings)))
-      (t
-        (u::prn "binding variable %s to value %s." (u::style (car variable-pat))
-          (u::style (car value-pat)))
-        (with-indentation
-          (u::unify2 (cdr variable-pat) (cdr value-pat)
-            (cons (cons (car variable-pat) (car value-pat)) bindings)))))))
+        ;; (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
+        nil
+        ;; (debug (cdr binding) (car value-pat) variable-pat value-pat bindings)
+        ;; (u::unify-variable-with-value2 (cdr binding) (car value-pat))
+        ) ;; )
+    (binding
+      (u::prn "variable %s is already bound to the same value, %s."
+        (u::style (car variable-pat))
+        (u::style (cdr binding)))
+      (with-indentation (u::unify2 (cdr variable-pat) (cdr value-pat) bindings)))
+    (t
+      (u::prn "binding variable %s to value %s." (u::style (car variable-pat))
+        (u::style (car value-pat)))
+      (with-indentation
+        (u::unify2 (cdr variable-pat) (cdr value-pat)
+          (cons (cons (car variable-pat) (car value-pat)) bindings)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
