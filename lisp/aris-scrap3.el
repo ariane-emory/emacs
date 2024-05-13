@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--destructuring-match-aux)
+(require 'aris-funs--trees)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -396,6 +397,9 @@ Example:
       (u::style variable)
       (u::style value))
     (cond
+      ((occurs variable value)
+        (u::prn "occurs check failed.")
+        nil)
       ((and binding (not (eql value (cdr binding))))
         (u::prn "variable %s is already bound to a different value, %s."
           (u::style variable)
@@ -418,37 +422,32 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro u::unify-variable-with-variable (binding pat1 pat2 bindings)
+;;   (let ( (pat1-name (upcase (symbol-name pat1)))
+;;          (pat2-name (upcase (symbol-name pat2))))
+;;     `(progn
+;;        (if (equal (car ,pat1) (cdr (assoc (car ,pat2) bindings)))
+;;          (progn
+;;            (u::prn "avoid circular binding!")
+;;            ;; (debug (car ,pat1) (car ,pat2) bindings)
+;;            (u::unify2 (cdr ,pat1) (cdr ,pat2) bindings))
+;;          (u::prn "%s elem %s is unbound, unifying it with %s." ,pat1-name (u::style (car ,pat1))
+;;            (u::style (car ,binding)))
+;;          (with-indentation
+;;            (u::unify2 (cdr ,pat1) (cdr ,pat2) (cons (cons (car ,pat1) (car ,pat2)) ,bindings)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-variable (binding pat1 pat2 bindings)
-  (let ( (pat1-name (upcase (symbol-name pat1)))
-         (pat2-name (upcase (symbol-name pat2))))
-    `(progn
-       (if (equal (car ,pat1) (cdr (assoc (car ,pat2) bindings)))
-         (progn
-           (u::prn "avoid circular binding!")
-           ;; (debug (car ,pat1) (car ,pat2) bindings)
-           (u::unify2 (cdr ,pat1) (cdr ,pat2) bindings))
-         (u::prn "%s elem %s is unbound, unifying it with %s." ,pat1-name (u::style (car ,pat1))
-           (u::style (car ,binding)))
-         (with-indentation
-           (u::unify2 (cdr ,pat1) (cdr ,pat2) (cons (cons (car ,pat1) (car ,pat2)) ,bindings)))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-variable (variable pat1 pat2 bindings)
-  (let ( (pat1-name (upcase (symbol-name pat1)))
-         (pat2-name (upcase (symbol-name pat2))))
-    `(progn
-       (if (equal (car ,pat1) (cdr (assoc (car ,pat2) bindings)))
-         (progn
-           (u::prn "avoid circular binding!")
-           ;; (debug (car ,pat1) (car ,pat2) bindings)
-           (u::unify2 (cdr ,pat1) (cdr ,pat2) bindings))
-         (u::prn "%s elem %s is unbound, unifying it with %s." ,pat1-name (u::style (car ,pat1))
-           (u::style variable))
-         (with-indentation
-           (u::unify2 (cdr ,pat1) (cdr ,pat2) (cons (cons (car ,pat1) (car ,pat2)) ,bindings)))))))
+(defun u::unify-variable-with-variable (variable pat1 pat2 bindings)
+  (progn
+    (if (equal (car pat1) (cdr (assoc (car pat2) bindings)))
+      (progn
+        (u::prn "avoid circular binding!")
+        ;; (debug (car pat1) (car pat2) bindings)
+        (u::unify2 (cdr pat1) (cdr pat2) bindings))
+      (u::prn "variable %s is unbound, unifying it with %s." variable
+        (u::style variable))
+      (with-indentation
+        (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
