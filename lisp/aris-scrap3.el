@@ -8,7 +8,7 @@
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* nil
+(defcustom *u:verbose* t
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
@@ -198,8 +198,9 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::style (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (if (atom thing)
-    (format-message "`%S'" thing)
+  (cond
+    ((atom thing) (format-message "`%S'" thing))
+    ((dm::pat-elem-is-a-variable? thing) (format "%S" thing))
     (format "%S" thing)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -232,14 +233,16 @@ Example:
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1)) (dm::pat-elem-var-sym (car pat2))))
-      (u::prn "`%S' and `%S' are the same variable." (car pat1) (car pat2))
+      (u::prn "%s and %s are the same variable."
+        (u::style (car pat1))
+        (u::style (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
     ((and (dm::pat-elem-is-a-variable? (car pat1))
        (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1))
          (dm::pat-elem-var-sym (car pat2))))
-      (u::prn "PAT1 elem and PAT2 elem are the same variable.")
+      (u::prn "PAT1 elem and PAT2 elem are the same variable, %s." (u::style (car pat1)))
       (u::unify2 (cdr pat1) (cdr pat2) bindings))
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2)))
       (u::prn "both PAT1 elem and PAT2 elem are variables.")
