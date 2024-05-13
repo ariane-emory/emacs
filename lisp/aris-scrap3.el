@@ -395,10 +395,12 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u:unifier (fun pat1 pat2)
   (let ((bindings (funcall fun pat1 pat2)))
-    (u::prn "bindings: %s" bindings)
-    (u::prndiv)
-    (u::prnl)
-    (u::subst-bindings bindings pat1)))
+    (u::prn "unified bindings: %s" bindings)
+    (let ((expr (u::subst-bindings bindings pat1)))
+      (u::prn "substituted expr: %s" expr)
+      (u::prndiv)
+      (u::prnl)
+      expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
