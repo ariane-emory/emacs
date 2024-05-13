@@ -252,7 +252,7 @@ Example:
             (with-indentation (unify2 (cdr pat1) (cdr pat2) bindings))
             )
           )))
-    ((and (dm::pat-elem-is-a-variable? (car pat1)) (atom (car pat2)))
+    ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
       (prn "pat1-elem is the variable %s and pat2-elem is atom %s" (car pat1) (car pat2))
       (let ((binding (assoc (car pat1) bindings)))
         (cond
@@ -266,7 +266,7 @@ Example:
             (prn "binding variaable %s to atom %s" (car pat1) (car pat2))
             (with-indentation
               (unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings)))))))
-    ((and (dm::pat-elem-is-a-variable? (car pat2)) (atom (car pat1)))
+    ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
       (prn "pat1-elem is the atom %s pat2-elem is the variable" (car pat1) (car pat2))
       (let ((binding (assoc (car pat2) bindings)))
         (cond
@@ -330,9 +330,9 @@ Example:
 (unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 (unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
 
-;; (confirm that
-;;   (equal
-;;     (unify1 '(1 + ,x) '(,y + (2 . 3)))
-;;     (unify2 '(1 + ,x) '(,y + (2 . 3))))
-;;   returns t)
+(confirm that
+  (equal
+    (unify1 '(1 + ,x) '(,y + (2 . 3)))
+    (unify2 '(1 + ,x) '(,y + (2 . 3))))
+  returns t)
 
