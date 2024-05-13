@@ -713,14 +713,14 @@ are relevant to the unit tests correctly."
         (let ( (*u:verbose* nil)
                (*u:unifier-simplifies* nil))
           (u:unifier #'u::unify2
-            '(,v ,u ,w ,x)
-            '(,u ,x ,v 333) nil)))
+            '(,u ,v ,w ,x)
+            '(,x ,u ,v 333) nil)))
       (benchmark-run reps
         (let ( (*u:verbose* nil)
                (*u:unifier-simplifies* t))
           (u:unifier #'u::unify2
-            '(,v ,u ,w ,x)
-            '(,u ,x ,v 333) nil))))))
+            '(,u ,v ,w ,x)
+            '(,x ,u ,v 333) nil))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
