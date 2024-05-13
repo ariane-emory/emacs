@@ -24,7 +24,7 @@
   :group 'unify
   :type 'symbol)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:occurs-check-fun* #'occurs
+(defcustom *u:occurs-check-fun* #'u::occurs
   "Function to use to perform the occurs check."
   :group 'unify
   :type 'function)
@@ -107,91 +107,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun u::unify1 (pat1 pat2)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Recursively unify two patterns, returning an alist of variable bindings.
-
-;; Example:
-;;   (u::unify1 '(x + 1) '(,2 + ,y)) => '((x . 2) (y . 1)"
-;;   (let (bindings)
-;;     (catch 'not-unifiable
-;;       (while (and pat1 pat2)
-;;         (u::prndiv)
-;;         (u::prn "pat1: %s" pat1)
-;;         (u::prn "pat2: %s" pat2)
-;;         (let ( (pat1-elem (car pat1))
-;;                (pat2-elem (car pat2)))
-;;           (u::prn "pat1-elem:  %s" pat1-elem)
-;;           (u::prn "pat2-elem: %s" pat2-elem)
-;;           (u::prndiv ?\-)
-;;           (cond
-;;             ((and (dm::pat-elem-is-a-variable? pat1-elem)
-;;                (dm::pat-elem-is-a-variable? pat2-elem)
-;;                (eq (dm::pat-elem-var-sym pat1-elem)
-;;                  (dm::pat-elem-var-sym pat2-elem)))
-;;               (u::prn "pat1-elem and pat2-elem are the same variable"))
-;;             ((and (dm::pat-elem-is-a-variable? pat1-elem) (dm::pat-elem-is-a-variable? pat2-elem))
-;;               (u::prn "both pat1-elem and pat2-elem are variables")
-;;               (let ( (binding1 (assoc pat1-elem bindings))
-;;                      (binding2 (assoc pat2-elem bindings)))
-;;                 (cond
-;;                   ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
-;;                     (u::prn "already bound to different variables")
-;;                     (throw 'not-unifiable nil))
-;;                   ((not binding1)
-;;                     (push (cons pat1-elem pat2-elem) bindings))
-;;                   ((not binding2)
-;;                     (push (cons pat2-elem pat1-elem) bindings))
-;;                   (t
-;;                     (u::prn
-;;                       (concat "pat1-elem and pat2-elem are bound to the same value, "
-;;                         "unifying destructively."))
-;;                     (setcdr binding1 (car binding2))))))
-;;             ((dm::pat-elem-is-a-variable? pat1-elem)
-;;               (u::prn "pat1-elem is a variable")
-;;               (let ((binding (assoc pat1-elem bindings)))
-;;                 (cond
-;;                   ((and binding (not (eql pat2-elem (cdr binding))))
-;;                     (u::prn "pat1-elem is already bound to a different value")
-;;                     (throw 'not-unifiable nil))
-;;                   (binding
-;;                     (u::prn "pat1-elem is already bound to the same value"))
-;;                   ((not (or *u:bind-conses* (atom pat2-elem)))
-;;                     (throw 'not-unifiable nil))
-;;                   (t (push (cons pat1-elem pat2-elem) bindings)))))
-;;             ((dm::pat-elem-is-a-variable? pat2-elem)
-;;               (u::prn "pat2-elem is a variable")
-;;               (let ((binding (assoc pat2-elem bindings)))
-;;                 (cond
-;;                   ((and binding (not (eql pat1-elem (cdr binding))))
-;;                     (u::prn "pat2-elem is already bound to a different value")
-;;                     (throw 'not-unifiable nil))
-;;                   (binding
-;;                     (u::prn "pat2-elem is already bound to the same value"))
-;;                   ((not (or *u:bind-conses* (atom pat1-elem)))
-;;                     (throw 'not-unifiable nil))
-;;                   (t (push (cons pat2-elem pat1-elem) bindings)))))
-;;             ((equal pat1-elem pat2-elem)
-;;               (u::prn "pat1-elem and pat2-elem are equal"))
-;;             (t (u::prn "pat1-elem and pat2-elem are not equal")            
-;;               (throw 'not-unifiable nil))))
-;;         (pop pat1)
-;;         (pop pat2)
-;;         (u::prn "bindings: %s" bindings)
-;;         ;;(debug pat1 pat2 bindings)
-;;         ))
-;;     (prog1
-;;       (if (or pat1 pat2)
-;;         ;; not unifiable, return no bindings:
-;;         (progn
-;;           (u::prndiv ?\-)
-;;           (u::prn "pat1: %s" pat1)
-;;           (u::prn "pat2: %s" pat2)
-;;           (u::prn "not unifiable, return no bindings")
-;;           nil)
-;;         (or bindings t))
-;;       (u::prndiv))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun u::occurs (val expr)
+  "Does VAL occur anywhere inside EXPR?"
+  (cond
+    ((equal val expr) t)
+    ((consp expr) (or (occurs val (car expr)) (occurs val (cdr expr))))
+    (t nil)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
