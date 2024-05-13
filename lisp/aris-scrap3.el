@@ -100,7 +100,7 @@ Example:
           (prn "pat2: %s" pat2)
           (prn "not unifiable, return no bindings")
           nil)
-        (or bindings t))
+        bindings)
       (prndiv))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (unify1 '(2 + 1) '(2 + 1))
@@ -115,8 +115,11 @@ Example:
   returns (((\, y) . 1) ((\, x) . 2)))
 (confirm that (unify1 '(,x + 1) '(2 + ,y + 1))
   returns nil)
+
+;; bad:
 (confirm that (unify1 '(,x + 1 + 2) '(2 + ,y + 3))
   returns nil)
+
 (confirm that (unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (((\, y) . 1) ((\, x) . 2)))
 (confirm that (unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
