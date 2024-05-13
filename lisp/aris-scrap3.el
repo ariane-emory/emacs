@@ -474,6 +474,8 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil)
+
 (confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
   returns (((\, x) \, z) ((\, z) . 333)))
 (confirm that (u::unify2 '(333 + ,x) '(,x + 333) nil)
@@ -520,91 +522,120 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun u::equivalent-bindings? (bindings1 bindings2)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when BINDINGS1 and BINDINGS2 are equivalent. This is mainly intended for use in the unit tests:
+it won't detect every case of equivalency (such as recursive cases), but should handle the simple cases that
+are relevant to the unit tests correctly."
+  (cond
+    ((and (eq t bindings1) (eq t bindings2)))
+    ((or (eq t bindings1) (eq t bindings2)) nil)
+    (t 
+      (catch 'not-equivalent
+        (dolist (ordering (list (list bindings1 bindings2) (list bindings2 bindings1)))
+          (dolist (pair (car ordering))
+            (unless (dm::pat-elem-is-a-variable? (car pair))
+              (error "malformed bindings, cars in each pair should be variables: %s" pair))
+            (let ( (assoc  (assoc  (car pair) (cadr ordering)))
+                   (rassoc (rassoc (car pair) (cadr ordering))))
+              (cond
+                ((and assoc  (equal (cdr assoc)  (cdr pair))))
+                ((and rassoc (equal (car rassoc) (cdr pair))))
+                (t (throw 'not-equivalent nil))))))
+        t))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (u::equivalent-bindings?
+    '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
+  returns t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; comparison tests between `u::unify1' and `u::unify2'.
 ;; NOTE: `u::unify1' does not have occurs checking yet, so comparisons related to the occurs check
 ;;   are not included.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
   (let ((*u:bind-conses* t))
-    (equal
+    (u::equivalent-bindings?
       (u::unify1 '(1 + ,x) '(,y + (2 . 3)))
       (u::unify2 '(1 + ,x) '(,y + (2 . 3)) nil)))
   returns t)
 (confirm that
   (let ((*u:bind-conses* nil))
-    (equal
+    (u::equivalent-bindings?
       (u::unify1 '(1 + ,x) '(,y + (2 . 3)))
       (u::unify2 '(1 + ,x) '(,y + (2 . 3)) nil)))
   returns t)
-
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
     (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(333 + ,x) '(,x + 333))
     (u::unify2 '(333 + ,x) '(,x + 333) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(2 + 1) '(2 + 1))
     (u::unify2 '(2 + 1) '(2 + 1) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1) '(2 + 1))
     (u::unify2 '(,x + 1) '(2 + 1) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(2 + 1) '(,x + 1))
     (u::unify2 '(2 + 1) '(,x + 1) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,y + 1) '(,x + ,x))
     (u::unify2 '(,y + 1) '(,x + ,x) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1) '(2 + ,y))
     (u::unify2 '(,x + 1) '(2 + ,y) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1) '(2 + ,y + 1))
     (u::unify2 '(,x + 1) '(2 + ,y + 1) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1 + 2) '(2 + ,y + 3))
     (u::unify2 '(,x + 1 + 2) '(2 + ,y + 3) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
     (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
     (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b + 3) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1) '(2 + ,x))
     (u::unify2 '(,x + 1) '(2 + ,x) nil))
   returns t)
 (confirm that
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
     (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil))
   returns t)
 ;;---------------------------------------------------------------------------------------------------
 (confirm that ;; fails:
-  (equal
+  (u::equivalent-bindings?
     (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
     (u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil))
   returns t)
@@ -681,3 +712,5 @@ Example:
     (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))  ;; => (((\, x) f (\, y)))
   )
 
+
+;;(u::equivalent-bindings? '((a . 1) (b . 2)) '((b . 2) (2 . a) (1 . a))) ;; =>  nil
