@@ -505,6 +505,20 @@ Example:
   returns nil)
 (confirm that (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
   returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
+;;---------------------------------------------------------------------------------------------------
+;; occurs check tests:
+(confirm that
+  (let ((*u:occurs-check* nil))
+    (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))
+  returns (((\, y) f (\, x)) ((\, x) f (\, y))))
+(confirm that
+  (let ((*u:occurs-check* :soft))
+    (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))
+  returns (((\, x) f (\, y))))
+(confirm that
+  (let ((*u:occurs-check* t))
+    (u::unify2 '(,x ,y) '((f ,y) (f ,x)) nil))
+  returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
