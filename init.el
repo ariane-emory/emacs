@@ -841,6 +841,7 @@
            aris-funs--objects
            aris-funs--when-let-alist
            aris-funs--destructuring-match
+           aris-funs--unification
            aris-funs--microlog
            aris-types
            steve-loshs-funs--if-let
