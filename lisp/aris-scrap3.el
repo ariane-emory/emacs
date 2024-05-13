@@ -247,7 +247,10 @@ Example:
                 (cons (cons (car pat2) (car pat1))
                   bindings)))
             )
-          ;; (t (with-indentation (unify2 (cdr pat1) (cdr pat2) bindings)))
+          ;; may be impossible?
+          (t (debug)
+            (with-indentation (unify2 (cdr pat1) (cdr pat2) bindings))
+            )
           )))
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (atom (car pat2)))
       (prn "pat1-elem is the variable %s and pat2-elem is atom %s" (car pat1) (car pat2))
