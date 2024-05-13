@@ -332,11 +332,10 @@ Example:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify-variable-with-variable (pat1 pat2 bindings)
-  ;; if we entered this fun we already know that (car pat2) is a bound variable and that (car pat1)
-  ;; is unbound.
+  ;; if we entered this fun we already know that (car pat1) is unbound and that (car pat2) is a
+  ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
-    (if (and
-          (dm::pat-elem-is-a-variable? (cdr binding2))
+    (if (and (dm::pat-elem-is-a-variable? (cdr binding2))
           (u::occurs (car pat1) (cdr binding2) bindings))
       (progn
         (u::prn "avoid circular binding!")
@@ -442,7 +441,8 @@ Example:
 (u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
 (u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
 
-(u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil)
+(u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))     ; (((\, a) \, b) ((\, y) . 1) ((\, x) . 2))
+(u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,b) nil) ; (((\, b) \, a) ((\, y) . 1) ((\, x) . 2))
 
 (confirm that (u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)
   returns (((\, x) \, z) ((\, z) . 333)))
