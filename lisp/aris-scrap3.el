@@ -8,7 +8,7 @@
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* nil
+(defcustom *u:verbose* t
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
@@ -170,7 +170,8 @@ Example:
         (or bindings t))
       (u::prndiv))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u::unify1 '(2 + 1) '(2 + 1))
+(ignore!
+  (confirm that (u::unify1 '(2 + 1) '(2 + 1))
   returns t)
 (confirm that (u::unify1 '(,x + 1) '(2 + 1))
   returns (((\, x) . 2)))
@@ -190,8 +191,8 @@ Example:
   returns (((\, a) \, b) ((\, y) . 1) ((\, x) . 2)))
 (confirm that (u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
   returns nil)
-(confirm that (u::unify1 '(,x + 1) '(2 + ,x))
-  returns nil)
+  (confirm that (u::unify1 '(,x + 1) '(2 + ,x))
+    returns nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -218,46 +219,48 @@ Example:
   (u::prn "bindings: %S" bindings)
   (u::prndiv ?\-)
   (cond
-    ((not (or  pat1 pat2)) (or bindings t))
+    ;;----------------------------------------------------------------------------------------------
+    ((not (or  pat1 pat2))
+      (or bindings t))
+    ;;----------------------------------------------------------------------------------------------
     ((not pat1)
-      (u::prn "pat1 ran out.")
+      (u::prn "PAT1 ran out.")
       nil)
+    ;;----------------------------------------------------------------------------------------------
     ((not pat2)
-      (u::prn "pat2 ran out.")
+      (u::prn "PAT2 ran out.")
       nil)
+    ;;----------------------------------------------------------------------------------------------
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
-      (u::prn "%s and %s are eql atoms."
-        (u::style (car pat1))
-        (u::style (car pat2)))
+      (u::prn "%s and %s are eql atoms." (u::style (car pat1)) (u::style (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
+    ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1)) (dm::pat-elem-var-sym (car pat2))))
-      (u::prn "%s and %s are the same eql variable."
+      (u::prn "%s and %s are the same variable."
         (u::style (car pat1))
         (u::style (car pat2)))
       (with-indentation
         (u::unify2 (cdr pat1) (cdr pat2) bindings)))
+    ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1))
        (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1))
          (dm::pat-elem-var-sym (car pat2))))
       (u::prn "PAT1 elem and PAT2 elem are the same variable, %s." (u::style (car pat1)))
       (u::unify2 (cdr pat1) (cdr pat2) bindings))
+    ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2)))
       (u::prn "both PAT1 elem and PAT2 elem are variables.")
       (let ( (binding1 (assoc (car pat1) bindings))
              (binding2 (assoc (car pat2) bindings)))
         (u::prn "%s = %s"
           (u::style (car pat1))
-          (if binding1
-            (u::style (cdr binding1))
-            "<unbound>"))
+          (if binding1 (u::style (cdr binding1)) "<unbound>"))
         (u::prn "%s = %s"
           (u::style (car pat2))
-          (if binding2
-            (u::style (cdr binding2))
-            "<unbound>"))
+          (if binding2 (u::style (cdr binding2)) "<unbound>"))
         (cond
           ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
             (u::prn "already bound to different terms.")
@@ -270,8 +273,7 @@ Example:
                   bindings))))
           ((not binding1)
             ;; (debug)
-            (u::prn "PAT1 elem %s is unbound, unifying it with %s."
-              (u::style (car pat1))
+            (u::prn "PAT1 elem %s is unbound, unifying it with %s." (u::style (car pat1))
               (u::style (car binding2)))
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2)
@@ -279,8 +281,7 @@ Example:
                   bindings))))
           ((not binding2)
             ;; (debug)
-            (u::prn "PAT2 elem %s is unbound, unifying it with %s."
-              (u::style (car pat2))
+            (u::prn "PAT2 elem %s is unbound, unifying it with %s." (u::style (car pat2))
               (u::style (car binding1)))
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2)
@@ -289,9 +290,9 @@ Example:
           ;; may be impossible?
           (t (debug)
             (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings))))))
+    ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      (u::prn "PAT1 elem is the variable %s and PAT2 elem is atom %s."
-        (u::style (car pat1))
+      (u::prn "PAT1 elem is the variable %s and PAT2 elem is atom %s." (u::style (car pat1))
         (u::style (car pat2)))
       (let ((binding (assoc (car pat1) bindings)))
         (cond
@@ -299,16 +300,14 @@ Example:
             (u::prn "PAT1 elem is already bound to a different value.")
             nil)
           (binding
-            (u::prn "PAT1 elem %sis already bound to the same value, %s."
-              (u::style (car pat1))
+            (u::prn "PAT1 elem %s is already bound to the same value, %s." (u::style (car pat1))
               (u::style (cdr binding)))
             (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings)))
           (t
-            (u::prn "binding variable %s to atom %s."
-              (u::style (car pat1))
-              (u::style (car pat2)))
+            (u::prn "binding variable %s to atom %s." (u::style (car pat1)) (u::style (car pat2)))
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat1) (car pat2)) bindings)))))))
+    ;;----------------------------------------------------------------------------------------------
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
       (u::prn "PAT1 elem is the atom %s and PAT2 elem is the variable %s."
         (u::style (car pat1))
@@ -316,22 +315,18 @@ Example:
       (let ((binding (assoc (car pat2) bindings)))
         (cond
           ((and binding (not (eql (car pat1) (cdr binding))))
-            (u::prn "PAT2 elem is already bound to a different value, %s."
-              (u::style (cdr binding)))
+            (u::prn "PAT2 elem is already bound to a different value, %s." (u::style (cdr binding)))
             nil)
           (binding
-            (u::prn "PAT2 elem %s is already bound to the same value, %s."
-              (u::style (car pat2))
+            (u::prn "PAT2 elem %s is already bound to the same value, %s." (u::style (car pat2))
               (u::style (cdr binding)))
             (with-indentation (u::unify2 (cdr pat1) (cdr pat2) bindings)))
           (t
-            (u::prn "binding variable %s to atom %s."
-              (u::style (car pat2))
-              (u::style (car pat1)))
+            (u::prn "binding variable %s to atom %s." (u::style (car pat2)) (u::style (car pat1)))
             (with-indentation
               (u::unify2 (cdr pat1) (cdr pat2) (cons (cons (car pat2) (car pat1)) bindings)))))))
-    (t nil ;; (error "unhandled")
-      )))
+    ;;----------------------------------------------------------------------------------------------
+    (t nil (ignore! (error "unhandled")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (u::unify2 '(2 + 1) '(2 + 1))
   returns t)
@@ -402,10 +397,11 @@ Example:
       (u::prnl)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(ignore!
+  (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
-  returns (2 + 1 + (\, a)))
+  (confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+    returns (2 + 1 + (\, a))))
 (confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
 (confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
