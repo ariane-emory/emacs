@@ -850,51 +850,51 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unify (x y &optional bindings)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "See if x and y match with given bindings."
+(defun unify (thing1 thing2 &optional bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "See if THING1 and THING2 match with given BINDINGS."
   (let ((bindings (or bindings no-bindings)))
     (cond
       ((eq bindings fail)
         fail)
-      ((eql x y)
+      ((eql thing1 thing2)
         bindings)
-      ((variable-p x)
-        (unify-variable x y bindings))
-      ((variable-p y)
-        (unify-variable y x bindings))
-      ((and (consp x) (consp y))
-        (unify (rest x) (rest y)
-          (unify (first x) (first y) bindings)))
+      ((dm::pat-elem-is-a-variable? thing1)
+        (unify-variable thing1 thing2 bindings))
+      ((dm::pat-elem-is-a-variable? thing2)
+        (unify-variable thing2 thing1 bindings))
+      ((and (consp thing1) (consp thing2))
+        (unify (cdr thing1) (cdr thing2)
+          (unify (car thing1) (car thing2) bindings)))
       (t fail))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unify-variable (var x bindings)
+(defun unify-variable (var value bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Unify var with x, using (and maybe extending) bindings."
+  "Unify VAR with VALUE, using (and maybe extending) BINDINGS."
   (cond
     ((assoc var bindings)
-      (unify (cdr (assoc var bindings)) x bindings))
-    ((and (variable-p x) (assoc x bindings))
-      (unify var (cdr (assoc x bindings)) bindings))
-    ((and *occurs-check* (occurs-check var x bindings))
+      (unify (cdr (assoc var bindings)) value bindings))
+    ((and (dm::pat-elem-is-a-variable? value) (assoc value bindings))
+      (unify var (cdr (assoc value bindings)) bindings))
+    ((and *occurs-check* (occurs-check var value bindings))
       fail)
-    (t (extend-bindings var x bindings))))
+    (t (extend-bindings var value bindings))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun occurs-check (var x bindings)
+(defun occurs-check (var value bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Does var occur anywhere inside x?"
-  (cond ((eq var x) t)
-    ((and (variable-p x) (assoc x bindings))
-      (occurs-check var (cdr (assoc x bindings)) bindings))
-    ((consp x)
-      (or (occurs-check var (first x) bindings)
-        (occurs-check var (rest x) bindings)))
+  "Does VAR occur anywhere inside VALUE according to BINDINGS?"
+  (cond ((eq var value) t)
+    ((and (dm::pat-elem-is-a-variable? value) (assoc value bindings))
+      (occurs-check var (cdr (assoc value bindings)) bindings))
+    ((consp value)
+      (or (occurs-check var (car value) bindings)
+        (occurs-check var (cdr value) bindings)))
     (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -902,7 +902,7 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun extend-bindings (var val bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Add a (var . value) pair to a binding list."
+  "Add a (VAR . VALUE) pair to BINDINGS."
   (cons (cons var val)
     ;; Once we add a "real" binding,
     ;; we can get rid of the dummy no-bindings
@@ -911,28 +911,48 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun subst-bindings (bindings x)
+(defun subst-bindings (bindings expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Substitute the value of variables in bindings into x,
+  "Substitute the value of variables in BINDINGS into EXPR,
  taking recursively bound variables into account."
   (cond ((eq bindings fail) fail)
-    ((eq bindings no-bindings) x)
-    ((and (variable-p x) (get-binding x bindings))
-      (subst-bindings bindings (lookup x bindings)))
-    ((atom x) x)
-    (t (reuse-cons (subst-bindings bindings (car x))
-         (subst-bindings bindings (cdr x))
-         x))))
+    ((eq bindings no-bindings) expr)
+    ((and (dm::pat-elem-is-a-variable? expr) (assoc expr bindings))
+      (subst-bindings bindings (car (assoc expr bindings))))
+    ((atom expr) expr)
+    (t (u:reuse-cons (subst-bindings bindings (car expr))
+         (subst-bindings bindings (cdr expr)) expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unifier (x y)
+(defun unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return something that unifies with both x and y (or fail)."
-  (subst-bindings (unify x y) x))
+  "Return something that unifies with both THING1 and THING2 (or fail)."
+  (subst-bindings (unify thing2 thing1 thing2) thing1))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
+(unify '(,x ,y ,z) '(11 22 33))
+
+(setq lst '(,x ,y ,z))
+
+(defun fix (lst)
+  (dolist* (elem pos lst lst)
+    (when (and (consp elem) (eq '\, (car elem)) (not (cddr elem)))
+      (setcar pos (symbolicate- "var" (cadr elem))))))
+
+(defun fix (thing)
+  ;;  (debug thing)
+  (cond
+    ((null thing) nil)
+    ((atom thing) thing)
+    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)))
+      ;; (debug thing)
+      (symbolicate "?" (cadr thing)))
+    (t
+      (cons (fix (first thing)) (fix (rest thing))))))
+
+(fix '(,x ,y (,z 8 ,b . ,c)))
