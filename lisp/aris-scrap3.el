@@ -338,7 +338,8 @@ Example:
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           nil
           ;; (debug (cdr binding) variable value pat1 pat2 bindings)
-          (debug)
+          (debug :here) ; (u::unify2 nil '(,x ,y a) '(,y ,x ,x))
+          ;; probably should be ((,Y . A) (,X . ,Y))
           ;; This is wrong:
           (u::unify-variable-with-value2 (cdr binding) value pat1 pat2 bindings)))
       (binding
@@ -808,13 +809,12 @@ are relevant to the unit tests correctly."
   (u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)))
   (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
-  (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))) ;; => ((,y f ,x) (,x f ,y))
-
+  (let ((*u:occurs-check* nil))
+    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
   (let ((*u:occurs-check* :soft))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))  ;; => (((\, x) f (\, y)))
-
+    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
   (let ((*u:occurs-check* t))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))  ;; => (((\, x) f (\, y)))
+    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; nil
 
   (variable variable) ; bind var...
   (variable atom)     ; bind var...
