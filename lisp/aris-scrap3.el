@@ -148,41 +148,47 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-value (variable-pat value-pat)
+(defmacro u::unify-variable-with-value (pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Not portable: expects BINDING in surrounding env."
-  (let ( (variable-pat-name (upcase (symbol-name variable-pat)))
-         (value-pat-name    (upcase (symbol-name value-pat))))
+  (let ( (pat1-name (upcase (symbol-name pat1)))
+         (pat2-name    (upcase (symbol-name pat2))))
     `(progn
-       (u::prn "%s elem is a variable" ,variable-pat-name)
-       (let ((binding (assoc (car ,variable-pat) bindings)))
+       (u::prn "%s elem is a variable" ,pat1-name)
+       (let ((binding (assoc (car ,pat1) bindings)))
          (u::prn "%s elem is the variable %s and %s elem is the value %s."
-           ,variable-pat-name
-           (u::style (car ,variable-pat))
-           ,value-pat-name
-           (u::style (car ,value-pat)))
+           ,pat1-name
+           (u::style (car ,pat1))
+           ,pat2-name
+           (u::style (car ,pat2)))
          (cond
-           ((and binding (not (eql (car ,value-pat) (cdr binding)))) ;; should this be `equal'?
+           ((and binding (not (eql (car ,pat2) (cdr binding)))) ;; should this be `equal'?
              ;; ADD OCCURS CHECK!
              (u::prn "%s elem %s is already bound to a different value, %s."
-               ,variable-pat-name
-               (u::style (car ,variable-pat))
+               ,pat1-name
+               (u::style (car ,pat1))
                (u::style (cdr binding)))
-             (throw 'not-unifiable nil))
+             (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
+               (throw 'not-unifiable nil)
+               (debug))
+
+             )
            (binding
              (u::prn "%s elem %s is already bound to the same value, %s."
-               ,variable-pat-name
-               (u::style (car ,variable-pat))
+               ,pat1-name
+               (u::style (car ,pat1))
                (u::style (cdr binding))))
-           ((not (or *u:bind-conses* (atom (car ,value-pat))))
+           ((not (or *u:bind-conses* (atom (car ,pat2))))
              (throw 'not-unifiable nil))
            (t
              (u::prn "binding variable %s to atom %s."
-               (u::style (car ,variable-pat))
-               (u::style (car ,value-pat)))
-             (push (cons (car ,variable-pat) (car ,value-pat)) bindings)))))))
+               (u::style (car ,pat1))
+               (u::style (car ,pat2)))
+             (push (cons (car ,pat1) (car ,pat2)) bindings))))
+       bindings)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; (u::unify1 nil '(,x ,y a) '(,y ,x ,x))
+;; probably should be ((,Y . A) (,X . ,Y))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun u::unify1 (bindings pat1 pat2)
@@ -256,11 +262,11 @@ Example:
           ;;----------------------------------------------------------------------------------------------
           ;; variable on PAT1, value on PAT2:
           ((dm::pat-elem-is-a-variable? pat1-elem)
-            (u::unify-variable-with-value pat1 pat2))
+            (setf bindings (u::unify-variable-with-value pat1 pat2)))
           ;;----------------------------------------------------------------------------------------------
           ;; variable on PAT2, value on PAT1:
           ((dm::pat-elem-is-a-variable? pat2-elem)
-            (u::unify-variable-with-value pat2 pat1))
+            (setf bindings (u::unify-variable-with-value pat2 pat1)))
           ((equal pat1-elem pat2-elem)
             (u::prn "pat1 elem %s and pat2 elem %s are equal"
               (u::style (car pat1)) (u::style (car pat2))))
@@ -960,12 +966,12 @@ are relevant to the unit tests correctly."
 
 (n::unify1 nil '(x) '(11))
 
-(trace-function #'n::unify)
-(trace-function #'n::unify1)
-(trace-function #'n:unifier)
-(trace-function #'n::extend-bindings3)
-(trace-function #'n::fix-variables)
-(trace-function #'n::subst-bindings)
+;; (trace-function #'n::unify)
+;; (trace-function #'n::unify1)
+;; (trace-function #'n:unifier)
+;; (trace-function #'n::extend-bindings3)
+;; (trace-function #'n::fix-variables)
+;; (trace-function #'n::subst-bindings)
 ;; (untrace-all)
 
 (n::unify1 nil 'x 11) 
