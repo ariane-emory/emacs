@@ -848,39 +848,39 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify-variable (bindings var value)
+(defun n::unify-variable (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Unify VAR with VALUE, using (and maybe extending) BINDINGS."
+  "Unify VAR with EXPR, using (and maybe extending) BINDINGS."
   (cond
     ((assoc var bindings)
-      (n::unify1 (cdr (assoc var bindings)) value bindings))
-    ((and (n::variable-p value) (assoc value bindings))
-      (n::unify1 var (cdr (assoc value bindings)) bindings))
-    ((and *n:occurs-check* (n::occurs-check var value bindings))
+      (n::unify1 (cdr (assoc var bindings)) expr bindings))
+    ((and (n::variable-p expr) (assoc expr bindings))
+      (n::unify1 var (cdr (assoc expr bindings)) bindings))
+    ((and *n:occurs-check* (n::occurs-check bindings var expr))
       n::fail)
-    (t (n::extend-bindings var value bindings))))
+    (t (n::extend-bindings var expr bindings))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::occurs-check (var value bindings)
+(defun n::occurs-check (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Does VAR occur anywhere inside VALUE according to BINDINGS?"
-  (cond ((eq var value) t)
-    ((and (n::variable-p value) (assoc value bindings))
-      (n::occurs-check var (cdr (assoc value bindings)) bindings))
-    ((consp value)
-      (or (n::occurs-check var (car value) bindings)
-        (n::occurs-check var (cdr value) bindings)))
+  "Does VAR occur anywhere inside EXPR according to BINDINGS?"
+  (cond ((eq var expr) t)
+    ((and (n::variable-p expr) (assoc expr bindings))
+      (n::occurs-check bindings var (cdr (assoc expr bindings))))
+    ((consp expr)
+      (or (n::occurs-check bindings var (car expr))
+        (n::occurs-check bindings var (cdr expr))))
     (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::extend-bindings (var val bindings)
+(defun n::extend-bindings (var expr bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Add a (VAR . VALUE) pair to BINDINGS."
-  (cons (cons var val)
+  "Add a (VAR . EXPR) pair to BINDINGS."
+  (cons (cons var expr)
     ;; Once we add a "real" binding,
     ;; we can get rid of the dummy n::no-bindings
     (if (eq bindings n::no-bindings) nil bindings)))
