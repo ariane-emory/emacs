@@ -464,6 +464,64 @@ Example:
   ;; (uu::unify1 nil (uu::fix-variables thing1) (uu::fix-variables thing2))
   (uu::unify1 nil thing1 thing2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when *uu:test*
+  (confirm that (uu::unify1 '(,w ,x ,y) '(,x ,y ,w))
+    returns (((\, x) \, y) ((\, w) \, x)))
+  (confirm that (uu::unify1 '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+    returns (((\, y) \, z) ((\, x) \, y) ((\, w) \, x)))
+  (confirm that (uu::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
+    returns (((\, x) \, z) ((\, z) . 333)))
+  (confirm that (uu::unify1 '(333 + ,x) '(,x + 333))
+    returns (((\, x) . 333)))
+  (confirm that (uu::unify1 '(2 + 1) '(2 + 1))
+    returns t)
+  (confirm that (uu::unify1 '(,x + 1) '(2 + 1))
+    returns (((\, x) . 2)))
+  (confirm that (uu::unify1 '(2 + 1) '(,x + 1))
+    returns (((\, x) . 2)))
+  (confirm that (uu::unify1 '(,y + 1) '(,x + ,x))
+    returns (((\, x) . 1) ((\, y) \, x)))
+  (confirm that (uu::unify1 '(,x + 1) '(2 + ,y))
+    returns (((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify1 '(,x + 1) '(2 + ,y + 1))
+    returns nil)
+  (confirm that (uu::unify1 '(,x + 1 + 2) '(2 + ,y + 3))
+    returns nil)
+  (confirm that (uu::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+    returns (((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b))
+    returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify1 '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+    returns nil)
+  (confirm that (uu::unify1 '(,x + 1) '(2 + ,x))
+    returns nil)
+  (confirm that (uu::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+    returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
+  ;;---------------------------------------------------------------------------------------------------
+  ;; uncurl tails tests:
+  (confirm that (uu::unify1 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+    returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify1 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+    returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify1 '(,x ,y . ,z) '(1 2 . 3))
+    returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify1 '(,x ,y   ,z) '(1 2   3))
+    returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  ;;---------------------------------------------------------------------------------------------------
+  ;; occurs check tests:
+  (confirm that
+    (let ((*uu:occurs-check* nil))
+      (uu::unify1 '(,x ,y) '((f ,y) (f ,x))))
+    returns (((\, y) f (\, x)) ((\, x) f (\, y))))
+  (confirm that
+    (let ((*uu:occurs-check* :soft))
+      (uu::unify1 '(,x ,y) '((f ,y) (f ,x))))
+    returns (((\, x) f (\, y))))
+  (confirm that
+    (let ((*uu:occurs-check* t))
+      (uu::unify1 '(,x ,y) '((f ,y) (f ,x))))
+    returns nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
