@@ -112,7 +112,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::occurs (var expr bindings)
+(defun u::occurs (bindings var expr)
   "Doe VAR occur anywhere inside EXPR?"
   (u::prndiv ?\-)
   (u::prn "check if %s occurs in %s" (u::style var) (u::style expr))
@@ -124,16 +124,16 @@
            ((assoc expr bindings)
              (with-indentation
                (u::prndiv ?\-)
-               (u::occurs var (cdr (assoc expr bindings)) bindings)))
+               (u::occurs bindings var (cdr (assoc expr bindings)))))
            (t nil))
          (cond
            ((consp expr) (or
                            (with-indentation
                              (u::prndiv ?\-)
-                             (u::occurs var (car expr) bindings))
+                             (u::occurs bindings var (car expr)))
                            (with-indentation
                              (u::prndiv ?\-)
-                             (u::occurs var (cdr expr) bindings))))
+                             (u::occurs bindings var (cdr expr)))))
            ((eq var expr))))))
     (u::prn "%s %s in %s"
       (u::style var)
@@ -143,9 +143,9 @@
     ;; (u::prndiv ?\-)
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u::occurs '(\, y) '(f (\, x)) '(((\, x) f (\, y)))) returns t)
-(confirm that (u::occurs 'x '(f (\, x)) nil) returns nil)
-(confirm that (u::occurs 'x '(f (\, x)) '(((\, x) f (\, y)))) returns nil)
+(confirm that (u::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
+(confirm that (u::occurs nil 'x '(f (\, x))) returns nil)
+(confirm that (u::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -325,7 +325,7 @@ Example:
       (u::style variable)
       (u::style value))
     (cond
-      ((and *u:occurs-check* (u::occurs variable value bindings))
+      ((and *u:occurs-check* (u::occurs bindings variable value))
         (u::prn "occurs check failed, not unifying.")
         (when (eq *u:occurs-check* :soft)
           (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
@@ -359,7 +359,7 @@ Example:
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
     (if (and (dm::pat-elem-is-a-variable? (cdr binding2))
-          ;; (u::occurs (car pat1) (cdr binding2) bindings)
+          ;; (u::occurs bindings (car pat1) (cdr binding2))
           )
       (progn
         (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
@@ -1036,9 +1036,9 @@ are relevant to the unit tests correctly."
   (n::fix-variables '(,z + (4 * 5) + 3)))
 
 (u::unify2
+  nil
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
-  '(,z + (4 * 5) + 3)
-  nil)
+  '(,z + (4 * 5) + 3))
 
 
 (u::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
