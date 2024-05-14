@@ -393,12 +393,22 @@ Example:
   (u::prn "bindings: %S" bindings)
   (u::prndiv ?\-)
   ;; uncurl tails:
-  (cond
-    ((and pat1 (atom pat1)) (setf pat1 (list pat1)))
-    ((and (eq (car pat1) '\,) (not (cddr pat1))) (setf pat1 (list (list '\, (cadr pat1))))))
-  (cond
-    ((and pat2 (atom pat2)) (setf pat2 (list pat2)))
-    ((and (eq (car pat2) '\,) (not (cddr pat2))) (setf pat2 (list (list '\, (cadr pat2))))))
+  (let ((pat1-tail-type
+          (cond
+            ((and pat1 (atom pat1)) :tail)
+            ((and (eq (car pat1) '\,) (not (cddr pat1))) :wayward-comma)))
+         (pat2-tail-type
+           (cond
+             ((and pat2 (atom pat2)) :tail)
+             ((and (eq (car pat2) '\,) (not (cddr pat2))) :wayward-comma))))
+    (when (and pat1-tail-type pat2-tail-type)
+      (cond
+        ((eq pat1-tail-type :tail) (setf pat1 (list pat1)))
+        ((eq pat1-tail-type :wayward-comma) (setf pat1 (list (list '\, (cadr pat1))))))
+      (cond
+        ((eq pat2-tail-type :tail) (setf pat2 (list pat2)))
+        ((eq pat2-tail-type :wayward-comma) (setf pat2 (list (list '\, (cadr pat2))))))))
+  
   (cond
     ;;----------------------------------------------------------------------------------------------
     ((not (or pat1 pat2))
@@ -802,3 +812,5 @@ are relevant to the unit tests correctly."
   )
 
 (u::unify2 '(,x ,y . ,z) '(1 2 . 3) nil)
+(u::unify2 '(,x ,y . ,z) '(1 2   3) nil)
+(u::unify2 '(,x ,y   ,z) '(1 2   3) nil)
