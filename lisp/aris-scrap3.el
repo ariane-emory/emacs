@@ -838,7 +838,7 @@ are relevant to the unit tests correctly."
 
 
 
-(u::unify2 '(,x (,y ,z)) '(3 (5 7)) nil)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Norvigian version follows:
@@ -854,7 +854,9 @@ are relevant to the unit tests correctly."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if x and y match with given bindings."
   (let ((bindings (or bindings no-bindings)))
-    (cond ((eq bindings fail) fail)
+    (cond
+      ((eq bindings fail)
+        fail)
       ((eql x y)
         bindings)
       ((variable-p x)
@@ -873,10 +875,10 @@ are relevant to the unit tests correctly."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unify var with x, using (and maybe extending) bindings."
   (cond
-    ((get-binding var bindings)
-      (unify (lookup var bindings) x bindings))
-    ((and (variable-p x) (get-binding x bindings))
-      (unify var (lookup x bindings) bindings))
+    ((assoc var bindings)
+      (unify (cdr (assoc var bindings)) x bindings))
+    ((and (variable-p x) (assoc x bindings))
+      (unify var (cdr (assoc x bindings)) bindings))
     ((and *occurs-check* (occurs-check var x bindings))
       fail)
     (t (extend-bindings var x bindings))))
@@ -888,8 +890,8 @@ are relevant to the unit tests correctly."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Does var occur anywhere inside x?"
   (cond ((eq var x) t)
-    ((and (variable-p x) (get-binding x bindings))
-      (occurs-check var (lookup x bindings) bindings))
+    ((and (variable-p x) (assoc x bindings))
+      (occurs-check var (cdr (assoc x bindings)) bindings))
     ((consp x)
       (or (occurs-check var (first x) bindings)
         (occurs-check var (rest x) bindings)))
@@ -906,3 +908,31 @@ are relevant to the unit tests correctly."
     ;; we can get rid of the dummy no-bindings
     (if (eq bindings no-bindings) nil bindings)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun subst-bindings (bindings x)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Substitute the value of variables in bindings into x,
+ taking recursively bound variables into account."
+  (cond ((eq bindings fail) fail)
+    ((eq bindings no-bindings) x)
+    ((and (variable-p x) (get-binding x bindings))
+      (subst-bindings bindings (lookup x bindings)))
+    ((atom x) x)
+    (t (reuse-cons (subst-bindings bindings (car x))
+         (subst-bindings bindings (cdr x))
+         x))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unifier (x y)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Return something that unifies with both x and y (or fail)."
+  (subst-bindings (unify x y) x))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
