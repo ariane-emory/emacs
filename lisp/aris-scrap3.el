@@ -864,9 +864,9 @@ are relevant to the unit tests correctly."
   "Unify VAR with EXPR, using (and maybe extending) BINDINGS."
   (cond
     ((assoc var bindings)
-      (n::unify1 (cdr (assoc var bindings)) expr bindings))
+      (n::unify1 bindings (cdr (assoc var bindings)) expr))
     ((and (n::variable-p expr) (assoc expr bindings))
-      (n::unify1 var (cdr (assoc expr bindings)) bindings))
+      (n::unify1 bindings var (cdr (assoc expr bindings))))
     ((and *n:occurs-check* (n::occurs-check bindings var expr))
       n::fail)
     (t (n::extend-bindings bindings var expr))))
@@ -926,7 +926,7 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify1 (thing1 thing2 &optional bindings)
+(defun n::unify1 (bindings thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if THING1 and THING2 match with given BINDINGS."
   (let ((bindings (or bindings n::no-bindings)))
@@ -945,8 +945,9 @@ are relevant to the unit tests correctly."
         (n::unify-variable bindings thing2 thing1))
       ((and (consp thing1) (consp thing2))
         ;; (debug nil 3)
-        (n::unify1 (cdr thing1) (cdr thing2)
-          (n::unify1 (car thing1) (car thing2) bindings)))
+        (n::unify1 (n::unify1 bindings (car thing1) (car thing2))
+          (cdr thing1)
+          (cdr thing2)))
       (t
         ;; (debug nil 5)
         n::fail))))
@@ -957,7 +958,7 @@ are relevant to the unit tests correctly."
 (defun n::unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if THING1 and THING2 match with given BINDINGS."
-  (n::unify1 (n::fix-variables thing1) (n::fix-variables thing2)))
+  (n::unify1 nil (n::fix-variables thing1) (n::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -965,13 +966,11 @@ are relevant to the unit tests correctly."
 (defun n:unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
-  (let ( (thing1 (n::fix-variables thing1))
-         (thing2 (n::fix-variables thing2)))
-    (n::subst-bindings (n::unify1 thing2 thing1) thing2)))
+  (n::subst-bindings (n::unify thing2 thing1) thing2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(n::unify1 '(x) '(11))
+(n::unify1 nil '(x) '(11))
 
 (trace-function #'n::unify)
 (trace-function #'n::unify1)
@@ -981,28 +980,27 @@ are relevant to the unit tests correctly."
 (trace-function #'n::subst-bindings)
 ;; (untrace-all)
 
-(n::unify1 'x 11) 
-(n::unify1 '(x y z) '(11 22 33)) ;; sus.
+(n::unify1 nil 'x 11) 
+(n::unify1 nil '(x y z) '(11 22 33)) 
 
-(n::unify1 (n::fix-variables '(,x ,y ,z)) '(11 22 33))
-(n::unify1 (n::fix-variables '(,x ,y ,z)) (n::fix-variables '(,x ,y ,z)))
+(n::unify1 nil (n::fix-variables '(,x ,y ,z)) '(11 22 33))
+(n::unify1 nil (n::fix-variables '(,x ,y ,z)) (n::fix-variables '(,x ,y ,z)))
 
-(n::unify1 (n::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
+(n::unify1 nil  (n::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
 (n::variable-p (car (n::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
 
 (n::unify
+  '(,u ,v ,w ,x)
+  '(,x ,u ,v 333))
+
+(n::unify1
+  nil
   (n::fix-variables '(,u ,v ,w ,x))
   (n::fix-variables '(,x ,u ,v 333)))
 
-(n::unify1
-  (n::fix-variables '(,u ,v ,w ,x))
-  (n::fix-variables '(,x ,u ,v 333))
-  nil)
-
 (n::unify
-  (n::fix-variables '((,a * ,x ^ 2) + (,b * ,x) + ,c))
-  (n::fix-variables '(,z + (4 * 5) + 3)))
-
+  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+  '(,z + (4 * 5) + 3))
 
 (u::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
