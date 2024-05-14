@@ -98,7 +98,7 @@
     ((atom thing) thing)
     ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
       (intern (concat "?" (symbol-name (cadr thing)))))
-    (t (cons (uu::fix-variables (car thing)) (uu::fix-variables (rest thing))))))
+    (t (cons (uu::fix-variables (car thing)) (uu::fix-variables (cdr thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -299,11 +299,13 @@ Example:
   (let ((pat1-tail-type
           (cond
             ((and pat1 (atom pat1)) :tail)
-            ((and (eq (car pat1) '\,) (not (cddr pat1))) :wayward-comma)))
+            ;; ((and (eq (car pat1) '\,) (not (cddr pat1))) :wayward-comma)
+            ))
          (pat2-tail-type
            (cond
              ((and pat2 (atom pat2)) :tail)
-             ((and (eq (car pat2) '\,) (not (cddr pat2))) :wayward-comma))))
+             ;; ((and (eq (car pat2) '\,) (not (cddr pat2))) :wayward-comma)
+             )))
     (uu::prn "tt1:     %S" pat1-tail-type)
     (uu::prn "tt2:     %S" pat2-tail-type)
     (when (and pat1-tail-type pat2-tail-type)      
