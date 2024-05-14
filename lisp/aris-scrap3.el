@@ -15,6 +15,13 @@
   :group 'unify
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
+(defcustom *uu:test* t
+  ;; (setq *uu:test* nil)
+  ;; (setq *uu:test* t)
+  "Whether or not unit test are enables."
+  :group 'unify
+  :type 'boolean)
+;;---------------------------------------------------------------------------------------------------
 (defcustom *uu:div-width* 90
   "Div width used by functions in the 'unify' group."
   :group 'unify
@@ -118,10 +125,11 @@ are relevant to the unit tests correctly."
                 (t (throw 'not-equivalent nil))))))
         t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (uu::equivalent-bindings?
-    '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
-  returns t)
+(when *uu:test*
+  (confirm that
+    (uu::equivalent-bindings?
+      '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
+    returns t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -136,9 +144,10 @@ bound to."
       (when (equal (cdr pair2) (car pair1))
         (setcdr pair2 (cdr pair1))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (uu::simplify-bindings (uu::unify1 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
-  returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333)))
+(when *uu:test*
+  (confirm that
+    (uu::simplify-bindings (uu::unify1 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
+    returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -205,9 +214,10 @@ bound to."
       (uu::style expr))
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (uu::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
-(confirm that (uu::occurs nil 'x '(f (\, x))) returns nil)
-(confirm that (uu::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns nil)
+(when *uu:test*
+  (confirm that (uu::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
+  (confirm that (uu::occurs nil 'x '(f (\, x))) returns nil)
+  (confirm that (uu::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -387,70 +397,80 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (uu::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (uu::unify1 nil '(,w ,x ,y) '(,x ,y ,w))
-  returns (((\, x) \, y) ((\, w) \, x)))
-(confirm that (uu::unify1 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
-  returns (((\, y) \, z) ((\, x) \, y) ((\, w) \, x)))
-(confirm that (uu::unify1 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
-  returns (((\, x) \, z) ((\, z) . 333)))
-(confirm that (uu::unify1 nil '(333 + ,x) '(,x + 333))
-  returns (((\, x) . 333)))
-(confirm that (uu::unify1 nil '(2 + 1) '(2 + 1))
-  returns t)
-(confirm that (uu::unify1 nil '(,x + 1) '(2 + 1))
-  returns (((\, x) . 2)))
-(confirm that (uu::unify1 nil '(2 + 1) '(,x + 1))
-  returns (((\, x) . 2)))
-(confirm that (uu::unify1 nil '(,y + 1) '(,x + ,x))
-  returns (((\, x) . 1) ((\, y) \, x)))
-(confirm that (uu::unify1 nil '(,x + 1) '(2 + ,y))
-  returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (uu::unify1 nil '(,x + 1) '(2 + ,y + 1))
-  returns nil)
-(confirm that (uu::unify1 nil '(,x + 1 + 2) '(2 + ,y + 3))
-  returns nil)
-(confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
-  returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
-  returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
-(confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
-  returns nil)
-(confirm that (uu::unify1 nil '(,x + 1) '(2 + ,x))
-  returns nil)
-(confirm that (uu::unify1 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
-  returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
-;;---------------------------------------------------------------------------------------------------
-;; uncurl tails tests:
-(confirm that (uu::unify1 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-  returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-(confirm that (uu::unify1 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-  returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-(confirm that (uu::unify1 nil '(,x ,y . ,z) '(1 2 . 3))
-  returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-(confirm that (uu::unify1 nil '(,x ,y   ,z) '(1 2   3))
-  returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-;;---------------------------------------------------------------------------------------------------
-;; occurs check tests:
-(confirm that
-  (let ((*uu:occurs-check* nil))
-    (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
-  returns (((\, y) f (\, x)) ((\, x) f (\, y))))
-(confirm that
-  (let ((*uu:occurs-check* :soft))
-    (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
-  returns (((\, x) f (\, y))))
-(confirm that
-  (let ((*uu:occurs-check* t))
-    (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
-  returns nil)
+(when *uu:test*
+  (confirm that (uu::unify1 nil '(,w ,x ,y) '(,x ,y ,w))
+    returns (((\, x) \, y) ((\, w) \, x)))
+  (confirm that (uu::unify1 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+    returns (((\, y) \, z) ((\, x) \, y) ((\, w) \, x)))
+  (confirm that (uu::unify1 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
+    returns (((\, x) \, z) ((\, z) . 333)))
+  (confirm that (uu::unify1 nil '(333 + ,x) '(,x + 333))
+    returns (((\, x) . 333)))
+  (confirm that (uu::unify1 nil '(2 + 1) '(2 + 1))
+    returns t)
+  (confirm that (uu::unify1 nil '(,x + 1) '(2 + 1))
+    returns (((\, x) . 2)))
+  (confirm that (uu::unify1 nil '(2 + 1) '(,x + 1))
+    returns (((\, x) . 2)))
+  (confirm that (uu::unify1 nil '(,y + 1) '(,x + ,x))
+    returns (((\, x) . 1) ((\, y) \, x)))
+  (confirm that (uu::unify1 nil '(,x + 1) '(2 + ,y))
+    returns (((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify1 nil '(,x + 1) '(2 + ,y + 1))
+    returns nil)
+  (confirm that (uu::unify1 nil '(,x + 1 + 2) '(2 + ,y + 3))
+    returns nil)
+  (confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
+    returns (((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
+    returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+    returns nil)
+  (confirm that (uu::unify1 nil '(,x + 1) '(2 + ,x))
+    returns nil)
+  (confirm that (uu::unify1 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+    returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
+  ;;---------------------------------------------------------------------------------------------------
+  ;; uncurl tails tests:
+  (confirm that (uu::unify1 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+    returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify1 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+    returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify1 nil '(,x ,y . ,z) '(1 2 . 3))
+    returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify1 nil '(,x ,y   ,z) '(1 2   3))
+    returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  ;;---------------------------------------------------------------------------------------------------
+  ;; occurs check tests:
+  (confirm that
+    (let ((*uu:occurs-check* nil))
+      (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
+    returns (((\, y) f (\, x)) ((\, x) f (\, y))))
+  (confirm that
+    (let ((*uu:occurs-check* :soft))
+      (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
+    returns (((\, x) f (\, y))))
+  (confirm that
+    (let ((*uu:occurs-check* t))
+      (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
+    returns nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun uu::unify (thing1 thing2)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Unidy THING1 and THING2 and produce an alist of bindings."
+  ;; (uu::unify1 nil (uu::fix-variables thing1) (uu::fix-variables thing2))
+  (uu::unify1 nil thing1 thing2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun uu:unifier (pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "My version of Norvig's unifier."
-  (let* ( (bindings (uu::unify1 nil pat1 pat2))
+  "My version of Norvig's `n:unifier'."
+  (let* ( (bindings (uu::unify pat1 pat2))
           (bindings (if *uu:unifier-simplifies*
                       (uu::simplify-bindings bindings)
                       bindings)))
@@ -461,47 +481,48 @@ Example:
       (uu::prnl)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (uu:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
-  returns (2 + 1 + 2 + 2))
-(confirm that (uu:unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
-  returns (2 + 1 + (\, a)))
-(confirm that (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z))
-  returns (333 + 333 + 333))
-(confirm that
-  (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
-  returns (2 + 1 + 8 + 8))
-(confirm that
-  (let ( (*uu:verbose* t)
-         (*uu:unifier-simplifies* nil))
-    (uu:unifier 
-      '(,v ,u ,w ,x)
-      '(,u ,x ,v 333)))
-  returns (333 333 333 333))
-(confirm that
-  (let ( (*uu:verbose* t)
-         (*uu:unifier-simplifies* t))
-    (uu:unifier 
-      '(,v ,u ,w ,x)
-      '(,u ,x ,v 333)))
-  returns (333 333 333 333))
-(ignore!
-  (let ((reps 5000))
-    (list
-      (benchmark-run reps
-        (let ( (*uu:verbose* nil)
-               (*uu:unifier-simplifies* nil))
-          (uu:unifier 
-            '(,u ,v ,w ,x)
-            '(,x ,u ,v 333)))))))
-;; uncurl tails:
-(confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-  returns (1 2 3 . 4))
-(confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-  returns (1 2 3 . 4))
-(confirm that (uu:unifier '(,x ,y . ,z) '(1 2 . 3))
-  returns (1 2 . 3))
-(confirm that (uu:unifier '(,x ,y   ,z) '(1 2   3))
-  returns (1 2 3))
+(when *uu:test*
+  (confirm that (uu:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+    returns (2 + 1 + 2 + 2))
+  (confirm that (uu:unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
+    returns (2 + 1 + (\, a)))
+  (confirm that (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z))
+    returns (333 + 333 + 333))
+  (confirm that
+    (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+    returns (2 + 1 + 8 + 8))
+  (confirm that
+    (let ( (*uu:verbose* t)
+           (*uu:unifier-simplifies* nil))
+      (uu:unifier 
+        '(,v ,u ,w ,x)
+        '(,u ,x ,v 333)))
+    returns (333 333 333 333))
+  (confirm that
+    (let ( (*uu:verbose* t)
+           (*uu:unifier-simplifies* t))
+      (uu:unifier 
+        '(,v ,u ,w ,x)
+        '(,u ,x ,v 333)))
+    returns (333 333 333 333))
+  (ignore!
+    (let ((reps 5000))
+      (list
+        (benchmark-run reps
+          (let ( (*uu:verbose* nil)
+                 (*uu:unifier-simplifies* nil))
+            (uu:unifier 
+              '(,u ,v ,w ,x)
+              '(,x ,u ,v 333)))))))
+  ;; uncurl tails:
+  (confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+    returns (1 2 3 . 4))
+  (confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+    returns (1 2 3 . 4))
+  (confirm that (uu:unifier '(,x ,y . ,z) '(1 2 . 3))
+    returns (1 2 . 3))
+  (confirm that (uu:unifier '(,x ,y   ,z) '(1 2   3))
+    returns (1 2 3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -665,7 +686,7 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n::unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "See if THING1 and THING2 match with given BINDINGS."
+  "Unidy THING1 and THING2 and produce an alist of bindings."
   (n::unify1 nil (uu::fix-variables thing1) (uu::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -676,6 +697,9 @@ Example:
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
   (n::subst-bindings (n::unify thing2 thing1) (uu::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 
 (n::unify1 nil '(x) '(11))
 
