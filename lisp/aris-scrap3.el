@@ -850,27 +850,6 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unify (thing1 thing2 &optional bindings)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "See if THING1 and THING2 match with given BINDINGS."
-  (let ((bindings (or bindings no-bindings)))
-    (cond
-      ((eq bindings fail)
-        fail)
-      ((eql thing1 thing2)
-        bindings)
-      ((variable-p thing1)
-        (unify-variable thing1 thing2 bindings))
-      ((variable-p thing2)
-        (unify-variable thing2 thing1 bindings))
-      ((and (consp thing1) (consp thing2))
-        (unify (cdr thing1) (cdr thing2)
-          (unify (car thing1) (car thing2) bindings)))
-      (t fail))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun unify-variable (var value bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unify VAR with VALUE, using (and maybe extending) BINDINGS."
@@ -953,6 +932,35 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unify (thing1 thing2 &optional bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "See if THING1 and THING2 match with given BINDINGS."
+  (let ((bindings (or bindings no-bindings)))
+    (cond
+      ((eq bindings fail) (debug nil 1)
+        fail)
+      ((eql thing1 thing2) (debug nil 2)
+        bindings)
+      ((variable-p thing1) (debug nil 3)
+        (unify-variable thing1 thing2 bindings))
+      ((variable-p thing2) (debug nil 4)
+        (unify-variable thing2 thing1 bindings))
+      ((and (consp thing1) (consp thing2)) (debug nil 4)
+        (unify (cdr thing1) (cdr thing2)
+          (unify (car thing1) (car thing2) bindings)))
+      (t
+        (debug nil 5)
+        fail))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(unify 'x 11) ;; sus
+
+(trace-function #'unify)
+(unify '(x) '(11)) ;; sus.
+
+
 (unify '(x y z) '(11 22 33)) ;; sus.
 
 (unify (fix-variables '(,x ,y ,z)) '(11 22 33))
@@ -964,4 +972,3 @@ are relevant to the unit tests correctly."
 (fix-variables '(,x ,y (,z 8 ,b . ,c)))
 (variable-p (car (fix-variables '(,x ,y (,z 8 ,b . \?c)))))
 
-(message "%s" '\?x)
