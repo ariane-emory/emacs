@@ -148,34 +148,42 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro u::unify-variable-with-value (bindings pat1 pat2)
+(defun u::unify-variable-with-value (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(let* ( (variable (car ,pat1))
-           (value    (car ,pat2))
-           (binding  (assoc variable ,bindings)))
-     (u::prn "try to unify the variable %s and with the value %s." (u::style variable)
-       (u::style value))
-     (cond
-       ((and binding (not (eql (car ,pat2) (cdr binding)))) ;; should this be `equal'?
-         ;; ADD OCCURS CHECK!
-         (u::prn "variable %s is already bound to a different value, %s."
-           (u::style (car ,pat1))
-           (u::style (cdr binding)))
-         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
-           (throw 'not-unifiable nil)
-           (debug)))
-       (binding
-         (u::prn "variable %s is already bound to the same value, %s."
-           (u::style (car ,pat1))
-           (u::style (cdr binding))))
-       ((not (or *u:bind-conses* (atom (car ,pat2))))
-         (throw 'not-unifiable nil))
-       (t
-         (u::prn "binding variable %s to atom %s."
-           (u::style (car ,pat1))
-           (u::style (car ,pat2)))
-         (push (cons (car ,pat1) (car ,pat2)) ,bindings)))
-     ,bindings))
+  (let* ( (variable (car pat1))
+          (value    (car pat2))
+          (binding  (assoc variable bindings)))
+    (u::prn "try to unify the variable %s and with the value %s." (u::style variable)
+      (u::style value))
+    (cond
+      ((and *u:occurs-check* (u::occurs bindings variable value))
+        (u::prn "occurs check failed, not unifying.")
+        (if (eq *u:occurs-check* :soft)
+          (progn 
+            (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
+            bindings)
+          (throw 'not-unifiable nil)))
+      ((and binding (not (equal (car pat2) (cdr binding)))) 
+        (u::prn "variable %s is already bound to a different value, %s."
+          (u::style (car pat1))
+          (u::style (cdr binding)))
+        (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
+          (throw 'not-unifiable nil)
+          (debug nil (cons (cdr binding) (cdr pat1)) pat2)
+          (u::unify-variable-with-value bindings (cons (cdr binding) (cdr pat1)) pat2)
+          ))
+      (binding
+        (u::prn "variable %s is already bound to the same value, %s."
+          (u::style (car pat1))
+          (u::style (cdr binding))))
+      ((not (or *u:bind-conses* (atom (car pat2))))
+        (throw 'not-unifiable nil))
+      (t
+        (u::prn "binding variable %s to atom %s."
+          (u::style (car pat1))
+          (u::style (car pat2)))
+        (push (cons (car pat1) (car pat2)) bindings)))
+    bindings))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (u::unify1 nil '(,x ,y a) '(,y ,x ,x))
 ;; probably should be ((,Y . A) (,X . ,Y))
@@ -230,10 +238,11 @@ Example:
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT1's var not bound, unify with PAT2's var:
                 ((not binding1)
-                  (u::prn "PAT1 elem %s is unbound, unifying it with %s."
-                    (u::style (car pat1))
-                    (u::style (car binding2)))
-                  (push (cons pat1-elem pat2-elem) bindings))
+                  (let ((binding2 (assoc (car pat2) bindings)))
+                    (u::prn "PAT1 elem %s is unbound, unifying it with %s."
+                      (u::style (car pat1))
+                      (u::style (car binding2)))
+                    (push (cons pat1-elem pat2-elem) bindings)))
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT2's var not bound, unify with PAT1's var:
                 ((not binding2)
@@ -326,7 +335,7 @@ Example:
         (when (eq *u:occurs-check* :soft)
           (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
           (u::unify2 bindings (cdr pat1) (cdr pat2))))
-      ((and binding (not (eql value (cdr binding))))
+      ((and binding (not (equal value (cdr binding))))
         (u::prn "variable %s is already bound to a different value, %s."
           (u::style variable)
           (u::style (cdr binding)))
@@ -352,9 +361,7 @@ Example:
   ;; if we entered this fun we already know that (car pat1) is unbound and that (car pat2) is a
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
-    (if (and (dm::pat-elem-is-a-variable? (cdr binding2))
-          ;; (u::occurs bindings (car pat1) (cdr binding2))
-          )
+    (if (and (dm::pat-elem-is-a-variable? (cdr binding2)))
       (progn
         (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
           (u::style (car pat1))
