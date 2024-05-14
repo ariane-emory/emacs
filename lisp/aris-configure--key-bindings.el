@@ -224,9 +224,9 @@
   ("C-/" . comment-or-uncomment-region)
 
   ;; Describe these:
-  ("s-<backspace>" . macrostep-mode)
-  ("s-m" . macrostep-mode)
-  ("M-m" . macrostep-mode)
+  ;; ("s-<backspace>" . macrostep-mode)
+  ;; ("s-m" . macrostep-mode)
+  ;; ("M-m" . macrostep-mode)
   ("C-c C-e" . ignore)
   ("M-\\" . ignore)
   ("S-<delete>" . ignore)
