@@ -844,7 +844,7 @@ are relevant to the unit tests correctly."
 ;; Norvigian version follows:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar *occurs-check* t)
-(defvar fail nil)
+(defvar fail '(nil . nil))
 (defvar no-bindings '((t . t)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -939,36 +939,41 @@ are relevant to the unit tests correctly."
   "See if THING1 and THING2 match with given BINDINGS."
   (let ((bindings (or bindings no-bindings)))
     (cond
-      ((eq bindings fail) (debug nil 1)
+      ((eq bindings fail)
+        ;; (debug nil 1)
         fail)
-      ((eql thing1 thing2) (debug nil 2)
+      ((eql thing1 thing2)
+        ;; (debug nil 2)
         bindings)
-      ((variable-p thing1) (debug nil 3)
+      ((variable-p thing1)
+        ;; (debug nil 3)
         (unify-variable thing1 thing2 bindings))
-      ((variable-p thing2) (debug nil 4)
+      ((variable-p thing2)
+        ;; (debug nil 4)
         (unify-variable thing2 thing1 bindings))
-      ((and (consp thing1) (consp thing2)) (debug nil 4)
+      ((and (consp thing1) (consp thing2))
+        ;; (debug nil 4)
         (unify (cdr thing1) (cdr thing2)
           (unify (car thing1) (car thing2) bindings)))
       (t
-        (debug nil 5)
+        ;; (debug nil 5)
         fail))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(unify 'x 11) ;; sus
-
-(trace-function #'unify)
 (unify '(x) '(11)) ;; sus.
 
+(unify nil nil nil)
+(trace-function #'unify)
+(trace-function #'extend-bindings)
 
+
+(unify 'x 11) 
 (unify '(x y z) '(11 22 33)) ;; sus.
 
 (unify (fix-variables '(,x ,y ,z)) '(11 22 33))
 
 
-(setq lst '(,x ,y ,z))
 
-
-(fix-variables '(,x ,y (,z 8 ,b . ,c)))
+(unify (fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
 (variable-p (car (fix-variables '(,x ,y (,z 8 ,b . \?c)))))
 
