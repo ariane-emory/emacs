@@ -855,9 +855,9 @@ are relevant to the unit tests correctly."
   "Unify VAR with VALUE, using (and maybe extending) BINDINGS."
   (cond
     ((assoc var bindings)
-      (n::unify (cdr (assoc var bindings)) value bindings))
+      (n::unify1 (cdr (assoc var bindings)) value bindings))
     ((and (n::variable-p value) (assoc value bindings))
-      (n::unify var (cdr (assoc value bindings)) bindings))
+      (n::unify1 var (cdr (assoc value bindings)) bindings))
     ((and *n:occurs-check* (n::occurs-check var value bindings))
       n::fail)
     (t (n::extend-bindings var value bindings))))
@@ -924,10 +924,12 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unifier (thing1 thing2)
+(defun n:unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
-  (n::subst-bindings (n::unify thing2 thing1) thing2))
+  (let ( (thing1 (n::fix-variables thing1))
+         (thing2 (n::fix-variables thing2)))
+    (n::subst-bindings (n::unify1 thing2 thing1) thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -942,6 +944,8 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n::fix-variables (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn comma-prefixed variable designators like ,X / (\, X) into symbols like \?X anywhere in THING
+(including improper tails)."
   (cond
     ((atom thing) thing)
     ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
@@ -950,9 +954,8 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify (thing1 thing2 &optional bindings)
+(defun n::unify1 (thing1 thing2 &optional bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if THING1 and THING2 match with given BINDINGS."
   (let ((bindings (or bindings n::no-bindings)))
@@ -971,35 +974,41 @@ are relevant to the unit tests correctly."
         (n::unify-variable thing2 thing1 bindings))
       ((and (consp thing1) (consp thing2))
         ;; (debug nil 3)
-        (n::unify (cdr thing1) (cdr thing2)
-          (n::unify (car thing1) (car thing2) bindings)))
+        (n::unify1 (cdr thing1) (cdr thing2)
+          (n::unify1 (car thing1) (car thing2) bindings)))
       (t
         ;; (debug nil 5)
         n::fail))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(n::unify '(x) '(11)) ;; sus.
 
-(n::unify nil nil nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun n::unify (thing1 thing2)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "See if THING1 and THING2 match with given BINDINGS."
+  (n::unify1 (n::fix-variables thing1) (n::fix-variables thing2)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(n::unify1 '(x) '(11)) ;; sus.
+
+(n::unify1 nil nil nil)
 (trace-function #'n::unify)
-(trace-function #'n::unifier)
+(trace-function #'n:unifier)
 (trace-function #'n::extend-bindings3)
 (trace-function #'n::fix-variables)
 (trace-function #'n::subst-bindings)
 
-(n::unify 'x 11) 
-(n::unify '(x y z) '(11 22 33)) ;; sus.
+(n::unify1 'x 11) 
+(n::unify1 '(x y z) '(11 22 33)) ;; sus.
 
-(n::unify (n::fix-variables '(,x ,y ,z)) '(11 22 33))
-(n::unify (n::fix-variables '(,x ,y ,z)) (n::fix-variables '(,x ,y ,z)))
+(n::unify1 (n::fix-variables '(,x ,y ,z)) '(11 22 33))
+(n::unify1 (n::fix-variables '(,x ,y ,z)) (n::fix-variables '(,x ,y ,z)))
 
-
-
-(n::unify (n::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
+(n::unify1 (n::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
 (n::variable-p (car (n::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
 
 
-;; (n::unifier
+;; (n:unifier
 ;;   '(,u ,v ,w ,x)
 ;;   '(,x ,u ,v 333))
 
@@ -1007,7 +1016,35 @@ are relevant to the unit tests correctly."
   (n::fix-variables '(,u ,v ,w ,x))
   (n::fix-variables '(,x ,u ,v 333)))
 
-(n::unifier
+(n::unify1
   (n::fix-variables '(,u ,v ,w ,x))
-  (n::fix-variables '(,x ,u ,v 333)))
+  (n::fix-variables '(,x ,u ,v 333))
+  nil)
 
+(u:unifier #'u::unify2
+  '(,u ,v ,w ,x)
+  '(,x ,u ,v 333)
+  nil)
+
+(n:unifier
+  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+  '(,z + (4 * 5) + 3))
+
+(u:unifier #'u::unify2
+  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+  '(,z + (4 * 5) + 3)
+  nil)
+
+(n::unify
+  (n::fix-variables '((,a * ,x ^ 2) + (,b * ,x) + ,c))
+  (n::fix-variables '(,z + (4 * 5) + 3)))
+
+(u::unify2
+  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+  '(,z + (4 * 5) + 3)
+  nil)
+
+
+
+(u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
+(n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
