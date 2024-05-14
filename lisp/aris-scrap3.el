@@ -1024,6 +1024,10 @@ are relevant to the unit tests correctly."
 (u::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 
+(n::unify
+  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+  '(,z + (4 * 5) + 3))
+
 (n:unifier
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
