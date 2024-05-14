@@ -329,7 +329,6 @@ Example:
         (u::prn "occurs check failed, not unifying.")
         (when (eq *u:occurs-check* :soft)
           (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
-          ;; (debug)
           (u::unify2 bindings (cdr pat1) (cdr pat2))))
       ((and binding (not (eql value (cdr binding))))
         (u::prn "variable %s is already bound to a different value, %s."
@@ -337,11 +336,7 @@ Example:
           (u::style (cdr binding)))
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           nil
-          ;; (debug (cdr binding) variable value pat1 pat2 bindings)
-          (debug :here) ; (u::unify2 nil '(,x ,y a) '(,y ,x ,x))
-          ;; probably should be ((,Y . A) (,X . ,Y))
-          ;; This is wrong:
-          (u::unify-variable-with-value2 (cdr binding) value pat1 pat2 bindings)))
+          (u::unify-variable-with-value2 bindings (cons (cdr binding) (cdr pat1)) pat2)))
       (binding
         (u::prn "variable %s is already bound to the same value, %s."
           (u::style variable)
@@ -962,7 +957,6 @@ are relevant to the unit tests correctly."
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
   (n::subst-bindings (n::unify thing2 thing1) (n::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (n::unify1 nil '(x) '(11))
 
