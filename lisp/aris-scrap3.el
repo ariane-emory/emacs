@@ -859,9 +859,9 @@ are relevant to the unit tests correctly."
         fail)
       ((eql thing1 thing2)
         bindings)
-      ((dm::pat-elem-is-a-variable? thing1)
+      ((variable-p thing1)
         (unify-variable thing1 thing2 bindings))
-      ((dm::pat-elem-is-a-variable? thing2)
+      ((variable-p thing2)
         (unify-variable thing2 thing1 bindings))
       ((and (consp thing1) (consp thing2))
         (unify (cdr thing1) (cdr thing2)
@@ -877,7 +877,7 @@ are relevant to the unit tests correctly."
   (cond
     ((assoc var bindings)
       (unify (cdr (assoc var bindings)) value bindings))
-    ((and (dm::pat-elem-is-a-variable? value) (assoc value bindings))
+    ((and (variable-p value) (assoc value bindings))
       (unify var (cdr (assoc value bindings)) bindings))
     ((and *occurs-check* (occurs-check var value bindings))
       fail)
@@ -890,7 +890,7 @@ are relevant to the unit tests correctly."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Does VAR occur anywhere inside VALUE according to BINDINGS?"
   (cond ((eq var value) t)
-    ((and (dm::pat-elem-is-a-variable? value) (assoc value bindings))
+    ((and (variable-p value) (assoc value bindings))
       (occurs-check var (cdr (assoc value bindings)) bindings))
     ((consp value)
       (or (occurs-check var (car value) bindings)
@@ -917,7 +917,7 @@ are relevant to the unit tests correctly."
  taking recursively bound variables into account."
   (cond ((eq bindings fail) fail)
     ((eq bindings no-bindings) expr)
-    ((and (dm::pat-elem-is-a-variable? expr) (assoc expr bindings))
+    ((and (variable-p expr) (assoc expr bindings))
       (subst-bindings bindings (car (assoc expr bindings))))
     ((atom expr) expr)
     (t (u:reuse-cons (subst-bindings bindings (car expr))
@@ -934,25 +934,34 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun variable-p (x)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Is x a variable (a symbol beginning with `?')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ?\?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(unify '(,x ,y ,z) '(11 22 33))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun fix-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cond
+    ((atom thing) thing)
+    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
+      (intern (concat "?" (symbol-name (cadr thing)))))
+    (t (cons (fix-variables (first thing)) (fix-variables (rest thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(unify '(x y z) '(11 22 33)) ;; sus.
+
+(unify (fix-variables '(,x ,y ,z)) '(11 22 33))
+
 
 (setq lst '(,x ,y ,z))
 
-(defun fix (lst)
-  (dolist* (elem pos lst lst)
-    (when (and (consp elem) (eq '\, (car elem)) (not (cddr elem)))
-      (setcar pos (symbolicate- "var" (cadr elem))))))
 
-(defun fix (thing)
-  ;;  (debug thing)
-  (cond
-    ((null thing) nil)
-    ((atom thing) thing)
-    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)))
-      ;; (debug thing)
-      (symbolicate "?" (cadr thing)))
-    (t
-      (cons (fix (first thing)) (fix (rest thing))))))
+(fix-variables '(,x ,y (,z 8 ,b . ,c)))
+(variable-p (car (fix-variables '(,x ,y (,z 8 ,b . \?c)))))
 
-(fix '(,x ,y (,z 8 ,b . ,c)))
+(message "%s" '\?x)
