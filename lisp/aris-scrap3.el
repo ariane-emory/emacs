@@ -135,24 +135,6 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun uu::simplify-bindings (bindings)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Simplify BINDINGS by finding anything bound directly to another variable and rebinding it to what that variable is
-bound to."
-  (uu::prn "simplifying       %s." bindings)
-  (dolist (pair1 bindings bindings)
-    (dolist (pair2 bindings)
-      (when (equal (cdr pair2) (car pair1))
-        (setcdr pair2 (cdr pair1))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(when *uu:test*
-  (confirm that
-    (uu::simplify-bindings (uu::unify1 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
-    returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun uu::subst-bindings (bindings x)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Substitute the value of variables in bindings into x,
@@ -523,6 +505,26 @@ Example:
     (let ((*uu:occurs-check* t))
       (uu::unify '(,x ,y) '((f ,y) (f ,x))))
     returns nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun uu::simplify-bindings (bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Simplify BINDINGS by finding anything bound directly to another variable and rebinding it to what that variable is
+bound to."
+  (uu::prn "simplifying       %s." bindings)
+  (dolist (pair1 bindings bindings)
+    (dolist (pair2 bindings)
+      (when (equal (cdr pair2) (car pair1))
+        (setcdr pair2 (cdr pair1))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(when *uu:test*
+  (confirm that
+    (uu::simplify-bindings (uu::unify1 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
+    returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
