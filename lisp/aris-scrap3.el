@@ -148,7 +148,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value (bindings pat1 pat2)
+(defun u::unify-variable-with-value1 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (variable (car pat1))
           (value    (car pat2))
@@ -170,7 +170,7 @@
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           (throw 'not-unifiable nil)
           (debug nil binding bindings (cons (cdr binding) (cdr pat1)) pat2)
-          (u::unify-variable-with-value bindings (cons (cdr binding) (cdr pat1)) pat2)
+          (u::unify-variable-with-value1 bindings (cons (cdr binding) (cdr pat1)) pat2)
           ))
       (binding
         (u::prn "variable %s is already bound to the same value, %s."
@@ -280,11 +280,11 @@ Example:
           ;;----------------------------------------------------------------------------------------------
           ;; variable on PAT1, value on PAT2:
           ((dm::pat-elem-is-a-variable? pat1-elem)
-            (setf bindings (u::unify-variable-with-value bindings pat1 pat2)))
+            (setf bindings (u::unify-variable-with-value1 bindings pat1 pat2)))
           ;;----------------------------------------------------------------------------------------------
           ;; variable on PAT2, value on PAT1:
           ((dm::pat-elem-is-a-variable? pat2-elem)
-            (setf bindings (u::unify-variable-with-value bindings pat2 pat1)))
+            (setf bindings (u::unify-variable-with-value1 bindings pat2 pat1)))
           ((equal pat1-elem pat2-elem)
             (u::prn "pat1 elem %s and pat2 elem %s are equal"
               (u::style (car pat1)) (u::style (car pat2))))
@@ -339,7 +339,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value2 (bindings pat1 pat2)
+(defun u::unify-variable-with-value12 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
   (let* ( (variable (car pat1))
@@ -360,7 +360,7 @@ Example:
           (u::style (cdr binding)))
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           nil
-          (u::unify-variable-with-value2 bindings (cons (cdr binding) (cdr pat1)) pat2)))
+          (u::unify-variable-with-value12 bindings (cons (cdr binding) (cdr pat1)) pat2)))
       (binding
         (u::prn "variable %s is already bound to the same value, %s."
           (u::style variable)
@@ -485,13 +485,13 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            ;; (u::unify-variable-with-value2 pat1 (car pat1) (car pat2) pat2 bindings)
+            ;; (u::unify-variable-with-value12 pat1 (car pat1) (car pat2) pat2 bindings)
             (u::unify-variable-with-variable2 bindings pat1 pat2)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            ;; (u::unify-variable-with-value2 pat2 (car pat2) (car pat1) pat1 bindings)
+            ;; (u::unify-variable-with-value12 pat2 (car pat2) (car pat1) pat1 bindings)
             (u::unify-variable-with-variable2 bindings pat2 pat1)
             )
           ;;-----------------------------------------------------------------------------------------
@@ -506,11 +506,11 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      (u::unify-variable-with-value2 bindings pat1 pat2))
+      (u::unify-variable-with-value12 bindings pat1 pat2))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1:
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
-      (u::unify-variable-with-value2 bindings pat2 pat1))
+      (u::unify-variable-with-value12 bindings pat2 pat1))
     ;;----------------------------------------------------------------------------------------------
     (t nil (u::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -797,7 +797,7 @@ are relevant to the unit tests correctly."
     (trace-function #'u::unify2)
     (trace-function #'u::reuse-cons)
     (trace-function #'u::occurs)
-    (trace-function #'u::unify-variable-with-value2)
+    (trace-function #'u::unify-variable-with-value12)
     (trace-function #'u::unify-variable-with-variable2)
     (trace-function #'u::simplify-bindings)
     (trace-function #'u::subst-bindings))
