@@ -167,40 +167,58 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun uu::occurs (bindings var expr)
+;;   "Doe VAR occur anywhere inside EXPR?"
+;;   (uu::prndiv ?\-)
+;;   (uu::prn "check if %s occurs in %s" (uu::style var) (uu::style expr))
+;;   (debug nil bindings var expr)
+;;   (let
+;;     ((res
+;;        (if (uu::variable-p expr)
+;;          (cond
+;;            ((and (uu::variable-p var) (eq (cadr expr) (cadr var))))
+;;            ((assoc expr bindings)
+;;              (with-indentation
+;;                (uu::prndiv ?\-)
+;;                (uu::occurs bindings var (cdr (assoc expr bindings)))))
+;;            (t nil))
+;;          (cond
+;;            ((consp expr) (or
+;;                            (with-indentation
+;;                              (uu::prndiv ?\-)
+;;                              (uu::occurs bindings var (car expr)))
+;;                            (with-indentation
+;;                              (uu::prndiv ?\-)
+;;                              (uu::occurs bindings var (cdr expr)))))
+;;            ((eq var expr))))))
+;;     (uu::prn "%s %s in %s"
+;;       (uu::style var)
+;;       (if res "         occurs" "DOES NOT occur ")
+;;       (uu::style expr))
+;;     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun uu::occurs (bindings var expr)
-  "Doe VAR occur anywhere inside EXPR?"
-  (uu::prndiv ?\-)
-  (uu::prn "check if %s occurs in %s" (uu::style var) (uu::style expr))
-  (let
-    ((res
-       (if (uu::variable-p expr)
-         (cond
-           ((and (uu::variable-p var) (eq (cadr expr) (cadr var))))
-           ((assoc expr bindings)
-             (with-indentation
-               (uu::prndiv ?\-)
-               (uu::occurs bindings var (cdr (assoc expr bindings)))))
-           (t nil))
-         (cond
-           ((consp expr) (or
-                           (with-indentation
-                             (uu::prndiv ?\-)
-                             (uu::occurs bindings var (car expr)))
-                           (with-indentation
-                             (uu::prndiv ?\-)
-                             (uu::occurs bindings var (cdr expr)))))
-           ((eq var expr))))))
-    (uu::prn "%s %s in %s"
-      (uu::style var)
-      (if res "         occurs" "DOES NOT occur ")
-      (uu::style expr))
-    res))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Does VAR occur anywhere inside EXPR according to BINDINGS?"
+  (cond ((eq var expr) t)
+    ((and (uu::variable-p expr) (assoc expr bindings))
+      (n::occurs-check bindings var (cdr (assoc expr bindings))))
+    ((consp expr)
+      (or (n::occurs-check bindings var (car expr))
+        (n::occurs-check bindings var (cdr expr))))
+    (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *uu:test*
-  (confirm that (uu::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
-  (confirm that (uu::occurs nil 'x '(f (\, x))) returns nil)
-  (confirm that (uu::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns nil))
+  (confirm that
+    (uu::occurs
+      (uu::fix-variables '(((\, x) f (\, y))))
+      (uu::fix-variables '(\, y))
+      (uu::fix-variables '(f (\, x))))
+    returns t)
+  (confirm that (uu::occurs nil 'x '(f (\, x))) returns t)
+  (confirm that (uu::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns t)
+  (confirm that (uu::occurs '(((\, x) f (\, y))) 'z '(f (\, x))) returns nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
