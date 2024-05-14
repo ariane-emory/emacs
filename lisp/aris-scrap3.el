@@ -447,10 +447,10 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun uu:unifier (fun pat1 pat2)
+(defun uu:unifier (pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "My version of Norvig's unifier."
-  (let* ( (bindings (funcall fun nil pat1 pat2))
+  (let* ( (bindings (uu::unify1 nil pat1 pat2))
           (bindings (if *uu:unifier-simplifies*
                       (uu::simplify-bindings bindings)
                       bindings)))
@@ -461,56 +461,46 @@ are relevant to the unit tests correctly."
       (uu::prnl)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (ignore!
-
-
-
-(confirm that (uu:unifier #'uu::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(confirm that (uu:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
-(confirm that (uu:unifier #'uu::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (uu:unifier '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (2 + 1 + (\, a)))
-(confirm that (uu:unifier #'uu::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z))
   returns (333 + 333 + 333))
 (confirm that
-  (uu:unifier #'uu::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+  (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
   returns (2 + 1 + 8 + 8))
 (confirm that
   (let ( (*uu:verbose* t)
          (*uu:unifier-simplifies* nil))
-    (uu:unifier #'uu::unify1
+    (uu:unifier 
       '(,v ,u ,w ,x)
       '(,u ,x ,v 333)))
   returns (333 333 333 333))
 (confirm that
   (let ( (*uu:verbose* t)
          (*uu:unifier-simplifies* t))
-    (uu:unifier #'uu::unify1
+    (uu:unifier 
       '(,v ,u ,w ,x)
       '(,u ,x ,v 333)))
   returns (333 333 333 333))
 (ignore!
-  (let ((reps 50000))
+  (let ((reps 5000))
     (list
       (benchmark-run reps
         (let ( (*uu:verbose* nil)
                (*uu:unifier-simplifies* nil))
-          (uu:unifier #'uu::unify1
-            '(,u ,v ,w ,x)
-            '(,x ,u ,v 333))))
-      (benchmark-run reps
-        (let ( (*uu:verbose* nil)
-               (*uu:unifier-simplifies* t))
-          (uu:unifier #'uu::unify1
+          (uu:unifier 
             '(,u ,v ,w ,x)
             '(,x ,u ,v 333)))))))
 ;; uncurl tails:
-(confirm that (uu:unifier #'uu::unify1 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+(confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
   returns (1 2 3 . 4))
-(confirm that (uu:unifier #'uu::unify1 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+(confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
   returns (1 2 3 . 4))
-(confirm that (uu:unifier #'uu::unify1 '(,x ,y . ,z) '(1 2 . 3))
+(confirm that (uu:unifier '(,x ,y . ,z) '(1 2 . 3))
   returns (1 2 . 3))
-(confirm that (uu:unifier #'uu::unify1 '(,x ,y   ,z) '(1 2   3))
+(confirm that (uu:unifier '(,x ,y   ,z) '(1 2   3))
   returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -537,14 +527,14 @@ are relevant to the unit tests correctly."
   (untrace-all)
 
   (let ((*uu:verbose* t))
-    (uu:unifier #'uu::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
+    (uu:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
 
   (let ((*uu:verbose* t))
-    (uu:unifier #'uu::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z)))
+    (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))
 
   (let ((reps 1000))
     (benchmark-run reps
-      (let ((*uu:verbose* nil)) (uu:unifier #'uu::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z)))))
+      (let ((*uu:verbose* nil)) (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
 
   (uu::unify1 nil '(,x ,x) '(,y ,y))
   (uu::unify1 nil '(,x ,y a) '(,y ,x ,x))
@@ -552,8 +542,8 @@ are relevant to the unit tests correctly."
   (uu::unify1 nil '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
 
   (uu::unify1 nil '(,y ,x) '(7 (f ,x)))
-  (uu:unifier #'uu::unify1 '(,y ,x) '(7 (f ,x)))
-  (uu:unifier #'uu::unify1 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+  (uu:unifier '(,y ,x) '(7 (f ,x)))
+  (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
   (let ((*uu:occurs-check* nil))
     (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
