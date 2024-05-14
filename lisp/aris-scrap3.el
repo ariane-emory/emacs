@@ -315,7 +315,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value2 (pat1 pat2 bindings)
+(defun u::unify-variable-with-value2 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
   (let* ( (variable (car pat1))
@@ -467,13 +467,13 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            ;; (u::unify-variable-with-value2 (car pat1) (car pat2) pat1 pat2 bindings)
+            ;; (u::unify-variable-with-value2 pat1 (car pat1) (car pat2) pat2 bindings)
             (u::unify-variable-with-variable2 bindings pat1 pat2)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            ;; (u::unify-variable-with-value2 (car pat2) (car pat1) pat2 pat1 bindings)
+            ;; (u::unify-variable-with-value2 pat2 (car pat2) (car pat1) pat1 bindings)
             (u::unify-variable-with-variable2 bindings pat2 pat1)
             )
           ;;-----------------------------------------------------------------------------------------
@@ -488,11 +488,11 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      (u::unify-variable-with-value2 pat1 pat2 bindings))
+      (u::unify-variable-with-value2 bindings pat1 pat2))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1:
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
-      (u::unify-variable-with-value2 pat2 pat1 bindings))
+      (u::unify-variable-with-value2 bindings pat2 pat1))
     ;;----------------------------------------------------------------------------------------------
     (t nil (u::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -848,6 +848,27 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun n::variable-p (x)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Is x a variable (a symbol beginning with `?')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ?\?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun n::fix-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn comma-prefixed variable designators like ,X / (\, X) into symbols like \?X anywhere in THING
+(including improper tails)."
+  (cond
+    ((atom thing) thing)
+    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
+      (intern (concat "?" (symbol-name (cadr thing)))))
+    (t (cons (n::fix-variables (car thing)) (n::fix-variables (rest thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n::extend-bindings (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Add a (VAR . EXPR) pair to BINDINGS."
@@ -855,35 +876,6 @@ are relevant to the unit tests correctly."
     ;; Once we add a "real" binding,
     ;; we can get rid of the dummy n::no-bindings
     (if (eq bindings n::no-bindings) nil bindings)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify-variable (bindings var expr)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Unify VAR with EXPR, using (and maybe extending) BINDINGS."
-  (cond
-    ((assoc var bindings)
-      (n::unify1 bindings (cdr (assoc var bindings)) expr))
-    ((and (n::variable-p expr) (assoc expr bindings))
-      (n::unify1 bindings var (cdr (assoc expr bindings))))
-    ((and *n:occurs-check* (n::occurs-check bindings var expr))
-      n::fail)
-    (t (n::extend-bindings bindings var expr))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::occurs-check (bindings var expr)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Does VAR occur anywhere inside EXPR according to BINDINGS?"
-  (cond ((eq var expr) t)
-    ((and (n::variable-p expr) (assoc expr bindings))
-      (n::occurs-check bindings var (cdr (assoc expr bindings))))
-    ((consp expr)
-      (or (n::occurs-check bindings var (car expr))
-        (n::occurs-check bindings var (cdr expr))))
-    (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -905,23 +897,31 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::variable-p (x)
+(defun n::occurs-check (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Is x a variable (a symbol beginning with `?')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) ?\?)))
+  "Does VAR occur anywhere inside EXPR according to BINDINGS?"
+  (cond ((eq var expr) t)
+    ((and (n::variable-p expr) (assoc expr bindings))
+      (n::occurs-check bindings var (cdr (assoc expr bindings))))
+    ((consp expr)
+      (or (n::occurs-check bindings var (car expr))
+        (n::occurs-check bindings var (cdr expr))))
+    (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::fix-variables (thing)
+(defun n::unify-variable (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Turn comma-prefixed variable designators like ,X / (\, X) into symbols like \?X anywhere in THING
-(including improper tails)."
+  "Unify VAR with EXPR, using (and maybe extending) BINDINGS."
   (cond
-    ((atom thing) thing)
-    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
-      (intern (concat "?" (symbol-name (cadr thing)))))
-    (t (cons (n::fix-variables (car thing)) (n::fix-variables (rest thing))))))
+    ((assoc var bindings)
+      (n::unify1 bindings (cdr (assoc var bindings)) expr))
+    ((and (n::variable-p expr) (assoc expr bindings))
+      (n::unify1 bindings var (cdr (assoc expr bindings))))
+    ((and *n:occurs-check* (n::occurs-check bindings var expr))
+      n::fail)
+    (t (n::extend-bindings bindings var expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -966,7 +966,7 @@ are relevant to the unit tests correctly."
 (defun n:unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
-  (n::subst-bindings (n::unify thing2 thing1) thing2))
+  (n::subst-bindings (n::unify thing2 thing1) (n::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
