@@ -338,6 +338,8 @@ Example:
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           nil
           ;; (debug (cdr binding) variable value pat1 pat2 bindings)
+          (debug)
+          ;; This is wrong:
           (u::unify-variable-with-value2 (cdr binding) value pat1 pat2 bindings)))
       (binding
         (u::prn "variable %s is already bound to the same value, %s."
@@ -354,7 +356,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-variable2 (pat1 pat2 bindings)
+(defun u::unify-variable-with-variable2 (bindings pat1 pat2)
   ;; if we entered this fun we already know that (car pat1) is unbound and that (car pat2) is a
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
@@ -466,13 +468,13 @@ Example:
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
             ;; (u::unify-variable-with-value2 (car pat1) (car pat2) pat1 pat2 bindings)
-            (u::unify-variable-with-variable2 pat1 pat2 bindings)
+            (u::unify-variable-with-variable2 bindings pat1 pat2)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
             ;; (u::unify-variable-with-value2 (car pat2) (car pat1) pat2 pat1 bindings)
-            (u::unify-variable-with-variable2 pat2 pat1 bindings)
+            (u::unify-variable-with-variable2 bindings pat2 pat1)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
