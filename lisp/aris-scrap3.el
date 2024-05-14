@@ -839,3 +839,70 @@ are relevant to the unit tests correctly."
 
 
 (u::unify2 '(,x (,y ,z)) '(3 (5 7)) nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Norvigian version follows:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar *occurs-check* t)
+(defvar fail nil)
+(defvar no-bindings '((t . t)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unify (x y &optional bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "See if x and y match with given bindings."
+  (let ((bindings (or bindings no-bindings)))
+    (cond ((eq bindings fail) fail)
+      ((eql x y)
+        bindings)
+      ((variable-p x)
+        (unify-variable x y bindings))
+      ((variable-p y)
+        (unify-variable y x bindings))
+      ((and (consp x) (consp y))
+        (unify (rest x) (rest y)
+          (unify (first x) (first y) bindings)))
+      (t fail))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun unify-variable (var x bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Unify var with x, using (and maybe extending) bindings."
+  (cond
+    ((get-binding var bindings)
+      (unify (lookup var bindings) x bindings))
+    ((and (variable-p x) (get-binding x bindings))
+      (unify var (lookup x bindings) bindings))
+    ((and *occurs-check* (occurs-check var x bindings))
+      fail)
+    (t (extend-bindings var x bindings))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun occurs-check (var x bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Does var occur anywhere inside x?"
+  (cond ((eq var x) t)
+    ((and (variable-p x) (get-binding x bindings))
+      (occurs-check var (lookup x bindings) bindings))
+    ((consp x)
+      (or (occurs-check var (first x) bindings)
+        (occurs-check var (rest x) bindings)))
+    (t nil)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun extend-bindings (var val bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Add a (var . value) pair to a binding list."
+  (cons (cons var val)
+    ;; Once we add a "real" binding,
+    ;; we can get rid of the dummy no-bindings
+    (if (eq bindings no-bindings) nil bindings)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
