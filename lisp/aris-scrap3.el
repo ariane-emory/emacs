@@ -53,8 +53,7 @@
   "Internal print helper function."
   (when *uu:verbose* (funcall #'prndiv (or char ?\=) *uu:div-width*)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
+;; formatting helper:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun uu::style (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,6 +71,27 @@
   (if (and (eql x (car x-y)) (eql y (cdr x-y)))
     x-y
     (cons x y)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun uu::variable-p (x)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Is x a variable (a symbol beginning with `?')?"
+  (and (symbolp x) (equal (elt (symbol-name x) 0) ?\?)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun uu::fix-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn comma-prefixed variable designators like ,X / (\, X) into symbols like \?X anywhere in THING
+(including improper tails)."
+  (cond
+    ((atom thing) thing)
+    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
+      (intern (concat "?" (symbol-name (cadr thing)))))
+    (t (cons (uu::fix-variables (car thing)) (uu::fix-variables (rest thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -568,27 +588,6 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::variable-p (x)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Is x a variable (a symbol beginning with `?')?"
-  (and (symbolp x) (equal (elt (symbol-name x) 0) ?\?)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::fix-variables (thing)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Turn comma-prefixed variable designators like ,X / (\, X) into symbols like \?X anywhere in THING
-(including improper tails)."
-  (cond
-    ((atom thing) thing)
-    ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
-      (intern (concat "?" (symbol-name (cadr thing)))))
-    (t (cons (n::fix-variables (car thing)) (n::fix-variables (rest thing))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n::extend-bindings (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Add a (VAR . EXPR) pair to BINDINGS."
@@ -607,7 +606,7 @@ are relevant to the unit tests correctly."
   (cond
     ((eq bindings n::fail) n::fail)
     ((eq bindings n::no-bindings) expr)
-    ((and (n::variable-p expr) (assoc expr bindings))
+    ((and (uu::variable-p expr) (assoc expr bindings))
       (n::subst-bindings bindings (cdr (assoc expr bindings))))
     ((atom expr) expr)
     (t (uu::reuse-cons (n::subst-bindings bindings (car expr))
@@ -621,7 +620,7 @@ are relevant to the unit tests correctly."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Does VAR occur anywhere inside EXPR according to BINDINGS?"
   (cond ((eq var expr) t)
-    ((and (n::variable-p expr) (assoc expr bindings))
+    ((and (uu::variable-p expr) (assoc expr bindings))
       (n::occurs-check bindings var (cdr (assoc expr bindings))))
     ((consp expr)
       (or (n::occurs-check bindings var (car expr))
@@ -637,7 +636,7 @@ are relevant to the unit tests correctly."
   (cond
     ((assoc var bindings)
       (n::unify1 bindings (cdr (assoc var bindings)) expr))
-    ((and (n::variable-p expr) (assoc expr bindings))
+    ((and (uu::variable-p expr) (assoc expr bindings))
       (n::unify1 bindings var (cdr (assoc expr bindings))))
     ((and *n:occurs-check* (n::occurs-check bindings var expr))
       n::fail)
@@ -657,10 +656,10 @@ are relevant to the unit tests correctly."
       ((eql thing1 thing2)
         ;; (debug nil 2)
         bindings)
-      ((n::variable-p thing1)
+      ((uu::variable-p thing1)
         ;; (debug nil 3)
         (n::unify-variable bindings thing1 thing2))
-      ((n::variable-p thing2)
+      ((uu::variable-p thing2)
         ;; (debug nil 3)
         (n::unify-variable bindings thing2 thing1))
       ((and (consp thing1) (consp thing2))
@@ -678,7 +677,7 @@ are relevant to the unit tests correctly."
 (defun n::unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if THING1 and THING2 match with given BINDINGS."
-  (n::unify1 nil (n::fix-variables thing1) (n::fix-variables thing2)))
+  (n::unify1 nil (uu::fix-variables thing1) (uu::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -686,7 +685,7 @@ are relevant to the unit tests correctly."
 (defun n:unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
-  (n::subst-bindings (n::unify thing2 thing1) (n::fix-variables thing2)))
+  (n::subst-bindings (n::unify thing2 thing1) (uu::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (n::unify1 nil '(x) '(11))
@@ -695,18 +694,18 @@ are relevant to the unit tests correctly."
 ;; (trace-function #'n::unify1)
 ;; (trace-function #'n:unifier)
 ;; (trace-function #'n::extend-bindings3)
-;; (trace-function #'n::fix-variables)
+;; (trace-function #'uu::fix-variables)
 ;; (trace-function #'n::subst-bindings)
 ;; (untrace-all)
 
 (n::unify1 nil 'x 11) 
 (n::unify1 nil '(x y z) '(11 22 33)) 
 
-(n::unify1 nil (n::fix-variables '(,x ,y ,z)) '(11 22 33))
-(n::unify1 nil (n::fix-variables '(,x ,y ,z)) (n::fix-variables '(,x ,y ,z)))
+(n::unify1 nil (uu::fix-variables '(,x ,y ,z)) '(11 22 33))
+(n::unify1 nil (uu::fix-variables '(,x ,y ,z)) (uu::fix-variables '(,x ,y ,z)))
 
-(n::unify1 nil  (n::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
-(n::variable-p (car (n::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
+(n::unify1 nil  (uu::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
+(uu::variable-p (car (uu::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
 
 (n::unify
   '(,u ,v ,w ,x)
@@ -714,8 +713,8 @@ are relevant to the unit tests correctly."
 
 (n::unify1
   nil
-  (n::fix-variables '(,u ,v ,w ,x))
-  (n::fix-variables '(,x ,u ,v 333)))
+  (uu::fix-variables '(,u ,v ,w ,x))
+  (uu::fix-variables '(,x ,u ,v 333)))
 
 (n::unify
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
