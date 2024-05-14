@@ -401,13 +401,19 @@ Example:
            (cond
              ((and pat2 (atom pat2)) :tail)
              ((and (eq (car pat2) '\,) (not (cddr pat2))) :wayward-comma))))
+    (u::prn "tt1:     %S" pat1-tail-type)
+    (u::prn "tt2:     %S" pat2-tail-type)
     (when (and pat1-tail-type pat2-tail-type)
+      
       (cond
         ((eq pat1-tail-type :tail) (setf pat1 (list pat1)))
         ((eq pat1-tail-type :wayward-comma) (setf pat1 (list (list '\, (cadr pat1))))))
       (cond
         ((eq pat2-tail-type :tail) (setf pat2 (list pat2)))
-        ((eq pat2-tail-type :wayward-comma) (setf pat2 (list (list '\, (cadr pat2))))))))
+        ((eq pat2-tail-type :wayward-comma) (setf pat2 (list (list '\, (cadr pat2))))))
+      (u::prn "pat1*:    %S" pat1)
+      (u::prn "pat2*:    %S" pat2)
+      ))
   
   (cond
     ;;----------------------------------------------------------------------------------------------
@@ -811,6 +817,9 @@ are relevant to the unit tests correctly."
 
   )
 
-(u::unify2 '(,x ,y . ,z) '(1 2 . 3) nil)
+(u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
+(u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
 (u::unify2 '(,x ,y . ,z) '(1 2   3) nil)
 (u::unify2 '(,x ,y   ,z) '(1 2   3) nil)
+
+
