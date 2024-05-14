@@ -787,14 +787,17 @@ are relevant to the unit tests correctly."
   (untrace-all)
 
   (let ((*u:verbose* t))
-    (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2) nil))
+    (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
 
   (let ((*u:verbose* t))
-    (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil))
+    (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
 
-  (list
-    (benchmark-run 10000 (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z)))
-    (benchmark-run 10000 (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z) nil)))
+  (let ((reps 100000))
+    (list
+      (benchmark-run reps
+        (let ((*u:verbose* nil)) (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))))
+      (benchmark-run reps
+        (let ((*u:verbose* nil)) (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))))))
 
   (u::unify2 nil '(,x ,x) '(,y ,y))
   (u::unify2 nil '(,x ,y a) '(,y ,x ,x))
@@ -802,8 +805,8 @@ are relevant to the unit tests correctly."
   (u::unify2 nil '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
 
   (u::unify2 nil '(,y ,x) '(7 (f ,x)))
-  (u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)) nil)
-  (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
+  (u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)))
+  (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
   (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))) ;; => ((,y f ,x) (,x f ,y))
 
@@ -819,18 +822,6 @@ are relevant to the unit tests correctly."
   (atom     cons)     ; FAIL.
   (cons     atom)     ; FAIL.
   (atom     atom)     ; `eql'.
-
-  (defun unify (x y &optional (bindings no-bindings))
-    "See if x and y match with given bindings."
-    (cond
-      ((eq bindings fail) fail)
-      ((eql x y) bindings) ;*** moved this line
-      ((variable-p x) (unify-variable x y bindings))
-      ((variable-p y) (unify-variable y x bindings))
-      ((and (consp x) (consp y))
-        (unify (rest x) (rest y)
-          (unify (first x) (first y) bindings)))
-      (t fail)))
 
   )
 
