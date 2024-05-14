@@ -848,7 +848,7 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify-variable(var value bindings)
+(defun n::unify-variable (bindings var value)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unify VAR with VALUE, using (and maybe extending) BINDINGS."
   (cond
@@ -966,10 +966,10 @@ are relevant to the unit tests correctly."
         bindings)
       ((n::variable-p thing1)
         ;; (debug nil 3)
-        (n::unify-variable thing1 thing2 bindings))
+        (n::unify-variable bindings thing1 thing2))
       ((n::variable-p thing2)
         ;; (debug nil 3)
-        (n::unify-variable thing2 thing1 bindings))
+        (n::unify-variable bindings thing2 thing1))
       ((and (consp thing1) (consp thing2))
         ;; (debug nil 3)
         (n::unify1 (cdr thing1) (cdr thing2)
@@ -1024,11 +1024,11 @@ are relevant to the unit tests correctly."
 (u::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 
-(n::unify
+(n:unifier
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
 
-(n:unifier
+(n::unify
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
 
