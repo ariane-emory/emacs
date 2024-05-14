@@ -955,7 +955,7 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify1 (thing1 thing2 &optional bindings)
+(defun n::unify1 (thing1 thing2 bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if THING1 and THING2 match with given BINDINGS."
   (let ((bindings (or bindings n::no-bindings)))
@@ -989,7 +989,7 @@ are relevant to the unit tests correctly."
   (n::unify1 (n::fix-variables thing1) (n::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(n::unify1 '(x) '(11)) ;; sus.
+(n::unify1 '(x) '(11) nil) 
 
 (n::unify1 nil nil nil)
 (trace-function #'n::unify)
@@ -998,15 +998,15 @@ are relevant to the unit tests correctly."
 (trace-function #'n::fix-variables)
 (trace-function #'n::subst-bindings)
 
-(n::unify1 'x 11) 
-(n::unify1 '(x y z) '(11 22 33)) ;; sus.
+(n::unify1 'x 11 nil) 
+(n::unify1 '(x y z) '(11 22 33) nil) ;; sus.
 
 (n::unify1 (n::fix-variables '(,x ,y ,z)) '(11 22 33))
 (n::unify1 (n::fix-variables '(,x ,y ,z)) (n::fix-variables '(,x ,y ,z)))
 
 (n::unify1 (n::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
 (n::variable-p (car (n::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
-
+(untrace-all)
 
 ;; (n:unifier
 ;;   '(,u ,v ,w ,x)
@@ -1045,6 +1045,9 @@ are relevant to the unit tests correctly."
   nil)
 
 
-
 (u::unify2 '(,w ,x ,y ,z) '(,x ,y ,z ,w) nil)
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+
+(n::unify   '(,x + 3 = 3 + ,y) '(3 + ,x = ,y + 3))
+(n::unifier '(,x + 0 = ,y) '(0 + ,x = 5))
+(u::unify2  '(,x + 0 = ,y) '(0 + ,x = ,y) nil)
