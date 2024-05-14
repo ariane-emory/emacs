@@ -169,7 +169,7 @@
           (u::style (cdr binding)))
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           (throw 'not-unifiable nil)
-          (debug nil (cons (cdr binding) (cdr pat1)) pat2)
+          (debug nil binding bindings (cons (cdr binding) (cdr pat1)) pat2)
           (u::unify-variable-with-value bindings (cons (cdr binding) (cdr pat1)) pat2)
           ))
       (binding
@@ -238,14 +238,33 @@ Example:
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT1's var not bound, unify with PAT2's var:
                 ((not binding1)
-                  (let ((binding2 (assoc (car pat2) bindings)))
-                    (u::prn "PAT1 elem %s is unbound, unifying it with %s."
-                      (u::style (car pat1))
-                      (u::style (car binding2)))
-                    (push (cons pat1-elem pat2-elem) bindings)))
+                  ;; (u::unify2 nil '(,x ,y a) '(,y ,x ,x))
+                  ;; (u::unify1 nil '(,x ,y a) '(,y ,x ,x))
+                  (when (dm::pat-elem-is-a-variable? (cdr binding2))
+                    ;; (debug)
+                    (while (and
+                             (dm::pat-elem-is-a-variable? (cdr binding2))
+                             (not (equal (car pat1) (cdr binding))))
+                      (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
+                        (u::style (car pat1))
+                        (u::style (car pat2))
+                        (u::style (cdr binding2)))
+                      (setf binding2 (assoc (cdr binding2) bindings))))
+                  (u::prn "PAT1 elem %s is unbound, unifying it with %s."
+                    (u::style (car pat1))
+                    (u::style (car binding2)))
+                  (push (cons pat1-elem pat2-elem) bindings))
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT2's var not bound, unify with PAT1's var:
                 ((not binding2)
+                  (when (dm::pat-elem-is-a-variable? (cdr binding1))
+                    (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
+                      (u::style (car pat2))
+                      (u::style (car pat1))
+                      (u::style (cdr binding1)))
+                    (debug)
+                    (while (dm::pat-elem-is-a-variable? (cdr binding1))
+                      (setf binding1 (assoc (cdr binding1) bindings))))
                   (u::prn "PAT2 elem %s is unbound, unifying it with %s."
                     (u::style (car pat2))
                     (u::style (car binding1)))
