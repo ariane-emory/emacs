@@ -494,7 +494,7 @@ Example:
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
       (u::unify-variable-with-value2 pat2 pat1 bindings))
     ;;----------------------------------------------------------------------------------------------
-    (t nil (ignore! (error "unhandled")))))
+    (t nil (u::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (u::unify2 '(,w ,x ,y) '(,x ,y ,w) nil)
   returns (((\, x) \, y) ((\, w) \, x)))
@@ -528,6 +528,16 @@ Example:
   returns nil)
 (confirm that (u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a) nil)
   returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
+;;---------------------------------------------------------------------------------------------------
+;; uncurl tails tests:
+(confirm that (u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
+  returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+(confirm that (u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
+  returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+(confirm that (u::unify2 '(,x ,y . ,z) '(1 2 . 3) nil)
+  returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+(confirm that (u::unify2 '(,x ,y   ,z) '(1 2   3) nil)
+  returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
 ;;---------------------------------------------------------------------------------------------------
 ;; occurs check tests:
 (confirm that
@@ -744,6 +754,15 @@ are relevant to the unit tests correctly."
           (u:unifier #'u::unify2
             '(,u ,v ,w ,x)
             '(,x ,u ,v 333) nil))))))
+;; uncurl tails:
+(confirm that (u:unifier #'u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
+  returns (1 2 3 . 4))
+(confirm that (u:unifier #'u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
+  returns (1 2 3 . 4))
+(confirm that (u:unifier #'u::unify2 '(,x ,y . ,z) '(1 2 . 3) nil)
+  returns (1 2 . 3))
+(confirm that (u:unifier #'u::unify2 '(,x ,y   ,z) '(1 2   3) nil)
+  returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -817,9 +836,6 @@ are relevant to the unit tests correctly."
 
   )
 
-(u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
-(u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)) nil)
-(u::unify2 '(,x ,y . ,z) '(1 2   3) nil)
-(u::unify2 '(,x ,y   ,z) '(1 2   3) nil)
 
 
+(u::unify2 '(,x (,y ,z)) '(3 (5 7)) nil)
