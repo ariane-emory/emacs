@@ -115,7 +115,7 @@ are relevant to the unit tests correctly."
       (catch 'not-equivalent
         (dolist (ordering (list (list bindings1 bindings2) (list bindings2 bindings1)))
           (dolist (pair (car ordering))
-            (unless (dm::pat-elem-is-a-variable? (car pair))
+            (unless (uu::variable-p  (car pair))
               (error "malformed bindings, cars in each pair should be variables: %s" pair))
             (let ( (assoc  (assoc  (car pair) (cadr ordering)))
                    (rassoc (rassoc (car pair) (cadr ordering))))
@@ -128,7 +128,8 @@ are relevant to the unit tests correctly."
 (when *uu:test*
   (confirm that
     (uu::equivalent-bindings?
-      '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
+      (uu::fix-variables '(((\, c) . 1) ((\, b) . (\, a))))
+      (uu::fix-variables '(((\, c) . 1) ((\, a) . (\, b)))))
     returns t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -168,7 +169,7 @@ bound to."
          ((eq bindings t)
            ;; (uu::prn "case 2")
            x)
-         ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
+         ((and (uu::variable-p x) (assoc x bindings))
            ;; (uu::prn "case 3")
            (with-indentation (uu::subst-bindings bindings (cdr (assoc x bindings)))))
          ((atom x) x)
@@ -191,9 +192,9 @@ bound to."
   (uu::prn "check if %s occurs in %s" (uu::style var) (uu::style expr))
   (let
     ((res
-       (if (dm::pat-elem-is-a-variable? expr)
+       (if (uu::variable-p expr)
          (cond
-           ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
+           ((and (uu::variable-p var) (eq (cadr expr) (cadr var))))
            ((assoc expr bindings)
              (with-indentation
                (uu::prndiv ?\-)
@@ -241,7 +242,7 @@ bound to."
         (uu::prn "variable %s is already bound to a different value, %s."
           (uu::style variable)
           (uu::style (cdr binding)))
-        (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
+        (if (not (uu::variable-p (cdr binding)))
           nil
           (uu::unify-variable-with-value1 bindings (cons (cdr binding) (cdr pat1)) pat2)))
       (binding
@@ -263,7 +264,7 @@ bound to."
   ;; if we entered this fun we already know that (car pat1) is unbound and that (car pat2) is a
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
-    (if (and (dm::pat-elem-is-a-variable? (cdr binding2)))
+    (if (and (uu::variable-p (cdr binding2)))
       (progn
         (uu::prn "avoid circular binding, unify %s with %s's value %s instead!"
           (uu::style (car pat1))
@@ -336,13 +337,13 @@ Example:
       (with-indentation (uu::unify1 bindings (cdr pat1) (cdr pat2))))
     ;;----------------------------------------------------------------------------------------------
     ;; same variable:
-    ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
+    ((and (uu::variable-p (car pat1)) (uu::variable-p (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1)) (dm::pat-elem-var-sym (car pat2))))
       (uu::prn "%s and %s are the same variable." (uu::style (car pat1)) (uu::style (car pat2)))
       (with-indentation (uu::unify1 bindings (cdr pat1) (cdr pat2))))
     ;;----------------------------------------------------------------------------------------------
     ;; both different variables:
-    ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2)))
+    ((and (uu::variable-p (car pat1)) (uu::variable-p (car pat2)))
       (uu::prn "both PAT1 elem %s and PAT2 elem %s are variables."
         (uu::style (car pat1))
         (uu::style (car pat2))
@@ -388,11 +389,11 @@ Example:
             (with-indentation (uu::unify1 bindings (cdr pat1) (cdr pat2)))))))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
-    ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *uu:bind-conses* (atom (car pat2))))
+    ((and (uu::variable-p (car pat1)) (or *uu:bind-conses* (atom (car pat2))))
       (uu::unify-variable-with-value1 bindings pat1 pat2))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1:
-    ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *uu:bind-conses* (atom (car pat1))))
+    ((and (uu::variable-p (car pat2)) (or *uu:bind-conses* (atom (car pat1))))
       (uu::unify-variable-with-value1 bindings pat2 pat1))
     ;;----------------------------------------------------------------------------------------------
     (t nil (uu::prn "unhandled"))))
@@ -461,8 +462,9 @@ Example:
 (defun uu::unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unidy THING1 and THING2 and produce an alist of bindings."
-  ;; (uu::unify1 nil (uu::fix-variables thing1) (uu::fix-variables thing2))
-  (uu::unify1 nil thing1 thing2))
+  (uu::unify1 nil (uu::fix-variables thing1) (uu::fix-variables thing2))
+  ;; (uu::unify1 nil thing1 thing2)
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *uu:test*
   (confirm that (uu::unify '(,w ,x ,y) '(,x ,y ,w))
