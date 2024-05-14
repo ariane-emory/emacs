@@ -96,6 +96,53 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun uu::equivalent-bindings? (bindings1 bindings2)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "t when BINDINGS1 and BINDINGS2 are equivalent. This is mainly intended for use in the unit tests:
+it won't detect every case of equivalency (such as recursive cases), but should handle the simple cases that
+are relevant to the unit tests correctly."
+  (cond
+    ((and (eq t bindings1) (eq t bindings2)))
+    ((or (eq t bindings1) (eq t bindings2)) nil)
+    (t 
+      (catch 'not-equivalent
+        (dolist (ordering (list (list bindings1 bindings2) (list bindings2 bindings1)))
+          (dolist (pair (car ordering))
+            (unless (dm::pat-elem-is-a-variable? (car pair))
+              (error "malformed bindings, cars in each pair should be variables: %s" pair))
+            (let ( (assoc  (assoc  (car pair) (cadr ordering)))
+                   (rassoc (rassoc (car pair) (cadr ordering))))
+              (cond
+                ((and assoc  (equal (cdr assoc)  (cdr pair))))
+                ((and rassoc (equal (car rassoc) (cdr pair))))
+                (t (throw 'not-equivalent nil))))))
+        t))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (uu::equivalent-bindings?
+    '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
+  returns t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun uu::simplify-bindings (bindings)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Simplify BINDINGS by finding anything bound directly to another variable and rebinding it to what that variable is
+bound to."
+  (uu::prn "simplifying       %s." bindings)
+  (dolist (pair1 bindings bindings)
+    (dolist (pair2 bindings)
+      (when (equal (cdr pair2) (car pair1))
+        (setcdr pair2 (cdr pair1))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that
+  (uu::simplify-bindings (uu::unify1 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
+  returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun uu::subst-bindings (bindings x)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Substitute the value of variables in bindings into x,
@@ -165,7 +212,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun uu::unify-variable-with-value12 (bindings pat1 pat2)
+(defun uu::unify-variable-with-value1 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
   (let* ( (variable (car pat1))
@@ -186,7 +233,7 @@
           (uu::style (cdr binding)))
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           nil
-          (uu::unify-variable-with-value12 bindings (cons (cdr binding) (cdr pat1)) pat2)))
+          (uu::unify-variable-with-value1 bindings (cons (cdr binding) (cdr pat1)) pat2)))
       (binding
         (uu::prn "variable %s is already bound to the same value, %s."
           (uu::style variable)
@@ -311,13 +358,13 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            ;; (uu::unify-variable-with-value12 pat1 (car pat1) (car pat2) pat2 bindings)
+            ;; (uu::unify-variable-with-value1 pat1 (car pat1) (car pat2) pat2 bindings)
             (uu::unify-variable-with-variable2 bindings pat1 pat2)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            ;; (uu::unify-variable-with-value12 pat2 (car pat2) (car pat1) pat1 bindings)
+            ;; (uu::unify-variable-with-value1 pat2 (car pat2) (car pat1) pat1 bindings)
             (uu::unify-variable-with-variable2 bindings pat2 pat1)
             )
           ;;-----------------------------------------------------------------------------------------
@@ -332,11 +379,11 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *uu:bind-conses* (atom (car pat2))))
-      (uu::unify-variable-with-value12 bindings pat1 pat2))
+      (uu::unify-variable-with-value1 bindings pat1 pat2))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1:
     ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *uu:bind-conses* (atom (car pat1))))
-      (uu::unify-variable-with-value12 bindings pat2 pat1))
+      (uu::unify-variable-with-value1 bindings pat2 pat1))
     ;;----------------------------------------------------------------------------------------------
     (t nil (uu::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -396,53 +443,6 @@ Example:
   (let ((*uu:occurs-check* t))
     (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x))))
   returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun uu::simplify-bindings (bindings)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Simplify BINDINGS by finding anything bound directly to another variable and rebinding it to what that variable is
-bound to."
-  (uu::prn "simplifying       %s." bindings)
-  (dolist (pair1 bindings bindings)
-    (dolist (pair2 bindings)
-      (when (equal (cdr pair2) (car pair1))
-        (setcdr pair2 (cdr pair1))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (uu::simplify-bindings (uu::unify1 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
-  returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun uu::equivalent-bindings? (bindings1 bindings2)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "t when BINDINGS1 and BINDINGS2 are equivalent. This is mainly intended for use in the unit tests:
-it won't detect every case of equivalency (such as recursive cases), but should handle the simple cases that
-are relevant to the unit tests correctly."
-  (cond
-    ((and (eq t bindings1) (eq t bindings2)))
-    ((or (eq t bindings1) (eq t bindings2)) nil)
-    (t 
-      (catch 'not-equivalent
-        (dolist (ordering (list (list bindings1 bindings2) (list bindings2 bindings1)))
-          (dolist (pair (car ordering))
-            (unless (dm::pat-elem-is-a-variable? (car pair))
-              (error "malformed bindings, cars in each pair should be variables: %s" pair))
-            (let ( (assoc  (assoc  (car pair) (cadr ordering)))
-                   (rassoc (rassoc (car pair) (cadr ordering))))
-              (cond
-                ((and assoc  (equal (cdr assoc)  (cdr pair))))
-                ((and rassoc (equal (car rassoc) (cdr pair))))
-                (t (throw 'not-equivalent nil))))))
-        t))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (uu::equivalent-bindings?
-    '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
-  returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -519,7 +519,7 @@ are relevant to the unit tests correctly."
     (trace-function #'uu::unify1)
     (trace-function #'uu::reuse-cons)
     (trace-function #'uu::occurs)
-    (trace-function #'uu::unify-variable-with-value12)
+    (trace-function #'uu::unify-variable-with-value1)
     (trace-function #'uu::unify-variable-with-variable2)
     (trace-function #'uu::simplify-bindings)
     (trace-function #'uu::subst-bindings))
@@ -561,7 +561,6 @@ are relevant to the unit tests correctly."
   (atom     cons)     ; FAIL.
   (cons     atom)     ; FAIL.
   (atom     atom)     ; `eql'.
-
   )
 
 
