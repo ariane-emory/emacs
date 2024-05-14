@@ -850,36 +850,36 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unify-variable (var value bindings)
+(defun u::unify-variable3 (var value bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unify VAR with VALUE, using (and maybe extending) BINDINGS."
   (cond
     ((assoc var bindings)
-      (unify (cdr (assoc var bindings)) value bindings))
-    ((and (variable-p value) (assoc value bindings))
-      (unify var (cdr (assoc value bindings)) bindings))
-    ((and *occurs-check* (occurs-check var value bindings))
+      (u::unify3 (cdr (assoc var bindings)) value bindings))
+    ((and (u::variable-p3 value) (assoc value bindings))
+      (u::unify3 var (cdr (assoc value bindings)) bindings))
+    ((and *occurs-check* (u::occurs-check3 var value bindings))
       fail)
-    (t (extend-bindings var value bindings))))
+    (t (u::extend-bindings3 var value bindings))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun occurs-check (var value bindings)
+(defun u::occurs-check3 (var value bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Does VAR occur anywhere inside VALUE according to BINDINGS?"
   (cond ((eq var value) t)
-    ((and (variable-p value) (assoc value bindings))
-      (occurs-check var (cdr (assoc value bindings)) bindings))
+    ((and (u::variable-p3 value) (assoc value bindings))
+      (u::occurs-check3 var (cdr (assoc value bindings)) bindings))
     ((consp value)
-      (or (occurs-check var (car value) bindings)
-        (occurs-check var (cdr value) bindings)))
+      (or (u::occurs-check3 var (car value) bindings)
+        (u::occurs-check3 var (cdr value) bindings)))
     (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun extend-bindings (var val bindings)
+(defun u::extend-bindings3 (var val bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Add a (VAR . VALUE) pair to BINDINGS."
   (cons (cons var val)
@@ -890,31 +890,31 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun subst-bindings (bindings expr)
+(defun u::subst-bindings3 (bindings expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Substitute the value of variables in BINDINGS into EXPR,
  taking recursively bound variables into account."
   (cond ((eq bindings fail) fail)
     ((eq bindings no-bindings) expr)
-    ((and (variable-p expr) (assoc expr bindings))
-      (subst-bindings bindings (car (assoc expr bindings))))
+    ((and (u::variable-p3 expr) (assoc expr bindings))
+      (u::subst-bindings3 bindings (car (assoc expr bindings))))
     ((atom expr) expr)
-    (t (u:reuse-cons (subst-bindings bindings (car expr))
-         (subst-bindings bindings (cdr expr)) expr))))
+    (t (u:reuse-cons (u::subst-bindings3 bindings (car expr))
+         (u::subst-bindings3 bindings (cdr expr)) expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unifier (thing1 thing2)
+(defun u::unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return something that unifies with both THING1 and THING2 (or fail)."
-  (subst-bindings (unify thing2 thing1 thing2) thing1))
+  (u::subst-bindings3 (u::unify3 thing2 thing1 thing2) thing1))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun variable-p (x)
+(defun u::variable-p3 (x)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Is x a variable (a symbol beginning with `?')?"
   (and (symbolp x) (equal (elt (symbol-name x) 0) ?\?)))
@@ -922,19 +922,19 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun fix-variables (thing)
+(defun u::fix-variables3 (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cond
     ((atom thing) thing)
     ((and (consp thing) (eq '\, (car thing)) (cdr thing) (not (cddr thing)) (symbolp (cadr thing)))
       (intern (concat "?" (symbol-name (cadr thing)))))
-    (t (cons (fix-variables (first thing)) (fix-variables (rest thing))))))
+    (t (cons (u::fix-variables3 (first thing)) (u::fix-variables3 (rest thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun unify (thing1 thing2 &optional bindings)
+(defun u::unify3 (thing1 thing2 &optional bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "See if THING1 and THING2 match with given BINDINGS."
   (let ((bindings (or bindings no-bindings)))
@@ -945,35 +945,35 @@ are relevant to the unit tests correctly."
       ((eql thing1 thing2)
         ;; (debug nil 2)
         bindings)
-      ((variable-p thing1)
+      ((u::variable-p3 thing1)
         ;; (debug nil 3)
-        (unify-variable thing1 thing2 bindings))
-      ((variable-p thing2)
-        ;; (debug nil 4)
-        (unify-variable thing2 thing1 bindings))
+        (u::unify-variable3 thing1 thing2 bindings))
+      ((u::variable-p3 thing2)
+        ;; (debug nil 3)
+        (u::unify-variable3 thing2 thing1 bindings))
       ((and (consp thing1) (consp thing2))
-        ;; (debug nil 4)
-        (unify (cdr thing1) (cdr thing2)
-          (unify (car thing1) (car thing2) bindings)))
+        ;; (debug nil 3)
+        (u::unify3 (cdr thing1) (cdr thing2)
+          (u::unify3 (car thing1) (car thing2) bindings)))
       (t
         ;; (debug nil 5)
         fail))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(unify '(x) '(11)) ;; sus.
+(u::unify3 '(x) '(11)) ;; sus.
 
-(unify nil nil nil)
-(trace-function #'unify)
-(trace-function #'extend-bindings)
-
-
-(unify 'x 11) 
-(unify '(x y z) '(11 22 33)) ;; sus.
-
-(unify (fix-variables '(,x ,y ,z)) '(11 22 33))
+(u::unify3 nil nil nil)
+(trace-function #'u::unify3)
+(trace-function #'u::extend-bindings3)
 
 
+(u::unify3 'x 11) 
+(u::unify3 '(x y z) '(11 22 33)) ;; sus.
 
-(unify (fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
-(variable-p (car (fix-variables '(,x ,y (,z 8 ,b . \?c)))))
+(u::unify3 (u::fix-variables3 '(,x ,y ,z)) '(11 22 33))
+
+
+
+(u::unify3 (u::fix-variables3 '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 3 . 5)))
+(u::variable-p3 (car (u::fix-variables3 '(,x ,y (,z 8 ,b . \?c)))))
 
