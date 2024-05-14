@@ -138,9 +138,7 @@
     (u::prn "%s %s in %s"
       (u::style var)
       (if res "         occurs" "DOES NOT occur ")
-      ;; (if res "occurs" "DOES NOT occur ")
       (u::style expr))
-    ;; (u::prndiv ?\-)
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (u::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
@@ -264,8 +262,10 @@ Example:
           ((dm::pat-elem-is-a-variable? pat2-elem)
             (u::unify-variable-with-value pat2 pat1))
           ((equal pat1-elem pat2-elem)
-            (u::prn "pat1-elem and pat2-elem are equal"))
-          (t (u::prn "pat1-elem and pat2-elem are not equal")            
+            (u::prn "pat1 elem %s and pat2 elem %s are equal"
+              (u::style (car pat1)) (u::style (car pat2))))
+          (t (u::prn "pat1 elem %s and pat2 elem %s are not unifiable"
+               (u::style (car pat1)) (u::style (car pat2)))            
             (throw 'not-unifiable nil))))
       (pop pat1)
       (pop pat2)
@@ -792,7 +792,7 @@ are relevant to the unit tests correctly."
   (let ((*u:verbose* t))
     (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
 
-  (let ((reps 100000))
+  (let ((reps 1000))
     (list
       (benchmark-run reps
         (let ((*u:verbose* nil)) (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))))
@@ -811,6 +811,9 @@ are relevant to the unit tests correctly."
   (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))) ;; => ((,y f ,x) (,x f ,y))
 
   (let ((*u:occurs-check* :soft))
+    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))  ;; => (((\, x) f (\, y)))
+
+  (let ((*u:occurs-check* t))
     (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))  ;; => (((\, x) f (\, y)))
 
   (variable variable) ; bind var...
