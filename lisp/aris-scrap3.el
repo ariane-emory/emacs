@@ -848,6 +848,17 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun n::extend-bindings (bindings var expr)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Add a (VAR . EXPR) pair to BINDINGS."
+  (cons (cons var expr)
+    ;; Once we add a "real" binding,
+    ;; we can get rid of the dummy n::no-bindings
+    (if (eq bindings n::no-bindings) nil bindings)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n::unify-variable (bindings var expr)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unify VAR with EXPR, using (and maybe extending) BINDINGS."
@@ -858,7 +869,7 @@ are relevant to the unit tests correctly."
       (n::unify1 var (cdr (assoc expr bindings)) bindings))
     ((and *n:occurs-check* (n::occurs-check bindings var expr))
       n::fail)
-    (t (n::extend-bindings var expr bindings))))
+    (t (n::extend-bindings bindings var expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -875,34 +886,6 @@ are relevant to the unit tests correctly."
     (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::extend-bindings (var expr bindings)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Add a (VAR . EXPR) pair to BINDINGS."
-  (cons (cons var expr)
-    ;; Once we add a "real" binding,
-    ;; we can get rid of the dummy n::no-bindings
-    (if (eq bindings n::no-bindings) nil bindings)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::subst-bindings (bindings x)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Substitute the value of variables in bindings into x,
- taking recursively bound variables into account. Norvig's with tweaks."
-  (cond
-    ((null bindings) nil)
-    ((eq bindings t) x)
-    ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
-      (u::subst-bindings bindings (cdr (assoc x bindings))))
-    ((atom x) x)
-    (t
-      (u::reuse-cons
-        (with-indentation (u::subst-bindings bindings (car x)))
-        (with-indentation (u::subst-bindings bindings (cdr x)))
-        x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun n::subst-bindings (bindings expr)
