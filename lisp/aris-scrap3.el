@@ -4,8 +4,8 @@
 (require 'aris-funs--trees)
 (require 'trace)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; NOTE: `u::unify1's circular binding avoidance and use of the occurs check isn't up to snuff
-;; compared to `u::unify2'.
+;; NOTE: `uu::unify1's circular binding avoidance and use of the occurs check isn't up to snuff
+;; compared to `uu::unify2'.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -13,27 +13,27 @@
 (defgroup unify nil
   "Ari's unification functions.")
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:verbose* t
+(defcustom *uu:verbose* t
   "Whether or not functions in the 'unify' group should print verbose messages."
   :group 'unify
   :type 'boolean)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:div-width* 90
+(defcustom *uu:div-width* 90
   "Div width used by functions in the 'unify' group."
   :group 'unify
   :type 'integer)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:occurs-check* t
+(defcustom *uu:occurs-check* t
   "Whether to perform the occurs check, can be nil, t or :soft."
   :group 'unify
   :type 'symbol)
 ;;---------------------------------------------------------------------------------------------------
-(defcustom *u:unifier-simplifies* nil
-  "Whether `u::unifier' simplifies BINDINGS before substituting."
+(defcustom *uu:unifier-simplifies* nil
+  "Whether `uu::unifier' simplifies BINDINGS before substituting."
   :group 'unify
   :type 'boolean)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar *u:bind-conses* t)
+(defvar *uu:bind-conses* t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -41,25 +41,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; print helpers:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::prn (&rest args)
+(defun uu::prn (&rest args)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *u:verbose* (apply #'prn args)))
+  (when *uu:verbose* (apply #'prn args)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::prnl (&optional count)
+(defun uu::prnl (&optional count)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *u:verbose* (prnl count)))
+  (when *uu:verbose* (prnl count)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::prndiv (&optional char)
+(defun uu::prndiv (&optional char)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Internal print helper function."
-  (when *u:verbose* (funcall #'prndiv (or char ?\=) *u:div-width*)))
+  (when *uu:verbose* (funcall #'prndiv (or char ?\=) *uu:div-width*)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::style (thing)
+(defun uu::style (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cond
     ((atom thing) (format-message "`%S'" thing))
@@ -69,9 +69,9 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::reuse-cons (x y x-y)
+(defun uu::reuse-cons (x y x-y)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return (cons x y), or u::reuse x-y if it is equal to (cons x y). Norvig's."
+  "Return (cons x y), or uu::reuse x-y if it is equal to (cons x y). Norvig's."
   (if (and (eql x (car x-y)) (eql y (cdr x-y)))
     x-y
     (cons x y)))
@@ -79,43 +79,43 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::subst-bindings (bindings x)
+(defun uu::subst-bindings (bindings x)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Substitute the value of variables in bindings into x,
  taking recursively bound variables into account. Norvig's with tweaks."
-  ;; (u::prndiv)
+  ;; (uu::prndiv)
   ;; (debug bindings x)
-  ;; (u::prn "x:        %s" x)
+  ;; (uu::prn "x:        %s" x)
   (let
     ((res 
        (cond
          ((null bindings)
-           ;; (u::prn "case 1")
+           ;; (uu::prn "case 1")
            nil)
          ((eq bindings t)
-           ;; (u::prn "case 2")
+           ;; (uu::prn "case 2")
            x)
          ((and (dm::pat-elem-is-a-variable? x) (assoc x bindings))
-           ;; (u::prn "case 3")
-           (with-indentation (u::subst-bindings bindings (cdr (assoc x bindings)))))
+           ;; (uu::prn "case 3")
+           (with-indentation (uu::subst-bindings bindings (cdr (assoc x bindings)))))
          ((atom x) x)
          (t
-           ;; (u::prn "case 4")
-           (u::reuse-cons
-             (with-indentation (u::subst-bindings bindings (car x)))
-             (with-indentation (u::subst-bindings bindings (cdr x)))
+           ;; (uu::prn "case 4")
+           (uu::reuse-cons
+             (with-indentation (uu::subst-bindings bindings (car x)))
+             (with-indentation (uu::subst-bindings bindings (cdr x)))
              x)))))
-    ;; (u::prn "result:   %s" res)
-    ;; (u::prndiv)
+    ;; (uu::prn "result:   %s" res)
+    ;; (uu::prndiv)
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::occurs (bindings var expr)
+(defun uu::occurs (bindings var expr)
   "Doe VAR occur anywhere inside EXPR?"
-  (u::prndiv ?\-)
-  (u::prn "check if %s occurs in %s" (u::style var) (u::style expr))
+  (uu::prndiv ?\-)
+  (uu::prn "check if %s occurs in %s" (uu::style var) (uu::style expr))
   (let
     ((res
        (if (dm::pat-elem-is-a-variable? expr)
@@ -123,88 +123,88 @@
            ((and (dm::pat-elem-is-a-variable? var) (eq (cadr expr) (cadr var))))
            ((assoc expr bindings)
              (with-indentation
-               (u::prndiv ?\-)
-               (u::occurs bindings var (cdr (assoc expr bindings)))))
+               (uu::prndiv ?\-)
+               (uu::occurs bindings var (cdr (assoc expr bindings)))))
            (t nil))
          (cond
            ((consp expr) (or
                            (with-indentation
-                             (u::prndiv ?\-)
-                             (u::occurs bindings var (car expr)))
+                             (uu::prndiv ?\-)
+                             (uu::occurs bindings var (car expr)))
                            (with-indentation
-                             (u::prndiv ?\-)
-                             (u::occurs bindings var (cdr expr)))))
+                             (uu::prndiv ?\-)
+                             (uu::occurs bindings var (cdr expr)))))
            ((eq var expr))))))
-    (u::prn "%s %s in %s"
-      (u::style var)
+    (uu::prn "%s %s in %s"
+      (uu::style var)
       (if res "         occurs" "DOES NOT occur ")
-      (u::style expr))
+      (uu::style expr))
     res))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
-(confirm that (u::occurs nil 'x '(f (\, x))) returns nil)
-(confirm that (u::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns nil)
+(confirm that (uu::occurs '(((\, x) f (\, y))) '(\, y) '(f (\, x))) returns t)
+(confirm that (uu::occurs nil 'x '(f (\, x))) returns nil)
+(confirm that (uu::occurs '(((\, x) f (\, y))) 'x '(f (\, x))) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value1 (bindings pat1 pat2)
+(defun uu::unify-variable-with-value1 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (let* ( (variable (car pat1))
           (value    (car pat2))
           (binding  (assoc variable bindings)))
-    (u::prn "try to unify the variable %s and with the value %s." (u::style variable)
-      (u::style value))
+    (uu::prn "try to unify the variable %s and with the value %s." (uu::style variable)
+      (uu::style value))
     (cond
-      ((and *u:occurs-check* (u::occurs bindings variable value))
-        (u::prn "occurs check failed, not unifying.")
-        (if (eq *u:occurs-check* :soft)
+      ((and *uu:occurs-check* (uu::occurs bindings variable value))
+        (uu::prn "occurs check failed, not unifying.")
+        (if (eq *uu:occurs-check* :soft)
           (progn 
-            (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
+            (uu::prn ":soft occurs check enabled, skip binding but continue unifying...")
             bindings)
           (throw 'not-unifiable nil)))
       ((and binding (not (equal (car pat2) (cdr binding)))) 
-        (u::prn "variable %s is already bound to a different value, %s."
-          (u::style (car pat1))
-          (u::style (cdr binding)))
+        (uu::prn "variable %s is already bound to a different value, %s."
+          (uu::style (car pat1))
+          (uu::style (cdr binding)))
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           (throw 'not-unifiable nil)
           (debug nil binding bindings (cons (cdr binding) (cdr pat1)) pat2)
-          (u::unify-variable-with-value1 bindings (cons (cdr binding) (cdr pat1)) pat2)
+          (uu::unify-variable-with-value1 bindings (cons (cdr binding) (cdr pat1)) pat2)
           ))
       (binding
-        (u::prn "variable %s is already bound to the same value, %s."
-          (u::style (car pat1))
-          (u::style (cdr binding))))
-      ((not (or *u:bind-conses* (atom (car pat2))))
+        (uu::prn "variable %s is already bound to the same value, %s."
+          (uu::style (car pat1))
+          (uu::style (cdr binding))))
+      ((not (or *uu:bind-conses* (atom (car pat2))))
         (throw 'not-unifiable nil))
       (t
-        (u::prn "binding variable %s to atom %s."
-          (u::style (car pat1))
-          (u::style (car pat2)))
+        (uu::prn "binding variable %s to atom %s."
+          (uu::style (car pat1))
+          (uu::style (car pat2)))
         (push (cons (car pat1) (car pat2)) bindings)))
     bindings))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (u::unify1 nil '(,x ,y a) '(,y ,x ,x))
+;; (uu::unify1 nil '(,x ,y a) '(,y ,x ,x))
 ;; probably should be ((,Y . A) (,X . ,Y))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify1 (bindings pat1 pat2)
+(defun uu::unify1 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Recursively unify two patterns, returning an alist of variable bindings.
 
 Example:
-  (u::unify1 nil '(x + 1) '(,2 + ,y)) => '((x . 2) (y . 1)"
+  (uu::unify1 nil '(x + 1) '(,2 + ,y)) => '((x . 2) (y . 1)"
   (catch 'not-unifiable
     (while (and pat1 pat2)
-      (u::prndiv)
-      (u::prn "pat1: %s" pat1)
-      (u::prn "pat2: %s" pat2)
+      (uu::prndiv)
+      (uu::prn "pat1: %s" pat1)
+      (uu::prn "pat2: %s" pat2)
       (let ( (pat1-elem (car pat1))
              (pat2-elem (car pat2)))
-        (u::prn "pat1-elem: %s" pat1-elem)
-        (u::prn "pat2-elem: %s" pat2-elem)
-        (u::prndiv ?\-)
+        (uu::prn "pat1-elem: %s" pat1-elem)
+        (uu::prn "pat2-elem: %s" pat2-elem)
+        (uu::prndiv ?\-)
         ;;-----------------------------------------------------------------------------------------
         (cond
           ;;---------------------------------------------------------------------------------------
@@ -213,203 +213,203 @@ Example:
              (dm::pat-elem-is-a-variable? pat2-elem)
              (eq (dm::pat-elem-var-sym pat1-elem)
                (dm::pat-elem-var-sym pat2-elem)))
-            (u::prn "%s and %s are the same variable." (u::style pat1-elem) (u::style pat2-elem)))
+            (uu::prn "%s and %s are the same variable." (uu::style pat1-elem) (uu::style pat2-elem)))
           ;;---------------------------------------------------------------------------------------
           ;; both different variables:
           ((and (dm::pat-elem-is-a-variable? pat1-elem) (dm::pat-elem-is-a-variable? pat2-elem))
-            (u::prn "both PAT1 elem and PAT2 elem are variables.")
+            (uu::prn "both PAT1 elem and PAT2 elem are variables.")
             (let ( (binding1 (assoc pat1-elem bindings))
                    (binding2 (assoc pat2-elem bindings)))
-              (u::prn "%s = %s" (u::style pat1-elem)
-                (if binding1 (u::style (cdr binding1)) "<unbound>"))        
-              (u::prn "%s = %s" (u::style pat2-elem)
-                (if binding2 (u::style (cdr binding2)) "<unbound>"))
+              (uu::prn "%s = %s" (uu::style pat1-elem)
+                (if binding1 (uu::style (cdr binding1)) "<unbound>"))        
+              (uu::prn "%s = %s" (uu::style pat2-elem)
+                (if binding2 (uu::style (cdr binding2)) "<unbound>"))
               (cond
                 ;;-----------------------------------------------------------------------------------------
                 ;; bound to un-`equal' values:
                 ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
-                  (u::prn "already bound to different terms")
+                  (uu::prn "already bound to different terms")
                   (throw 'not-unifiable nil))
                 ;;-----------------------------------------------------------------------------------------
                 ;; neither bound:
                 ((not (or binding1 binding2))
-                  (u::prn "both unbound.")
+                  (uu::prn "both unbound.")
                   (push (cons pat1-elem pat2-elem) bindings))
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT1's var not bound, unify with PAT2's var:
                 ((not binding1)
-                  ;; (u::unify2 nil '(,x ,y a) '(,y ,x ,x))
-                  ;; (u::unify1 nil '(,x ,y a) '(,y ,x ,x))
+                  ;; (uu::unify2 nil '(,x ,y a) '(,y ,x ,x))
+                  ;; (uu::unify1 nil '(,x ,y a) '(,y ,x ,x))
                   (when (dm::pat-elem-is-a-variable? (cdr binding2))
                     ;; (debug)
                     (while (and
                              (dm::pat-elem-is-a-variable? (cdr binding2))
                              (not (equal (car pat1) (cdr binding))))
-                      (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
-                        (u::style (car pat1))
-                        (u::style (car pat2))
-                        (u::style (cdr binding2)))
+                      (uu::prn "avoid circular binding, unify %s with %s's value %s instead!"
+                        (uu::style (car pat1))
+                        (uu::style (car pat2))
+                        (uu::style (cdr binding2)))
                       (setf binding2 (assoc (cdr binding2) bindings))))
-                  (u::prn "PAT1 elem %s is unbound, unifying it with %s."
-                    (u::style (car pat1))
-                    (u::style (car binding2)))
+                  (uu::prn "PAT1 elem %s is unbound, unifying it with %s."
+                    (uu::style (car pat1))
+                    (uu::style (car binding2)))
                   (push (cons pat1-elem pat2-elem) bindings))
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT2's var not bound, unify with PAT1's var:
                 ((not binding2)
                   (when (dm::pat-elem-is-a-variable? (cdr binding1))
-                    (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
-                      (u::style (car pat2))
-                      (u::style (car pat1))
-                      (u::style (cdr binding1)))
+                    (uu::prn "avoid circular binding, unify %s with %s's value %s instead!"
+                      (uu::style (car pat2))
+                      (uu::style (car pat1))
+                      (uu::style (cdr binding1)))
                     (debug)
                     (while (dm::pat-elem-is-a-variable? (cdr binding1))
                       (setf binding1 (assoc (cdr binding1) bindings))))
-                  (u::prn "PAT2 elem %s is unbound, unifying it with %s."
-                    (u::style (car pat2))
-                    (u::style (car binding1)))
+                  (uu::prn "PAT2 elem %s is unbound, unifying it with %s."
+                    (uu::style (car pat2))
+                    (uu::style (car binding1)))
                   (push (cons pat2-elem pat1-elem) bindings))
                 ;;-----------------------------------------------------------------------------------------
                 ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
                 ;; not totally sure about this but it seems to work, so far.
                 (t
-                  (u::prn
+                  (uu::prn
                     (concat "pat1-elem and pat2-elem are bound to the same value, "
                       "unifying destructively."))
                   (setcdr binding1 (car binding2))))))
           ;;----------------------------------------------------------------------------------------------
           ;; variable on PAT1, value on PAT2:
           ((dm::pat-elem-is-a-variable? pat1-elem)
-            (setf bindings (u::unify-variable-with-value1 bindings pat1 pat2)))
+            (setf bindings (uu::unify-variable-with-value1 bindings pat1 pat2)))
           ;;----------------------------------------------------------------------------------------------
           ;; variable on PAT2, value on PAT1:
           ((dm::pat-elem-is-a-variable? pat2-elem)
-            (setf bindings (u::unify-variable-with-value1 bindings pat2 pat1)))
+            (setf bindings (uu::unify-variable-with-value1 bindings pat2 pat1)))
           ((equal pat1-elem pat2-elem)
-            (u::prn "pat1 elem %s and pat2 elem %s are equal"
-              (u::style (car pat1)) (u::style (car pat2))))
-          (t (u::prn "pat1 elem %s and pat2 elem %s are not unifiable"
-               (u::style (car pat1)) (u::style (car pat2)))            
+            (uu::prn "pat1 elem %s and pat2 elem %s are equal"
+              (uu::style (car pat1)) (uu::style (car pat2))))
+          (t (uu::prn "pat1 elem %s and pat2 elem %s are not unifiable"
+               (uu::style (car pat1)) (uu::style (car pat2)))            
             (throw 'not-unifiable nil))))
       (pop pat1)
       (pop pat2)
-      (u::prn "bindings: %s" bindings)
+      (uu::prn "bindings: %s" bindings)
       ;;(debug pat1 pat2 bindings)
       ))
   (prog1
     (if (or pat1 pat2)
       ;; not unifiable, return no bindings:
       (progn
-        (u::prndiv ?\-)
-        (u::prn "pat1: %s" pat1)
-        (u::prn "pat2: %s" pat2)
-        (u::prn "not unifiable, return no bindings")
+        (uu::prndiv ?\-)
+        (uu::prn "pat1: %s" pat1)
+        (uu::prn "pat2: %s" pat2)
+        (uu::prn "not unifiable, return no bindings")
         nil)
       (or bindings t))
-    (u::prndiv)))
+    (uu::prndiv)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;(ignore!
-(confirm that (u::unify1 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (uu::unify1 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
   returns (((\, x) \, z) ((\, z) . 333)))
-(confirm that (u::unify1 nil '(333 + ,x) '(,x + 333))
+(confirm that (uu::unify1 nil '(333 + ,x) '(,x + 333))
   returns (((\, x) . 333)))
-(confirm that (u::unify1 nil '(2 + 1) '(2 + 1))
+(confirm that (uu::unify1 nil '(2 + 1) '(2 + 1))
   returns t)
-(confirm that (u::unify1 nil '(,x + 1) '(2 + 1))
+(confirm that (uu::unify1 nil '(,x + 1) '(2 + 1))
   returns (((\, x) . 2)))
-(confirm that (u::unify1 nil '(2 + 1) '(,x + 1))
+(confirm that (uu::unify1 nil '(2 + 1) '(,x + 1))
   returns (((\, x) . 2)))
-(confirm that (u::unify1 nil '(,y + 1) '(,x + ,x))
+(confirm that (uu::unify1 nil '(,y + 1) '(,x + ,x))
   returns (((\, x) . 1) ((\, y) \, x)))
-(confirm that (u::unify1 nil '(,x + 1) '(2 + ,y))
+(confirm that (uu::unify1 nil '(,x + 1) '(2 + ,y))
   returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify1 nil '(,x + 1) '(2 + ,y + 1))
+(confirm that (uu::unify1 nil '(,x + 1) '(2 + ,y + 1))
   returns nil)
-(confirm that (u::unify1 nil '(,x + 1 + 2) '(2 + ,y + 3))
+(confirm that (uu::unify1 nil '(,x + 1 + 2) '(2 + ,y + 3))
   returns nil)
-(confirm that (u::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
+(confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
   returns (((\, a) \, b) ((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+(confirm that (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
   returns nil)
-(confirm that (u::unify1 nil '(,x + 1) '(2 + ,x))
+(confirm that (uu::unify1 nil '(,x + 1) '(2 + ,x))
   returns nil) ;; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value12 (bindings pat1 pat2)
+(defun uu::unify-variable-with-value12 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
   (let* ( (variable (car pat1))
           (value    (car pat2))
           (binding  (assoc variable bindings)))
-    (u::prn "try to unify the variable %s and with the value %s."
-      (u::style variable)
-      (u::style value))
+    (uu::prn "try to unify the variable %s and with the value %s."
+      (uu::style variable)
+      (uu::style value))
     (cond
-      ((and *u:occurs-check* (u::occurs bindings variable value))
-        (u::prn "occurs check failed, not unifying.")
-        (when (eq *u:occurs-check* :soft)
-          (u::prn ":soft occurs check enabled, skip binding but continue unifying...")
-          (u::unify2 bindings (cdr pat1) (cdr pat2))))
+      ((and *uu:occurs-check* (uu::occurs bindings variable value))
+        (uu::prn "occurs check failed, not unifying.")
+        (when (eq *uu:occurs-check* :soft)
+          (uu::prn ":soft occurs check enabled, skip binding but continue unifying...")
+          (uu::unify2 bindings (cdr pat1) (cdr pat2))))
       ((and binding (not (equal value (cdr binding))))
-        (u::prn "variable %s is already bound to a different value, %s."
-          (u::style variable)
-          (u::style (cdr binding)))
+        (uu::prn "variable %s is already bound to a different value, %s."
+          (uu::style variable)
+          (uu::style (cdr binding)))
         (if (not (dm::pat-elem-is-a-variable? (cdr binding)))
           nil
-          (u::unify-variable-with-value12 bindings (cons (cdr binding) (cdr pat1)) pat2)))
+          (uu::unify-variable-with-value12 bindings (cons (cdr binding) (cdr pat1)) pat2)))
       (binding
-        (u::prn "variable %s is already bound to the same value, %s."
-          (u::style variable)
-          (u::style (cdr binding)))
-        (with-indentation (u::unify2 bindings (cdr pat1) (cdr pat2))))
+        (uu::prn "variable %s is already bound to the same value, %s."
+          (uu::style variable)
+          (uu::style (cdr binding)))
+        (with-indentation (uu::unify2 bindings (cdr pat1) (cdr pat2))))
       (t
-        (u::prn "binding variable %s to value %s." (u::style variable)
-          (u::style value))
+        (uu::prn "binding variable %s to value %s." (uu::style variable)
+          (uu::style value))
         (with-indentation
-          (u::unify2 (cons (cons variable value) bindings) (cdr pat1)
+          (uu::unify2 (cons (cons variable value) bindings) (cdr pat1)
             (cdr pat2)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-variable2 (bindings pat1 pat2)
+(defun uu::unify-variable-with-variable2 (bindings pat1 pat2)
   ;; if we entered this fun we already know that (car pat1) is unbound and that (car pat2) is a
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
     (if (and (dm::pat-elem-is-a-variable? (cdr binding2)))
       (progn
-        (u::prn "avoid circular binding, unify %s with %s's value %s instead!"
-          (u::style (car pat1))
-          (u::style (car pat2))
-          (u::style (cdr binding2)))
+        (uu::prn "avoid circular binding, unify %s with %s's value %s instead!"
+          (uu::style (car pat1))
+          (uu::style (car pat2))
+          (uu::style (cdr binding2)))
         (with-indentation
-          (u::unify2 bindings pat1 (cons (cdr binding2) (cdr pat2))))
-        ;; (u::unify2 bindings (cdr pat1) (cdr pat2))
+          (uu::unify2 bindings pat1 (cons (cdr binding2) (cdr pat2))))
+        ;; (uu::unify2 bindings (cdr pat1) (cdr pat2))
         )
-      (u::prn "variable %s is unbound, unifying it with %s."
-        (u::style (car pat1))
-        (u::style (car pat2)))
+      (uu::prn "variable %s is unbound, unifying it with %s."
+        (uu::style (car pat1))
+        (uu::style (car pat2)))
       (with-indentation
-        (u::unify2 (cons (cons (car pat1) (car pat2)) bindings) (cdr pat1) (cdr pat2))))))
+        (uu::unify2 (cons (cons (car pat1) (car pat2)) bindings) (cdr pat1) (cdr pat2))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify2 (bindings pat1 pat2)
+(defun uu::unify2 (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "A tail recursive variation on `u::unify1'. Recursively unify two patterns, returning an alist of variable bindings.
+  "A tail recursive variation on `uu::unify1'. Recursively unify two patterns, returning an alist of variable bindings.
 
 Example:
-  (u::unify2 nil '(x + 1) '(,2 + ,y)) => '((x . 2) (y . 1)"
-  (u::prndiv)
-  (u::prn "pat1:     %S" pat1)
-  (u::prn "pat2:     %S" pat2)
-  (u::prn "bindings: %S" bindings)
-  (u::prndiv ?\-)
+  (uu::unify2 nil '(x + 1) '(,2 + ,y)) => '((x . 2) (y . 1)"
+  (uu::prndiv)
+  (uu::prn "pat1:     %S" pat1)
+  (uu::prn "pat2:     %S" pat2)
+  (uu::prn "bindings: %S" bindings)
+  (uu::prndiv ?\-)
   ;; uncurl tails:
   (let ((pat1-tail-type
           (cond
@@ -419,8 +419,8 @@ Example:
            (cond
              ((and pat2 (atom pat2)) :tail)
              ((and (eq (car pat2) '\,) (not (cddr pat2))) :wayward-comma))))
-    (u::prn "tt1:     %S" pat1-tail-type)
-    (u::prn "tt2:     %S" pat2-tail-type)
+    (uu::prn "tt1:     %S" pat1-tail-type)
+    (uu::prn "tt2:     %S" pat2-tail-type)
     (when (and pat1-tail-type pat2-tail-type)
       
       (cond
@@ -429,169 +429,169 @@ Example:
       (cond
         ((eq pat2-tail-type :tail) (setf pat2 (list pat2)))
         ((eq pat2-tail-type :wayward-comma) (setf pat2 (list (list '\, (cadr pat2))))))
-      (u::prn "pat1*:    %S" pat1)
-      (u::prn "pat2*:    %S" pat2)
+      (uu::prn "pat1*:    %S" pat1)
+      (uu::prn "pat2*:    %S" pat2)
       ))
   
   (cond
     ;;----------------------------------------------------------------------------------------------
     ((not (or pat1 pat2))
-      (u::prn "PAT1 and PAT2 both ran out.")
+      (uu::prn "PAT1 and PAT2 both ran out.")
       (or bindings t))
     ;;----------------------------------------------------------------------------------------------
     ((not pat1)
-      (u::prn "PAT1 ran out.")
+      (uu::prn "PAT1 ran out.")
       nil)
     ;;----------------------------------------------------------------------------------------------
     ((not pat2)
-      (u::prn "PAT2 ran out.")
+      (uu::prn "PAT2 ran out.")
       nil)
     ;;----------------------------------------------------------------------------------------------
     ;; equal atoms:
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
-      (u::prn "%s and %s are eql atoms." (u::style (car pat1)) (u::style (car pat2)))
-      (with-indentation (u::unify2 bindings (cdr pat1) (cdr pat2))))
+      (uu::prn "%s and %s are eql atoms." (uu::style (car pat1)) (uu::style (car pat2)))
+      (with-indentation (uu::unify2 bindings (cdr pat1) (cdr pat2))))
     ;;----------------------------------------------------------------------------------------------
     ;; same variable:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2))
        (eq (dm::pat-elem-var-sym (car pat1)) (dm::pat-elem-var-sym (car pat2))))
-      (u::prn "%s and %s are the same variable." (u::style (car pat1)) (u::style (car pat2)))
-      (with-indentation (u::unify2 bindings (cdr pat1) (cdr pat2))))
+      (uu::prn "%s and %s are the same variable." (uu::style (car pat1)) (uu::style (car pat2)))
+      (with-indentation (uu::unify2 bindings (cdr pat1) (cdr pat2))))
     ;;----------------------------------------------------------------------------------------------
     ;; both different variables:
     ((and (dm::pat-elem-is-a-variable? (car pat1)) (dm::pat-elem-is-a-variable? (car pat2)))
-      (u::prn "both PAT1 elem %s and PAT2 elem %s are variables."
-        (u::style (car pat1))
-        (u::style (car pat2))
+      (uu::prn "both PAT1 elem %s and PAT2 elem %s are variables."
+        (uu::style (car pat1))
+        (uu::style (car pat2))
         )
       (let ( (binding1 (assoc (car pat1) bindings))
              (binding2 (assoc (car pat2) bindings)))
-        (u::prn "%s = %s" (u::style (car pat1))
-          (if binding1 (u::style (cdr binding1)) "<unbound>"))
-        (u::prn "%s = %s" (u::style (car pat2))
-          (if binding2 (u::style (cdr binding2)) "<unbound>"))
+        (uu::prn "%s = %s" (uu::style (car pat1))
+          (if binding1 (uu::style (cdr binding1)) "<unbound>"))
+        (uu::prn "%s = %s" (uu::style (car pat2))
+          (if binding2 (uu::style (cdr binding2)) "<unbound>"))
         (cond
           ;;-----------------------------------------------------------------------------------------
           ;; bound to un-`equal' values:
           ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
-            (u::prn "already bound to different terms.")
+            (uu::prn "already bound to different terms.")
             nil)
           ;;-----------------------------------------------------------------------------------------
           ;; neither bound:
           ((not (or binding1 binding2))
-            (u::prn "both unbound.")
+            (uu::prn "both unbound.")
             (with-indentation
-              (u::unify2 (cons (cons (car pat1) (car pat2)) bindings) (cdr pat1) (cdr pat2))))
+              (uu::unify2 (cons (cons (car pat1) (car pat2)) bindings) (cdr pat1) (cdr pat2))))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            ;; (u::unify-variable-with-value12 pat1 (car pat1) (car pat2) pat2 bindings)
-            (u::unify-variable-with-variable2 bindings pat1 pat2)
+            ;; (uu::unify-variable-with-value12 pat1 (car pat1) (car pat2) pat2 bindings)
+            (uu::unify-variable-with-variable2 bindings pat1 pat2)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            ;; (u::unify-variable-with-value12 pat2 (car pat2) (car pat1) pat1 bindings)
-            (u::unify-variable-with-variable2 bindings pat2 pat1)
+            ;; (uu::unify-variable-with-value12 pat2 (car pat2) (car pat1) pat1 bindings)
+            (uu::unify-variable-with-variable2 bindings pat2 pat1)
             )
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
-          (t (u::prn
+          (t (uu::prn
                (concat "PAT1's var %s and PAT2's var %s are bound to the same value, "
                  "unifying them destructively.")
-               (u::style (car pat1)) (u::style (car pat2)))
+               (uu::style (car pat1)) (uu::style (car pat2)))
             (setcdr binding1 (car binding2))
-            (with-indentation (u::unify2 bindings (cdr pat1) (cdr pat2)))))))
+            (with-indentation (uu::unify2 bindings (cdr pat1) (cdr pat2)))))))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
-    ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      (u::unify-variable-with-value12 bindings pat1 pat2))
+    ((and (dm::pat-elem-is-a-variable? (car pat1)) (or *uu:bind-conses* (atom (car pat2))))
+      (uu::unify-variable-with-value12 bindings pat1 pat2))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1:
-    ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *u:bind-conses* (atom (car pat1))))
-      (u::unify-variable-with-value12 bindings pat2 pat1))
+    ((and (dm::pat-elem-is-a-variable? (car pat2)) (or *uu:bind-conses* (atom (car pat1))))
+      (uu::unify-variable-with-value12 bindings pat2 pat1))
     ;;----------------------------------------------------------------------------------------------
-    (t nil (u::prn "unhandled"))))
+    (t nil (uu::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (u::unify2 nil '(,w ,x ,y) '(,x ,y ,w))
+(confirm that (uu::unify2 nil '(,w ,x ,y) '(,x ,y ,w))
   returns (((\, x) \, y) ((\, w) \, x)))
-(confirm that (u::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+(confirm that (uu::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
   returns (((\, y) \, z) ((\, x) \, y) ((\, w) \, x)))
-(confirm that (u::unify2 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (uu::unify2 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
   returns (((\, x) \, z) ((\, z) . 333)))
-(confirm that (u::unify2 nil '(333 + ,x) '(,x + 333))
+(confirm that (uu::unify2 nil '(333 + ,x) '(,x + 333))
   returns (((\, x) . 333)))
-(confirm that (u::unify2 nil '(2 + 1) '(2 + 1))
+(confirm that (uu::unify2 nil '(2 + 1) '(2 + 1))
   returns t)
-(confirm that (u::unify2 nil '(,x + 1) '(2 + 1))
+(confirm that (uu::unify2 nil '(,x + 1) '(2 + 1))
   returns (((\, x) . 2)))
-(confirm that (u::unify2 nil '(2 + 1) '(,x + 1))
+(confirm that (uu::unify2 nil '(2 + 1) '(,x + 1))
   returns (((\, x) . 2)))
-(confirm that (u::unify2 nil '(,y + 1) '(,x + ,x))
+(confirm that (uu::unify2 nil '(,y + 1) '(,x + ,x))
   returns (((\, x) . 1) ((\, y) \, x)))
-(confirm that (u::unify2 nil '(,x + 1) '(2 + ,y))
+(confirm that (uu::unify2 nil '(,x + 1) '(2 + ,y))
   returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify2 nil '(,x + 1) '(2 + ,y + 1))
+(confirm that (uu::unify2 nil '(,x + 1) '(2 + ,y + 1))
   returns nil)
-(confirm that (u::unify2 nil '(,x + 1 + 2) '(2 + ,y + 3))
+(confirm that (uu::unify2 nil '(,x + 1 + 2) '(2 + ,y + 3))
   returns nil)
-(confirm that (u::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (uu::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
+(confirm that (uu::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
   returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
-(confirm that (u::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+(confirm that (uu::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
   returns nil)
-(confirm that (u::unify2 nil '(,x + 1) '(2 + ,x))
+(confirm that (uu::unify2 nil '(,x + 1) '(2 + ,x))
   returns nil)
-(confirm that (u::unify2 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+(confirm that (uu::unify2 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
   returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
 ;;---------------------------------------------------------------------------------------------------
 ;; uncurl tails tests:
-(confirm that (u::unify2 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+(confirm that (uu::unify2 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
   returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-(confirm that (u::unify2 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+(confirm that (uu::unify2 nil '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
   returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-(confirm that (u::unify2 nil '(,x ,y . ,z) '(1 2 . 3))
+(confirm that (uu::unify2 nil '(,x ,y . ,z) '(1 2 . 3))
   returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-(confirm that (u::unify2 nil '(,x ,y   ,z) '(1 2   3))
+(confirm that (uu::unify2 nil '(,x ,y   ,z) '(1 2   3))
   returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
 ;;---------------------------------------------------------------------------------------------------
 ;; occurs check tests:
 (confirm that
-  (let ((*u:occurs-check* nil))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))
+  (let ((*uu:occurs-check* nil))
+    (uu::unify2 nil '(,x ,y) '((f ,y) (f ,x))))
   returns (((\, y) f (\, x)) ((\, x) f (\, y))))
 (confirm that
-  (let ((*u:occurs-check* :soft))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))
+  (let ((*uu:occurs-check* :soft))
+    (uu::unify2 nil '(,x ,y) '((f ,y) (f ,x))))
   returns (((\, x) f (\, y))))
 (confirm that
-  (let ((*u:occurs-check* t))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x))))
+  (let ((*uu:occurs-check* t))
+    (uu::unify2 nil '(,x ,y) '((f ,y) (f ,x))))
   returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::simplify-bindings (bindings)
+(defun uu::simplify-bindings (bindings)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Simplify BINDINGS by finding anything bound directly to another variable and rebinding it to what that variable is
 bound to."
-  (u::prn "simplifying       %s." bindings)
+  (uu::prn "simplifying       %s." bindings)
   (dolist (pair1 bindings bindings)
     (dolist (pair2 bindings)
       (when (equal (cdr pair2) (car pair1))
         (setcdr pair2 (cdr pair1))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (u::simplify-bindings (u::unify2 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
+  (uu::simplify-bindings (uu::unify2 nil '(,v ,u ,w ,x) '(,u ,x ,v 333)))
   returns (((\, x) . 333) ((\, w) . 333) ((\, u) . 333) ((\, v) . 333)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::equivalent-bindings? (bindings1 bindings2)
+(defun uu::equivalent-bindings? (bindings1 bindings2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "t when BINDINGS1 and BINDINGS2 are equivalent. This is mainly intended for use in the unit tests:
 it won't detect every case of equivalency (such as recursive cases), but should handle the simple cases that
@@ -614,144 +614,144 @@ are relevant to the unit tests correctly."
         t))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (u::equivalent-bindings?
+  (uu::equivalent-bindings?
     '(((\, c) . 1) ((\, b) . (\, a))) '(((\, c) . 1) ((\, a) . (\, b))))
   returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; comparison tests between `u::unify1' and `u::unify2'.
-;; NOTE: `u::unify1' does not have occurs checking yet, so comparisons related to the occurs check
+;; comparison tests between `uu::unify1' and `uu::unify2'.
+;; NOTE: `uu::unify1' does not have occurs checking yet, so comparisons related to the occurs check
 ;;   are not included.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that
-  (let ((*u:bind-conses* t))
-    (u::equivalent-bindings?
-      (u::unify1 nil '(1 + ,x) '(,y + (2 . 3)))
-      (u::unify2 nil '(1 + ,x) '(,y + (2 . 3)))))
+  (let ((*uu:bind-conses* t))
+    (uu::equivalent-bindings?
+      (uu::unify1 nil '(1 + ,x) '(,y + (2 . 3)))
+      (uu::unify2 nil '(1 + ,x) '(,y + (2 . 3)))))
   returns t)
 (confirm that
-  (let ((*u:bind-conses* nil))
-    (u::equivalent-bindings?
-      (u::unify1 nil '(1 + ,x) '(,y + (2 . 3)))
-      (u::unify2 nil '(1 + ,x) '(,y + (2 . 3)))))
+  (let ((*uu:bind-conses* nil))
+    (uu::equivalent-bindings?
+      (uu::unify1 nil '(1 + ,x) '(,y + (2 . 3)))
+      (uu::unify2 nil '(1 + ,x) '(,y + (2 . 3)))))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
-    (u::unify2 nil '(333 + ,x + ,x) '(,z + 333 + ,z)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(333 + ,x + ,x) '(,z + 333 + ,z))
+    (uu::unify2 nil '(333 + ,x + ,x) '(,z + 333 + ,z)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(333 + ,x) '(,x + 333))
-    (u::unify2 nil '(333 + ,x) '(,x + 333)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(333 + ,x) '(,x + 333))
+    (uu::unify2 nil '(333 + ,x) '(,x + 333)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(2 + 1) '(2 + 1))
-    (u::unify2 nil '(2 + 1) '(2 + 1)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(2 + 1) '(2 + 1))
+    (uu::unify2 nil '(2 + 1) '(2 + 1)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1) '(2 + 1))
-    (u::unify2 nil '(,x + 1) '(2 + 1)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1) '(2 + 1))
+    (uu::unify2 nil '(,x + 1) '(2 + 1)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(2 + 1) '(,x + 1))
-    (u::unify2 nil '(2 + 1) '(,x + 1)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(2 + 1) '(,x + 1))
+    (uu::unify2 nil '(2 + 1) '(,x + 1)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,y + 1) '(,x + ,x))
-    (u::unify2 nil '(,y + 1) '(,x + ,x)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,y + 1) '(,x + ,x))
+    (uu::unify2 nil '(,y + 1) '(,x + ,x)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1) '(2 + ,y))
-    (u::unify2 nil '(,x + 1) '(2 + ,y)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1) '(2 + ,y))
+    (uu::unify2 nil '(,x + 1) '(2 + ,y)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1) '(2 + ,y + 1))
-    (u::unify2 nil '(,x + 1) '(2 + ,y + 1)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1) '(2 + ,y + 1))
+    (uu::unify2 nil '(,x + 1) '(2 + ,y + 1)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1 + 2) '(2 + ,y + 3))
-    (u::unify2 nil '(,x + 1 + 2) '(2 + ,y + 3)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1 + 2) '(2 + ,y + 3))
+    (uu::unify2 nil '(,x + 1 + 2) '(2 + ,y + 3)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
-    (u::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,a)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,a))
+    (uu::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,a)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
-    (u::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+    (uu::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b + 3)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1) '(2 + ,x))
-    (u::unify2 nil '(,x + 1) '(2 + ,x)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1) '(2 + ,x))
+    (uu::unify2 nil '(,x + 1) '(2 + ,x)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
-    (u::unify2 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+    (uu::unify2 nil '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a)))
   returns t)
 (confirm that
-  (u::equivalent-bindings?
-    (u::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
-    (u::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b)))
+  (uu::equivalent-bindings?
+    (uu::unify1 nil '(,x + 1 + ,a) '(2 + ,y + ,b))
+    (uu::unify2 nil '(,x + 1 + ,a) '(2 + ,y + ,b)))
   returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u:unifier (fun pat1 pat2)
+(defun uu:unifier (fun pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "My version of Norvig's unifier."
   (let* ( (bindings (funcall fun nil pat1 pat2))
-          (bindings (if *u:unifier-simplifies*
-                      (u::simplify-bindings bindings)
+          (bindings (if *uu:unifier-simplifies*
+                      (uu::simplify-bindings bindings)
                       bindings)))
-    (u::prn "unified bindings: %s" bindings)
-    (let ((expr (u::subst-bindings bindings pat1)))
-      (u::prn "substituted expr: %s" expr)
-      (u::prndiv)
-      (u::prnl)
+    (uu::prn "unified bindings: %s" bindings)
+    (let ((expr (uu::subst-bindings bindings pat1)))
+      (uu::prn "substituted expr: %s" expr)
+      (uu::prndiv)
+      (uu::prnl)
       expr)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (ignore!
-(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(confirm that (uu:unifier #'uu::unify1 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (uu:unifier #'uu::unify1 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (2 + 1 + (\, a)))
-(confirm that (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (uu:unifier #'uu::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))
   returns (333 + 333 + 333))
-(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
+(confirm that (uu:unifier #'uu::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2))
   returns (2 + 1 + 2 + 2))
-(confirm that (u:unifier #'u::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
+(confirm that (uu:unifier #'uu::unify2 '(,x + 1 + ,a) '(2 + ,y + ,a))
   returns (2 + 1 + (\, a)))
-(confirm that (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
+(confirm that (uu:unifier #'uu::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))
   returns (333 + 333 + 333))
 (confirm that
-  (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+  (uu:unifier #'uu::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
   returns (2 + 1 + 8 + 8))
 (confirm that
-  (let ( (*u:verbose* t)
-         (*u:unifier-simplifies* nil))
-    (u:unifier #'u::unify2
+  (let ( (*uu:verbose* t)
+         (*uu:unifier-simplifies* nil))
+    (uu:unifier #'uu::unify2
       '(,v ,u ,w ,x)
       '(,u ,x ,v 333)))
   returns (333 333 333 333))
 (confirm that
-  (let ( (*u:verbose* t)
-         (*u:unifier-simplifies* t))
-    (u:unifier #'u::unify2
+  (let ( (*uu:verbose* t)
+         (*uu:unifier-simplifies* t))
+    (uu:unifier #'uu::unify2
       '(,v ,u ,w ,x)
       '(,u ,x ,v 333)))
   returns (333 333 333 333))
@@ -759,25 +759,25 @@ are relevant to the unit tests correctly."
   (let ((reps 50000))
     (list
       (benchmark-run reps
-        (let ( (*u:verbose* nil)
-               (*u:unifier-simplifies* nil))
-          (u:unifier #'u::unify2
+        (let ( (*uu:verbose* nil)
+               (*uu:unifier-simplifies* nil))
+          (uu:unifier #'uu::unify2
             '(,u ,v ,w ,x)
             '(,x ,u ,v 333))))
       (benchmark-run reps
-        (let ( (*u:verbose* nil)
-               (*u:unifier-simplifies* t))
-          (u:unifier #'u::unify2
+        (let ( (*uu:verbose* nil)
+               (*uu:unifier-simplifies* t))
+          (uu:unifier #'uu::unify2
             '(,u ,v ,w ,x)
             '(,x ,u ,v 333)))))))
 ;; uncurl tails:
-(confirm that (u:unifier #'u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+(confirm that (uu:unifier #'uu::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
   returns (1 2 3 . 4))
-(confirm that (u:unifier #'u::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+(confirm that (uu:unifier #'uu::unify2 '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
   returns (1 2 3 . 4))
-(confirm that (u:unifier #'u::unify2 '(,x ,y . ,z) '(1 2 . 3))
+(confirm that (uu:unifier #'uu::unify2 '(,x ,y . ,z) '(1 2 . 3))
   returns (1 2 . 3))
-(confirm that (u:unifier #'u::unify2 '(,x ,y   ,z) '(1 2   3))
+(confirm that (uu:unifier #'uu::unify2 '(,x ,y   ,z) '(1 2   3))
   returns (1 2 3))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -792,46 +792,46 @@ are relevant to the unit tests correctly."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
-    (trace-function #'u:unifier)
-    (trace-function #'u::unify1)
-    (trace-function #'u::unify2)
-    (trace-function #'u::reuse-cons)
-    (trace-function #'u::occurs)
-    (trace-function #'u::unify-variable-with-value12)
-    (trace-function #'u::unify-variable-with-variable2)
-    (trace-function #'u::simplify-bindings)
-    (trace-function #'u::subst-bindings))
+    (trace-function #'uu:unifier)
+    (trace-function #'uu::unify1)
+    (trace-function #'uu::unify2)
+    (trace-function #'uu::reuse-cons)
+    (trace-function #'uu::occurs)
+    (trace-function #'uu::unify-variable-with-value12)
+    (trace-function #'uu::unify-variable-with-variable2)
+    (trace-function #'uu::simplify-bindings)
+    (trace-function #'uu::subst-bindings))
 
   (untrace-all)
 
-  (let ((*u:verbose* t))
-    (u:unifier #'u::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
+  (let ((*uu:verbose* t))
+    (uu:unifier #'uu::unify2 '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
 
-  (let ((*u:verbose* t))
-    (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
+  (let ((*uu:verbose* t))
+    (uu:unifier #'uu::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z)))
 
   (let ((reps 1000))
     (list
       (benchmark-run reps
-        (let ((*u:verbose* nil)) (u:unifier #'u::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))))
+        (let ((*uu:verbose* nil)) (uu:unifier #'uu::unify1 '(333 + ,x + ,x) '(,z + 333 + ,z))))
       (benchmark-run reps
-        (let ((*u:verbose* nil)) (u:unifier #'u::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))))))
+        (let ((*uu:verbose* nil)) (uu:unifier #'uu::unify2 '(333 + ,x + ,x) '(,z + 333 + ,z))))))
 
-  (u::unify2 nil '(,x ,x) '(,y ,y))
-  (u::unify2 nil '(,x ,y a) '(,y ,x ,x))
-  (u::unify2 nil '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
-  (u::unify2 nil '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
+  (uu::unify2 nil '(,x ,x) '(,y ,y))
+  (uu::unify2 nil '(,x ,y a) '(,y ,x ,x))
+  (uu::unify2 nil '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
+  (uu::unify2 nil '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
 
-  (u::unify2 nil '(,y ,x) '(7 (f ,x)))
-  (u:unifier #'u::unify2 '(,y ,x) '(7 (f ,x)))
-  (u:unifier #'u::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+  (uu::unify2 nil '(,y ,x) '(7 (f ,x)))
+  (uu:unifier #'uu::unify2 '(,y ,x) '(7 (f ,x)))
+  (uu:unifier #'uu::unify2 '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
-  (let ((*u:occurs-check* nil))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
-  (let ((*u:occurs-check* :soft))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
-  (let ((*u:occurs-check* t))
-    (u::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; nil
+  (let ((*uu:occurs-check* nil))
+    (uu::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
+  (let ((*uu:occurs-check* :soft))
+    (uu::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
+  (let ((*uu:occurs-check* t))
+    (uu::unify2 nil '(,x ,y) '((f ,y) (f ,x)))) ; nil
 
   (variable variable) ; bind var...
   (variable atom)     ; bind var...
@@ -901,7 +901,7 @@ are relevant to the unit tests correctly."
     ((and (n::variable-p expr) (assoc expr bindings))
       (n::subst-bindings bindings (cdr (assoc expr bindings))))
     ((atom expr) expr)
-    (t (u::reuse-cons (n::subst-bindings bindings (car expr))
+    (t (uu::reuse-cons (n::subst-bindings bindings (car expr))
          (n::subst-bindings bindings (cdr expr)) expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1012,7 +1012,7 @@ are relevant to the unit tests correctly."
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
 
-(u::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+(uu::unify2 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 
 (n:unifier
