@@ -65,8 +65,8 @@
 (defun uu::style (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cond
+    ((uu::variable-p thing) (format "%S" thing))
     ((atom thing) (format-message "`%S'" thing))
-    ((dm::pat-elem-is-a-variable? thing) (format "%S" thing))
     (t (format "%S" thing))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -272,9 +272,7 @@ are relevant to the unit tests correctly."
           (uu::style (car pat2))
           (uu::style (cdr binding2)))
         (with-indentation
-          (uu::unify1 bindings pat1 (cons (cdr binding2) (cdr pat2))))
-        ;; (uu::unify1 bindings (cdr pat1) (cdr pat2))
-        )
+          (uu::unify1 bindings pat1 (cons (cdr binding2) (cdr pat2)))))
       (uu::prn "variable %s is unbound, unifying it with %s."
         (uu::style (car pat1))
         (uu::style (car pat2)))
@@ -356,16 +354,11 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            ;; (uu::unify-variable-with-value1 pat1 (car pat1) (car pat2) pat2 bindings)
-            (uu::unify-variable-with-variable2 bindings pat1 pat2)
-            )
+            (uu::unify-variable-with-variable2 bindings pat1 pat2))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var:
           ((not binding2)
-            ;; (uu::unify-variable-with-value1 pat2 (car pat2) (car pat1) pat1 bindings)
-            (uu::unify1 bindings pat2 pat1)
-            ;; (uu::unify-variable-with-variable2 bindings pat2 pat1)
-            )
+            (uu::unify1 bindings pat2 pat1))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
