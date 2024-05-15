@@ -80,18 +80,28 @@
                   (substring (format "%S" (ml::prettify-variables (car rule))) 1 -1)
                   (cond
                     ((null (cdr rule)) ".")
+                    ((null (cddr rule))
+                      (concat " :- "
+                        (substring
+                          (format "%S" (ml::prettify-variables (cadr rule))) 1 -1)
+                        "."))
                     (t " :- ")))))
           (prn str)
-          (with-indentation
-            (dolist (clause (cdr rule))
-              (prn (ml::fmt-pretty-vars
-                     (concat (substring (format "%S" (ml::prettify-variables clause))
-                               1 -1)
-                       ".")))))))))
+          (when (cddr rule) ; (ml:prn-world)
+            (with-indentation
+              (let ((pos (cdr rule)))
+                (while pos
+                  (let ((clause (car pos)))
+                    (prn (ml::fmt-pretty-vars
+                           (concat (substring (format "%S"
+                                                (ml::prettify-variables clause))
+                                     1 -1)
+                             (if (cdr pos) "," ".")))))
+                  (pop pos)))))))))
   (ml::prndiv)
   (ml::prnl))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ml:prn-world)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml:reset ()
@@ -117,7 +127,7 @@
     (error "CONSEQUENT should be a cons or a symbol."))
   (when-let ((bad-antecedent
                (cl-find-if-not (lambda (a) (consp a)) antecedents)))
-    (error "ANTECEDENTS should be a consses, got: %S." bad-antecedent))
+    (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
   (ensure-db! '*ml*)
   (let* ( (consequent     (u::fix-variables consequent))
           (antecedents    (mapcar #'u::fix-variables antecedents))
@@ -129,34 +139,71 @@
       ((not was-found) ; new rule, add it.
         (ml::prndiv)
         (let ((rule antecedents))
-          (db-put '*ml* consequent (ml::prn1 "Adding rule %S." rule))))
+          (ml::prn "Adding rule %S." (cons consequent antecedents))
+          (db-put '*ml* consequent rule)))
       (found-is-equal found) ; repeated (but `equal' rule, do nothing.
       (t (error "Already have a rule for %S: %S" consequent found)))
     (db-to-alist '*ml*)
     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro := (consequent &rest antecedents)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (unless (consp consequent)
+    (error "CONSEQUENT should be a cons or a symbol."))
+  (when-let ((bad-antecedent
+               (cl-find-if-not (lambda (a) (consp a)) antecedents)))
+    (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
+  `(progn
+     (ensure-db! '*ml*)
+     (let* ( (consequent     (u::fix-variables ',consequent))
+             (antecedents    (mapcar #'u::fix-variables ',antecedents))
+             (lookup         (db-get '*ml* consequent))
+             (was-found      (cdr lookup))
+             (found          (car lookup))
+             (found-is-equal (and was-found (equal antecedents found))))    
+       (cond
+         ((not was-found) ; new rule, add it.
+           (ml::prndiv)
+           (let ((rule antecedents))
+             (ml::prn "Adding rule %S." (cons consequent antecedents))
+             (db-put '*ml* consequent rule)))
+         (found-is-equal found) ; repeated (but `equal' rule, do nothing.
+         (t (error "Already have a rule for %S: %S" consequent found)))
+       (db-to-alist '*ml*))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (get '*ml* 'db)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (ml:reset)) returns t)
 (confirm that (hash-table-empty-p (ml:reset)) returns t)
-(confirm that (<- '(kiki likes eating hamburgers))
-  returns (((kiki likes eating hamburgers))))
+(confirm that (<- '(ari likes eating hamburger))
+  returns (((ari likes eating hamburger))))
 ;; repeated rule does nothing:
-(confirm that (<- '(kiki likes eating hamburgers))
-  returns (((kiki likes eating hamburgers))))
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ((\?person would eat a \?food) (\?person likes eating \?food))
-            ((kiki likes eating hamburgers))))
+(confirm that (<- '(ari likes eating hamburger))
+  returns (((ari likes eating hamburger))))
+(confirm that (:- '(,person would eat a ,food)
+                '(,person is a person)
+                '(,food is a food)
+                '(,person likes eating ,food))
+  returns (((\?person would eat a \?food)
+             (\?person is a person)
+             (\?food is a food)
+             (\?person likes eating \?food))
+            ((ari likes eating hamburger))))
 ;; repeated rule does nothing:
-(confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ((\?person would eat a \?food) (\?person likes eating \?food))
-            ((kiki likes eating hamburgers))))
+(confirm that (:- '(,person would eat a ,food)
+                '(,person is a person)
+                '(,food is a food)
+                '(,person likes eating ,food))
+  returns (((\?person would eat a \?food)
+             (\?person is a person)
+             (\?food is a food)
+             (\?person likes eating \?food))
+            ((ari likes eating hamburger))))
 ;; This should (and does) signal an error:
 ;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
 ;;   returns ( ( ((\, person) would eat a (\, food))
 ;;               ((\, person) likes eating (\, food)))
-;;             ( (kiki likes eating hamburgers))))
-(ml:prn-world)
+;;             ( (ari likes eating hamburger))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -167,4 +214,16 @@
 
 (ml::prettify-variables '(x (\?foo \?bar)))
 (u::variable-p '\?foo)
+(<- '(ari is a person))
+(<- '(hamburger is a food))
+(:- '(,person could eat a ,food)
+  '(,person is a person)
+  '(,food is a food)
+  '(,person would eat a ,food)
+  '(,person has a ,food))
 (ml:prn-world)
+
+
+(:= (ari can make a hamburger) (ari has beef))
+
+
