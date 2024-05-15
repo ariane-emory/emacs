@@ -204,10 +204,10 @@ are relevant to the unit tests correctly."
   (cond
     ((eq var expr) t)
     ((and (uu::variable-p expr) (assoc expr bindings))
-      (n::occurs-check bindings var (cdr (assoc expr bindings))))
+      (uu::occurs bindings var (cdr (assoc expr bindings))))
     ((consp expr)
-      (or (n::occurs-check bindings var (car expr))
-        (n::occurs-check bindings var (cdr expr))))
+      (or (uu::occurs bindings var (car expr))
+        (uu::occurs bindings var (cdr expr))))
     (t nil)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *uu:test*
@@ -738,18 +738,18 @@ bound to."
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::occurs-check (bindings var expr)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Does VAR occur anywhere inside EXPR according to BINDINGS?"
-  (cond ((eq var expr) t)
-    ((and (uu::variable-p expr) (assoc expr bindings))
-      (n::occurs-check bindings var (cdr (assoc expr bindings))))
-    ((consp expr)
-      (or (n::occurs-check bindings var (car expr))
-        (n::occurs-check bindings var (cdr expr))))
-    (t nil)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun n::occurs-check (bindings var expr)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Does VAR occur anywhere inside EXPR according to BINDINGS?"
+;;   (cond ((eq var expr) t)
+;;     ((and (uu::variable-p expr) (assoc expr bindings))
+;;       (n::occurs-check bindings var (cdr (assoc expr bindings))))
+;;     ((consp expr)
+;;       (or (n::occurs-check bindings var (car expr))
+;;         (n::occurs-check bindings var (cdr expr))))
+;;     (t nil)))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -761,7 +761,7 @@ bound to."
       (n::unify1 bindings (cdr (assoc var bindings)) expr))
     ((and (uu::variable-p expr) (assoc expr bindings))
       (n::unify1 bindings var (cdr (assoc expr bindings))))
-    ((and *n:occurs-check* (n::occurs-check bindings var expr))
+    ((and *n:occurs-check* (u::occurs bindings var expr))
       n::fail)
     (t (n::extend-bindings bindings var expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
