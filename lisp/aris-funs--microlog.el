@@ -73,7 +73,7 @@
   (ml::prndiv)
   (dm::prn "DB:")
   (with-indentation
-    (let ((alist (db-to-alist '*ml*)))
+    (let ((alist (nreverse (db-to-alist '*ml*))))
       (dolist (rule alist)
         (let ((str
                 (concat 
@@ -157,23 +157,25 @@
   (when-let ((bad-antecedent
                (cl-find-if-not (lambda (a) (consp a)) antecedents)))
     (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
-  `(progn
-     (ensure-db! '*ml*)
-     (let* ( (consequent     (ml::fix-variables ',consequent))
-             (antecedents    (mapcar #'ml::fix-variables ',antecedents))
-             (lookup         (db-get '*ml* consequent))
-             (was-found      (cdr lookup))
-             (found          (car lookup))
-             (found-is-equal (and was-found (equal antecedents found))))    
-       (cond
-         ((not was-found) ; new rule, add it.
-           (ml::prndiv)
-           (let ((rule antecedents))
-             (ml::prn "Adding rule %S." (cons consequent antecedents))
-             (db-put '*ml* consequent rule)))
-         (found-is-equal found) ; repeated (but `equal' rule, do nothing.
-         (t (error "Already have a rule for %S: %S" consequent found)))
-       (db-to-alist '*ml*))))
+  (let ( (consequent  (ml::fix-variables consequent))
+         (antecedents (mapcar #'ml::fix-variables antecedents)))
+    `(progn
+       (ensure-db! '*ml*)
+       (let* ( (consequent     ',consequent) 
+               (antecedents    ',antecedents)
+               (lookup         (db-get '*ml* consequent))
+               (was-found      (cdr lookup))
+               (found          (car lookup))
+               (found-is-equal (and was-found (equal antecedents found))))    
+         (cond
+           ((not was-found) ; new rule, add it.
+             (ml::prndiv)
+             (let ((rule antecedents))
+               (ml::prn "Adding rule %S." (cons consequent antecedents))
+               (db-put '*ml* consequent rule)))
+           (found-is-equal found) ; repeated (but `equal' rule, do nothing.
+           (t (error "Already have a rule for %S: %S" consequent found)))
+         (db-to-alist '*ml*)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (ml:reset)) returns t)
 (confirm that (hash-table-empty-p (ml:reset)) returns t)
@@ -235,7 +237,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Turn capitalized variable designators Foo symbols like \?Foo anywhere in THING
 (including improper tails)."
-  (prn "thing: %S" thing)
+  ;; (prn "thing: %S" thing)
   (cond
     ((ml::variable-p thing) (intern (concat "?" (symbol-name thing))))
     ((atom thing) thing)
@@ -268,4 +270,28 @@
 
 (ml:prn-world)
 
+(ml:reset)
 
+;; real Prolog: man(socrates).
+(<- socrates is a man)
+;; real Prolog:
+;;   mortal(Who) :- man(Who).
+(:- (mortal Who) (Who is a man))
+(ml:prn-world)
+
+(ml:reset)
+
+;; real Prolog in the comments, my Lisp stuff in the code:
+;; man(Thing) :- featherless(Thing), bipedal(Thing).
+(:- (man Thing) (Thing is featherless) (Thing is bipedal))
+;; featherless(Thing) :- is-plucked(Thing).
+(:- (Thing is featherless) (Thing is plucked))
+;; bipedal(Thing) :- is-a-chicken(Thing).
+(:- (Thing is bipedal) (Thing is a chicken))
+;; is-a-chicken(some-chicken).
+(<- some-chicken is a chicken)
+;; is-plucked(some-chicken).
+(<- some-chicken is plucked)
+
+
+(ml:prn-world)
