@@ -50,6 +50,24 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::fmt-pretty-vars (string)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Replace occurrences of \\? with ? in STRING."
+  (replace-regexp-in-string "\\\\\\?" "?" string))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::prettify-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (cond
+    ((u::variable-p thing) (make-symbol (capitalize1 (substring (symbol-name thing) 1))))
+    ((atom thing) thing)
+    (t (cons (ml::prettify-variables (car thing)) (ml::prettify-variables (cdr thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml:prn-world ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (ml::prndiv)
@@ -59,14 +77,17 @@
       (dolist (rule alist)
         (let ((str
                 (concat 
+                  (substring (format "%S" (ml::prettify-variables (car rule))) 1 -1)
                   (cond
-                    ((symbolp (car rule)) (format "%S" (car rule)))
-                    (t (substring (format "%S" (car rule)) 1 -1)))
-                  (cond
-                    ((null (cdr rule)) "")
-                    (t (format " :- %S" (cdr rule))))
-                  ".")))
-          (prn str)))))
+                    ((null (cdr rule)) ".")
+                    (t " :- ")))))
+          (prn str)
+          (with-indentation
+            (dolist (clause (cdr rule))
+              (prn (ml::fmt-pretty-vars
+                     (concat (substring (format "%S" (ml::prettify-variables clause))
+                               1 -1)
+                       ".")))))))))
   (ml::prndiv)
   (ml::prnl))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -143,4 +164,7 @@
 (provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(ml::prettify-variables '(x (\?foo \?bar)))
+(u::variable-p '\?foo)
 (ml:prn-world)
