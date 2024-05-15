@@ -21,11 +21,7 @@
 
 ;; ((x (and t 1)) (y (and x 2)))
 
-(if-let ((the-integer (some integer x)))
-  (progn (* 2 the-integer))
-  (if-let ((the-string (some string  x)))
-    (progn (concat "hello " the-string))
-    "no integer or string"))
+
 
 (defmacro cond-let (&rest clauses)
   ;; (debug nil clauses)
@@ -37,24 +33,54 @@
 	        (progn ,@(cdar clauses))
 	        (cond-let ,@(cdr clauses))))))
 
+(defmacro cond-let (&rest clauses)
+  ;; (debug nil clauses)
+  (prn "clauses: %S" clauses)
+  (cond
+    ((null clauses) nil)
+    ((eq (caar clauses) t)
+      ;; (debug nil clauses)
+      ;; (cadar clauses)
+      `(progn ,@(cdar clauses)))
+    (t `(if-let ,(caar clauses)
+	        (progn ,@(cdar clauses))
+	        (cond-let ,@(cdr clauses))))))
 
-(setq x nil)
 (setq x "world")
 (setq x 9)
+(setq x nil)
+
+(if-let ((the-integer (some integer x)))
+  (progn
+    (prn "int case")
+    (* 2 the-integer))
+  (if-let ((the-string (some string  x)))
+    (progn
+      (prn "string case")
+      (concat "hello " the-string))
+    (progn
+      (prn "t case")
+      "no integer or string")))
+
+(cond-let
+  (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
+  (t (prn "t case") "no integer or string"))
 
 (cond-let
   (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
   (((the-string  (some string  x))) (prn "string case") (concat "hello " the-string))
   (t (prn "t case") "no integer or string"))
 
-(cond-let
-  (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
-  (t (prn "t case") "no integer or string"))
-
 (if-let ((the-integer (some integer x)))
-  (progn (prn "int case") (* 2 the-integer))
-  (cond-let
-    (t (prn "t case") "no integer or string"))
-  (prn "t case")
-  )
+  (progn
+    (prn "int case")
+    (* 2 the-integer))
+  (if-let ((the-string (some string x)))
+    (progn
+      (prn "string case")
+      (concat "hello " the-string))    
+    (progn
+      (prn "t case")
+      "no integer or string")))
+
 
