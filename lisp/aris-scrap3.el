@@ -306,8 +306,8 @@ Example:
              ((and pat2 (atom pat2)) :tail)
              ;; ((and (eq (car pat2) '\,) (not (cddr pat2))) :wayward-comma)
              )))
-    (uu::prn "tt1:     %S" pat1-tail-type)
-    (uu::prn "tt2:     %S" pat2-tail-type)
+    ;; (uu::prn "tt1:     %S" pat1-tail-type)
+    ;; (uu::prn "tt2:     %S" pat2-tail-type)
     (when (and pat1-tail-type pat2-tail-type)      
       (cond
         ((eq pat1-tail-type :tail) (setf pat1 (list pat1)))
@@ -626,7 +626,9 @@ bound to."
   (confirm that
     (let ( (*uu:verbose* t)
            (*uu:unifier-simplifies* t))
-      (uu:unifier '(,v ,u ,w ,x) '(,u ,x ,v 333)))
+      (uu:unifier 
+        '(,v ,u ,w ,x)
+        '(,u ,x ,v 333)))
     returns (333 333 333 333))
   ;; uncurl tails:
   (confirm that (uu:unifier '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
@@ -681,21 +683,21 @@ bound to."
     (benchmark-run reps
       (let ((*uu:verbose* nil)) (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
 
-  (uu::unify1 nil '(,x ,x) '(,y ,y))
-  (uu::unify1 nil '(,x ,y a) '(,y ,x ,x))
-  (uu::unify1 nil '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
-  (uu::unify1 nil '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
+  (uu::unify '(,x ,x) '(,y ,y))
+  (uu::unify '(,x ,y a) '(,y ,x ,x))
+  (uu::unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
+  (uu::unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
 
-  (uu::unify1 nil '(,y ,x) '(7 (f ,x)))
+  (uu::unify '(,y ,x) '(7 (f ,x)))
   (uu:unifier '(,y ,x) '(7 (f ,x)))
   (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
   (let ((*uu:occurs-check* nil))
-    (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
+    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
   (let ((*uu:occurs-check* :soft))
-    (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
+    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
   (let ((*uu:occurs-check* t))
-    (uu::unify1 nil '(,x ,y) '((f ,y) (f ,x)))) ; nil
+    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
 
   (variable variable) ; bind var...
   (variable atom)     ; bind var...
@@ -857,7 +859,7 @@ bound to."
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,lz + (4 * 5) + 3))
 
-(uu::unify1 nil '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+(uu::unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 
 (n:unifier
@@ -867,4 +869,12 @@ bound to."
 (n::unify
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
-_
+
+
+(n::unify
+  '(,u ,v 333 ,w)
+  '(,x ,u ,v  ,v))
+
+(uu::unify
+  '(,u ,v 333 ,w)
+  '(,x ,u ,v  ,v))
