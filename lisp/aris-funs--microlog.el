@@ -159,8 +159,8 @@
     (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
   `(progn
      (ensure-db! '*ml*)
-     (let* ( (consequent     (u::fix-variables ',consequent))
-             (antecedents    (mapcar #'u::fix-variables ',antecedents))
+     (let* ( (consequent     (ml::fix-variables ',consequent))
+             (antecedents    (mapcar #'ml::fix-variables ',antecedents))
              (lookup         (db-get '*ml* consequent))
              (was-found      (cdr lookup))
              (found          (car lookup))
@@ -183,10 +183,10 @@
 (confirm that (<- ari likes eating hamburger)
   returns (((ari likes eating hamburger))))
 (confirm that (:-
-                (,Person would eat a ,Food)
-                (,Person is a person)
-                (,Food is a food)
-                (,Person likes eating ,Food))
+                (Person would eat a Food)
+                (Person is a person)
+                (Food is a food)
+                (Person likes eating Food))
   returns ( ((\?Person would eat a \?Food)
               (\?Person is a person)
               (\?Food is a food)
@@ -194,10 +194,10 @@
             ((ari likes eating hamburger))))
 ;; repeated rule does nothing:
 (confirm that (:-
-                (,Person would eat a ,Food)
-                (,Person is a person)
-                (,Food is a food)
-                (,Person likes eating ,Food))
+                (Person would eat a Food)
+                (Person is a person)
+                (Food is a food)
+                (Person likes eating Food))
   returns ( ((\?Person would eat a \?Food)
               (\?Person is a person)
               (\?Food is a food)
@@ -231,6 +231,21 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::fix-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Turn capitalized variable designators Foo symbols like \?Foo anywhere in THING
+(including improper tails)."
+  (prn "thing: %S" thing)
+  (cond
+    ((ml::variable-p thing) (intern (concat "?" (symbol-name thing))))
+    ((atom thing) thing)
+    (t (cons (ml::fix-variables (car thing)) (ml::fix-variables (cdr thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ml::fix-variables '(foo Bar)) returns (foo \?Bar))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -240,12 +255,12 @@
 (<- ari is a person)
 (<- hamburger is a food)
 (<- ari has beef)
-(:-
-  (,Person could eat a ,Food)
-  (,Person is a person)
-  (,Food is a food)
-  (,Person would eat a ,Food)
-  (,Person can cook a ,Food))
+(:- 
+  (Person could eat a Food)
+  (Person is a person)
+  (Food is a food)
+  (Person would eat a Food)
+  (Person can cook a Food))
 (:-
   (ari can cook a hamburger)
   (ari has beef))
