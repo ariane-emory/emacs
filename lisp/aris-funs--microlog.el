@@ -159,94 +159,89 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; (defun :- (consequent &rest antecedents)
-;; ;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;;   (unless (consp consequent)
-;; ;;     (error "CONSEQUENT should be a cons or a symbol."))
-;; ;;   (when-let ((bad-antecedent
-;; ;;                (cl-find-if-not (lambda (a) (consp a)) antecedents)))
-;; ;;     (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
-;; ;;   (ensure-db! '*ml*)
-;; ;;   (let* ( (consequent     (u::fix-variables consequent))
-;; ;;           (antecedents    (mapcar #'u::fix-variables antecedents))
-;; ;;           (lookup         (db-get '*ml* consequent))
-;; ;;           (was-found      (cdr lookup))
-;; ;;           (found          (car lookup))
-;; ;;           (found-is-equal (and was-found (equal antecedents found))))    
-;; ;;     (cond
-;; ;;       ((not was-found) ; new rule, add it.
-;; ;;         (ml::prndiv)
-;; ;;         (let ((rule antecedents))
-;; ;;           (ml::prn "Adding rule %S." (cons consequent antecedents))
-;; ;;           (db-put '*ml* consequent rule)))
-;; ;;       (found-is-equal found) ; repeated (but `equal' rule, do nothing.
-;; ;;       (t (error "Already have a rule for %S: %S" consequent found)))
-;; ;;     (db-to-alist '*ml*)
-;; ;;     ))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro :- (consequent &rest antecedents)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun :- (consequent &rest antecedents)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   (unless (consp consequent)
 ;;     (error "CONSEQUENT should be a cons or a symbol."))
 ;;   (when-let ((bad-antecedent
 ;;                (cl-find-if-not (lambda (a) (consp a)) antecedents)))
 ;;     (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
-;;   (let ( (fixed-antecedents (mapcar #'ml::fix-variables antecedents))
-;;          (fixed-consequent  (ml::fix-variables consequent)))
-;;     `(progn
-;;        (ensure-db! '*ml*)
-;;        (let* ( (consequent        ',consequent)
-;;                (antecedents       ',antecedents)
-;;                (fixed-consequent  ',fixed-consequent) 
-;;                (fixed-antecedents ',fixed-antecedents)
-;;                (lookup            (db-get '*ml* fixed-consequent))
-;;                (was-found         (cdr lookup))
-;;                (found             (car lookup))
-;;                (found-is-equal    (and was-found (equal fixed-antecedents found))))    
-;;          (cond
-;;            ((not was-found) ; new rule, add it.
-;;              (ml::prndiv)
-;;              (ml::prn "Adding rule %S." (cons consequent antecedents))
-;;              (db-put '*ml* fixed-consequent fixed-antecedents))
-;;            (found-is-equal found) ; repeated (but `equal' rule, do nothing.
-;;            (t (error "Already have a rule for %S: %S" fixed-consequent found)))
-;;          (db-to-alist '*ml*)))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (hash-table-p (ml:reset)) returns t)
-;; (confirm that (hash-table-empty-p (ml:reset)) returns t)
-;; (confirm that (<- ari likes eating hamburger)
-;;   returns (((ari likes eating hamburger))))
-;; ;; repeated rule does nothing:
-;; (confirm that (<- ari likes eating hamburger)
-;;   returns (((ari likes eating hamburger))))
-;; (confirm that (:-
-;;                 (Person would eat a Food)
-;;                 (Person is a person)
-;;                 (Food is a food)
-;;                 (Person likes eating Food))
-;;   returns ( ((\?Person would eat a \?Food)
-;;               (\?Person is a person)
-;;               (\?Food is a food)
-;;               (\?Person likes eating \?Food))
-;;             ((ari likes eating hamburger))))
-;; ;; repeated rule does nothing:
-;; (confirm that (:-
-;;                 (Person would eat a Food)
-;;                 (Person is a person)
-;;                 (Food is a food)
-;;                 (Person likes eating Food))
-;;   returns ( ((\?Person would eat a \?Food)
-;;               (\?Person is a person)
-;;               (\?Food is a food)
-;;               (\?Person likes eating \?Food))
-;;             ((ari likes eating hamburger))))
-;; ;; This should (and does) signal an error:
-;; ;; (confirm that (:- '(,Person would eat a ,Food) '(,Person likes ,Food))
-;; ;;   returns ( ( ((\, Person) would eat a (\, Food))
-;; ;;               ((\, Person) likes eating (\, Food)))
-;; ;;             ( (ari likes eating hamburger))))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   (ensure-db! '*ml*)
+;;   (let* ( (consequent     (u::fix-variables consequent))
+;;           (antecedents    (mapcar #'u::fix-variables antecedents))
+;;           (lookup         (db-get '*ml* consequent))
+;;           (was-found      (cdr lookup))
+;;           (found          (car lookup))
+;;           (found-is-equal (and was-found (equal antecedents found))))    
+;;     (cond
+;;       ((not was-found) ; new rule, add it.
+;;         (ml::prndiv)
+;;         (let ((rule antecedents))
+;;           (ml::prn "Adding rule %S." (cons consequent antecedents))
+;;           (db-put '*ml* consequent rule)))
+;;       (found-is-equal found) ; repeated (but `equal' rule, do nothing.
+;;       (t (error "Already have a rule for %S: %S" consequent found)))
+;;     (db-to-alist '*ml*)
+;;     ))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro :- (consequent &rest antecedents)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (unless (consp consequent)
+    (error "CONSEQUENT should be a cons or a symbol."))
+  (when-let ((bad-antecedent
+               (cl-find-if-not (lambda (a) (consp a)) antecedents)))
+    (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
+  (let ( (fixed-antecedents (mapcar #'ml::fix-variables antecedents))
+         (fixed-consequent  (ml::fix-variables consequent)))
+    `(progn
+       (ensure-db! '*ml*)
+       (let* ( (consequent        ',consequent)
+               (antecedents       ',antecedents)
+               (fixed-consequent  ',fixed-consequent) 
+               (fixed-antecedents ',fixed-antecedents)
+               (lookup            (db-get '*ml* fixed-consequent))
+               (was-found         (cdr lookup))
+               (found             (car lookup))
+               (found-is-equal    (and was-found (equal fixed-antecedents found))))    
+         (cond
+           ((not was-found) ; new rule, add it.
+             (ml::prndiv)
+             (ml::prn "Adding rule %S." (cons consequent antecedents))
+             (db-put '*ml* fixed-consequent fixed-antecedents))
+           (found-is-equal found) ; repeated (but `equal' rule, do nothing.
+           (t (error "Already have a rule for %S: %S" fixed-consequent found)))
+         (db-to-alist '*ml*)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (hash-table-p (ml:reset)) returns t)
+(confirm that (hash-table-empty-p (ml:reset)) returns t)
+(confirm that (<- ari likes eating hamburger)
+  returns (((ari likes eating hamburger))))
+;; repeated rule does nothing:
+(confirm that (<- ari likes eating hamburger)
+  returns (((ari likes eating hamburger))))
+(confirm that (:-
+                (Person would eat a Food)
+                (Person is a person)
+                (Food is a food)
+                (Person likes eating Food))
+  returns ( ((\?Person would eat a \?Food)
+              (\?Person is a person)
+              (\?Food is a food)
+              (\?Person likes eating \?Food))
+            ((ari likes eating hamburger))))
+;; repeated rule does nothing:
+(confirm that (:-
+                (Person would eat a Food)
+                (Person is a person)
+                (Food is a food)
+                (Person likes eating Food))
+  returns ( ((\?Person would eat a \?Food)
+              (\?Person is a person)
+              (\?Food is a food)
+              (\?Person likes eating \?Food))
+            ((ari likes eating hamburger))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -256,64 +251,64 @@
 
 
 
-;; (ml:reset)
-;; (<- ari likes eating hamburger)
-;; (<- ari is a person)
-;; (<- hamburger is a food)
-;; (<- ari has beef)
-;; (:-
-;;   (Person would eat a Food)
-;;   (Person is a person)
-;;   (Food is a food)
-;;   (Person likes eating Food))
-;; (:- (Person could eat a Food)
-;;   (Person is a person)
-;;   (Food is a food)
-;;   (Person would eat a Food)
-;;   (Person can cook a Food))
-;; (:- (Person can cook a hamburger)
-;;   (Person has beef))
+(ml:reset)
+(<- ari likes eating hamburger)
+(<- ari is a person)
+(<- hamburger is a food)
+(<- ari has beef)
+(:-
+  (Person would eat a Food)
+  (Person is a person)
+  (Food is a food)
+  (Person likes eating Food))
+(:- (Person could eat a Food)
+  (Person is a person)
+  (Food is a food)
+  (Person would eat a Food)
+  (Person can cook a Food))
+(:- (Person can cook a hamburger)
+  (Person has beef))
 
 
-;; (ml:prn-world)
+(ml:prn-world)
 
-;; (ml:reset)
+(ml:reset)
 
-;; ;; real Prolog: man(socrates).
-;; (<- socrates is a man)
-;; ;; real Prolog:
-;; ;;   mortal(Who) :- man(Who).
-;; (:- (Who is mortal) (Who is a man))
-;; (ml:prn-world)
+;; real Prolog: man(socrates).
+(<- socrates is a man)
+;; real Prolog:
+;;   mortal(Who) :- man(Who).
+(:- (Who is mortal) (Who is a man))
+(ml:prn-world)
 
-;; (ml:reset)
+(ml:reset)
 
-;; ;; real Prolog in the comments, my Lisp stuff in the code:
-;; ;;  is-a-man(Thing) :- is-featherless(Thing), is-bipedal(Thing).
-;; (:- (Thing is a man) (Thing is featherless) (Thing is bipedal))
-;; ;;  is-featherless(Thing) :- is-plucked(Thing).
-;; (:- (Thing is featherless) (Thing is plucked))
-;; ;;  is-bipedal(Thing) :- is-a-chicken(Thing).
-;; (:- (Thing is bipedal) (Thing is a chicken))
-;; ;;  is-a-chicken(some-chicken).
-;; (<- some-chicken is a chicken)
-;; ;;  is-plucked(some-chicken).
-;;   (<- some-chicken is plucked)
+;; real Prolog in the comments, my Lisp stuff in the code:
+;;  is-a-man(Thing) :- is-featherless(Thing), is-bipedal(Thing).
+(:- (Thing is a man) (Thing is featherless) (Thing is bipedal))
+;;  is-featherless(Thing) :- is-plucked(Thing).
+(:- (Thing is featherless) (Thing is plucked))
+;;  is-bipedal(Thing) :- is-a-chicken(Thing).
+(:- (Thing is bipedal) (Thing is a chicken))
+;;  is-a-chicken(some-chicken).
+(<- some-chicken is a chicken)
+;;  is-plucked(some-chicken).
+(<- some-chicken is plucked)
 
-;;   (ml:prn-world)
-;;   (get '*ml* 'db)
-;;   #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data
-;;       ( (\?Thing is a man)
-;; 	( (\?Thing is featherless)
-;;           (\?Thing is bipedal))
-;; 	(\?Thing is featherless)
-;; 	( (\?Thing is plucked))
-;; 	(\?Thing is bipedal)
-;; 	( (\?Thing is a chicken))
-;; 	(some-chicken is a chicken)
-;; 	nil
-;; 	(some-chicken is plucked)
-;; 	nil))
+(ml:prn-world)
+(get '*ml* 'db)
+#s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data
+    ( (\?Thing is a man)
+	    ( (\?Thing is featherless)
+        (\?Thing is bipedal))
+	    (\?Thing is featherless)
+	    ( (\?Thing is plucked))
+	    (\?Thing is bipedal)
+	    ( (\?Thing is a chicken))
+	    (some-chicken is a chicken)
+	    nil
+	    (some-chicken is plucked)
+	    nil))
 
 
-;;   )
+
