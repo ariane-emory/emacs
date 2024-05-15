@@ -12,8 +12,8 @@
 (some integer "hello")
 
 (cond-let
-  ((the-integer (some integer x)) (* 2 the-integer))
-  ((the-string  (some string  x)) (concat "hello " the-string))
+  (((the-integer (some integer x))) (* 2 the-integer))
+  (((the-string  (some string  x))) (concat "hello " the-string))
   (t "no integer or string"))
 
 
@@ -25,8 +25,8 @@
 (setq x 9)
 (setq x "world")
 
-(if-let* ((the-integer (some integer x)))
+(if-let ((the-integer (some integer x)))
   (progn (* 2 the-integer))
-  (if-let* ((the-string (some string  x)))
+  (if-let ((the-string (some string  x)))
     (progn (concat "hello " the-string))
     "no integer or string"))
