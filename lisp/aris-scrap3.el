@@ -47,5 +47,7 @@
   (((the-string  (some string  x))) (prn "string case") (concat "hello " the-string))
   (t (prn "t case") "no integer or string"))
 
-
+(cond-let
+  (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
+  (t (prn "t case") "no integer or string"))
 
