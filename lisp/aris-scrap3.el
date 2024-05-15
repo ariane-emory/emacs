@@ -115,12 +115,12 @@
 
 (setq x 9)
 
-(setq x '(foo quux zot shprungy qwib poof))
+(setq x '(foo quux (zot shprungy qwib poof)))
 
 (cond-let
   (((the-integer (some integer x)) (_ (> the-integer 5))) (* 2 the-integer))
   ((the-string  (some string  x))  (concat "hello " the-string))
-  ((alist (dm:match '(foo ,bar _ ,@bazes) x)) (let-alist alist (cons .bar .bazes)))
+  ((bindings (dm:match '(foo ,bar (_ ,@bazes)) x)) (let-alist bindings (cons .bar .bazes)))
   (otherwise "no matching clause")) ;; (quux shprungy qwib poof)
 
 ;; expands into:
