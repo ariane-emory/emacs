@@ -54,6 +54,20 @@
           ,(macroexp-progn (cdar clauses)) ; (progn ,@(cdar clauses))
 	        (cond-let ,@(cdr clauses))))))
 
+(defmacro cond-let (&rest clauses)
+  ;; (debug nil clauses)
+  (prn "clauses: %S" clauses)
+  (cond
+    ((null clauses) nil)
+    ((eq (caar clauses) t)
+      ;;`,
+      (macroexp-progn (cdar clauses))
+      ;; (macroexp-progn `,(cdar clauses))
+      )
+    (t `(if-let ,(caar clauses)
+          ,(macroexp-progn (cdar clauses)) ; (progn ,@(cdar clauses))
+	        (cond-let ,@(cdr clauses))))))
+
 (setq x "world")
 (setq x nil)
 (setq x 9)
@@ -63,17 +77,6 @@
 (cond-let
   (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
   (t (prn "t case") "no integer or string"))
-
-(if-let ((the-integer (some integer x)))
-  (progn
-    (prn "int case")
-    (* 2 the-integer))
-  (progn
-    (prn "t case")
-    "no integer or string"))
-
-
-
 
 
 
