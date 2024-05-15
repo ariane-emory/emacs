@@ -58,12 +58,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ml::prettify-variables (thing)
+(defun ml::unfix-variables (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (cond
-    ((u::variable-p thing) (make-symbol (capitalize1 (substring (symbol-name thing) 1))))
+    ((u::variable-p thing) (make-symbol (substring (symbol-name thing) 1)))
     ((atom thing) thing)
-    (t (cons (ml::prettify-variables (car thing)) (ml::prettify-variables (cdr thing))))))
+    (t (cons (ml::unfix-variables (car thing)) (ml::unfix-variables (cdr thing))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -77,13 +77,17 @@
       (dolist (rule alist)
         (let ((str
                 (concat 
-                  (substring (format "%S" (ml::prettify-variables (car rule))) 1 -1)
+                  (substring (format "%S"
+                               (ml::unfix-variables (car rule)))
+                    1 -1)
                   (cond
                     ((null (cdr rule)) ".")
                     ((null (cddr rule))
                       (concat " :- "
                         (substring
-                          (format "%S" (ml::prettify-variables (cadr rule))) 1 -1)
+                          (format "%S"
+                            (ml::unfix-variables (cadr rule)))
+                          1 -1)
                         "."))
                     (t " :- ")))))
           (prn str)
@@ -92,11 +96,12 @@
               (let ((pos (cdr rule)))
                 (while pos
                   (let ((clause (car pos)))
-                    (prn (ml::fmt-pretty-vars
-                           (concat (substring (format "%S"
-                                                (ml::prettify-variables clause))
-                                     1 -1)
-                             (if (cdr pos) "," ".")))))
+                    (prn ; (ml::fmt-pretty-vars
+                      (concat (substring
+                                (format "%S"
+                                  (ml::unfix-variables clause))
+                                1 -1)
+                        (if (cdr pos) "," ".")))) ; )
                   (pop pos)))))))))
   (ml::prndiv)
   (ml::prnl))
@@ -113,9 +118,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun <- (fact)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   (:- fact))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro <- (&rest fact)
@@ -124,9 +129,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun :- (consequent &rest antecedents)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   (unless (consp consequent)
 ;;     (error "CONSEQUENT should be a cons or a symbol."))
 ;;   (when-let ((bad-antecedent
@@ -157,24 +162,25 @@
   (when-let ((bad-antecedent
                (cl-find-if-not (lambda (a) (consp a)) antecedents)))
     (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
-  (let ( (consequent  (ml::fix-variables consequent))
-         (antecedents (mapcar #'ml::fix-variables antecedents)))
+  (let ( (fixed-antecedents (mapcar #'ml::fix-variables antecedents))
+         (fixed-consequent  (ml::fix-variables consequent)))
     `(progn
        (ensure-db! '*ml*)
-       (let* ( (consequent     ',consequent) 
-               (antecedents    ',antecedents)
-               (lookup         (db-get '*ml* consequent))
-               (was-found      (cdr lookup))
-               (found          (car lookup))
-               (found-is-equal (and was-found (equal antecedents found))))    
+       (let* ( (consequent        ',consequent)
+               (antecedents       ',antecedents)
+               (fixed-consequent  ',fixed-consequent) 
+               (fixed-antecedents ',fixed-antecedents)
+               (lookup            (db-get '*ml* fixed-consequent))
+               (was-found         (cdr lookup))
+               (found             (car lookup))
+               (found-is-equal    (and was-found (equal fixed-antecedents found))))    
          (cond
            ((not was-found) ; new rule, add it.
              (ml::prndiv)
-             (let ((rule antecedents))
-               (ml::prn "Adding rule %S." (cons consequent antecedents))
-               (db-put '*ml* consequent rule)))
+             (ml::prn "Adding rule %S." (cons consequent antecedents))
+             (db-put '*ml* fixed-consequent fixed-antecedents))
            (found-is-equal found) ; repeated (but `equal' rule, do nothing.
-           (t (error "Already have a rule for %S: %S" consequent found)))
+           (t (error "Already have a rule for %S: %S" fixed-consequent found)))
          (db-to-alist '*ml*)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (ml:reset)) returns t)
@@ -252,20 +258,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(ml::prettify-variables '(x (\?foo \?bar)))
-(u::variable-p '\?foo)
+
+(ml:reset)
+(<- ari likes eating hamburger)
 (<- ari is a person)
 (<- hamburger is a food)
 (<- ari has beef)
-(:- 
-  (Person could eat a Food)
+(:-
+  (Person would eat a Food)
+  (Person is a person)
+  (Food is a food)
+  (Person likes eating Food))
+(:- (Person could eat a Food)
   (Person is a person)
   (Food is a food)
   (Person would eat a Food)
   (Person can cook a Food))
-(:-
-  (ari can cook a hamburger)
-  (ari has beef))
+(:- (Person can cook a hamburger)
+  (Person has beef))
 
 
 (ml:prn-world)
@@ -276,22 +286,37 @@
 (<- socrates is a man)
 ;; real Prolog:
 ;;   mortal(Who) :- man(Who).
-(:- (mortal Who) (Who is a man))
+(:- (Who is mortal) (Who is a man))
 (ml:prn-world)
 
 (ml:reset)
 
 ;; real Prolog in the comments, my Lisp stuff in the code:
-;; man(Thing) :- featherless(Thing), bipedal(Thing).
-(:- (man Thing) (Thing is featherless) (Thing is bipedal))
-;; featherless(Thing) :- is-plucked(Thing).
+;;  is-a-man(Thing) :- is-featherless(Thing), is-bipedal(Thing).
+(:- (Thing is a man) (Thing is featherless) (Thing is bipedal))
+;;  is-featherless(Thing) :- is-plucked(Thing).
 (:- (Thing is featherless) (Thing is plucked))
-;; bipedal(Thing) :- is-a-chicken(Thing).
+;;  is-bipedal(Thing) :- is-a-chicken(Thing).
 (:- (Thing is bipedal) (Thing is a chicken))
-;; is-a-chicken(some-chicken).
+;;  is-a-chicken(some-chicken).
 (<- some-chicken is a chicken)
-;; is-plucked(some-chicken).
+;;  is-plucked(some-chicken).
 (<- some-chicken is plucked)
 
-
 (ml:prn-world)
+(get '*ml* 'db)
+#s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data
+    ( (\?Thing is a man)
+      ( (\?Thing is featherless)
+        (\?Thing is bipedal))
+      (\?Thing is featherless)
+      ( (\?Thing is plucked))
+      (\?Thing is bipedal)
+      ( (\?Thing is a chicken))
+      (some-chicken is a chicken)
+      nil
+      (some-chicken is plucked)
+      nil))
+
+
+
