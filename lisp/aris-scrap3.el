@@ -20,7 +20,17 @@
 (internal--build-bindings '((x 1) (y 2)))
 
 ;; ((x (and t 1)) (y (and x 2)))
-
+(if-let ((the-integer (some integer x)))
+  (progn
+    (prn "int case")
+    (* 2 the-integer))
+  (if-let ((the-string (some string  x)))
+    (progn
+      (prn "string case")
+      (concat "hello " the-string))
+    (progn
+      (prn "t case")
+      "no integer or string")))
 
 
 (defmacro cond-let (&rest clauses)
@@ -39,48 +49,41 @@
   (cond
     ((null clauses) nil)
     ((eq (caar clauses) t)
-      ;; (debug nil clauses)
-      ;; (cadar clauses)
-      `(progn ,@(cdar clauses)))
+      (macroexp-progn `,(cdar clauses)))
     (t `(if-let ,(caar clauses)
-	        (progn ,@(cdar clauses))
+          ,(macroexp-progn (cdar clauses)) ; (progn ,@(cdar clauses))
 	        (cond-let ,@(cdr clauses))))))
 
 (setq x "world")
-(setq x 9)
 (setq x nil)
+(setq x 9)
+
+
+
+(cond-let
+  (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
+  (t (prn "t case") "no integer or string"))
 
 (if-let ((the-integer (some integer x)))
   (progn
     (prn "int case")
     (* 2 the-integer))
-  (if-let ((the-string (some string  x)))
-    (progn
-      (prn "string case")
-      (concat "hello " the-string))
-    (progn
-      (prn "t case")
-      "no integer or string")))
+  (progn
+    (prn "t case")
+    "no integer or string"))
 
-(cond-let
-  (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
-  (t (prn "t case") "no integer or string"))
+
+
+
+
+
+
 
 (cond-let
   (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
   (((the-string  (some string  x))) (prn "string case") (concat "hello " the-string))
   (t (prn "t case") "no integer or string"))
 
-(if-let ((the-integer (some integer x)))
-  (progn
-    (prn "int case")
-    (* 2 the-integer))
-  (if-let ((the-string (some string x)))
-    (progn
-      (prn "string case")
-      (concat "hello " the-string))    
-    (progn
-      (prn "t case")
-      "no integer or string")))
+
 
 
