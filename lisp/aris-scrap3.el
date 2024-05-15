@@ -51,3 +51,10 @@
   (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
   (t (prn "t case") "no integer or string"))
 
+(if-let ((the-integer (some integer x)))
+  (progn (prn "int case") (* 2 the-integer))
+  (cond-let
+    (t (prn "t case") "no integer or string"))
+  (prn "t case")
+  )
+
