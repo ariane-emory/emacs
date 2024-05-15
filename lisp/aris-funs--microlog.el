@@ -113,10 +113,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun <- (fact)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   (:- fact))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun <- (fact)
+(defmacro <- (&rest fact)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (:- fact))
+  `(:- '(,@fact)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -175,25 +179,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (ml:reset)) returns t)
 (confirm that (hash-table-empty-p (ml:reset)) returns t)
-(confirm that (<- '(ari likes eating hamburger))
+(confirm that (<- ari likes eating hamburger)
   returns (((ari likes eating hamburger))))
 ;; repeated rule does nothing:
-(confirm that (<- '(ari likes eating hamburger))
+(confirm that (<- ari likes eating hamburger)
   returns (((ari likes eating hamburger))))
-(confirm that (:- '(,person would eat a ,food)
-                '(,person is a person)
-                '(,food is a food)
-                '(,person likes eating ,food))
+(confirm that (:= (,person would eat a ,food)
+                (,person is a person)
+                (,food is a food)
+                (,person likes eating ,food))
   returns (((\?person would eat a \?food)
              (\?person is a person)
              (\?food is a food)
              (\?person likes eating \?food))
             ((ari likes eating hamburger))))
 ;; repeated rule does nothing:
-(confirm that (:- '(,person would eat a ,food)
-                '(,person is a person)
-                '(,food is a food)
-                '(,person likes eating ,food))
+(confirm that (:= (,person would eat a ,food)
+                (,person is a person)
+                (,food is a food)
+                (,person likes eating ,food))
   returns (((\?person would eat a \?food)
              (\?person is a person)
              (\?food is a food)
@@ -214,13 +218,13 @@
 
 (ml::prettify-variables '(x (\?foo \?bar)))
 (u::variable-p '\?foo)
-(<- '(ari is a person))
-(<- '(hamburger is a food))
-(:- '(,person could eat a ,food)
-  '(,person is a person)
-  '(,food is a food)
-  '(,person would eat a ,food)
-  '(,person has a ,food))
+(<- ari is a person)
+(<- hamburger is a food)
+(:= (,person could eat a ,food)
+  (,person is a person)
+  (,food is a food)
+  (,person would eat a ,food)
+  (,person has a ,food))
 (ml:prn-world)
 
 
