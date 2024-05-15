@@ -639,66 +639,6 @@ bound to."
             '(,u ,v ,w ,x)
             '(,x ,u ,v 333)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--unification)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; junk:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(ignore!
-  (progn
-    (trace-function #'uu:unifier)
-    (trace-function #'uu::unify1)
-    (trace-function #'uu::reuse-cons)
-    (trace-function #'uu::occurs)
-    (trace-function #'uu::unify-variable-with-value1)
-    (trace-function #'uu::unify-variable-with-variable2)
-    (trace-function #'uu::simplify-bindings)
-    (trace-function #'uu::subst-bindings))
-
-  (untrace-all)
-
-  (let ((*uu:verbose* t))
-    (uu:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
-
-  (let ((*uu:verbose* t))
-    (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))
-
-  (let ((reps 1000))
-    (benchmark-run reps
-      (let ((*uu:verbose* nil)) (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
-
-  (uu::unify '(,x ,x) '(,y ,y))
-  (uu::unify '(,x ,y a) '(,y ,x ,x))
-  (uu::unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
-  (uu::unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
-
-  (uu::unify '(,y ,x) '(7 (f ,x)))
-  (uu:unifier '(,y ,x) '(7 (f ,x)))
-  (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
-
-  (let ((*uu:occurs-check* nil))
-    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
-  (let ((*uu:occurs-check* :soft))
-    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
-  (let ((*uu:occurs-check* t))
-    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
-
-  (variable variable) ; bind var...
-  (variable atom)     ; bind var...
-  (atom     variable) ; bind var...
-  (variable cons)     ; ???
-  (cons     variable) ; ???
-  (cons     cons)     ; recurse!
-  (atom     cons)     ; FAIL.
-  (cons     atom)     ; FAIL.
-  (atom     atom)     ; `eql'.
-  )
-
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -735,21 +675,6 @@ bound to."
     (t (uu::reuse-cons (n::subst-bindings bindings (car expr))
          (n::subst-bindings bindings (cdr expr)) expr))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun n::occurs-check (bindings var expr)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Does VAR occur anywhere inside EXPR according to BINDINGS?"
-;;   (cond ((eq var expr) t)
-;;     ((and (uu::variable-p expr) (assoc expr bindings))
-;;       (n::occurs-check bindings var (cdr (assoc expr bindings))))
-;;     ((consp expr)
-;;       (or (n::occurs-check bindings var (car expr))
-;;         (n::occurs-check bindings var (cdr expr))))
-;;     (t nil)))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -812,6 +737,58 @@ bound to."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; junk:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ignore!
+  (progn
+    (trace-function #'uu:unifier)
+    (trace-function #'uu::unify1)
+    (trace-function #'uu::reuse-cons)
+    (trace-function #'uu::occurs)
+    (trace-function #'uu::unify-variable-with-value1)
+    (trace-function #'uu::unify-variable-with-variable2)
+    (trace-function #'uu::simplify-bindings)
+    (trace-function #'uu::subst-bindings))
+
+  (untrace-all)
+
+  (let ((*uu:verbose* t))
+    (uu:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
+
+  (let ((*uu:verbose* t))
+    (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))
+
+  (let ((reps 1000))
+    (benchmark-run reps
+      (let ((*uu:verbose* nil)) (uu:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
+
+  (uu::unify '(,x ,x) '(,y ,y))
+  (uu::unify '(,x ,y a) '(,y ,x ,x))
+  (uu::unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
+  (uu::unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
+
+  (uu::unify '(,y ,x) '(7 (f ,x)))
+  (uu:unifier '(,y ,x) '(7 (f ,x)))
+  (uu:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+
+  (let ((*uu:occurs-check* nil))
+    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
+  (let ((*uu:occurs-check* :soft))
+    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
+  (let ((*uu:occurs-check* t))
+    (uu::unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
+
+  (variable variable) ; bind var...
+  (variable atom)     ; bind var...
+  (atom     variable) ; bind var...
+  (variable cons)     ; ???
+  (cons     variable) ; ???
+  (cons     cons)     ; recurse!
+  (atom     cons)     ; FAIL.
+  (cons     atom)     ; FAIL.
+  (atom     atom)     ; `eql'.
+  )
 
 
 (n::unify1 nil '(x) '(11))
@@ -860,3 +837,8 @@ bound to."
 (uu::unify
   '(,u ,v 333 ,w)
   '(,x ,u ,v  ,v))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(provide 'aris-funs--unification)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
