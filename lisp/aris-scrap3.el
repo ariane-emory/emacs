@@ -55,38 +55,69 @@
 	        (cond-let ,@(cdr clauses))))))
 
 (defmacro cond-let (&rest clauses)
-  ;; (debug nil clauses)
-  (prn "clauses: %S" clauses)
   (cond
     ((null clauses) nil)
     ((eq (caar clauses) t)
-      ;;`,
-      (macroexp-progn (cdar clauses))
-      ;; (macroexp-progn `,(cdar clauses))
-      )
-    (t `(if-let ,(caar clauses)
-          ,(macroexp-progn (cdar clauses)) ; (progn ,@(cdar clauses))
-	        (cond-let ,@(cdr clauses))))))
+      (macroexp-progn (cdar clauses)))
+    ((cdr clauses)
+      `(if-let ,(caar clauses)
+         ,(macroexp-progn (cdar clauses))
+	       (cond-let ,@(cdr clauses))))))
 
-(setq x "world")
-(setq x nil)
 (setq x 9)
-
-
-
-(cond-let
-  (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
-  (t (prn "t case") "no integer or string"))
-
-
-
-
+(setq x nil)
+(setq x "world")
 
 (cond-let
   (((the-integer (some integer x))) (prn "int case") (* 2 the-integer))
   (((the-string  (some string  x))) (prn "string case") (concat "hello " the-string))
   (t (prn "t case") "no integer or string"))
 
+(if-let ((the-integer (some integer x)))
+  (progn
+    (prn "int case")
+    (* 2 the-integer))
+  (if-let
+    ((the-string (some string x)))
+    (progn
+      (prn "string case")
+      (concat "hello " the-string))
+    (progn
+      (prn "t case")
+      "no integer or string")))
+
+(cond-let
+  (((the-integer (some integer x))) (* 2 the-integer))
+  (((the-string  (some string  x))) (concat "hello " the-string))
+  (t "no integer or string"))
+
+(if-let ((the-integer (some integer x)))
+  (* 2 the-integer)
+  (if-let
+    ((the-string (some string x)))
+    (concat "hello " the-string)
+    "no integer or string"))
 
 
+(defmacro cond-let (&rest clauses)
+  (cond
+    ((null clauses) nil)
+    ((eq (caar clauses) t)
+      (macroexp-progn (cdar clauses)))
+    ((cdr clauses)
+      `(if-let ,(caar clauses)
+         ,(macroexp-progn (cdar clauses))
+	       (cond-let ,@(cdr clauses))))))
 
+;; this:
+(cond-let
+  ((the-integer (some integer x)) (* 2 the-integer))
+  ((the-string  (some string  x)) (concat "hello " the-string))
+  (t "no integer or string"))
+
+;; expands into:
+(if-let (the-integer (some integer x))
+  (* 2 the-integer)
+  (if-let (the-string (some string x))
+    (concat "hello " the-string)
+    "no integer or string"))
