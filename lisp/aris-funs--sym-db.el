@@ -7,7 +7,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar --db-foo (gensym "foo-") "A symbol to use as a test DB.")
+(defvar --test-db (gensym "foo-") "A symbol to use as a test DB.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -33,10 +33,10 @@
           (new-table (make-hash-table :test test-fun)))
     (put db-sym db-prop new-table)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (hash-table-p (create-db --db-foo 'db #'eq)) returns t)
-(confirm that (hash-table-p (create-db --db-foo 'alt)) returns t)
-(confirm that (hash-table-p (get --db-foo 'db)) returns t)
-(confirm that (hash-table-p (get --db-foo 'alt)) returns t)
+(confirm that (hash-table-p (create-db --test-db 'db #'eq)) returns t)
+(confirm that (hash-table-p (create-db --test-db 'alt)) returns t)
+(confirm that (hash-table-p (get --test-db 'db)) returns t)
+(confirm that (hash-table-p (get --test-db 'alt)) returns t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -47,9 +47,9 @@
   (hash-table-p (get db-sym db-prop)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (has-db? 'bloop) returns nil)
-(confirm that (has-db? --db-foo) returns t)
-(confirm that (has-db? --db-foo 'alt) returns t)
-(confirm that (has-db? --db-foo 'nope) returns nil)
+(confirm that (has-db? --test-db) returns t)
+(confirm that (has-db? --test-db 'alt) returns t)
+(confirm that (has-db? --test-db 'nope) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -67,7 +67,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Create a new hashtable on DB-SYM's DB-PROP property if it doesn't already exist."
   (unless (has-db? db-sym db-prop)
-    (create-db db-sym db-prop)))
+    (create-db db-sym db-prop))
+  (get db-sym db-prop))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (with-gensyms (baz)
   (confirm that (has-db? baz) returns nil)
@@ -81,14 +82,14 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Get the value of KEY in the hashtable on DB-SYM's DB-PROP property."
   (require-db! db-sym db-prop)
-  (with-gensyms (db-not-found)
-    (let* ( (got (gethash key db db-not-found))
-            (found (not (eq got db-not-found)))
+  (with-gensyms (key-not-found)
+    (let* ( (got (gethash key db key-not-found))
+            (found (not (eq got key-not-found)))
             (val (when found got)))
       (cons val found))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (db-get --db-foo 'bar) returns (nil))
-(confirm that (db-get --db-foo 'bar 'alt) returns (nil))
+(confirm that (db-get --test-db 'bar) returns (nil))
+(confirm that (db-get --test-db 'bar 'alt) returns (nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -99,12 +100,12 @@
   (require-db! db-sym db-prop)
   (setf (gethash key db) val))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (db-put --db-foo 'bar 777) returns 777)
-(confirm that (db-put --db-foo 'bar 888 'alt) returns 888)
-(confirm that (db-get --db-foo 'bar) returns (777 . t))
-(confirm that (db-get --db-foo 'bar 'alt) returns (888 . t))
-(confirm that (db-put --db-foo 'baz nil) returns nil)
-(confirm that (db-get --db-foo 'baz) returns (nil . t))
+(confirm that (db-put --test-db 'bar 777) returns 777)
+(confirm that (db-put --test-db 'bar 888 'alt) returns 888)
+(confirm that (db-get --test-db 'bar) returns (777 . t))
+(confirm that (db-get --test-db 'bar 'alt) returns (888 . t))
+(confirm that (db-put --test-db 'baz nil) returns nil)
+(confirm that (db-get --test-db 'baz) returns (nil . t))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -115,10 +116,31 @@
   (require-db! db-sym db-prop)
   (clrhash db))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(clear-db --db-foo)
-(clear-db --db-foo 'alt)
-(confirm that (db-get --db-foo 'bar) returns (nil))
-(confirm that (db-get --db-foo 'bar 'alt) returns (nil))
+(clear-db --test-db)
+(clear-db --test-db 'alt)
+(confirm that (db-get --test-db 'bar) returns (nil))
+(confirm that (db-get --test-db 'bar 'alt) returns (nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun--db-fun db-to-alist ()
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (require-db! db-sym db-prop)
+  (let (res)
+    (maphash (lambda (k v) (push (cons k v) res)) db)
+    res))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(clear-db --test-db)
+(db-put --test-db 'foo 777)
+(db-put --test-db 'bar 888)
+(db-put --test-db 'baz '(222 333))
+(get --test-db 'db)
+(confirm that (db-to-alist --test-db)
+  returns
+  ( (baz 222 333)
+    (bar . 888)
+    (foo . 777)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

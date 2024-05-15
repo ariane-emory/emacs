@@ -63,7 +63,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml:reset ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (setf *ml:db* nil))
+  (ensure-db! '*ml*)
+  (clear-db   '*ml*)
+  ;; (setf *ml:db* nil)
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -82,24 +85,29 @@
   (when-let ((bad-antecedent
                (cl-find-if-not (lambda (a) (or (consp a) (symbolp a))) antecedents)))
     (error "ANTECEDENTS should be a consses or symbols, got: %S." bad-antecedent))
+  (ensure-db! '*ml*)
   (let* ( (consequent     (u::fix-variables consequent))
           (antecedents    (mapcar #'u::fix-variables antecedents))
-          (found          (cl-find consequent *ml:db* :test #'equal :key #'car))
-          (found-is-equal (and found (equal antecedents (cdr found)))))
+          (lookup         (db-get '*ml* consequent))
+          (was-found      (cdr lookup))
+          (found          (car lookup))
+          (found-is-equal (and was-found (equal antecedents (cdr found)))))    
     (cond
       ((not found) ; new rule, add it.
         (ml::prndiv)
         (let ((rule (cons consequent antecedents)))
-          (push (ml::prn1 "Adding rule %S." rule) *ml:db*)))
-      (found-is-equal *ml:db*) ; repeated (but `equal' rule, do nothing.
-      (t (error "Already have a rule for %S: %S" consequent found)))))
+          (db-put '*ml* consequent (ml::prn1 "Adding rule %S." rule))))
+      (found-is-equal found) ; repeated (but `equal' rule, do nothing.
+      (t (error "Already have a rule for %S: %S" consequent found)))
+    (get '*ml* 'db)
+    ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
+(get '*ml* 'db)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ml:reset) returns nil)
+(confirm that (hash-table-p (ml:reset)) returns t)
+(confirm that (hash-table-empty-p (ml:reset)) returns t)
 (confirm that (<- '(kiki likes eating hamburgers))
-  returns (((kiki likes eating hamburgers))))
+  returns ((kiki likes eating hamburgers)))
 ;; repeated rule does nothing:
 (confirm that (<- '(kiki likes eating hamburgers))
   returns (((kiki likes eating hamburgers))))
