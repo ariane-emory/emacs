@@ -4,7 +4,9 @@
 (require 'aris-funs--alists)
 (require 'aris-funs--destructuring-match)
 (require 'aris-funs--lists)
+(require 'aris-funs--unification)
 (require 'aris-funs--strings)
+(require 'aris-funs--sym-db)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -59,7 +61,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ml:init ()
+(defun ml:reset ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (setf *ml:db* nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,35 +77,39 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun :- (consequent &rest antecedents)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (when (null consequent)
-    (error "Null consequent"e))
-  (let* ( (found (cl-find consequent *ml:db* :test #'equal :key #'car))
-          (found-equal (and found (equal antecedents (cdr found)))))
+  (unless (or (consp consequent) (symbolp consequent))
+    (error "CONSEQUENT should be a cons or a symbol."))
+  (when-let ((bad-antecedent
+               (cl-find-if-not (lambda (a) (or (consp a) (symbolp a))) antecedents)))
+    (error "ANTECEDENTS should be a consses or symbols, got: %S." bad-antecedent))
+  (let* ( (consequent     (u::fix-variables consequent))
+          (antecedents    (mapcar #'u::fix-variables antecedents))
+          (found          (cl-find consequent *ml:db* :test #'equal :key #'car))
+          (found-is-equal (and found (equal antecedents (cdr found)))))
     (cond
       ((not found) ; new rule, add it.
         (ml::prndiv)
-        (push (ml::prn1 "Adding rule %S." (cons consequent antecedents)) *ml:db*)) 
-      (found-equal *ml:db*) ; repeated (but `equal' rule, do nothing.
+        (let ((rule (cons consequent antecedents)))
+          (push (ml::prn1 "Adding rule %S." rule) *ml:db*)))
+      (found-is-equal *ml:db*) ; repeated (but `equal' rule, do nothing.
       (t (error "Already have a rule for %S: %S" consequent found)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (ml:init) returns nil)
+(confirm that (ml:reset) returns nil)
 (confirm that (<- '(kiki likes eating hamburgers))
   returns (((kiki likes eating hamburgers))))
 ;; repeated rule does nothing:
 (confirm that (<- '(kiki likes eating hamburgers))
   returns (((kiki likes eating hamburgers))))
 (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food)))
-            ( (kiki likes eating hamburgers))))
+  returns ( ((\?person would eat a \?food) (\?person likes eating \?food))
+            ((kiki likes eating hamburgers))))
 ;; repeated rule does nothing:
 (confirm that (:- '(,person would eat a ,food) '(,person likes eating ,food))
-  returns ( ( ((\, person) would eat a (\, food))
-              ((\, person) likes eating (\, food)))
-            ( (kiki likes eating hamburgers))))
+  returns ( ((\?person would eat a \?food) (\?person likes eating \?food))
+            ((kiki likes eating hamburgers))))
 ;; This should (and does) signal an error:
 ;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
 ;;   returns ( ( ((\, person) would eat a (\, food))
@@ -116,7 +122,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide 'aris-funs--microlog)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (ml:init)
+;; (ml:reset)
 ;; (:- '(foo) '(bar baz quux) '(shprungy))
 
 ;; (pat-match '(?x + ?y) '(2 + 1)) ;; => ((?X . 2) (?Y . 1))
