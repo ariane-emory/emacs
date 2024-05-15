@@ -400,110 +400,106 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     (t nil (uu::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;(when *uu:test*
-(confirm that (uu::unify1 nil (uu::fix-variables '(,x + 1))
-                (uu::fix-variables '(2 + 1)))
-  returns ((\?x . 2)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,w ,x ,y))
-                (uu::fix-variables '(,x ,y ,w)))
-  returns ((\?x . \?y) (\?w . \?x))) 
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,w ,x ,y ,z))
-                (uu::fix-variables '(,x ,y ,z ,w)))
-  returns ((\?y . \?z) (\?x . \?y) (\?w . \?x)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(333 + ,x))
-                (uu::fix-variables '(,x + 333)))
-  returns ((\?x . 333)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(2 + 1))
-                (uu::fix-variables '(2 + 1)))
-  returns t)
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(2 + 1))
-                (uu::fix-variables '(,x + 1)))
-  returns ((\?x . 2)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,y + 1))
-                (uu::fix-variables '(,x + ,x)))
-  returns ((\?x . 1) (\?y . \?x)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1))
-                (uu::fix-variables '(2 + ,y)))
-  returns ((\?y . 1) (\?x . 2)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1))
-                (uu::fix-variables '(2 + ,y + 1)))
-  returns nil)
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1 + 2))
-                (uu::fix-variables '(2 + ,y + 3)))
-  returns nil)
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1 + ,a))
-                (uu::fix-variables '(2 + ,y + ,a)))
-  returns ((\?y . 1)
-            (\?x . 2))
+(when *uu:test*
+  (confirm that (uu::unify1 nil (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + 1)))
+    returns ((\?x . 2)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,w ,x ,y))
+                  (uu::fix-variables '(,x ,y ,w)))
+    returns ((\?x . \?y) (\?w . \?x))) 
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,w ,x ,y ,z))
+                  (uu::fix-variables '(,x ,y ,z ,w)))
+    returns ((\?y . \?z) (\?x . \?y) (\?w . \?x)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(333 + ,x))
+                  (uu::fix-variables '(,x + 333)))
+    returns ((\?x . 333)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(2 + 1))
+                  (uu::fix-variables '(2 + 1)))
+    returns t)
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(2 + 1))
+                  (uu::fix-variables '(,x + 1)))
+    returns ((\?x . 2)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,y + 1))
+                  (uu::fix-variables '(,x + ,x)))
+    returns ((\?x . 1) (\?y . \?x)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + ,y)))
+    returns ((\?y . 1) (\?x . 2)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + ,y + 1)))
+    returns nil)
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1 + 2))
+                  (uu::fix-variables '(2 + ,y + 3)))
+    returns nil)
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1 + ,a))
+                  (uu::fix-variables '(2 + ,y + ,a)))
+    returns ((\?y . 1) (\?x . 2)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1 + ,a))
+                  (uu::fix-variables '(2 + ,y + ,b)))
+    returns ((\?b . \?a)
+              (\?y . 1) (\?x . 2)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1 + ,a))
+                  (uu::fix-variables '(2 + ,y + ,b + 3)))
+    returns nil)
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + ,x)))
+    returns nil)
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x + 1 + ,a + 8))
+                  (uu::fix-variables '(2 + ,y + ,a + ,a)))
+    returns ((\?a . 8) (\?y . 1) (\?x . 2)))
+  ;;---------------------------------------------------------------------------------------------------
+  ;; uncurl tails tests:
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x ,y . (,z . ,zz)))
+                  (uu::fix-variables '(1 2 . (3 . 4))))
+    returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x ,y . (,z . ,zz)))
+                  (uu::fix-variables '(1 2 . (3 . 4))))
+    returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x ,y . ,z))
+                  (uu::fix-variables '(1 2 . 3)))
+    returns ((\?z . 3) (\?y . 2) (\?x . 1)))
+  (confirm that (uu::unify1 nil
+                  (uu::fix-variables '(,x ,y   ,z))
+                  (uu::fix-variables '(1 2   3)))
+    returns ((\?z . 3) (\?y . 2) (\?x . 1)))
+  ;;---------------------------------------------------------------------------------------------------
+  ;; occurs check tests:
+  (confirm that
+    (let ((*uu:occurs-check* nil))
+      (uu::unify1 nil
+        (uu::fix-variables '(,x ,y))
+        (uu::fix-variables '((f ,y) (f ,x)))))
+    returns ((\?y f \?x) (\?x f \?y)))
+  (confirm that
+    (let ((*uu:occurs-check* :soft))
+      (uu::unify1 nil
+        (uu::fix-variables '(,x ,y))
+        (uu::fix-variables '((f ,y) (f ,x)))))
+    returns ((\?x f \?y)))
+  (confirm that
+    (let ((*uu:occurs-check* t))
+      (uu::unify1 nil
+        (uu::fix-variables '(,x ,y))
+        (uu::fix-variables '((f ,y) (f ,x)))))
+    returns nil)
   )
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1 + ,a))
-                (uu::fix-variables '(2 + ,y + ,b)))
-  returns ((\?b . \?a)
-            (\?y . 1)
-            (\?x . 2))
-  )
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1 + ,a))
-                (uu::fix-variables '(2 + ,y + ,b + 3)))
-  returns nil)
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1))
-                (uu::fix-variables '(2 + ,x)))
-  returns nil)
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x + 1 + ,a + 8))
-                (uu::fix-variables '(2 + ,y + ,a + ,a)))
-  returns ((\?a . 8) (\?y . 1) (\?x . 2)))
-;;---------------------------------------------------------------------------------------------------
-;; uncurl tails tests:
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x ,y . (,z . ,zz)))
-                (uu::fix-variables '(1 2 . (3 . 4))))
-  returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x ,y . (,z . ,zz)))
-                (uu::fix-variables '(1 2 . (3 . 4))))
-  returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x ,y . ,z))
-                (uu::fix-variables '(1 2 . 3)))
-  returns ((\?z . 3) (\?y . 2) (\?x . 1)))
-(confirm that (uu::unify1 nil
-                (uu::fix-variables '(,x ,y   ,z))
-                (uu::fix-variables '(1 2   3)))
-  returns ((\?z . 3) (\?y . 2) (\?x . 1)))
-;;---------------------------------------------------------------------------------------------------
-;; occurs check tests:
-(confirm that
-  (let ((*uu:occurs-check* nil))
-    (uu::unify1 nil
-      (uu::fix-variables '(,x ,y))
-      (uu::fix-variables '((f ,y) (f ,x)))))
-  returns ((\?y f \?x) (\?x f \?y)))
-(confirm that
-  (let ((*uu:occurs-check* :soft))
-    (uu::unify1 nil
-      (uu::fix-variables '(,x ,y))
-      (uu::fix-variables '((f ,y) (f ,x)))))
-  returns ((\?x f \?y)))
-(confirm that
-  (let ((*uu:occurs-check* t))
-    (uu::unify1 nil
-      (uu::fix-variables '(,x ,y))
-      (uu::fix-variables '((f ,y) (f ,x)))))
-  returns nil)
-;; )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -516,61 +512,107 @@ Example:
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *uu:test*
-  (confirm that (uu::unify '(,w ,x ,y) '(,x ,y ,w))
-    returns (((\, x) \, y) ((\, w) \, x)))
-  (confirm that (uu::unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
-    returns (((\, y) \, z) ((\, x) \, y) ((\, w) \, x)))
-  (confirm that (uu::unify '(333 + ,x + ,x) '(,z + 333 + ,z))
-    returns (((\, x) \, z) ((\, z) . 333)))
-  (confirm that (uu::unify '(333 + ,x) '(,x + 333))
-    returns (((\, x) . 333)))
-  (confirm that (uu::unify '(2 + 1) '(2 + 1))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,w ,x ,y))
+                  (uu::fix-variables '(,x ,y ,w)))
+    returns ((\?x . \?y) (\?w . \?x)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,w ,x ,y ,z))
+                  (uu::fix-variables '(,x ,y ,z ,w)))
+    returns ((\?y . \?z) (\?x . \?y) (\?w . \?x)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(333 + ,x + ,x))
+                  (uu::fix-variables '(,z + 333 + ,z)))
+    returns ((\?x . \?z) (\?z . 333)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(333 + ,x))
+                  (uu::fix-variables '(,x + 333)))
+    returns ((\?x . 333)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(2 + 1))
+                  (uu::fix-variables '(2 + 1)))
     returns t)
-  (confirm that (uu::unify '(,x + 1) '(2 + 1))
-    returns (((\, x) . 2)))
-  (confirm that (uu::unify '(2 + 1) '(,x + 1))
-    returns (((\, x) . 2)))
-  (confirm that (uu::unify '(,y + 1) '(,x + ,x))
-    returns (((\, x) . 1) ((\, y) \, x)))
-  (confirm that (uu::unify '(,x + 1) '(2 + ,y))
-    returns (((\, y) . 1) ((\, x) . 2)))
-  (confirm that (uu::unify '(,x + 1) '(2 + ,y + 1))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + 1)))
+    returns ((\?x . 2)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(2 + 1))
+                  (uu::fix-variables '(,x + 1)))
+    returns ((\?x . 2)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,y + 1))
+                  (uu::fix-variables '(,x + ,x)))
+    returns ((\?x . 1) (\?y . \?x)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + ,y)))
+    returns ((\?y . 1) (\?x . 2)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + ,y + 1)))
     returns nil)
-  (confirm that (uu::unify '(,x + 1 + 2) '(2 + ,y + 3))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1 + 2))
+                  (uu::fix-variables '(2 + ,y + 3)))
     returns nil)
-  (confirm that (uu::unify '(,x + 1 + ,a) '(2 + ,y + ,a))
-    returns (((\, y) . 1) ((\, x) . 2)))
-  (confirm that (uu::unify '(,x + 1 + ,a) '(2 + ,y + ,b))
-    returns (((\, b) \, a) ((\, y) . 1) ((\, x) . 2)))
-  (confirm that (uu::unify '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1 + ,a))
+                  (uu::fix-variables '(2 + ,y + ,a)))
+    returns ((\?y . 1) (\?x . 2)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1 + ,a))
+                  (uu::fix-variables '(2 + ,y + ,b)))
+    returns ((\?b . \?a) (\?y . 1) (\?x . 2)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1 + ,a))
+                  (uu::fix-variables '(2 + ,y + ,b + 3)))
     returns nil)
-  (confirm that (uu::unify '(,x + 1) '(2 + ,x))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1))
+                  (uu::fix-variables '(2 + ,x)))
     returns nil)
-  (confirm that (uu::unify '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
-    returns (((\, a) . 8) ((\, y) . 1) ((\, x) . 2)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x + 1 + ,a + 8))
+                  (uu::fix-variables '(2 + ,y + ,a + ,a)))
+    returns ((\?a . 8) (\?y . 1) (\?x . 2)))
   ;;---------------------------------------------------------------------------------------------------
   ;; uncurl tails tests:
-  (confirm that (uu::unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-    returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-  (confirm that (uu::unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-    returns (((\, zz) . 4) ((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-  (confirm that (uu::unify '(,x ,y . ,z) '(1 2 . 3))
-    returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
-  (confirm that (uu::unify '(,x ,y   ,z) '(1 2   3))
-    returns (((\, z) . 3) ((\, y) . 2) ((\, x) . 1)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x ,y . (,z . ,zz)))
+                  (uu::fix-variables '(1 2 . (3 . 4))))
+    returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x ,y . (,z . ,zz)))
+                  (uu::fix-variables '(1 2 . (3 . 4))))
+    returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x ,y . ,z))
+                  (uu::fix-variables '(1 2 . 3)))
+    returns ((\?z . 3) (\?y . 2) (\?x . 1)))
+  (confirm that (uu::unify
+                  (uu::fix-variables '(,x ,y   ,z))
+                  (uu::fix-variables '(1 2   3)))
+    returns ((\?z . 3) (\?y . 2) (\?x . 1)))
   ;;---------------------------------------------------------------------------------------------------
   ;; occurs check tests:
   (confirm that
     (let ((*uu:occurs-check* nil))
-      (uu::unify '(,x ,y) '((f ,y) (f ,x))))
-    returns (((\, y) f (\, x)) ((\, x) f (\, y))))
+      (uu::unify
+        (uu::fix-variables '(,x ,y))
+        '((f ,y) (f ,x))))
+    returns ((\?y f \?x) (\?x f \?y)))
   (confirm that
     (let ((*uu:occurs-check* :soft))
-      (uu::unify '(,x ,y) '((f ,y) (f ,x))))
-    returns (((\, x) f (\, y))))
+      (uu::unify
+        (uu::fix-variables '(,x ,y))
+        (uu::fix-variables '((f ,y) (f ,x)))))
+    returns ((\?x f \?y)))
   (confirm that
     (let ((*uu:occurs-check* t))
-      (uu::unify '(,x ,y) '((f ,y) (f ,x))))
+      (uu::unify
+        (uu::fix-variables '(,x ,y))
+        (uu::fix-variables '((f ,y) (f ,x)))))
     returns nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
