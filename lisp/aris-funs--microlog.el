@@ -120,37 +120,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro <- (&rest fact)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  `(:- '(,@fact)))
+  `(:- (,@fact)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun :- (consequent &rest antecedents)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   (unless (consp consequent)
+;;     (error "CONSEQUENT should be a cons or a symbol."))
+;;   (when-let ((bad-antecedent
+;;                (cl-find-if-not (lambda (a) (consp a)) antecedents)))
+;;     (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
+;;   (ensure-db! '*ml*)
+;;   (let* ( (consequent     (u::fix-variables consequent))
+;;           (antecedents    (mapcar #'u::fix-variables antecedents))
+;;           (lookup         (db-get '*ml* consequent))
+;;           (was-found      (cdr lookup))
+;;           (found          (car lookup))
+;;           (found-is-equal (and was-found (equal antecedents found))))    
+;;     (cond
+;;       ((not was-found) ; new rule, add it.
+;;         (ml::prndiv)
+;;         (let ((rule antecedents))
+;;           (ml::prn "Adding rule %S." (cons consequent antecedents))
+;;           (db-put '*ml* consequent rule)))
+;;       (found-is-equal found) ; repeated (but `equal' rule, do nothing.
+;;       (t (error "Already have a rule for %S: %S" consequent found)))
+;;     (db-to-alist '*ml*)
+;;     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun :- (consequent &rest antecedents)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (unless (consp consequent)
-    (error "CONSEQUENT should be a cons or a symbol."))
-  (when-let ((bad-antecedent
-               (cl-find-if-not (lambda (a) (consp a)) antecedents)))
-    (error "ANTECEDENTS should be conses, got: %S." bad-antecedent))
-  (ensure-db! '*ml*)
-  (let* ( (consequent     (u::fix-variables consequent))
-          (antecedents    (mapcar #'u::fix-variables antecedents))
-          (lookup         (db-get '*ml* consequent))
-          (was-found      (cdr lookup))
-          (found          (car lookup))
-          (found-is-equal (and was-found (equal antecedents found))))    
-    (cond
-      ((not was-found) ; new rule, add it.
-        (ml::prndiv)
-        (let ((rule antecedents))
-          (ml::prn "Adding rule %S." (cons consequent antecedents))
-          (db-put '*ml* consequent rule)))
-      (found-is-equal found) ; repeated (but `equal' rule, do nothing.
-      (t (error "Already have a rule for %S: %S" consequent found)))
-    (db-to-alist '*ml*)
-    ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro := (consequent &rest antecedents)
+(defmacro :- (consequent &rest antecedents)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (unless (consp consequent)
     (error "CONSEQUENT should be a cons or a symbol."))
@@ -175,8 +175,6 @@
          (t (error "Already have a rule for %S: %S" consequent found)))
        (db-to-alist '*ml*))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(get '*ml* 'db)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (confirm that (hash-table-p (ml:reset)) returns t)
 (confirm that (hash-table-empty-p (ml:reset)) returns t)
 (confirm that (<- ari likes eating hamburger)
@@ -184,30 +182,51 @@
 ;; repeated rule does nothing:
 (confirm that (<- ari likes eating hamburger)
   returns (((ari likes eating hamburger))))
-(confirm that (:= (,person would eat a ,food)
-                (,person is a person)
-                (,food is a food)
-                (,person likes eating ,food))
-  returns (((\?person would eat a \?food)
-             (\?person is a person)
-             (\?food is a food)
-             (\?person likes eating \?food))
+(confirm that (:-
+                (,Person would eat a ,Food)
+                (,Person is a person)
+                (,Food is a food)
+                (,Person likes eating ,Food))
+  returns ( ((\?Person would eat a \?Food)
+              (\?Person is a person)
+              (\?Food is a food)
+              (\?Person likes eating \?Food))
             ((ari likes eating hamburger))))
 ;; repeated rule does nothing:
-(confirm that (:= (,person would eat a ,food)
-                (,person is a person)
-                (,food is a food)
-                (,person likes eating ,food))
-  returns (((\?person would eat a \?food)
-             (\?person is a person)
-             (\?food is a food)
-             (\?person likes eating \?food))
+(confirm that (:-
+                (,Person would eat a ,Food)
+                (,Person is a person)
+                (,Food is a food)
+                (,Person likes eating ,Food))
+  returns ( ((\?Person would eat a \?Food)
+              (\?Person is a person)
+              (\?Food is a food)
+              (\?Person likes eating \?Food))
             ((ari likes eating hamburger))))
 ;; This should (and does) signal an error:
-;; (confirm that (:- '(,person would eat a ,food) '(,person likes ,food))
-;;   returns ( ( ((\, person) would eat a (\, food))
-;;               ((\, person) likes eating (\, food)))
+;; (confirm that (:- '(,Person would eat a ,Food) '(,Person likes ,Food))
+;;   returns ( ( ((\, Person) would eat a (\, Food))
+;;               ((\, Person) likes eating (\, Food)))
 ;;             ( (ari likes eating hamburger))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::symbol-is-variable-p (symbol)
+  "Check if SYMBOL starts with a capital letter."
+  (let ((first-char (substring (symbol-name symbol) 0 1)))
+    (equal (upcase first-char) first-char)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::variable-p (thing)
+  "Check if THING is a symbol that starts with a capital letter."
+  (and (symbolp thing) (ml::symbol-is-variable-p thing)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ml::variable-p 'Foo)      returns t)
+(confirm that (ml::variable-p 'foo)      returns nil)
+(confirm that (ml::variable-p  nil)      returns nil)
+(confirm that (ml::variable-p  666)      returns nil)
+(confirm that (ml::variable-p  '(1 2 3)) returns nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -220,14 +239,18 @@
 (u::variable-p '\?foo)
 (<- ari is a person)
 (<- hamburger is a food)
-(:= (,person could eat a ,food)
-  (,person is a person)
-  (,food is a food)
-  (,person would eat a ,food)
-  (,person has a ,food))
+(<- ari has beef)
+(:-
+  (,Person could eat a ,Food)
+  (,Person is a person)
+  (,Food is a food)
+  (,Person would eat a ,Food)
+  (,Person can cook a ,Food))
+(:-
+  (ari can cook a hamburger)
+  (ari has beef))
+
+
 (ml:prn-world)
-
-
-(:= (ari can make a hamburger) (ari has beef))
 
 
