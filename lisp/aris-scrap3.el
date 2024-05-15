@@ -1,6 +1,9 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(require 'aris-funs--destructuring-match-aux)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ignore!
+  
 (defmacro some (type val)
   "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
   `(and (cl-typep ,val ',type) ,val))
@@ -28,3 +31,18 @@
   (if-let ((the-string (some string  x)))
     (progn (concat "hello " the-string))
     "no integer or string"))
+
+  (defmacro cond-let (&rest clauses)
+    (debug nil clauses)
+    (if (null clauses)
+      nil
+      `(if-let ,(caar clauses)
+	 ,(cadar clauses)
+	 ,@(cond-let (cdr clauses)))))
+
+  (cond-let
+    (((the-integer (some integer x))) (* 2 the-integer))
+    (((the-string  (some string  x))) (concat "hello " the-string))
+    (t "no integer or string"))
+
+  )
