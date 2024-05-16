@@ -44,9 +44,20 @@
     ((the-bindings
        (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x))
       (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-    (otherwise "no matching clause"))) ;; (quux zap poof qwib shprungy)
+    (otherwise "no matching clause"))) ; (quux zap poof qwib shprungy)
 
+(ignore!
+  
+  (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
+    (dm::clear-compiled-patterns)
+    (cond-let
+      ((let (the-integer (some integer x)) (_ (> the-integer 5)))
+        (* 2 the-integer))
+      ((let (the-string   (some string  x)))
+        (concat "hello " the-string)
+        ((match (foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle))
+          `(,.bar ,.needle ,@(nreverse .bazes)))
+        ((if (< 8 9)) :foo)
+        (otherwise "no matching clause"))))
 
-
-
-
+  )
