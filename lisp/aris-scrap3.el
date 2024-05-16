@@ -4,10 +4,11 @@
 (require 'aris-funs--destructuring-match) ; only used in some tests.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (some 'string   "foo")
 (some #'stringp "foo")
 
+(defmacro let-it (expr &rest body)
+  `(let ((it ,expr)) ,@body))
 
 (defmacro cond2 (&rest clauses)
   "Re-implementation of ordinary `cond'."
@@ -27,20 +28,42 @@
 
 (defmacro cond2 (&rest clauses)
   "Re-implementation of ordinary `cond'."
-  (if clauses
-    (if (cdar clauses)
-      `(if ,(caar clauses) (progn ,@(cdar clauses)) (cond2 ,@(cdr clauses)))
-      `(or ,(caar clauses) (cond2 ,@(cdr clauses))))))
-
-
-
+  (cl-macrolet ((let-it (expr &rest body) `(let ((it ,expr)) ,@body)))
+    (cond
+      ((null clauses) nil)
+      ((and (cdar clauses) (cdr clauses))
+        `(if ,(caar clauses) ,(macroexp-progn (cdar clauses)) (cond2 ,@(cdr clauses))))
+      ((cdar clauses)
+        `(when ,(caar clauses) ,(macroexp-progn (cdar clauses))))
+      ((cdr clauses) `(or ,(caar clauses) (cond2 ,@(cdr clauses))))
+      (t (caar clauses)))))
 
 ;; Example usage:
 (cond2
   ((= 2 1) (message "1"))
-  ((= 3 3) (message "2"))
+  ((= 3 3)) ; (message "2")
   (t (message "default")))
 
+(if (= 2 1) (message "1")
+  (or (= 3 3)
+    (when t
+      (message "default"))))
+
+(if (= 2 1) (message "1")
+  (or (= 3 3)
+    (if t
+      (message "default")
+      nil)))
+
+(if (= 2 1) (message "1")
+  (if (= 3 3) (message "2")
+    (if t (message "default")
+      nil)))
+
+(if (= 2 1) (message "1")
+  (if (= 3 3) (message "2")
+    (if t (message "default")
+      nil)))
 
 ;; Example usage:
 (cond2
@@ -49,15 +72,6 @@
   ((= 3 3) (message "2"))
   (t (message "default")))
 
-(if (= 2 1)
-  (progn (message "1"))
-  (or 32
-    (if (= 3 3)
-      (progn (message "2"))
-      (if t
-        (progn (message "default"))
-        nil))))
-
 
 (cond2
   ;; ((= 2 1) (message "1"))
@@ -65,32 +79,7 @@
   ;; ((= 3 3) (message "2"))
   (t (message "default")))
 
-
-
-
-(defmacro let-it (expr &rest body)
-  `(let ((it ,expr)) ,@body))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro cond-let2 (&rest clauses)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate the first clause whose `let' bindings aren't nil or a final t clause (if present)."
-  (cl-macrolet ((let-it (expr &rest body) `(let ((it ,expr)) ,@body)))
-    (cond
-      ((null clauses) nil)
-      ((atom (car clauses))
-        (error "Malformed CLAUSES, clauses must be conses, got: %S." (car clauses)))
-      ((and (atom (caar clauses)) (cdr clauses))
-        (error "Malformed CLAUSES, clause with atomic head %s precedes %S."))
-      ((let-it (caar clauses) (and (atom it) (or (eq t it) (keywordp it) (not (symbolp it)))))
-        (macroexp-progn (cdar clauses)))
-      ((cdr clauses)
-        `(if-let ,(caar clauses)
-           ,(macroexp-progn (cdar clauses))
-           (cond-let2 ,@(cdr clauses))))
-      (t `(when-let ,(caar clauses)
-            ,(macroexp-progn (cdar clauses)))))))
-
 
 (let-it 5 (+ 3 it))
 
@@ -128,4 +117,46 @@
 ;;       (if :otherwise "foo"
 ;;         nil))))
 
-(macroexp-if :otherwise "foo" nil)
+;; (macroexp-if :otherwise "foo" nil)
+
+;; (defun when* (test &rest body)
+;;   (cond
+;;     ((or (eq t test) (and (atom test) (not (symbolp test)))) (macroexp-progn body))
+;;     (t `(when* ,test ,@body))))
+
+;; (defun if* (test then &rest else)
+;;   (cond
+;;     ((null else) (macroexp-when test then))
+;;     ((or (eq t test) (and (atom test) (not (symbolp test)))) then)
+;;     (t `(if ,test ,then ,@else))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro if* (test then &rest else)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Constant folded `if'."
+  (cond
+    ((null test) (macroexp-progn else))
+    ((or (eq t test) (and (atom test) (not (symbolp test)))) then)
+    (t `(if ,test ,then ,@else))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro when* (test &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Constant folded `when'."
+  `(if* ,test ,(macroexp-progn body)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((x 7))
+  (confirm that (when* x "foo") returns "foo") ; (if x "foo")
+  (confirm that (when* nil "foo") returns nil) ; nil
+  (confirm that (when* x "foo") returns "foo") ; (if x "foo")
+  (confirm that (when* t "foo") returns "foo") ; "foo"
+  (confirm that (when* t "foo" "bar") returns "bar")
+  (confirm that (if* x "foo" "bar" "baz") returns "foo") ; (if x "foo" "bar" "baz")
+  (confirm that (if* t "foo") returns "foo") ; (when* t "foo") ; "foo"
+  (confirm that (if* nil "foo" "bar" "baz") returns "baz") ; (progn "bar" "baz")
+  ) 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+

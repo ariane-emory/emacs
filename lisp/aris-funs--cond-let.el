@@ -43,22 +43,22 @@
 ;;             ;; (progn ,@(cdar clauses))
 ;;             (cond-let ,@(cdr clauses)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro cond-let2 (&rest clauses)
+(defmacro cond-let (&rest clauses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the first clause whose `let' bindings aren't nil or a final t clause (if present)."
   (cl-macrolet ((let-it (expr &rest body) `(let ((it ,expr)) ,@body)))
     (cond
-      ((null clauses) nil)
+      ((null clauses) (error "empty CLAUSES"))
       ((atom (car clauses))
         (error "Malformed CLAUSES, clauses must be conses, got: %S." (car clauses)))
       ((and (atom (caar clauses)) (cdr clauses))
-        (error "Malformed CLAUSES, clause with atomic head %s precedes %S."))
+        (error "Malformed CLAUSES, clause with atomic head %s precedes %S." (car clauses) clauses))
       ((let-it (caar clauses) (and (atom it) (or (eq t it) (keywordp it) (not (symbolp it)))))
         (macroexp-progn (cdar clauses)))
       ((cdr clauses)
         `(if-let ,(caar clauses)
            ,(macroexp-progn (cdar clauses))
-           (cond-let2 ,@(cdr clauses))))
+           (cond-let ,@(cdr clauses))))
       (t `(when-let ,(caar clauses)
             ,(macroexp-progn (cdar clauses)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
