@@ -43,17 +43,10 @@
     ((the-string   (some string  x)) (concat "hello " the-string))
     ((the-bindings
        (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x))
-      (let-alist the-bindings `(list ,.bar ,.needle ,@.bazes)))
-    (otherwise "no matching clause"))) ;; (list quux zap shprungy qwib poof)
+      (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+    (otherwise "no matching clause"))) ;; (quux zap poof qwib shprungy)
 
-;; expands into (if-lets not expanded here):
-(if-let ((the-integer (some integer x)) (_ (> the-integer 5)))
-  (* 2 the-integer)  
-  (if-let (the-string (some string x))
-    (concat "hello " the-string)
-    (if-let (the-bindings
-              (dm:match '(foo (\,(bar symbolp (not (null bar)))) (_ (\,@ bazes)) \... \, needle) x))
-      (let-alist the-bindings (cons 'list (cons \.bar (cons \.needle \.bazes))))
-      "no matching clause")))
+
+
 
 
