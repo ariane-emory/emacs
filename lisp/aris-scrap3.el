@@ -19,12 +19,18 @@
 (defmacro cond2 (&rest clauses)
   "Re-implementation of ordinary `cond'."
   (if clauses
+    (if (cdar clauses)
+      `(if ,(caar clauses) (progn ,@(cdar clauses)) (cond2 ,@(cdr clauses)))
+      `(or ,(caar clauses) (cond2 ,@(cdr clauses))))))
+
+(defmacro cond2 (&rest clauses)
+  "Re-implementation of ordinary `cond'."
+  (if clauses
     (let ((clause (car clauses)) (sym (gensym)))
       `(let ((,sym ,(car clause)))
          (if ,sym
            ,(if (null (cdr clause)) sym `(progn ,@(cdr clause)))
            (cond2 ,@(cdr clauses)))))))
-
 
 (defmacro cond2 (&rest clauses)
   "Re-implementation of ordinary `cond'."
@@ -38,32 +44,19 @@
       ((cdr clauses) `(or ,(caar clauses) (cond2 ,@(cdr clauses))))
       (t (caar clauses)))))
 
+(defmacro cond2 (&rest clauses)
+  "Re-implementation of ordinary `cond'."
+  (when* clauses
+    (if* (cdar clauses)
+      `(if* ,(caar clauses) (progn ,@(cdar clauses)) (cond2 ,@(cdr clauses)))
+      `(or ,(caar clauses) (cond2 ,@(cdr clauses)))
+      )))
+
 ;; Example usage:
 (cond2
   ((= 2 1) (message "1"))
   ((= 3 3)) ; (message "2")
   (t (message "default")))
-
-(if (= 2 1) (message "1")
-  (or (= 3 3)
-    (when t
-      (message "default"))))
-
-(if (= 2 1) (message "1")
-  (or (= 3 3)
-    (if t
-      (message "default")
-      nil)))
-
-(if (= 2 1) (message "1")
-  (if (= 3 3) (message "2")
-    (if t (message "default")
-      nil)))
-
-(if (= 2 1) (message "1")
-  (if (= 3 3) (message "2")
-    (if t (message "default")
-      nil)))
 
 ;; Example usage:
 (cond2
@@ -71,7 +64,6 @@
   (32)
   ((= 3 3) (message "2"))
   (t (message "default")))
-
 
 (cond2
   ;; ((= 2 1) (message "1"))
@@ -166,8 +158,6 @@
   (confirm that (if* nil "foo" "bar" "baz") returns "baz") ; (progn "bar" "baz")
   ) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 
