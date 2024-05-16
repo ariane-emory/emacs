@@ -33,7 +33,7 @@
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
           (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-        (otherwise "no matching clause")))
+        (:otherwise "no matching clause")))
     returns (quux zap poof qwib shprungy))
   (confirm that
     (let ((x 8))
@@ -44,7 +44,7 @@
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
           (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-        (otherwise "no matching clause")))
+        (:otherwise "no matching clause")))
     returns 16)
   (confirm that
     (let ((x "world"))
@@ -55,7 +55,7 @@
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
           (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-        (otherwise "no matching clause")))
+        (:otherwise "no matching clause")))
     returns "hello world")
   (confirm that
     (let ((x :foo))
@@ -66,7 +66,7 @@
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
           (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-        (otherwise "no matching clause")))
+        (:otherwise "no matching clause")))
     returns "no matching clause")
   (confirm that
     (let ((x (list 2 3 4)))
@@ -77,7 +77,7 @@
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
           (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-        (otherwise "no matching clause")))
+        (:otherwise "no matching clause")))
     returns "no matching clause"))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -95,7 +95,7 @@
       ((match (foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle))
         `(,.bar ,.needle ,@(nreverse .bazes)))
       ((if (< 8 9)) :foo)
-      (otherwise "no matching clause"))))
+      (:otherwise "no matching clause"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
