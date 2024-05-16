@@ -37,7 +37,8 @@
         (car clauses) (cdr clauses)))
     (t (let ((sym (if (atom (caar clauses)) 'if 'if-let)))
          `(,sym ,(caar clauses)
-            (progn ,@(cdar clauses))
+            ,(macroexp-progn (cdar clauses))
+            ;; (progn ,@(cdar clauses))
             (cond-let ,@(cdr clauses)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((*dm:verbose* nil))
