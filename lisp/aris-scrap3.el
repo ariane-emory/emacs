@@ -144,14 +144,25 @@
   "Constant folded `when'."
   `(if* ,test ,(macroexp-progn body)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro unless* (test &rest body)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Constant folded `unless'."
+  `(if* ,test nil ,@body))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((x 7))
-  (confirm that (when* x "foo") returns "foo") ; (if x "foo")
-  (confirm that (when* nil "foo") returns nil) ; nil
-  (confirm that (when* x "foo") returns "foo") ; (if x "foo")
-  (confirm that (when* t "foo") returns "foo") ; "foo"
-  (confirm that (when* t "foo" "bar") returns "bar")
-  (confirm that (if* x "foo" "bar" "baz") returns "foo") ; (if x "foo" "bar" "baz")
-  (confirm that (if* t "foo") returns "foo") ; (when* t "foo") ; "foo"
+  (confirm that (when* x "foo") returns "foo")             ; (if* x "foo") ; (if x "foo")
+  (confirm that (when* nil "foo") returns nil)             ; (if* nil "foo") ; nil
+  (confirm that (when* x "foo") returns "foo")             ; (if* x "foo") ; (if x "foo")
+  (confirm that (when* t "foo") returns "foo")             ; (if* t "foo") ; "foo"
+  (confirm that (when* t "foo" "bar") returns "bar")       ; (if* t (progn "foo" "bar")) ; (progn "foo" "bar")
+  (confirm that (unless* x "foo") returns nil)             ; (if* x nil "foo")
+  (confirm that (unless* nil "foo") returns "foo")         ; (if* nil nil "foo") ; "foo"
+  (confirm that (unless* x "foo") returns nil)             ; (if* x nil "foo") ; (if x nil "foo")
+  (confirm that (unless* t "foo") returns nil)             ; (if* t nil "foo") ; nil
+  (confirm that (unless* t "foo" "bar") returns nil)       ; (if* t nil "foo" "bar") ; nil
+  (confirm that (if* t "foo") returns "foo")               ; (when* t "foo") ; (if* t "foo") ; "foo"
+  (confirm that (if* x "foo" "bar" "baz") returns "foo")   ; (if x "foo" "bar" "baz")
+  (confirm that (if* t "foo" "bar" "baz") returns "foo")   ; "foo" 
   (confirm that (if* nil "foo" "bar" "baz") returns "baz") ; (progn "bar" "baz")
   ) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
