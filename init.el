@@ -834,6 +834,7 @@
            aris-funs--defunstar
            aris-funs--some
            aris-funs--let-it
+           aris-funs--constant-folding-conditionals
            aris-funs--cond-let
            aris-funs--error-when-and-error-unless
            aris-funs--pcase-x
