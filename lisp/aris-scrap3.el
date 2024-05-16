@@ -44,13 +44,6 @@
       ((cdr clauses) `(or ,(caar clauses) (cond2 ,@(cdr clauses))))
       (t (caar clauses)))))
 
-(defmacro cond2 (&rest clauses)
-  "Re-implementation of ordinary `cond'."
-  (when* clauses
-    (if* (cdar clauses)
-      `(if* ,(caar clauses) (progn ,@(cdar clauses)) (cond2 ,@(cdr clauses)))
-      `(or ,(caar clauses) (cond2 ,@(cdr clauses)))
-      )))
 
 ;; Example usage:
 (cond2
@@ -73,28 +66,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(let-it 5 (+ 3 it))
+;; (let-it 5 (+ 3 it))
 
-(let ((x 2))
-  (cond-let2
-    (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-    ((the-string   (some 'string  x)) (concat "hello " the-string))
-    ((the-bindings
-       (and (consp x)
-         (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-      (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-    (:otherwise "foo")))
+;; (let ((x 2))
+;;   (cond-let2
+;;     (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+;;     ((the-string   (some 'string  x)) (concat "hello " the-string))
+;;     ((the-bindings
+;;        (and (consp x)
+;;          (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+;;       (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+;;     (:otherwise "foo")))
 
 
-(setq x 7)
-(cond-let2
-  (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-  ((the-string   (some 'string  x)) (concat "hello " the-string))
-  ((the-bindings
-     (and (consp x)
-       (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-    (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-  (:otherwise "foo"))
+;; (setq x 7)
+;; (cond-let2
+;;   (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+;;   ((the-string   (some 'string  x)) (concat "hello " the-string))
+;;   ((the-bindings
+;;      (and (consp x)
+;;        (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+;;     (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+;;   (:otherwise "foo"))
 
 ;; (if-let ((the-integer (some 'integer x)) (_ (> the-integer 5)))
 ;;   (* 2 the-integer)
@@ -158,6 +151,80 @@
   (confirm that (if* nil "foo" "bar" "baz") returns "baz") ; (progn "bar" "baz")
   ) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+(defmacro cond2 (&rest clauses)
+  "Re-implementation of ordinary `cond'."
+  (when* clauses
+    (if* (cdar clauses)
+      `(if* ,(caar clauses) ,(macroexp-progn (cdar clauses)) (cond2 ,@(cdr clauses)))
+      `(or ,(caar clauses) (cond2 ,@(cdr clauses))))))
+
+
+;; Example usage:
+(if
+  (= 2 1)
+  (message "1")
+  (or 32
+    (if
+      (= 3 3)
+      (message "2")
+      (message "default"))))
+
+
+
+
+;; Example usage:
+(cond2
+  ((= 2 1) (message "1"))
+  (32)
+  ((= 3 3) (message "2"))
+  (t (message "default")))
+
+(cond2
+  ((= 2 1) (message "1"))
+  ((= 3 3)) ; (message "2")
+  (t (message "default")))
+
+(cond2
+  ;; ((= 2 1) (message "1"))
+  ;; (32)
+  ;; ((= 3 3) (message "2"))
+  (t (message "default")))
+
+
+(setq x 1 y 2 z 3)
+
+(defmacro let-it (expr &rest body)
+  `(let ((it ,expr)) ,@body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun macroexp-or-args (args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Helper function for `or*'."
+  (when  args
+    (if (let-it (car args) (or (eq t it) (and (atom it) (not (symbolp it)))))
+      (list (car args))
+      (cons (car args) (macroexp-or-args (cdr args))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro or* (&rest things)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Constant folded `or'."
+  `(or ,@(macroexp-or-args things)))
+
+
+(macroexp-or-args '(x y 32 z))
+
+(or* x y 32 z)
+
+
+
+
+
+
+
 
 
 
