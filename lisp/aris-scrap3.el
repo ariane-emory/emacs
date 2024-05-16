@@ -68,24 +68,33 @@
 
 
 
+(defmacro let-it (expr &rest body)
+  `(let ((it ,expr)) ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro cond-let2 (&rest clauses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the first clause whose `let' bindings aren't nil or a final t clause (if present)."
-  (cond
-    ((null clauses) nil)
-    ((atom (car clauses))
-      (error "Malformed CLAUSES, clauses must be conses, got: %S." (car clauses)))
-    ((and (atom (caar clauses) (cdr clauses)))
-      (error "Malformed CLAUSES, clause with atomic head %s precedes %S."))
-    (t
-      (let ((sym (if (atom (caar clauses)) 'if 'if-let)))
-        `(,sym ,(caar clauses)
-           (progn ,@(cdar clauses))
-           (cond-let2 ,@(cdr clauses)))))))
+  (cl-macrolet ((let-it (expr &rest body) `(let ((it ,expr)) ,@body)))
+    (cond
+      ((null clauses) nil)
+      ((atom (car clauses))
+        (error "Malformed CLAUSES, clauses must be conses, got: %S." (car clauses)))
+      ((and (atom (caar clauses)) (cdr clauses))
+        (error "Malformed CLAUSES, clause with atomic head %s precedes %S."))
+      ((let-it (caar clauses) (and (atom it) (or (eq t it) (keywordp it) (not (symbolp it)))))
+        (macroexp-progn (cdar clauses)))
+      ((cdr clauses)
+        `(if-let ,(caar clauses)
+           ,(macroexp-progn (cdar clauses))
+           (cond-let2 ,@(cdr clauses))))
+      (t `(when-let ,(caar clauses)
+            ,(macroexp-progn (cdar clauses)))))))
 
-(let ((x 22))
+
+(let-it 5 (+ 3 it))
+
+(let ((x 2))
   (cond-let2
     (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
     ((the-string   (some 'string  x)) (concat "hello " the-string))
@@ -95,12 +104,28 @@
       (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
     (:otherwise "foo")))
 
-(let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
-  (cond-let2
-    (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-    (:otherwise)))
 
-;; (cond2
-'( ((= 2 1) (message "1"))
-   ((= 3 3) (message "2"))
-   (t (message "default")))
+(setq x 7)
+(cond-let2
+  (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+  ((the-string   (some 'string  x)) (concat "hello " the-string))
+  ((the-bindings
+     (and (consp x)
+       (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+    (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+  (:otherwise "foo"))
+
+;; (if-let ((the-integer (some 'integer x)) (_ (> the-integer 5)))
+;;   (* 2 the-integer)
+;;   (if-let (the-string (some 'string x))
+;;     (concat "hello " the-string)
+;;     (if-let
+;;       (the-bindings
+;;         (and (consp x)
+;;           (dm:match '(foo (\,(bar symbolp (not (null bar)))) (_ (\,@ bazes)) \... \, needle) x)))
+;;       (let-alist the-bindings
+;;         `(,\.bar ,\.needle ,@(nreverse \.bazes)))
+;;       (if :otherwise "foo"
+;;         nil))))
+
+(macroexp-if :otherwise "foo" nil)
