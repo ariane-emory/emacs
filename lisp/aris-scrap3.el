@@ -77,19 +77,15 @@
     ((null clauses) nil)
     ((atom (car clauses))
       (error "Malformed CLAUSES, clauses must be conses, got: %S." (car clauses)))
-    ((atom (caar clauses))
-      (when (cdr clauses)
-        (error "Malformed CLAUSES, clause with atomic head %s precedes %S."
-          (car clauses) (cdr clauses)))
-      `(if ,(caar clauses)
-         (progn ,@(cdar clauses))
-         (cond-let2 ,@(cdr clauses))))
-    ((cdr clauses)
-      `(if-let ,(caar clauses)
-         ,(macroexp-progn (cdar clauses))
-	       (cond-let2 ,@(cdr clauses))))))
+    ((and (atom (caar clauses) (cdr clauses)))
+      (error "Malformed CLAUSES, clause with atomic head %s precedes %S."))
+    (t
+      (let ((sym (if (atom (caar clauses)) 'if 'if-let)))
+        `(,sym ,(caar clauses)
+           (progn ,@(cdar clauses))
+           (cond-let2 ,@(cdr clauses)))))))
 
-(let ((x 2))
+(let ((x 22))
   (cond-let2
     (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
     ((the-string   (some 'string  x)) (concat "hello " the-string))
@@ -97,11 +93,12 @@
        (and (consp x)
          (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
       (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-    (:otherwise "no matching clause")))
+    (:otherwise "foo")))
+
 (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
   (cond-let2
     (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-    (:otherwise "no matching clause")))
+    (:otherwise)))
 
 ;; (cond2
 '( ((= 2 1) (message "1"))

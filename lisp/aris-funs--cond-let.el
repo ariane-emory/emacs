@@ -6,22 +6,40 @@
 
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro cond-let (&rest clauses)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Evaluate the first clause whose `let' bindings aren't nil or a final t clause (if present)."
+;;   (cond
+;;     ((null clauses) nil)
+;;     ((and (symbolp (caar clauses)) (not (null (caar clauses))))
+;;       (when (cdr clauses) (error "Malformed CLAUSES, t clause precedes %S." (cdr clauses)))
+;;       (macroexp-progn (cdar clauses)))
+;;     ((not (consp (caar clauses)))
+;;       (error "Malformed CLAUSES, clause heads must be conses or non-null symbols, found: %S."
+;;         (caar clauses)))
+;;     ((cdr clauses)
+;;       `(if-let ,(caar clauses)
+;;          ,(macroexp-progn (cdar clauses))
+;; 	       (cond-let ,@(cdr clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro cond-let (&rest clauses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Evaluate the first clause whose `let' bindings aren't nil or a final t clause (if present)."
   (cond
     ((null clauses) nil)
-    ((and (symbolp (caar clauses)) (not (null (caar clauses))))
-      (when (cdr clauses) (error "Malformed CLAUSES, t clause precedes %S." (cdr clauses)))
-      (macroexp-progn (cdar clauses)))
-    ((not (consp (caar clauses)))
-      (error "Malformed CLAUSES, clause heads must be conses or non-null symbols, found: %S."
-        (caar clauses)))
-    ((cdr clauses)
-      `(if-let ,(caar clauses)
-         ,(macroexp-progn (cdar clauses))
-	       (cond-let ,@(cdr clauses))))))
+    ((atom (car clauses))
+      (error "Malformed CLAUSES, clauses must be conses, got: %S." (car clauses)))
+    ((not (cdar clauses))
+      (error "Malformed CLAUSES, clause without a body: %S." (car clauses)))
+    ((and (atom (caar clauses)) (cdr clauses))
+      (error "Malformed CLAUSES, clause with atomic head %s precedes %S."
+        (car clauses) (cdr clauses)))
+    (t
+      (let ((sym (if (atom (caar clauses)) 'if 'if-let)))
+        `(,sym ,(caar clauses)
+           (progn ,@(cdar clauses))
+           (cond-let ,@(cdr clauses)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((*dm:verbose* nil))
   (confirm that
@@ -33,7 +51,7 @@
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
           (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-        (:otherwise "no matching clause")))
+        (:otherwise"no matching clause")))
     returns (quux zap poof qwib shprungy))
   (confirm that
     (let ((x 8))
