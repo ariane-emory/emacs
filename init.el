@@ -832,7 +832,7 @@
            aris-funs--sym-db
            aris-funs--macroexp-x
            aris-funs--defunstar
-           aris-funs--maybe
+           aris-funs--some
            aris-funs--error-when-and-error-unless
            aris-funs--pcase-x
            aris-funs--div-mod

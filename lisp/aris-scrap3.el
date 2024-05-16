@@ -1,18 +1,18 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'aris-funs--destructuring-match-aux)
+(require 'aris-funs--destructuring-match)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro some (type val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
-  `(when (cl-typep ,val ',type) ,val))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that (some integer 8) returns 8)
-(confirm that (some (pair-of integer) '(7 . 8)) returns (7 . 8))
-(confirm that (some integer "hello") returns nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defmacro some (type val)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
+;;   `(when (cl-typep ,val ',type) ,val))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (confirm that (some integer 8) returns 8)
+;; (confirm that (some (pair-of integer) '(7 . 8)) returns (7 . 8))
+;; (confirm that (some integer "hello") returns nil)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,8 +39,8 @@
 (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
   (dm::clear-compiled-patterns)
   (cond-let
-    (((the-integer (some integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-    ((the-string   (some string  x)) (concat "hello " the-string))
+    (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+    ((the-string   (some 'string  x)) (concat "hello " the-string))
     ((the-bindings
        (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x))
       (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
@@ -53,11 +53,11 @@
     (cond-let
       ((let (the-integer (some integer x)) (_ (> the-integer 5)))
         (* 2 the-integer))
-      ((let (the-string   (some string  x)))
-        (concat "hello " the-string)
-        ((match (foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle))
-          `(,.bar ,.needle ,@(nreverse .bazes)))
-        ((if (< 8 9)) :foo)
-        (otherwise "no matching clause"))))
+      ((let (the-string (some string x)))
+        (concat "hello " the-string))
+      ((match (foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle))
+        `(,.bar ,.needle ,@(nreverse .bazes)))
+      ((if (< 8 9)) :foo)
+      (otherwise "no matching clause")))
 
   )
