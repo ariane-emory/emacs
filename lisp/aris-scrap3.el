@@ -60,7 +60,9 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro cond2 (&rest clauses)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Re-implementation of ordinary `cond' with constant folding."
   (when clauses
     (if (cdar clauses)
@@ -73,6 +75,7 @@
 ;; Example usage:
 (cond2
   ((= x 1) (message "case 1"))
+  (nil :foo)
   (32)
   ((= x 3) (message "case 3"))
   (t (message "default")))
@@ -81,4 +84,39 @@
 (if (= x 1)
   (message "case 1")
   32)
+
+
+(defun macroexp-always-true-p (it)
+  (or (eq t it) (and (atom it) (not (symbolp it)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun macroexp-and-args (args)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Helper function for `and*'."
+  (cond
+    ((null args) nil)
+    ((cl-position nil args) nil)
+    ((and (macroexp-always-true-p (car args)) (cdr args)) (macroexp-and-args (cdr args)))
+    (t args)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(macroexp-and-args '(x y t z))
+(macroexp-and-args '(x y nil z))
+(macroexp-and-args '(3 4))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro and* (&rest things)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Constant folded `or'."
+  (cond
+    ((null things) nil)
+    ((null (car things)) nil)
+    ((and (null (cdr things)) (macroexp-always-true-p (car things))) (car things))
+    ((macroexp-always-true-p (car things)) `(and* ,@(cdr things)))
+    (t `(and ,@(macroexp-and-args things)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (and* 3 nil) returns nil)
+(confirm that (and* nil 3) returns nil)
+(confirm that (and* 3 4) returns 4)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
