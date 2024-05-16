@@ -17,15 +17,21 @@
 
 (defmacro my-cond (&rest clauses)
   "Emulate the behavior of the `cond' special form."
-  (if (null clauses)
-    nil
-    (let ((clause (car clauses)))
-      (if (eq (car clause) 't)
-        `(progn ,@(cdr clause))
-        `(let ((result ,(car clause)))
-           (if result
-             ,(if (null (cdr clause)) 'result `(progn ,@(cdr clause)))
-             (my-cond ,@(cdr clauses))))))))
+  (if clauses
+    (let ((clause (car clauses)) (sym (gensym)))
+      `(let ((,sym ,(car clause)))
+         (if ,sym
+           ,(if (null (cdr clause)) sym `(progn ,@(cdr clause)))
+           (my-cond ,@(cdr clauses)))))))
+
+(defmacro my-cond (&rest clauses)
+  "Emulate the behavior of the `cond' special form."
+  (if clauses
+    (let ((clause (car clauses)) (sym (gensym)))
+      `(let ((,sym ,(car clause)))
+         (if ,sym
+           ,(if (null (cdr clause)) sym `(progn ,@(cdr clause)))
+           (my-cond ,@(cdr clauses)))))))
 
 
 
@@ -42,5 +48,11 @@
   ((= 2 1) (message "1"))
   (32)
   ((= 3 3) (message "2"))
+  (t (message "default")))
+
+(my-cond
+  ;; ((= 2 1) (message "1"))
+  ;; (32)
+  ;; ((= 3 3) (message "2"))
   (t (message "default")))
 
