@@ -1,108 +1,22 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'aris-funs--some) ; only used in some tests.
-(require 'aris-funs--destructuring-match) ; only used in some tests.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro cond-let (&rest clauses)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Evaluate the first clause whose `let' bindings aren't nil or a final t clause (if present)."
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun some* (type val)
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+  "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
   (cond
-    ((null clauses) nil)
-    ((and (symbolp (caar clauses)) (not (null (caar clauses))))
-      (when (cdr clauses) (error "Malformed CLAUSES, t clause precedes %S." (cdr clauses)))
-      (macroexp-progn (cdar clauses)))
-    ((not (consp (caar clauses)))
-      (error "Malformed CLAUSES, clause heads must be conses or non-null symbols, found: %S."
-        (caar clauses)))
-    ((cdr clauses)
-      `(if-let ,(caar clauses)
-         ,(macroexp-progn (cdar clauses))
-	       (cond-let ,@(cdr clauses))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(confirm that
-  (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
-    (dm::clear-compiled-patterns)
-    (cond-let
-      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-      ((the-string   (some 'string  x)) (concat "hello " the-string))
-      ((the-bindings
-         (and (consp x)
-           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-      (otherwise "no matching clause")))
-  returns (quux zap poof qwib shprungy))
-(confirm that
-  (let ((x 8))
-    (dm::clear-compiled-patterns)
-    (cond-let
-      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-      ((the-string   (some 'string  x)) (concat "hello " the-string))
-      ((the-bindings
-         (and (consp x)
-           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-      (otherwise "no matching clause")))
-  returns 16)
-(confirm that
-  (let ((x "world"))
-    (dm::clear-compiled-patterns)
-    (cond-let
-      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-      ((the-string   (some 'string  x)) (concat "hello " the-string))
-      ((the-bindings
-         (and (consp x)
-           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-      (otherwise "no matching clause")))
-  returns "hello world")
-(confirm that
-  (let ((x :foo))
-    (dm::clear-compiled-patterns)
-    (cond-let
-      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-      ((the-string   (some 'string  x)) (concat "hello " the-string))
-      ((the-bindings
-         (and (consp x)
-           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-      (otherwise "no matching clause")))
-  returns "no matching clause")
-(confirm that
-  (let ((x (list 2 3 4)))
-    (dm::clear-compiled-patterns)
-    (cond-let
-      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-      ((the-string   (some 'string  x)) (concat "hello " the-string))
-      ((the-bindings
-         (and (consp x)
-           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
-        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-      (otherwise "no matching clause")))
-  returns "no matching clause")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; A hypothetical `super-cond' of some sort that I probably shouldn't actually build:
-(ignore!
-  (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
-    (super-cond
-      ((let (the-integer (some integer x)) (_ (> the-integer 5)))
-        (* 2 the-integer))
-      ((let (the-string (some string x)))
-        (concat "hello " the-string))
-      ((match (foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle))
-        `(,.bar ,.needle ,@(nreverse .bazes)))
-      ((if (< 8 9)) :foo)
-      (otherwise "no matching clause"))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(provide 'aris-funs--cond-let)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ((functionp type) (and (funcall type val)  val))
+    ((symbolp type)   (and (cl-typep val type) val))
+    (t (error "TYPE is meant to be a function or a symbol, got: %s" type))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((foo 7) (ty 'integer) (tyfun (lambda (x) (integerp x))))
+  (confirm that (some* 'integer foo) returns 7)
+  (confirm that (some* #'integerp foo) returns 7)
+  (confirm that (some* tyfun foo) returns 7)
+  (confirm that (some* ty foo) returns 7)
+  (confirm that (some* 'integer "nope") returns nil)
+  (confirm that (some* ty "nope") returns nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(functionp #'integerp)
