@@ -27,8 +27,8 @@
   (confirm that
     (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
       (cond-let
-        (((the-integer (some* 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-        ((the-string   (some* 'string  x)) (concat "hello " the-string))
+        (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+        ((the-string   (some 'string  x)) (concat "hello " the-string))
         ((the-bindings
            (and (consp x)
              (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))

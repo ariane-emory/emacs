@@ -6,31 +6,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun some (type val)
-;;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;   "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
 ;;   (and (cl-typep val type) val))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro some (type val)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
-  `(and (cl-typep ,val ,type) ,val))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(let ( (foo 7) (ty 'integer))
-  (confirm that (some '(satisfies integerp) foo) returns 7)
-  (confirm that (some 'integer foo) returns 7)
-  (confirm that (some ty foo) returns 7)
-  (confirm that (some 'integer "nope") returns nil)
-  (confirm that (some ty "nope") returns nil)
-  (confirm that (some '(pair-of integer) '(3 . 4)) returns (3 . 4)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; (defmacro some (type val)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
+;;   `(and (cl-typep ,val ,type) ,val))
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (let ( (foo 7) (ty 'integer))
+;;   (confirm that (some '(satisfies integerp) foo) returns 7)
+;;   (confirm that (some 'integer foo) returns 7)
+;;   (confirm that (some ty foo) returns 7)
+;;   (confirm that (some 'integer "nope") returns nil)
+;;   (confirm that (some ty "nope") returns nil)
+;;   (confirm that (some '(pair-of integer) '(3 . 4)) returns (3 . 4)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun some* (type val)
+(defun some (type val)
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-  "Return VAL when it is of type TYPE, otherwise return nil. (Buggy version)"
+  "Return VAL when it is of type TYPE, otherwise return nil. (New version)"
   (cond
     ((and (symbolp type) (get type 'cl-deftype-satisfies))
       ;; (debug nil 1 type)
@@ -43,13 +41,15 @@
       (and (cl-typep val type) val))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (let ((foo 7) (ty 'integer) (tyfun (lambda (x) (integerp x))))
-  (confirm that (some* 'integer foo) returns 7)
-  (confirm that (some* #'integerp foo) returns 7)
-  (confirm that (some* tyfun foo) returns 7)
-  (confirm that (some* ty foo) returns 7)
-  (confirm that (some* 'integer "nope") returns nil)
-  (confirm that (some* ty "nope") returns nil)
-  (confirm that (some* '(pair-of integer) '(3 . 4)) returns (3 . 4)))
+  (confirm that (some 'string   "foo") returns "foo")
+  (confirm that (some #'stringp "foo") returns "foo")
+  (confirm that (some 'integer foo) returns 7)
+  (confirm that (some #'integerp foo) returns 7)
+  (confirm that (some tyfun foo) returns 7)
+  (confirm that (some ty foo) returns 7)
+  (confirm that (some 'integer "nope") returns nil)
+  (confirm that (some ty "nope") returns nil)
+  (confirm that (some '(pair-of integer) '(3 . 4)) returns (3 . 4)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
