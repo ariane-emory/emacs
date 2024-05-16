@@ -1,18 +1,9 @@
 ;; -*- lexical-binding: nil; fill-column: 100; eval: (display-fill-column-indicator-mode 1);  -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'aris-funs--destructuring-match)
+(require 'aris-funs--some) ; only used in some tests.
+(require 'aris-funs--destructuring-match) ; only used in some tests.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defmacro some (type val)
-;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   "Return VAL when it is of type TYPE, otherwise return nil. (Conservative version)"
-;;   `(when (cl-typep ,val ',type) ,val))
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (confirm that (some integer 8) returns 8)
-;; (confirm that (some (pair-of integer) '(7 . 8)) returns (7 . 8))
-;; (confirm that (some integer "hello") returns nil)
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,25 +23,75 @@
          ,(macroexp-progn (cdar clauses))
 	       (cond-let ,@(cdr clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(setq x 9)
-
-(let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
-  (dm::clear-compiled-patterns)
-  (cond-let
-    (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
-    ((the-string   (some 'string  x)) (concat "hello " the-string))
-    ((the-bindings
-       (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x))
-      (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
-    (otherwise "no matching clause"))) ; (quux zap poof qwib shprungy)
-
-(ignore!
-  
+(confirm that
   (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
     (dm::clear-compiled-patterns)
     (cond-let
+      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+      ((the-string   (some 'string  x)) (concat "hello " the-string))
+      ((the-bindings
+         (and (consp x)
+           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+      (otherwise "no matching clause")))
+  returns (quux zap poof qwib shprungy))
+(confirm that
+  (let ((x 8))
+    (dm::clear-compiled-patterns)
+    (cond-let
+      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+      ((the-string   (some 'string  x)) (concat "hello " the-string))
+      ((the-bindings
+         (and (consp x)
+           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+      (otherwise "no matching clause")))
+  returns 16)
+(confirm that
+  (let ((x "world"))
+    (dm::clear-compiled-patterns)
+    (cond-let
+      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+      ((the-string   (some 'string  x)) (concat "hello " the-string))
+      ((the-bindings
+         (and (consp x)
+           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+      (otherwise "no matching clause")))
+  returns "hello world")
+(confirm that
+  (let ((x :foo))
+    (dm::clear-compiled-patterns)
+    (cond-let
+      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+      ((the-string   (some 'string  x)) (concat "hello " the-string))
+      ((the-bindings
+         (and (consp x)
+           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+      (otherwise "no matching clause")))
+  returns "no matching clause")
+(confirm that
+  (let ((x (list 2 3 4)))
+    (dm::clear-compiled-patterns)
+    (cond-let
+      (((the-integer (some 'integer x)) (_ (> the-integer 5))) (* 2 the-integer))
+      ((the-string   (some 'string  x)) (concat "hello " the-string))
+      ((the-bindings
+         (and (consp x)
+           (dm:match '(foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle) x)))
+        (let-alist the-bindings `(,.bar ,.needle ,@(nreverse .bazes))))
+      (otherwise "no matching clause")))
+  returns "no matching clause")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; A hypothetical `super-cond' of some sort that I probably shouldn't actually build:
+(ignore!
+  (let ((x '(foo quux ((zot 4 5 6) shprungy qwib poof) 1 2 3 . zap)))
+    (super-cond
       ((let (the-integer (some integer x)) (_ (> the-integer 5)))
         (* 2 the-integer))
       ((let (the-string (some string x)))
@@ -58,6 +99,10 @@
       ((match (foo ,(bar symbolp (not (null bar))) (_ ,@bazes) ... . ,needle))
         `(,.bar ,.needle ,@(nreverse .bazes)))
       ((if (< 8 9)) :foo)
-      (otherwise "no matching clause")))
+      (otherwise "no matching clause"))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(provide 'aris-funs--cond-let)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
