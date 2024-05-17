@@ -98,22 +98,6 @@
   (gensymbolicate- it))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ml::uniqueify-variables1 (sym thing)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Make the logic variables in THING unique by symbolicating them with SYM."
-  (cond
-    ((ml::variable-p thing) (symbolicate- thing sym))
-    ((atom thing) thing)
-    (t (cons (ml::uniqueify-variables1 sym (car thing))
-         (ml::uniqueify-variables1 sym (cdr thing))))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defmacro ml::uniqueify-variables (thing)
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Make the logic variables in THING unique, using an identical number to make them unique."
-  `(ml::uniqueify-variables1 (gensym "") ,thing))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (ml::uniqueify-variables1 (gensym "") (ml::fix-variables '(X foos Bar)))
 (ml::uniqueify-variables (ml::fix-variables '(X foos Bar)))
@@ -136,4 +120,116 @@
 
 (gensymbolicate- 'foo)
 
-(u:unify '(one two three) '(,first . ,rest)) ; bad
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun u::unify1 (bindings pat1 pat2)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Recursively unify two patterns, returning an alist of variable bindings.
+
+Example:
+  (u::unify1 nil '(x + 1) '(,2 + ,y)) => '((x . 2) (y . 1)"
+  (u::prndiv)
+  (u::prn "pat1:     %S" pat1)
+  (u::prn "pat2:     %S" pat2)
+  (u::prn "bindings: %S" bindings)
+  (u::prndiv ?\-)
+  ;; uncurl tails:
+  (let ((pat1-tail-type
+          (and pat1 (atom pat1)))
+         (pat2-tail-type
+           (and pat2 (atom pat2))))
+    (when (or pat1-tail-type pat2-tail-type)      
+      (setf pat1 (list pat1))
+      (setf pat2 (list pat2))
+      (u::prn "pat1*:    %S" pat1)
+      (u::prn "pat2*:    %S" pat2)))
+  (cond
+    ;;----------------------------------------------------------------------------------------------
+    ((not (or pat1 pat2))
+      (u::prn "PAT1 and PAT2 both ran out.")
+      (or bindings t))
+    ;;----------------------------------------------------------------------------------------------
+    ((not pat1)
+      (u::prn "PAT1 ran out.")
+      nil)
+    ;;----------------------------------------------------------------------------------------------
+    ((not pat2)
+      (u::prn "PAT2 ran out.")
+      nil)
+    ;;----------------------------------------------------------------------------------------------
+    ;; `eql' atoms on both sides:
+    ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
+      (u::prn "%s and %s are eql atoms." (u::style (car pat1)) (u::style (car pat2)))
+      (with-indentation (u::unify1 bindings (cdr pat1) (cdr pat2))))
+    ;;----------------------------------------------------------------------------------------------
+    ;; same variable:
+    ((and (u::variable-p (car pat1)) (u::variable-p (car pat2))
+       (eq (car pat1) (car pat2)))
+      (u::prn "%s and %s are the same variable." (u::style (car pat1)) (u::style (car pat2)))
+      (with-indentation (u::unify1 bindings (cdr pat1) (cdr pat2))))
+    ;;----------------------------------------------------------------------------------------------
+    ;; both different variables:
+    ((and (u::variable-p (car pat1)) (u::variable-p (car pat2)))
+      (u::prn "both PAT1 elem %s and PAT2 elem %s are variables."
+        (u::style (car pat1))
+        (u::style (car pat2)))
+      (let ( (binding1 (assoc (car pat1) bindings))
+             (binding2 (assoc (car pat2) bindings)))
+        (u::prn "%s = %s" (u::style (car pat1))
+          (if binding1 (u::style (cdr binding1)) "<unbound>"))
+        (u::prn "%s = %s" (u::style (car pat2))
+          (if binding2 (u::style (cdr binding2)) "<unbound>"))
+        (cond
+          ;;-----------------------------------------------------------------------------------------
+          ;; bound to un-`equal' values:
+          ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2))))
+            (u::prn "already bound to different terms.")
+            nil)
+          ;;-----------------------------------------------------------------------------------------
+          ;; neither bound:
+          ((not (or binding1 binding2))
+            (u::prn "both unbound.")
+            (with-indentation
+              (u::unify1 (cons (cons (car pat1) (car pat2)) bindings) (cdr pat1) (cdr pat2))))
+          ;;-----------------------------------------------------------------------------------------
+          ;; PAT1's var not bound, unify with PAT2's var:
+          ((not binding1)
+            (u::unify-variable-with-variable2 bindings pat1 pat2))
+          ;;-----------------------------------------------------------------------------------------
+          ;; PAT2's var not bound, unify with PAT1's var:
+          ((not binding2)
+            (u::unify1 bindings pat2 pat1))
+          ;;-----------------------------------------------------------------------------------------
+          ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
+          ;; not totally sure about this but it seems to work, so far.
+          (t (u::prn
+               (concat "PAT1's var %s and PAT2's var %s are bound to the same value, "
+                 "unifying them destructively.")
+               (u::style (car pat1)) (u::style (car pat2)))
+            (setcdr binding1 (car binding2))
+            (with-indentation (u::unify1 bindings (cdr pat1) (cdr pat2)))))))
+    ;;----------------------------------------------------------------------------------------------
+    ;; variable on PAT1, value on PAT2:
+    ((and (u::variable-p (car pat1)) (or *u:bind-conses* (atom (car pat2))))
+      (with-indentation (u::unify-variable-with-value1 bindings pat1 pat2)))
+    ;;----------------------------------------------------------------------------------------------
+    ;; variable on PAT2, value on PAT1:
+    ((and (u::variable-p (car pat2)) (or *u:bind-conses* (atom (car pat1))))
+      (with-indentation (u::unify1 bindings pat2 pat1))
+      ;; (u::unify-variable-with-value1 bindings pat2 pat1)
+      )
+    ;;----------------------------------------------------------------------------------------------
+    ;; conses on both sides:
+    ((and (consp (car pat1)) (consp (car pat2)))
+      ;; (debug nil :conses (car pat1) (car pat2))
+      (u::unify1 (u::unify1 bindings (car pat1) (car pat2)) (cdr pat1) (cdr pat2)))
+    ;;----------------------------------------------------------------------------------------------
+    (t nil ;; (debug nil t (car pat1) (car pat2))
+      (u::prn "unhandled"))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(u:unify '(one two three) '(,first . ,rest))
+(u:unify '(,first . ,rest) '(one two three))
+(u:unify '(,one ,two) '(first . rest))
+(u:unify '(first . rest) '(,one ,two))
+
