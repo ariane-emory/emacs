@@ -107,8 +107,9 @@
       (dolist (rule alist)
         (let ((str
                 (concat 
-                  (substring (format "%S"
-                               (ml::unfix-variables (car rule)))
+                  (substring
+                    (format "%S"
+                      (ml::unfix-variables (car rule)))
                     1 -1)
                   (cond
                     ((null (cdr rule)) ".")
@@ -142,9 +143,7 @@
 (defun ml:reset ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (ensure-db! '*ml*)
-  (clear-db   '*ml*)
-  ;; (setf *ml:db* nil)
-  )
+  (clear-db   '*ml*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
