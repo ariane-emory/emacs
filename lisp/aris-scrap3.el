@@ -133,16 +133,6 @@ Example:
   (u::prn "pat2:     %S" pat2)
   (u::prn "bindings: %S" bindings)
   (u::prndiv ?\-)
-  ;; uncurl tails:
-  (let ((pat1-tail-type
-          (and pat1 (atom pat1)))
-         (pat2-tail-type
-           (and pat2 (atom pat2))))
-    (when (or pat1-tail-type pat2-tail-type)      
-      (setf pat1 (list pat1))
-      (setf pat2 (list pat2))
-      (u::prn "pat1*:    %S" pat1)
-      (u::prn "pat2*:    %S" pat2)))
   (cond
     ;;----------------------------------------------------------------------------------------------
     ((not (or pat1 pat2))
@@ -156,6 +146,10 @@ Example:
     ((not pat2)
       (u::prn "PAT2 ran out.")
       nil)
+    ;;----------------------------------------------------------------------------------------------
+    ;; uncurl improper tails:
+    ((or (atom pat1) (atom pat2))
+      (u::unify1 bindings (list pat1) (list pat2)))
     ;;----------------------------------------------------------------------------------------------
     ;; `eql' atoms on both sides:
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
