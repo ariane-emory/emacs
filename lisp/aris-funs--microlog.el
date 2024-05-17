@@ -350,11 +350,7 @@
 (ml:prn-world)
 (ml:reset)
 
-(<- member Item (Item . Rest))
-(:- (member Item (X . Rest)) (member Item Rest))
+(<-  member Item (Item  . Rest))
+(:- (member Item (Thing . Rest)) (member Item Rest))
 (ml:prn-world)
 (ml:reset)
-
-
-
-
