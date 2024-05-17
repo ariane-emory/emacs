@@ -127,11 +127,86 @@
 (cl-find 2 '(1 2 3) :test #'eql) ; 2
 (cl-find 2 '((1 . a) (2 . c) (3 . c)) :test (lambda (x y) (eql x (car y)))) ; (2 . c)
 
+ProperList (Any -> Any) -> Any
+
 
 (defun* foo ((ignored : integer)) ; return type not specified.
   (bar "3" "4"))
+
 
 (defun* bar ((strint : string) (strint2 : string)) => (pair-of integer)
   (cons (read strint) (read strint2)))
 
 (foo 1) ; (3 . 4)
+
+
+(defconst *blah* nil)
+
+(defun quux (x)
+  (cond
+    ((or *blah* t) 123)
+    (x x)
+    (t "456")))
+
+(defconst *blah* nil)
+
+(defun quux (x)
+  (cond
+    ((not *blah*) 123)
+    (x x)
+    (t "456")))
+(quux 3)
+
+
+(let ((*blah* t)) (quux "not an int"))
+
+(foo "foo")
+(car 3)
+
+
+(defconst *int-type*
+  (cond
+    ((32-bit-system?) 'i32)
+    ((64-bit-system?) 'i64)))
+
+(defun portable-multiply ((x : *int-type*) (x : *int-type*))
+  (cond
+    ((eq *int-type* 'i32) (mul32 x y))
+    ((eq *int-type* 'i64) (mul64 x y))))
+
+
+
+
+(defun u::unify1 (bindings pat1 pat2)
+  (cond
+    ((not (or pat1 pat2)) (or bindings t))
+    ((not pat1) nil)
+    ((not pat2) nil)
+    ((or (atom pat1) (atom pat2))
+      (u::unify1 bindings (list pat1) (list pat2)))
+    ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
+      (u::unify1 bindings (cdr pat1) (cdr pat2)))
+    ((and (u::variable-p (car pat1)) (u::variable-p (car pat2))
+       (eq (car pat1) (car pat2)))
+      (u::unify1 bindings (cdr pat1) (cdr pat2)))
+    ((and (u::variable-p (car pat1)) (u::variable-p (car pat2)))
+      (let ( (binding1 (assoc (car pat1) bindings))
+             (binding2 (assoc (car pat2) bindings)))
+        (cond
+          ((and binding1 binding2 (not (equal (cdr binding1) (cdr binding2)))) nil)
+          ((not (or binding1 binding2))
+            (u::unify1 (cons (cons (car pat1) (car pat2)) bindings)
+              (cdr pat1) (cdr pat2)))
+          ((not binding1)
+            (u::unify-variable-with-variable bindings pat1 pat2))
+          ((not binding2)
+            (u::unify1 bindings pat2 pat1))
+          (t (setcdr binding1 (car binding2))
+            (u::unify1 bindings (cdr pat1) (cdr pat2))))))
+    ((and (u::variable-p (car pat1)) (or *u:bind-conses* (atom (car pat2))))
+      (u::unify-variable-with-value1 bindings pat1 pat2))
+    ((and (u::variable-p (car pat2)) (or *u:bind-conses* (atom (car pat1))))
+      (u::unify1 bindings pat2 pat1))
+    ((and (consp (car pat1)) (consp (car pat2)))
+      (u::unify1 (u::unify1 bindings (car pat1) (car pat2)) (cdr pat1) (cdr pat2)))
+    (t nil)))

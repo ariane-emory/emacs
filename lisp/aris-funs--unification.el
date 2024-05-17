@@ -225,7 +225,7 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-value1 (bindings pat1 pat2)
+(defun u::unify-variable-with-value (bindings pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Note: when this recurses, it might swap which tail was PAT1 and which was PAT2, but that seems to be fine."
   (let* ( (variable (car pat1))
@@ -246,7 +246,7 @@ are relevant to the unit tests correctly."
           (u::style (cdr binding)))
         (if (not (u::variable-p (cdr binding)))
           nil
-          (u::unify-variable-with-value1 bindings (cons (cdr binding) (cdr pat1)) pat2)))
+          (u::unify-variable-with-value bindings (cons (cdr binding) (cdr pat1)) pat2)))
       (binding
         (u::prn "variable %s is already bound to the same value, %s."
           (u::style variable)
@@ -262,7 +262,7 @@ are relevant to the unit tests correctly."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify-variable-with-variable2 (bindings pat1 pat2)
+(defun u::unify-variable-with-variable (bindings pat1 pat2)
   ;; if we entered this fun we already know that (car pat1) is unbound and that (car pat2) is a
   ;; bound variable.
   (let ((binding2 (assoc (car pat2) bindings)))
@@ -349,7 +349,7 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            (with-indentation (u::unify-variable-with-variable2 bindings pat1 pat2)))
+            (with-indentation (u::unify-variable-with-variable bindings pat1 pat2)))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT2's var not bound, unify with PAT1's var. flip:
           ((not binding2)
@@ -366,7 +366,7 @@ Example:
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT1, value on PAT2:
     ((and (u::variable-p (car pat1)) (or *u:bind-conses* (atom (car pat2))))
-      (with-indentation (u::unify-variable-with-value1 bindings pat1 pat2)))
+      (with-indentation (u::unify-variable-with-value bindings pat1 pat2)))
     ;;----------------------------------------------------------------------------------------------
     ;; variable on PAT2, value on PAT1, flip:
     ((and (u::variable-p (car pat2)) (or *u:bind-conses* (atom (car pat1))))
@@ -751,8 +751,8 @@ bound to."
       (trace-function #'u:unify)
       (trace-function #'u::reuse-cons)
       (trace-function #'u::occurs)
-      (trace-function #'u::unify-variable-with-value1)
-      (trace-function #'u::unify-variable-with-variable2)
+      (trace-function #'u::unify-variable-with-value)
+      (trace-function #'u::unify-variable-with-variable)
       (trace-function #'u::simplify-bindings)
       (trace-function #'u::subst-bindings))
 
