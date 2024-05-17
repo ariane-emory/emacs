@@ -39,28 +39,6 @@
       ((cdr clauses) `(or ,(caar clauses) (cond2 ,@(cdr clauses))))
       (t (caar clauses)))))
 
-;; Example usage:
-(cond2
-  ((= 2 1) (message "1"))
-  ((= 3 3)) ; (message "2")
-  (t (message "default")))
-
-;; Example usage:
-(cond2
-  ((= 2 1) (message "1"))
-  (32)
-  ((= 3 3) (message "2"))
-  (t (message "default")))
-
-(cond2
-  ;; ((= 2 1) (message "1"))
-  ;; (32)
-  ;; ((= 3 3) (message "2"))
-  (t (message "default")))
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro cond2 (&rest clauses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,3 +66,28 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(let-it 'foo
+  (gensymbolicate- it))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::uniqueify-variables1 (sym thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Make variables in THING unique by symbolicating them with  SYM."
+  (cond
+    ((ml::variable-p thing) (symbolicate- thing sym))
+    ((atom thing) thing)
+    (t (cons (ml::uniqueify-variables1 sym (car thing))
+         (ml::uniqueify-variables1 sym (cdr thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmacro ml::uniqueify-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Make variables in THING unique, using an identical number to make them unique."
+  `(ml::uniqueify-variables1 (gensym "") ,thing))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(ml::uniqueify-variables1 (gensym "") (ml::fix-variables '(X foos Bar)))
+(ml::uniqueify-variables (ml::fix-variables '(X foos Bar)))
