@@ -189,7 +189,8 @@
                         (if (cdr pos) "," ".")))) ; )
                   (pop pos)))))))))
   (ml::prndiv)
-  (ml::prnl))
+  ;; (ml::prnl)
+  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -197,6 +198,10 @@
 (defun ml:reset ()
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (ensure-db! '*ml*)
+  (ml::prndiv)
+  (ml::prn "Resetting database!")
+  (ml::prndiv)
+  (ml::prnl)
   (clear-db   '*ml*))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -321,18 +326,14 @@
   (Person can cook a Food))
 (:- (Person can cook a hamburger)
   (Person has beef))
-
-
 (ml:prn-world)
-
 (ml:reset)
 
-;; real Prolog: man(socrates).
-(<- socrates is a man)
 ;; real Prolog: mortal(Who) :- man(Who).
 (:- (Who is mortal) (Who is a man))
+;; real Prolog: man(socrates).
+(<- socrates is a man)
 (ml:prn-world)
-
 (ml:reset)
 
 ;; real Prolog in the comments, my Lisp stuff in the code:
@@ -346,21 +347,14 @@
 (<- some-chicken is a chicken)
 ;;  is-plucked(some-chicken).
 (<- some-chicken is plucked)
-
 (ml:prn-world)
-(get '*ml* 'db)
-#s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data
-    ( (\?Thing is a man)
-	    ( (\?Thing is featherless)
-        (\?Thing is bipedal))
-	    (\?Thing is featherless)
-	    ( (\?Thing is plucked))
-	    (\?Thing is bipedal)
-	    ( (\?Thing is a chicken))
-	    (some-chicken is a chicken)
-	    nil
-	    (some-chicken is plucked)
-	    nil))
+(ml:reset)
+
+(<- member Item (Item . Rest))
+(:- (member Item (X . Rest)) (member Item Rest))
+(ml:prn-world)
+(ml:reset)
+
 
 
 

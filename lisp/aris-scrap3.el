@@ -124,16 +124,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defun ml::ununiqueify-variable (thing)
-  "Remove the numeric suffix from THING if present."
-  (if (symbolp thing)
-    (let ((name (symbol-name thing)))
-      (if (string-match "^\\(.*\\)-[0-9]+$" name)
-        (intern (match-string 1 name))
-        thing))
-    thing))
+(cl-find 2 '(1 2 3) :test #'eql) ; 2
+(cl-find 2 '((1 . a) (2 . c) (3 . c)) :test (lambda (x y) (eql x (car y)))) ; (2 . c)
 
-;; Test cases
-(ml::ununiqueify-variable 'Foo-1234)  ; => Foo
-(ml::ununiqueify-variable 'Foo)       ; => Foo
-(ml::ununiqueify-variable '(1 2 3))   ; => (1 2 3)
+
+(defun* foo ((ignored : integer)) ; return type not specified.
+  (bar "3" "4"))
+
+(defun* bar ((strint : string) (strint2 : string)) => (pair-of integer)
+  (cons (read strint) (read strint2)))
+
+(foo 1) ; (3 . 4)
