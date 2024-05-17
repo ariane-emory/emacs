@@ -777,6 +777,7 @@
         (lambda ()
           (toggle-truncate-lines -1)
           (display-line-numbers-mode -1)
+          (follow-mode 1)
           (face-remap-add-relative 'default '(:family "XITS" :height 1.45))))
 
       (add-hook 'tetris-mode-hook
