@@ -490,11 +490,18 @@ Example:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun u:unify (thing1 thing2)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Unidy THING1 and THING2 and produce an alist of bindings."
+;;   (u::unify1 nil (u::fix-variables thing1) (u::fix-variables thing2))
+;;   ;; (u::unify1 nil thing1 thing2)
+;;   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u:unify (thing1 thing2)
+(defmacro u:unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unidy THING1 and THING2 and produce an alist of bindings."
-  (u::unify1 nil (u::fix-variables thing1) (u::fix-variables thing2))
+  `(u::unify1 nil (u::fix-variables ,thing1) (u::fix-variables ,thing2))
   ;; (u::unify1 nil thing1 thing2)
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -574,8 +581,8 @@ bound to."
 (when *u:test*
   (confirm that
     (u::simplify-bindings (u::unify1 nil
-                             (u::fix-variables '(,v ,u ,w ,x))
-                             (u::fix-variables '(,u ,x ,v 333))))
+                            (u::fix-variables '(,v ,u ,w ,x))
+                            (u::fix-variables '(,u ,x ,v 333))))
     returns ((\?x . 333) (\?w . 333) (\?u . 333) (\?v . 333))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -721,11 +728,16 @@ bound to."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun n:unify (thing1 thing2)
+;;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;   "Unidy THING1 and THING2 and produce an alist of bindings."
+;;   (n::unify1 nil (u::fix-variables thing1) (u::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun n::unify (thing1 thing2)
+(defmacro n:unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unidy THING1 and THING2 and produce an alist of bindings."
-  (n::unify1 nil (u::fix-variables thing1) (u::fix-variables thing2)))
+  `(n::unify1 nil (u::fix-variables ,thing1) (u::fix-variables ,thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -733,7 +745,7 @@ bound to."
 (defun n:unifier (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Return something that unifies with both THING1 and THING2 (or n::fail)."
-  (n::subst-bindings (n::unify thing2 thing1) (u::fix-variables thing2)))
+  (n::subst-bindings (n:unify thing2 thing1) (u::fix-variables thing2)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -742,102 +754,104 @@ bound to."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (ignore!
   (progn
-    (trace-function #'u:unifier)
-    (trace-function #'u::unify1)
-    (trace-function #'u:unify)
-    (trace-function #'u::reuse-cons)
-    (trace-function #'u::occurs)
-    (trace-function #'u::unify-variable-with-value1)
-    (trace-function #'u::unify-variable-with-variable2)
-    (trace-function #'u::simplify-bindings)
-    (trace-function #'u::subst-bindings))
+    (progn
+      (trace-function #'u:unifier)
+      (trace-function #'u::unify1)
+      (trace-function #'u:unify)
+      (trace-function #'u::reuse-cons)
+      (trace-function #'u::occurs)
+      (trace-function #'u::unify-variable-with-value1)
+      (trace-function #'u::unify-variable-with-variable2)
+      (trace-function #'u::simplify-bindings)
+      (trace-function #'u::subst-bindings))
 
-  (untrace-all)
+    (untrace-all)
 
-  (let ((*u:verbose* t))
-    (u:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
+    (let ((*u:verbose* t))
+      (u:unifier '(,x + 1 + ,a + ,x) '(2 + ,y + ,x + 2)))
 
-  (let ((*u:verbose* t))
-    (u:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))
+    (let ((*u:verbose* t))
+      (u:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))
 
-  (let ((reps 1000))
-    (benchmark-run reps
-      (let ((*u:verbose* nil)) (u:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
+    (let ((reps 1000))
+      (benchmark-run reps
+        (let ((*u:verbose* nil)) (u:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
 
-  (u:unify '(,x ,x) '(,y ,y))
-  (u:unify '(,x ,y a) '(,y ,x ,x))
-  (u:unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
-  (u:unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
+    (u:unify '(,x ,x) '(,y ,y))
+    (u:unify '(,x ,y a) '(,y ,x ,x))
+    (u:unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
+    (u:unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
 
-  (u:unify '(,y ,x) '(7 (f ,x)))
-  (u:unifier '(,y ,x) '(7 (f ,x)))
-  (u:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+    (u:unify '(,y ,x) '(7 (f ,x)))
+    (u:unifier '(,y ,x) '(7 (f ,x)))
+    (u:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
-  (let ((*u:occurs-check* nil))
-    (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
-  (let ((*u:occurs-check* :soft))
-    (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
-  (let ((*u:occurs-check* t))
-    (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
+    (let ((*u:occurs-check* nil))
+      (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
+    (let ((*u:occurs-check* :soft))
+      (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
+    (let ((*u:occurs-check* t))
+      (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
 
-  (variable variable) ; bind var...
-  (variable atom)     ; bind var...
-  (atom     variable) ; bind var...
-  (variable cons)     ; ???
-  (cons     variable) ; ???
-  (cons     cons)     ; recurse!
-  (atom     cons)     ; FAIL.
-  (cons     atom)     ; FAIL.
-  (atom     atom)     ; `eql'.
-  )
-
-
-(n::unify1 nil '(x) '(11))
-
-;; (trace-function #'n::unify)
-;; (trace-function #'n::unify1)
-;; (trace-function #'n:unifier)
-;; (trace-function #'n::extend-bindings3)
-;; (trace-function #'u::fix-variables)
-;; (trace-function #'n::subst-bindings)
-;; (untrace-all)
-
-(n::unify1 nil 'x 11) 
-(n::unify1 nil '(x y z) '(11 22 33)) 
-
-(n::unify1 nil (u::fix-variables '(,x ,y ,z)) '(11 22 33))
-(n::unify1 nil (u::fix-variables '(,x ,y ,z)) (u::fix-variables '(,x ,y ,z)))
-
-(n::unify1 nil  (u::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
-(u::variable-p (car (u::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
-
-(n::unify
-  '(,u ,v ,w ,x)
-  '(,x ,u ,v 333))
-
-(n::unify1
-  nil
-  (u::fix-variables '(,u ,v ,w ,x))
-  (u::fix-variables '(,x ,u ,v 333)))
+    (ignore!
+      (variable variable) ; bind var...
+      (variable atom)     ; bind var...
+      (atom     variable) ; bind var...
+      (variable cons)     ; ???
+      (cons     variable) ; ???
+      (cons     cons)     ; recurse!
+      (atom     cons)     ; FAIL.
+      (cons     atom)     ; FAIL.
+      (atom     atom))     ; `eql'.
+    
 
 
-(u:unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
-(n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+    (n::unify1 nil '(x) '(11))
 
-(n::unify
-  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
-  '(,z + (4 * 5) + 3))
-(u:unify
-  '((,a * ,x ^ 2) + (,b * ,x) + ,c)
-  '(,z + (4 * 5) + 3))
+    ;; (trace-function #'n::unify)
+    ;; (trace-function #'n::unify1)
+    ;; (trace-function #'n:unifier)
+    ;; (trace-function #'n::extend-bindings3)
+    ;; (trace-function #'u::fix-variables)
+    ;; (trace-function #'n::subst-bindings)
+    ;; (untrace-all)
 
-(n::unify
-  '(,u ,v 333 ,w)
-  '(,x ,u ,v  ,v))
+    (n::unify1 nil 'x 11) 
+    (n::unify1 nil '(x y z) '(11 22 33)) 
 
-(u:unify
-  '(,u ,v 333 ,w)
-  '(,x ,u ,v  ,v))
+    (n::unify1 nil (u::fix-variables '(,x ,y ,z)) '(11 22 33))
+    (n::unify1 nil (u::fix-variables '(,x ,y ,z)) (u::fix-variables '(,x ,y ,z)))
+
+    (n::unify1 nil  (u::fix-variables '(,x ,y (,z 8 ,b . ,c))) '(1 2 (3 8 4 . 5)))
+    (u::variable-p (car (u::fix-variables '(,x ,y (,z 8 ,b . \?c)))))
+
+    (n:unify
+      '(,u ,v ,w ,x)
+      '(,x ,u ,v 333))
+
+    (n::unify1
+      nil
+      (u::fix-variables '(,u ,v ,w ,x))
+      (u::fix-variables '(,x ,u ,v 333)))
+
+
+    (u:unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+    (n:unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+
+    (n:unify
+      '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+      '(,z + (4 * 5) + 3))
+    (u:unify
+      '((,a * ,x ^ 2) + (,b * ,x) + ,c)
+      '(,z + (4 * 5) + 3))
+
+    (n:unify
+      '(,u ,v 333 ,w)
+      '(,x ,u ,v  ,v))
+
+    (u:unify
+      '(,u ,v 333 ,w)
+      '(,x ,u ,v  ,v))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
