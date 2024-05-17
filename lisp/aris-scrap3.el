@@ -5,6 +5,32 @@
 (require 'aris-funs--constant-folding-conditionals) 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(setq foo 8)
+
+(defmacro setq* (var val)
+  (with-gensyms (sym)
+    `(let ((,sym ,val))
+       (prog1
+         ,sym
+         (setq ,var ,sym)))))
+
+(defmacro setq* (var val)
+  (with-gensyms (old new)
+    `(let ( (,old ,var)
+            (,new ,val))
+       (setq ,var ,new)
+       ,old)))
+
+(setq* foo 6)
+(setq* foo 10)
+
+(let ((sym-1366 10))
+  (prog1 sym-1366
+    (setq foo sym-1366)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 (defmacro cond2 (&rest clauses)
   "Re-implementation of ordinary `cond'."
   (if clauses
@@ -75,7 +101,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml::uniqueify-variables1 (sym thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Make variables in THING unique by symbolicating them with  SYM."
+  "Make the logic variables in THING unique by symbolicating them with SYM."
   (cond
     ((ml::variable-p thing) (symbolicate- thing sym))
     ((atom thing) thing)
@@ -84,10 +110,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro ml::uniqueify-variables (thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Make variables in THING unique, using an identical number to make them unique."
+  "Make the logic variables in THING unique, using an identical number to make them unique."
   `(ml::uniqueify-variables1 (gensym "") ,thing))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (ml::uniqueify-variables1 (gensym "") (ml::fix-variables '(X foos Bar)))
 (ml::uniqueify-variables (ml::fix-variables '(X foos Bar)))
+
+
+(u:unify '(\?X-1279 foos three) '(one foos \?Bar-1263))
+
+(u:unify
+  (ml::uniqueify-variables (ml::fix-variables '(Foo two three)))
+  (ml::uniqueify-variables (ml::fix-variables '(one two Foo)))) ; ((\?Foo-1328 . three) (\?Foo-1327 . one))
+
+(u:unifier
+  (ml::uniqueify-variables (ml::fix-variables '(Foo two three)))
+  (ml::uniqueify-variables (ml::fix-variables '(one two Foo)))) ; (one two three)
+
+
+
+(ml::uniqueify-variables (ml::fix-variables '(Foo bar Baz))) ; => (\?Foo-1293 bar \?Baz-1293)
+

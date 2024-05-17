@@ -82,7 +82,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml::uniqueify-variables1 (sym thing)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  "Make variables in THING unique by symbolicating them with  SYM."
+  "Make variables in THING unique by symbolicating them with SYM."
   (cond
     ((ml::variable-p thing) (symbolicate- thing sym))
     ((atom thing) thing)
@@ -292,8 +292,7 @@
 
 ;; real Prolog: man(socrates).
 (<- socrates is a man)
-;; real Prolog:
-;;   mortal(Who) :- man(Who).
+;; real Prolog: mortal(Who) :- man(Who).
 (:- (Who is mortal) (Who is a man))
 (ml:prn-world)
 
