@@ -39,9 +39,9 @@ intern them to make a symbol, ignoring nils in THINGS."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun gensymbolicate- (&rest things)
-  "`symbolicate' THINGS and use the result as the argument to `gensym'.
+  "`symbolicate-' THINGS and use the result as the argument to `gensym'.
 Example:
-(gensymbolicate \"foo\" 'bar 1) ⇒ foo-bar-11533"
+(gensymbolicate- \"foo\" 'bar 1) ⇒ foo-bar-11533"
   (gensym (apply #'symbolicate- `(,@things ""))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -50,7 +50,8 @@ Example:
 (defun gensymbolicate (&rest things)
   "`symbolicate' THINGS and use the result as the argument to `gensym'.
 Example:
-(gensymbolicate \"foo\" 'bar 1) ⇒ foo-bar-11533"
+(gensymbolicate \"foo\" 'bar 1) ⇒ (gensymbolicate \"foo\" 'bar 1)
+⇒ foo-bar-11533"
   (gensym (apply #'symbolicate `(,@things ""))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
