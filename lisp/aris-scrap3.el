@@ -69,8 +69,8 @@
 (defmacro cond2 (&rest clauses)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Re-implementation of ordinary `cond' with constant folding."
-  (when clauses
-    (if (cdar clauses)
+  (when* clauses ; added *
+    (if* (cdar clauses) ; added *
       `(if* ,(caar clauses) ,(macroexp-progn (cdar clauses)) (cond2 ,@(cdr clauses)))
       `(or* ,(caar clauses) (cond2 ,@(cdr clauses))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -127,12 +127,8 @@
 (cl-find 2 '(1 2 3) :test #'eql) ; 2
 (cl-find 2 '((1 . a) (2 . c) (3 . c)) :test (lambda (x y) (eql x (car y)))) ; (2 . c)
 
-ProperList (Any -> Any) -> Any
-
-
 (defun* foo ((ignored : integer)) ; return type not specified.
   (bar "3" "4"))
-
 
 (defun* bar ((strint : string) (strint2 : string)) => (pair-of integer)
   (cons (read strint) (read strint2)))
@@ -157,33 +153,25 @@ ProperList (Any -> Any) -> Any
     (t "456")))
 (quux 3)
 
-
 (let ((*blah* t)) (quux "not an int"))
 
-(foo "foo")
-(car 3)
+(ignore!
+  (defconst *int-type*
+    (cond
+      ((32-bit-system?) 'i32)
+      ((64-bit-system?) 'i64)))
 
-
-(defconst *int-type*
-  (cond
-    ((32-bit-system?) 'i32)
-    ((64-bit-system?) 'i64)))
-
-(defun portable-multiply ((x : *int-type*) (x : *int-type*))
-  (cond
-    ((eq *int-type* 'i32) (mul32 x y))
-    ((eq *int-type* 'i64) (mul64 x y))))
-
-
+  (defun portable-multiply ((x : *int-type*) (x : *int-type*))
+    (cond
+      ((eq *int-type* 'i32) (mul32 x y))
+      ((eq *int-type* 'i64) (mul64 x y)))))
 
 
 (defun u::unify1 (bindings pat1 pat2)
   (cond
     ((not (or pat1 pat2)) (or bindings t))
-    ((not pat1) nil)
-    ((not pat2) nil)
-    ((or (atom pat1) (atom pat2))
-      (u::unify1 bindings (list pat1) (list pat2)))
+    ((not (and pat1 pat2)) nil)
+    ((or (atom pat1) (atom pat2)) (u::unify1 bindings (list pat1) (list pat2)))
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
       (u::unify1 bindings (cdr pat1) (cdr pat2)))
     ((and (u::variable-p (car pat1)) (u::variable-p (car pat2))
@@ -197,10 +185,8 @@ ProperList (Any -> Any) -> Any
           ((not (or binding1 binding2))
             (u::unify1 (cons (cons (car pat1) (car pat2)) bindings)
               (cdr pat1) (cdr pat2)))
-          ((not binding1)
-            (u::unify-variable-with-variable bindings pat1 pat2))
-          ((not binding2)
-            (u::unify1 bindings pat2 pat1))
+          ((not binding1) (u::unify-variable-with-variable bindings pat1 pat2))
+          ((not binding2) (u::unify1 bindings pat2 pat1))
           (t (setcdr binding1 (car binding2))
             (u::unify1 bindings (cdr pat1) (cdr pat2))))))
     ((and (u::variable-p (car pat1)) (or *u:bind-conses* (atom (car pat2))))
