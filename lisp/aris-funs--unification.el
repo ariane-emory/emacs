@@ -491,7 +491,7 @@ Example:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun u::unify (thing1 thing2)
+(defun u:unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unidy THING1 and THING2 and produce an alist of bindings."
   (u::unify1 nil (u::fix-variables thing1) (u::fix-variables thing2))
@@ -499,61 +499,61 @@ Example:
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *u:test*
-  (confirm that (u::unify '(,w ,x ,y) '(,x ,y ,w))
+  (confirm that (u:unify '(,w ,x ,y) '(,x ,y ,w))
     returns ((\?x . \?y) (\?w . \?x)))
-  (confirm that (u::unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+  (confirm that (u:unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
     returns ((\?y . \?z) (\?x . \?y) (\?w . \?x)))
-  (confirm that (u::unify '(333 + ,x + ,x) '(,z + 333 + ,z))
+  (confirm that (u:unify '(333 + ,x + ,x) '(,z + 333 + ,z))
     returns ((\?x . \?z) (\?z . 333)))
-  (confirm that (u::unify '(333 + ,x) '(,x + 333))
+  (confirm that (u:unify '(333 + ,x) '(,x + 333))
     returns ((\?x . 333)))
-  (confirm that (u::unify '(2 + 1) '(2 + 1))
+  (confirm that (u:unify '(2 + 1) '(2 + 1))
     returns t)
-  (confirm that (u::unify '(,x + 1) '(2 + 1))
+  (confirm that (u:unify '(,x + 1) '(2 + 1))
     returns ((\?x . 2)))
-  (confirm that (u::unify '(2 + 1) '(,x + 1))
+  (confirm that (u:unify '(2 + 1) '(,x + 1))
     returns ((\?x . 2)))
-  (confirm that (u::unify '(,y + 1) '(,x + ,x))
+  (confirm that (u:unify '(,y + 1) '(,x + ,x))
     returns ((\?x . 1) (\?y . \?x)))
-  (confirm that (u::unify '(,x + 1) '(2 + ,y))
+  (confirm that (u:unify '(,x + 1) '(2 + ,y))
     returns ((\?y . 1) (\?x . 2)))
-  (confirm that (u::unify '(,x + 1) '(2 + ,y + 1))
+  (confirm that (u:unify '(,x + 1) '(2 + ,y + 1))
     returns nil)
-  (confirm that (u::unify '(,x + 1 + 2) '(2 + ,y + 3))
+  (confirm that (u:unify '(,x + 1 + 2) '(2 + ,y + 3))
     returns nil)
-  (confirm that (u::unify '(,x + 1 + ,a) '(2 + ,y + ,a))
+  (confirm that (u:unify '(,x + 1 + ,a) '(2 + ,y + ,a))
     returns ((\?y . 1) (\?x . 2)))
-  (confirm that (u::unify '(,x + 1 + ,a) '(2 + ,y + ,b))
+  (confirm that (u:unify '(,x + 1 + ,a) '(2 + ,y + ,b))
     returns ((\?b . \?a) (\?y . 1) (\?x . 2)))
-  (confirm that (u::unify '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
+  (confirm that (u:unify '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
     returns nil)
-  (confirm that (u::unify '(,x + 1) '(2 + ,x))
+  (confirm that (u:unify '(,x + 1) '(2 + ,x))
     returns nil)
-  (confirm that (u::unify '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
+  (confirm that (u:unify '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
     returns ((\?a . 8) (\?y . 1) (\?x . 2)))
   ;;---------------------------------------------------------------------------------------------------
   ;; uncurl tails tests:
-  (confirm that (u::unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+  (confirm that (u:unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
     returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
-  (confirm that (u::unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
+  (confirm that (u:unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
     returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
-  (confirm that (u::unify '(,x ,y . ,z) '(1 2 . 3))
+  (confirm that (u:unify '(,x ,y . ,z) '(1 2 . 3))
     returns ((\?z . 3) (\?y . 2) (\?x . 1)))
-  (confirm that (u::unify '(,x ,y   ,z) '(1 2   3))
+  (confirm that (u:unify '(,x ,y   ,z) '(1 2   3))
     returns ((\?z . 3) (\?y . 2) (\?x . 1)))
   ;;---------------------------------------------------------------------------------------------------
   ;; occurs check tests:
   (confirm that
     (let ((*u:occurs-check* nil))
-      (u::unify '(,x ,y) '((f ,y) (f ,x))))
+      (u:unify '(,x ,y) '((f ,y) (f ,x))))
     returns ((\?y f \?x) (\?x f \?y)))
   (confirm that
     (let ((*u:occurs-check* :soft))
-      (u::unify '(,x ,y) '((f ,y) (f ,x))))
+      (u:unify '(,x ,y) '((f ,y) (f ,x))))
     returns ((\?x f \?y)))
   (confirm that
     (let ((*u:occurs-check* t))
-      (u::unify '(,x ,y) '((f ,y) (f ,x))))
+      (u:unify '(,x ,y) '((f ,y) (f ,x))))
     returns nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -584,7 +584,7 @@ bound to."
 (defun u:unifier (pat1 pat2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "My version of Norvig's `n:unifier'."
-  (let* ( (bindings (u::unify pat1 pat2))
+  (let* ( (bindings (u:unify pat1 pat2))
           (bindings (if *u:unifier-simplifies*
                       (u::simplify-bindings bindings)
                       bindings)))
@@ -744,6 +744,7 @@ bound to."
   (progn
     (trace-function #'u:unifier)
     (trace-function #'u::unify1)
+    (trace-function #'u:unify)
     (trace-function #'u::reuse-cons)
     (trace-function #'u::occurs)
     (trace-function #'u::unify-variable-with-value1)
@@ -763,21 +764,21 @@ bound to."
     (benchmark-run reps
       (let ((*u:verbose* nil)) (u:unifier '(333 + ,x + ,x) '(,z + 333 + ,z)))))
 
-  (u::unify '(,x ,x) '(,y ,y))
-  (u::unify '(,x ,y a) '(,y ,x ,x))
-  (u::unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
-  (u::unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
+  (u:unify '(,x ,x) '(,y ,y))
+  (u:unify '(,x ,y a) '(,y ,x ,x))
+  (u:unify '(,x ,y) '(,y ,x)) ;; => ((,X . ,Y))
+  (u:unify '(,x ,y a) '(,y ,x ,x)) ;; => ((,Y . A) (,X . ,Y))
 
-  (u::unify '(,y ,x) '(7 (f ,x)))
+  (u:unify '(,y ,x) '(7 (f ,x)))
   (u:unifier '(,y ,x) '(7 (f ,x)))
   (u:unifier '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
 
   (let ((*u:occurs-check* nil))
-    (u::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
+    (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, y) f (\, x)) ((\, x) f (\, y)))
   (let ((*u:occurs-check* :soft))
-    (u::unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
+    (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; (((\, x) f (\, y)))
   (let ((*u:occurs-check* t))
-    (u::unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
+    (u:unify '(,x ,y) '((f ,y) (f ,x)))) ; nil
 
   (variable variable) ; bind var...
   (variable atom)     ; bind var...
@@ -820,13 +821,13 @@ bound to."
   (u::fix-variables '(,x ,u ,v 333)))
 
 
-(u::unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
+(u:unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 (n::unify  '(,w ,x ,y ,z) '(,x ,y ,z ,w))
 
 (n::unify
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
-(u::unify
+(u:unify
   '((,a * ,x ^ 2) + (,b * ,x) + ,c)
   '(,z + (4 * 5) + 3))
 
@@ -834,7 +835,7 @@ bound to."
   '(,u ,v 333 ,w)
   '(,x ,u ,v  ,v))
 
-(u::unify
+(u:unify
   '(,u ,v 333 ,w)
   '(,x ,u ,v  ,v))
 
