@@ -377,7 +377,7 @@ Example:
       ;; (debug nil :conses (car pat1) (car pat2))
       (u::unify1 (u::unify1 bindings (car pat1) (car pat2)) (cdr pat1) (cdr pat2)))
     ;;----------------------------------------------------------------------------------------------
-    (t nil ;; (debug nil t (car pat1) (car pat2))
+    (t ;; (debug nil t (car pat1) (car pat2))
       (u::prn "unhandled"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *u:test*
