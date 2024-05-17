@@ -97,6 +97,43 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::ununiqueify-symbol (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Remove the numeric suffix from THING if present."
+  (if (symbolp thing)
+    (let ((name (symbol-name thing)))
+      (if (string-match "^\\(.*\\)-[0-9]+$" name)
+        (intern (match-string 1 name))
+        thing))
+    thing))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ml::ununiqueify-symbol 'Foo-1234) returns Foo)
+(confirm that (ml::ununiqueify-symbol 'Foo) returns Foo)
+(confirm that (ml::ununiqueify-symbol '(1 2 3)) returns (1 2 3))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ml::ununiqueify-variables (thing)
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;j;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  "Make variables in THING unique by symbolicating them with SYM."
+  (cond
+    ((ml::variable-p thing) (ml::ununiqueify-symbol thing))
+    ((atom thing) thing)
+    (t (cons (ml::ununiqueify-variables (car thing))
+         (ml::ununiqueify-variables (cdr thing))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(confirm that (ml::ununiqueify-variables '\?Foo-1234)
+  returns \?Foo)
+(confirm that (ml::ununiqueify-variables '(\?Foo-1234 \?Bar-1234))
+  returns (\?Foo \?Bar))
+(confirm that 
+  (ml::ununiqueify-variables '(1 \?Foo-1234 (2 \?Bar-1234 3)))
+  returns (1 \?Foo (2 \?Bar 3)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ml::fmt-pretty-vars (string)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Replace occurrences of \\? with ? in STRING."

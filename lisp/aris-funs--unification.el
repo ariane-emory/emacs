@@ -2,6 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'aris-funs--destructuring-match-aux)
 (require 'aris-funs--trees)
+(require 'aris-funs--let-it)
 (require 'trace)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -294,34 +295,34 @@ Example:
   (u::prn "bindings: %S" bindings)
   (u::prndiv ?\-)
   (cond
-    ;;----------------------------------------------------------------------------------------------
+    ;;-----------------------------------------------------------------------------------------------
     ((not (or pat1 pat2))
-      (u::prn "PAT1 and PAT2 both ran out.")
+      (u::prn "pat1 and PAT2 both ran out, success.")
       (or bindings t))
-    ;;----------------------------------------------------------------------------------------------
+    ;;-----------------------------------------------------------------------------------------------
     ((not pat1)
-      (u::prn "PAT1 ran out.")
+      (u::prn "pat1 ran out first, failure.")
       nil)
-    ;;----------------------------------------------------------------------------------------------
+    ;;-----------------------------------------------------------------------------------------------
     ((not pat2)
-      (u::prn "PAT2 ran out.")
+      (u::prn "pat2 ran out, failure.")
       nil)
-    ;;----------------------------------------------------------------------------------------------
+    ;;-----------------------------------------------------------------------------------------------
     ;; uncurl improper tails:
     ((or (atom pat1) (atom pat2))
-      (u::unify1 bindings (list pat1) (list pat2)))
-    ;;----------------------------------------------------------------------------------------------
+      (with-indentation (u::unify1 bindings (list pat1) (list pat2))))
+    ;;-----------------------------------------------------------------------------------------------
     ;; `eql' atoms on both sides:
     ((and (atom (car pat1)) (atom (car pat2)) (eql (car pat1) (car pat2)))
       (u::prn "%s and %s are eql atoms." (u::style (car pat1)) (u::style (car pat2)))
       (with-indentation (u::unify1 bindings (cdr pat1) (cdr pat2))))
-    ;;----------------------------------------------------------------------------------------------
+    ;;-----------------------------------------------------------------------------------------------
     ;; same variable:
     ((and (u::variable-p (car pat1)) (u::variable-p (car pat2))
        (eq (car pat1) (car pat2)))
       (u::prn "%s and %s are the same variable." (u::style (car pat1)) (u::style (car pat2)))
       (with-indentation (u::unify1 bindings (cdr pat1) (cdr pat2))))
-    ;;----------------------------------------------------------------------------------------------
+    ;;-----------------------------------------------------------------------------------------------
     ;; both different variables:
     ((and (u::variable-p (car pat1)) (u::variable-p (car pat2)))
       (u::prn "both PAT1 elem %s and PAT2 elem %s are variables."
@@ -348,11 +349,11 @@ Example:
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1's var not bound, unify with PAT2's var:
           ((not binding1)
-            (u::unify-variable-with-variable2 bindings pat1 pat2))
+            (with-indentation (u::unify-variable-with-variable2 bindings pat1 pat2)))
           ;;-----------------------------------------------------------------------------------------
-          ;; PAT2's var not bound, unify with PAT1's var:
+          ;; PAT2's var not bound, unify with PAT1's var. flip:
           ((not binding2)
-            (u::unify1 bindings pat2 pat1))
+            (with-indentation (u::unify1 bindings pat2 pat1)))
           ;;-----------------------------------------------------------------------------------------
           ;; PAT1 and PAT2's vars are bound to the same value, unify them destructively.
           ;; not totally sure about this but it seems to work, so far.
@@ -367,11 +368,9 @@ Example:
     ((and (u::variable-p (car pat1)) (or *u:bind-conses* (atom (car pat2))))
       (with-indentation (u::unify-variable-with-value1 bindings pat1 pat2)))
     ;;----------------------------------------------------------------------------------------------
-    ;; variable on PAT2, value on PAT1:
+    ;; variable on PAT2, value on PAT1, flip:
     ((and (u::variable-p (car pat2)) (or *u:bind-conses* (atom (car pat1))))
-      (with-indentation (u::unify1 bindings pat2 pat1))
-      ;; (u::unify-variable-with-value1 bindings pat2 pat1)
-      )
+      (with-indentation (u::unify1 bindings pat2 pat1)))
     ;;----------------------------------------------------------------------------------------------
     ;; conses on both sides:
     ((and (consp (car pat1)) (consp (car pat2)))
@@ -460,7 +459,19 @@ Example:
                   (u::fix-variables '(,x ,y   ,z))
                   (u::fix-variables '(1 2   3)))
     returns ((\?z . 3) (\?y . 2) (\?x . 1)))
-  ;;---------------------------------------------------------------------------------------------------
+  (confirm that (u:unify '(one two three) '(,first . ,rest))
+    returns ((\?first . one) (\?rest two three)))
+  (confirm that (u:unify '(,first . ,rest) '(one two three))
+    returns ((\?first . one) (\?rest two three)))
+  (confirm that (u:unify '(,first two three) '(one . ,rest))
+    returns ((\?first . one) (\?rest two three)))
+  (confirm that (u:unify '(one two three) '(,first . ,rest))
+    returns ((\?first . one) (\?rest two three)))
+  (confirm that (u:unify '(first . rest) '(,one ,two))
+    returns nil)
+  (confirm that (u:unify '(,first . rest) '(one ,two))
+    returns nil)
+  ;;-------------------------------------------------------------------------------------------------
   ;; occurs check tests:
   (confirm that
     (let ((*u:occurs-check* nil))
@@ -495,17 +506,17 @@ Example:
 (defmacro u:unify (thing1 thing2)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   "Unidy THING1 and THING2 and produce an alist of bindings."
-  `(u::unify1 nil (u::fix-variables ,thing1) (u::fix-variables ,thing2))
-  ;; (u::unify1 nil thing1 thing2)
-  )
+  ;; `nreverse' is not strictly required, but makes the output read more nicely:
+  `(let-it (u::unify1 nil (u::fix-variables ,thing1) (u::fix-variables ,thing2))
+     (if (listp it) (nreverse it) it)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (when *u:test*
   (confirm that (u:unify '(,w ,x ,y) '(,x ,y ,w))
-    returns ((\?x . \?y) (\?w . \?x)))
+    returns ((\?w . \?x) (\?x . \?y)))
   (confirm that (u:unify '(,w ,x ,y ,z) '(,x ,y ,z ,w))
-    returns ((\?y . \?z) (\?x . \?y) (\?w . \?x)))
+    returns ((\?w . \?x) (\?x . \?y) (\?y . \?z)))
   (confirm that (u:unify '(333 + ,x + ,x) '(,z + 333 + ,z))
-    returns ((\?x . \?z) (\?z . 333)))
+    returns ((\?z . 333) (\?x . \?z)))
   (confirm that (u:unify '(333 + ,x) '(,x + 333))
     returns ((\?x . 333)))
   (confirm that (u:unify '(2 + 1) '(2 + 1))
@@ -515,39 +526,39 @@ Example:
   (confirm that (u:unify '(2 + 1) '(,x + 1))
     returns ((\?x . 2)))
   (confirm that (u:unify '(,y + 1) '(,x + ,x))
-    returns ((\?x . 1) (\?y . \?x)))
+    returns ((\?y . \?x) (\?x . 1)))
   (confirm that (u:unify '(,x + 1) '(2 + ,y))
-    returns ((\?y . 1) (\?x . 2)))
+    returns ((\?x . 2) (\?y . 1)))
   (confirm that (u:unify '(,x + 1) '(2 + ,y + 1))
     returns nil)
   (confirm that (u:unify '(,x + 1 + 2) '(2 + ,y + 3))
     returns nil)
   (confirm that (u:unify '(,x + 1 + ,a) '(2 + ,y + ,a))
-    returns ((\?y . 1) (\?x . 2)))
+    returns ((\?x . 2) (\?y . 1)))
   (confirm that (u:unify '(,x + 1 + ,a) '(2 + ,y + ,b))
-    returns ((\?b . \?a) (\?y . 1) (\?x . 2)))
+    returns ((\?x . 2) (\?y . 1) (\?b . \?a)))
   (confirm that (u:unify '(,x + 1 + ,a) '(2 + ,y + ,b + 3))
     returns nil)
   (confirm that (u:unify '(,x + 1) '(2 + ,x))
     returns nil)
   (confirm that (u:unify '(,x + 1 + ,a + 8) '(2 + ,y + ,a + ,a))
-    returns ((\?a . 8) (\?y . 1) (\?x . 2)))
+    returns ((\?x . 2) (\?y . 1) (\?a . 8)))
   ;;---------------------------------------------------------------------------------------------------
   ;; uncurl tails tests:
   (confirm that (u:unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-    returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
+    returns ((\?x . 1) (\?y . 2) (\?z . 3) (\?zz . 4)))
   (confirm that (u:unify '(,x ,y . (,z . ,zz)) '(1 2 . (3 . 4)))
-    returns ((\?zz . 4) (\?z . 3) (\?y . 2) (\?x . 1)))
+    returns ((\?x . 1) (\?y . 2) (\?z . 3) (\?zz . 4)))
   (confirm that (u:unify '(,x ,y . ,z) '(1 2 . 3))
-    returns ((\?z . 3) (\?y . 2) (\?x . 1)))
+    returns ((\?x . 1) (\?y . 2) (\?z . 3)))
   (confirm that (u:unify '(,x ,y   ,z) '(1 2   3))
-    returns ((\?z . 3) (\?y . 2) (\?x . 1)))
+    returns ((\?x . 1) (\?y . 2) (\?z . 3)))
   ;;---------------------------------------------------------------------------------------------------
   ;; occurs check tests:
   (confirm that
     (let ((*u:occurs-check* nil))
       (u:unify '(,x ,y) '((f ,y) (f ,x))))
-    returns ((\?y f \?x) (\?x f \?y)))
+    returns ((\?x f \?y) (\?y f \?x)))
   (confirm that
     (let ((*u:occurs-check* :soft))
       (u:unify '(,x ,y) '((f ,y) (f ,x))))
@@ -557,8 +568,6 @@ Example:
       (u:unify '(,x ,y) '((f ,y) (f ,x))))
     returns nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
