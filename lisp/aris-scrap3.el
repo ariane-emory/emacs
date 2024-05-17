@@ -133,3 +133,7 @@
 
 (ml::uniqueify-variables (ml::fix-variables '(Foo bar Baz))) ; => (\?Foo-1293 bar \?Baz-1293)
 
+
+(gensymbolicate- 'foo)
+
+(u:unify '(one two three) '(,first . ,rest)) ; bad
